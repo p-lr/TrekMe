@@ -6,6 +6,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.peterlaurence.trekme.core.billing.domain.model.ExtendedOfferStateOwner
+import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.excursion.domain.repository.ExcursionRepository
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.georecord.domain.model.getBoundingBox
@@ -27,6 +29,7 @@ import com.peterlaurence.trekme.core.wmts.domain.model.OsmSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.Outdoors
 import com.peterlaurence.trekme.core.wmts.domain.model.SwissTopoData
 import com.peterlaurence.trekme.core.wmts.domain.model.UsgsData
+import com.peterlaurence.trekme.core.wmts.domain.model.WorldStreetMap
 import com.peterlaurence.trekme.core.wmts.domain.model.mapSize
 import com.peterlaurence.trekme.core.wmts.domain.tools.getMapSpec
 import com.peterlaurence.trekme.core.wmts.domain.tools.getNumberOfTiles
@@ -71,6 +74,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ovh.plrapps.mapcompose.api.addLayer
 import ovh.plrapps.mapcompose.api.addMarker
+import ovh.plrapps.mapcompose.api.centroidX
 import ovh.plrapps.mapcompose.api.centroidY
 import ovh.plrapps.mapcompose.api.disableFlingZoom
 import ovh.plrapps.mapcompose.api.hasMarker
@@ -94,6 +98,7 @@ class ExcursionMapViewModel @Inject constructor(
     getMapInteractor: GetMapInteractor,
     private val excursionRepository: ExcursionRepository,
     private val downloadRepository: DownloadRepository,
+    private val extendedOfferStateOwner: ExtendedOfferStateOwner,
     private val app: Application
 ) : ViewModel() {
     val locationFlow: Flow<Location> = locationSource.locationFlow
@@ -102,7 +107,7 @@ class ExcursionMapViewModel @Inject constructor(
     val uiStateFlow: StateFlow<UiState> = _uiStateFlow.asStateFlow()
     private val mapStateFlow = _uiStateFlow.filterIsInstance<MapReady>().map { it.mapState }
 
-    private val mapSourceDataFlow = MutableStateFlow<MapSourceData>(OsmSourceData(Outdoors))
+    private val mapSourceDataFlow = MutableStateFlow<MapSourceData>(OsmSourceData(WorldStreetMap))
 
     private val _excursionItemsFlow = pendingSearchRepository.getSearchResultFlow().stateIn(
         viewModelScope, started = SharingStarted.Eagerly, initialValue = ResultL.loading()
@@ -111,6 +116,10 @@ class ExcursionMapViewModel @Inject constructor(
     val geoRecordForSearchFlow = geoRecordForSearchItemRepository.getGeoRecordForSearchFlow().stateIn(
         viewModelScope, started = SharingStarted.Eagerly, initialValue = ResultL.loading()
     )
+
+    val extendedOfferFlow = extendedOfferStateOwner.purchaseFlow.map {
+        it == PurchaseState.PURCHASED
+    }
 
     private val _events = Channel<Event>(1)
     val event = _events.receiveAsFlow()
@@ -148,6 +157,10 @@ class ExcursionMapViewModel @Inject constructor(
                 _events.send(Event.NoInternet)
             }
         }
+    }
+
+    fun onMapSourceDataChange(source: MapSourceData) {
+        mapSourceDataFlow.value = source
     }
 
     fun onLocationReceived(location: Location) = viewModelScope.launch {
@@ -230,7 +243,8 @@ class ExcursionMapViewModel @Inject constructor(
 
             val minLevel = 12
             val maxLevel = 16
-            val mapSpec = getMapSpec(minLevel, maxLevel, p1, p2, tileSize = 512)
+            val wmtsConfig = getWmtsConfig(mapSourceDataFlow.value)
+            val mapSpec = getMapSpec(minLevel, maxLevel, p1, p2, tileSize = wmtsConfig.tileSize)
             val tileCount = getNumberOfTiles(minLevel, maxLevel, p1, p2)
             val mapSourceData = mapSourceDataFlow.value
 
@@ -267,7 +281,7 @@ class ExcursionMapViewModel @Inject constructor(
         val initScaleAndScroll = if (previousMapState != null) {
             Pair(
                 previousMapState.scale,
-                NormalizedPos(previousMapState.centroidY, previousMapState.centroidY)
+                NormalizedPos(previousMapState.centroidX, previousMapState.centroidY)
             )
         } else {
             _uiStateFlow.value = AwaitingLocation
@@ -308,7 +322,9 @@ class ExcursionMapViewModel @Inject constructor(
             scale(initScaleAndScroll.first)
             scroll(x = initScaleAndScroll.second.x, y = initScaleAndScroll.second.y)
 
-            magnifyingFactor(1)
+            magnifyingFactor(
+                if (mapSourceData is OsmSourceData) 1 else 0
+            )
         }.apply {
             disableFlingZoom()
             /* Use grey background to contrast with the material 3 top app bar in light mode */

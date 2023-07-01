@@ -31,7 +31,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.widgets.PopupOri
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.LevelsDialogStateful
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.PrimaryLayerDialogStateful
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components.GeoPlaceListUI
-import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components.SearchAppBar
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components.WmtsAppBar
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.DownloadFormData
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.PrimaryLayerSelectionData
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.*
@@ -44,6 +44,263 @@ import ovh.plrapps.mapcompose.ui.MapUI
 import ovh.plrapps.mapcompose.ui.state.MapState
 import kotlin.math.abs
 import kotlin.math.min
+
+
+@Composable
+fun WmtsStateful(
+    viewModel: WmtsViewModel,
+    onBoardingViewModel: WmtsOnBoardingViewModel,
+    onShowLayerOverlay: () -> Unit,
+    onMenuClick: () -> Unit
+) {
+    val uiState by viewModel.uiState.collectAsState()
+    val topBarState by viewModel.topBarState.collectAsState()
+    val onBoardingState by onBoardingViewModel.onBoardingState
+    val wmtsSource by viewModel.wmtsSourceState.collectAsState()
+
+    LaunchedEffectWithLifecycle(flow = viewModel.locationFlow) {
+        viewModel.onLocationReceived(it)
+    }
+
+    val events = viewModel.eventListState.toList()
+
+    val launcher =
+        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.also {
+                viewModel.onTrackImport(uri)
+            }
+        }
+
+    var primaryLayerSelectionData by rememberSaveable {
+        mutableStateOf<PrimaryLayerSelectionData?>(
+            null
+        )
+    }
+    primaryLayerSelectionData?.also { data ->
+        PrimaryLayerDialogStateful(
+            layerIds = data.layerIds,
+            initialActiveLayerId = data.selectedLayerId,
+            onLayerSelected = {
+                viewModel.onPrimaryLayerDefined(it)
+                primaryLayerSelectionData = null
+            },
+            onDismiss = { primaryLayerSelectionData = null }
+        )
+    }
+
+    var levelsDialogData by rememberSaveable { mutableStateOf<DownloadFormData?>(null) }
+    levelsDialogData?.also { data ->
+        LevelsDialogStateful(
+            minLevel = data.levelMin,
+            maxLevel = data.levelMax,
+            p1 = data.p1,
+            p2 = data.p2,
+            onDownloadClicked = { minLevel, maxLevel ->
+                viewModel.onDownloadFormConfirmed(minLevel, maxLevel)
+                levelsDialogData = null
+            },
+            onDismiss = { levelsDialogData = null }
+        )
+    }
+
+    val onValidateArea = {
+        val downloadForm = viewModel.onValidateArea()
+        levelsDialogData = downloadForm
+    }
+
+    val onPrimaryLayerSelection = l@{
+        val source = wmtsSource ?: return@l
+        val layers = viewModel.getAvailablePrimaryLayersForSource(source) ?: return@l
+        val activeLayer = viewModel.getActivePrimaryLayerForSource(source) ?: return@l
+
+        primaryLayerSelectionData = PrimaryLayerSelectionData(layers.map { it.id }, activeLayer.id)
+    }
+
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        WmtsScaffold(
+            events = events,
+            topBarState = topBarState,
+            uiState = uiState,
+            onAckError = viewModel::acknowledgeError,
+            onToggleArea = {
+                viewModel.toggleArea()
+                onBoardingViewModel.onFabTipAck()
+            },
+            onValidateArea = onValidateArea,
+            onMenuClick = onMenuClick,
+            onSearchClick = viewModel::onSearchClick,
+            onCloseSearch = viewModel::onCloseSearch,
+            onQueryTextSubmit = viewModel::onQueryTextSubmit,
+            onGeoPlaceSelection = viewModel::moveToPlace,
+            onLayerSelection = onPrimaryLayerSelection,
+            onZoomOnPosition = {
+                viewModel.zoomOnPosition()
+                onBoardingViewModel.onCenterOnPosTipAck()
+            },
+            onShowLayerOverlay = onShowLayerOverlay,
+            onUseTrack = {
+                launcher.launch("*/*")
+            }
+        )
+
+        OnBoardingOverlay(
+            onBoardingState,
+            wmtsSource,
+            onBoardingViewModel::onCenterOnPosTipAck,
+            onBoardingViewModel::onFabTipAck
+        )
+    }
+}
+
+@Composable
+private fun BoxWithConstraintsScope.OnBoardingOverlay(
+    onBoardingState: OnBoardingState,
+    wmtsSource: WmtsSource?,
+    onCenterOnPosAck: () -> Unit,
+    onFabAck: () -> Unit
+) {
+    if (onBoardingState !is ShowTip) return
+
+    val radius = with(LocalDensity.current) { 10.dp.toPx() }
+    val nubWidth = with(LocalDensity.current) { 20.dp.toPx() }
+    val nubHeight = with(LocalDensity.current) { 18.dp.toPx() }
+
+    if (onBoardingState.fabTip) {
+        OnBoardingTip(
+            modifier = Modifier
+                .width(min(maxWidth * 0.9f, 330.dp))
+                .padding(bottom = 16.dp, end = 85.dp)
+                .align(Alignment.BottomEnd),
+            text = stringResource(id = R.string.onboarding_select_area),
+            popupOrigin = PopupOrigin.BottomEnd,
+            onAcknowledge = onFabAck,
+            shape = DialogShape(
+                radius,
+                DialogShape.NubPosition.RIGHT,
+                0.66f,
+                nubWidth = nubWidth,
+                nubHeight = nubHeight,
+            )
+        )
+    }
+    if (onBoardingState.centerOnPosTip) {
+        val offset = with(LocalDensity.current) { 15.dp.toPx() }
+        /* When view IGN content, there a menu button which shifts the center-on-position button */
+        val relativePosition = if (wmtsSource == WmtsSource.IGN) 0.72f else 0.845f
+
+        OnBoardingTip(
+            modifier = Modifier
+                .width(min(maxWidth * 0.8f, 310.dp))
+                .padding(top = 60.dp, end = 16.dp)
+                .align(Alignment.TopEnd),
+            text = stringResource(id = R.string.onboarding_center_on_pos),
+            popupOrigin = PopupOrigin.TopEnd,
+            onAcknowledge = onCenterOnPosAck,
+            shape = DialogShape(
+                radius,
+                DialogShape.NubPosition.TOP,
+                relativePosition,
+                nubWidth = nubWidth,
+                nubHeight = nubHeight,
+                offset = offset
+            )
+        )
+    }
+}
+
+@Composable
+private fun WmtsScaffold(
+    events: List<WmtsEvent>,
+    topBarState: TopBarState,
+    uiState: UiState,
+    onAckError: () -> Unit,
+    onToggleArea: () -> Unit,
+    onValidateArea: () -> Unit,
+    onMenuClick: () -> Unit,
+    onSearchClick: () -> Unit,
+    onCloseSearch: () -> Unit,
+    onQueryTextSubmit: (String) -> Unit,
+    onGeoPlaceSelection: (GeoPlace) -> Unit,
+    onLayerSelection: () -> Unit,
+    onZoomOnPosition: () -> Unit,
+    onShowLayerOverlay: () -> Unit,
+    onUseTrack: () -> Unit
+) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+
+    if (events.isNotEmpty()) {
+        val ok = stringResource(id = R.string.ok_dialog)
+        val message = when (events.first()) {
+            WmtsEvent.CURRENT_LOCATION_OUT_OF_BOUNDS -> stringResource(id = R.string.mapcreate_out_of_bounds)
+            WmtsEvent.PLACE_OUT_OF_BOUNDS -> stringResource(id = R.string.place_outside_of_covered_area)
+        }
+
+        SideEffect {
+            scope.launch {
+                /* Dismiss the currently showing snackbar, if any */
+                snackbarHostState.currentSnackbarData?.dismiss()
+
+                snackbarHostState.showSnackbar(message, actionLabel = ok)
+            }
+            onAckError()
+        }
+    }
+
+    Scaffold(
+        Modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        topBar = {
+            WmtsAppBar(
+                topBarState,
+                onSearchClick,
+                onCloseSearch,
+                onMenuClick,
+                onQueryTextSubmit,
+                onLayerSelection,
+                onZoomOnPosition,
+                onShowLayerOverlay,
+                onUseTrack
+            )
+        },
+        floatingActionButton = {
+            when (uiState) {
+                is GeoplaceList -> {
+                }
+                is Wmts -> {
+                    if (uiState.wmtsState is MapReady || uiState.wmtsState is AreaSelection) {
+                        FabAreaSelection(onToggleArea)
+                    }
+                }
+            }
+        },
+    ) { innerPadding ->
+        val modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding)
+
+        when (uiState) {
+            is GeoplaceList -> {
+                /* In this context, intercept physical back gesture */
+                BackHandler(onBack = onCloseSearch)
+
+                GeoPlaceListUI(
+                    modifier,
+                    uiState,
+                    onGeoPlaceSelection
+                )
+            }
+            is Wmts -> {
+                WmtsUI(
+                    modifier,
+                    uiState.wmtsState,
+                    onValidateArea,
+                )
+            }
+        }
+    }
+}
 
 @Composable
 private fun WmtsUI(
@@ -155,261 +412,4 @@ private fun CustomErrorScreen(state: WmtsError) {
         WmtsError.PROVIDER_OUTAGE -> stringResource(id = R.string.mapcreate_warning_others)
     }
     ErrorScreen(message = message)
-}
-
-@Composable
-fun WmtsStateful(
-    viewModel: WmtsViewModel,
-    onBoardingViewModel: WmtsOnBoardingViewModel,
-    onShowLayerOverlay: () -> Unit,
-    onMenuClick: () -> Unit
-) {
-    val uiState by viewModel.uiState.collectAsState()
-    val topBarState by viewModel.topBarState.collectAsState()
-    val onBoardingState by onBoardingViewModel.onBoardingState
-    val wmtsSource by viewModel.wmtsSourceState.collectAsState()
-
-    LaunchedEffectWithLifecycle(flow = viewModel.locationFlow) {
-        viewModel.onLocationReceived(it)
-    }
-
-    val events = viewModel.eventListState.toList()
-
-    val launcher =
-        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-            uri?.also {
-                viewModel.onTrackImport(uri)
-            }
-        }
-
-    var primaryLayerSelectionData by rememberSaveable {
-        mutableStateOf<PrimaryLayerSelectionData?>(
-            null
-        )
-    }
-    primaryLayerSelectionData?.also { data ->
-        PrimaryLayerDialogStateful(
-            layerIds = data.layerIds,
-            initialActiveLayerId = data.selectedLayerId,
-            onLayerSelected = {
-                viewModel.onPrimaryLayerDefined(it)
-                primaryLayerSelectionData = null
-            },
-            onDismiss = { primaryLayerSelectionData = null }
-        )
-    }
-
-    var levelsDialogData by rememberSaveable { mutableStateOf<DownloadFormData?>(null) }
-    levelsDialogData?.also { data ->
-        LevelsDialogStateful(
-            minLevel = data.levelMin,
-            maxLevel = data.levelMax,
-            p1 = data.p1,
-            p2 = data.p2,
-            onDownloadClicked = { minLevel, maxLevel ->
-                viewModel.onDownloadFormConfirmed(minLevel, maxLevel)
-                levelsDialogData = null
-            },
-            onDismiss = { levelsDialogData = null }
-        )
-    }
-
-    val onValidateArea = {
-        val downloadForm = viewModel.onValidateArea()
-        levelsDialogData = downloadForm
-    }
-
-    val onPrimaryLayerSelection = l@{
-        val source = wmtsSource ?: return@l
-        val layers = viewModel.getAvailablePrimaryLayersForSource(source) ?: return@l
-        val activeLayer = viewModel.getActivePrimaryLayerForSource(source) ?: return@l
-
-        primaryLayerSelectionData = PrimaryLayerSelectionData(layers.map { it.id }, activeLayer.id)
-    }
-
-    BoxWithConstraints(Modifier.fillMaxSize()) {
-        WmtsScaffold(
-            events,
-            topBarState,
-            uiState,
-            viewModel::acknowledgeError,
-            onToggleArea = {
-                viewModel.toggleArea()
-                onBoardingViewModel.onFabTipAck()
-            },
-            onValidateArea,
-            onMenuClick,
-            viewModel::onSearchClick,
-            viewModel::onCloseSearch,
-            viewModel::onQueryTextSubmit,
-            viewModel::moveToPlace,
-            onPrimaryLayerSelection,
-            onZoomOnPosition = {
-                viewModel.zoomOnPosition()
-                onBoardingViewModel.onCenterOnPosTipAck()
-            },
-            onShowLayerOverlay,
-            onUseTrack = {
-                launcher.launch("*/*")
-            }
-        )
-
-        OnBoardingOverlay(
-            onBoardingState,
-            wmtsSource,
-            onBoardingViewModel::onCenterOnPosTipAck,
-            onBoardingViewModel::onFabTipAck
-        )
-    }
-}
-
-@Composable
-private fun BoxWithConstraintsScope.OnBoardingOverlay(
-    onBoardingState: OnBoardingState,
-    wmtsSource: WmtsSource?,
-    onCenterOnPosAck: () -> Unit,
-    onFabAck: () -> Unit
-) {
-    if (onBoardingState !is ShowTip) return
-
-    val radius = with(LocalDensity.current) { 10.dp.toPx() }
-    val nubWidth = with(LocalDensity.current) { 20.dp.toPx() }
-    val nubHeight = with(LocalDensity.current) { 18.dp.toPx() }
-
-    if (onBoardingState.fabTip) {
-        OnBoardingTip(
-            modifier = Modifier
-                .width(min(maxWidth * 0.9f, 330.dp))
-                .padding(bottom = 16.dp, end = 85.dp)
-                .align(Alignment.BottomEnd),
-            text = stringResource(id = R.string.onboarding_select_area),
-            popupOrigin = PopupOrigin.BottomEnd,
-            onAcknowledge = onFabAck,
-            shape = DialogShape(
-                radius,
-                DialogShape.NubPosition.RIGHT,
-                0.66f,
-                nubWidth = nubWidth,
-                nubHeight = nubHeight,
-            )
-        )
-    }
-    if (onBoardingState.centerOnPosTip) {
-        val offset = with(LocalDensity.current) { 15.dp.toPx() }
-        /* When view IGN content, there a menu button which shifts the center-on-position button */
-        val relativePosition = if (wmtsSource == WmtsSource.IGN) 0.72f else 0.845f
-
-        OnBoardingTip(
-            modifier = Modifier
-                .width(min(maxWidth * 0.8f, 310.dp))
-                .padding(top = 60.dp, end = 16.dp)
-                .align(Alignment.TopEnd),
-            text = stringResource(id = R.string.onboarding_center_on_pos),
-            popupOrigin = PopupOrigin.TopEnd,
-            onAcknowledge = onCenterOnPosAck,
-            shape = DialogShape(
-                radius,
-                DialogShape.NubPosition.TOP,
-                relativePosition,
-                nubWidth = nubWidth,
-                nubHeight = nubHeight,
-                offset = offset
-            )
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun WmtsScaffold(
-    events: List<WmtsEvent>,
-    topBarState: TopBarState,
-    uiState: UiState,
-    onAckError: () -> Unit,
-    onToggleArea: () -> Unit,
-    onValidateArea: () -> Unit,
-    onMenuClick: () -> Unit,
-    onSearchClick: () -> Unit,
-    onCloseSearch: () -> Unit,
-    onQueryTextSubmit: (String) -> Unit,
-    onGeoPlaceSelection: (GeoPlace) -> Unit,
-    onLayerSelection: () -> Unit,
-    onZoomOnPosition: () -> Unit,
-    onShowLayerOverlay: () -> Unit,
-    onUseTrack: () -> Unit
-) {
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
-
-
-    if (events.isNotEmpty()) {
-        val ok = stringResource(id = R.string.ok_dialog)
-        val message = when (events.first()) {
-            WmtsEvent.CURRENT_LOCATION_OUT_OF_BOUNDS -> stringResource(id = R.string.mapcreate_out_of_bounds)
-            WmtsEvent.PLACE_OUT_OF_BOUNDS -> stringResource(id = R.string.place_outside_of_covered_area)
-        }
-
-        SideEffect {
-            scope.launch {
-                /* Dismiss the currently showing snackbar, if any */
-                snackbarHostState.currentSnackbarData?.dismiss()
-
-                snackbarHostState.showSnackbar(message, actionLabel = ok)
-            }
-            onAckError()
-        }
-    }
-
-    Scaffold(
-        Modifier.fillMaxSize(),
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        topBar = {
-            SearchAppBar(
-                topBarState,
-                onSearchClick,
-                onCloseSearch,
-                onMenuClick,
-                onQueryTextSubmit,
-                onLayerSelection,
-                onZoomOnPosition,
-                onShowLayerOverlay,
-                onUseTrack
-            )
-        },
-        floatingActionButton = {
-            when (uiState) {
-                is GeoplaceList -> {
-                }
-                is Wmts -> {
-                    if (uiState.wmtsState is MapReady || uiState.wmtsState is AreaSelection) {
-                        FabAreaSelection(onToggleArea)
-                    }
-                }
-            }
-        },
-    ) { innerPadding ->
-        val modifier = Modifier
-            .fillMaxSize()
-            .padding(innerPadding)
-
-        when (uiState) {
-            is GeoplaceList -> {
-                /* In this context, intercept physical back gesture */
-                BackHandler(onBack = onCloseSearch)
-
-                GeoPlaceListUI(
-                    modifier,
-                    uiState,
-                    onGeoPlaceSelection
-                )
-            }
-            is Wmts -> {
-                WmtsUI(
-                    modifier,
-                    uiState.wmtsState,
-                    onValidateArea,
-                )
-            }
-        }
-    }
 }

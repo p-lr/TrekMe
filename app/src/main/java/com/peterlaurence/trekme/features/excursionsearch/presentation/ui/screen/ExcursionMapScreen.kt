@@ -31,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -52,6 +53,15 @@ import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
 import com.peterlaurence.trekme.core.location.domain.model.LatLon
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatDistance
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatDuration
+import com.peterlaurence.trekme.core.wmts.domain.model.IgnClassic
+import com.peterlaurence.trekme.core.wmts.domain.model.IgnSourceData
+import com.peterlaurence.trekme.core.wmts.domain.model.IgnSpainData
+import com.peterlaurence.trekme.core.wmts.domain.model.OpenTopoMap
+import com.peterlaurence.trekme.core.wmts.domain.model.OrdnanceSurveyData
+import com.peterlaurence.trekme.core.wmts.domain.model.OsmSourceData
+import com.peterlaurence.trekme.core.wmts.domain.model.SwissTopoData
+import com.peterlaurence.trekme.core.wmts.domain.model.UsgsData
+import com.peterlaurence.trekme.core.wmts.domain.model.WorldStreetMap
 import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.CollapsibleBottomSheet
 import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.States
 import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.ConfirmDialog
@@ -60,6 +70,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingS
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.component.ElevationGraph
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.component.ElevationGraphPoint
+import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.dialog.MapSourceDataSelect
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.AwaitingLocation
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.Error
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.ExcursionMapViewModel
@@ -85,6 +96,7 @@ fun ExcursionMapStateful(
     onGoToMapList: () -> Unit
 ) {
     val uiState by viewModel.uiStateFlow.collectAsStateWithLifecycle()
+    val hasExtendedOffer by viewModel.extendedOfferFlow.collectAsState(initial = false)
     val swipeableState = rememberSwipeableState(initialValue = States.COLLAPSED)
     val geoRecordForSearchState by viewModel.geoRecordForSearchFlow.collectAsStateWithLifecycle()
     val hasContainingMap by viewModel.routeLayer.hasContainingMap.collectAsStateWithLifecycle()
@@ -166,6 +178,8 @@ fun ExcursionMapStateful(
         }
     }
 
+    var isShowingLayerSelectionDialog by remember { mutableStateOf(false) }
+
     ExcursionMapScreen(
         uiState = uiState,
         swipeableState = swipeableState,
@@ -181,7 +195,8 @@ fun ExcursionMapStateful(
             }
             viewModel.onDownload(isDownloadOptionChecked)
         },
-        onBack = onBack
+        onBack = onBack,
+        onLayerSelection = { isShowingLayerSelectionDialog = true }
     )
 
     if (isShowingMapDownloadDialog) {
@@ -193,9 +208,29 @@ fun ExcursionMapStateful(
             onConfirmPressed = onGoToMapList,
         )
     }
+
+    if (isShowingLayerSelectionDialog) {
+        MapSourceDataSelect(
+            mapSourceDataList = listOf(
+                OsmSourceData(WorldStreetMap),
+                OsmSourceData(OpenTopoMap),
+                IgnSourceData(IgnClassic, overlays = emptyList()),
+                UsgsData,
+                OrdnanceSurveyData,
+                IgnSpainData,
+                SwissTopoData
+            ),
+            hasExtendedOffer = hasExtendedOffer,
+            initialSelectedIndex = 0,
+            onMapSourceDataSelected = {
+                viewModel.onMapSourceDataChange(it)
+                isShowingLayerSelectionDialog = false
+            },
+            onDismiss = { isShowingLayerSelectionDialog = false }
+        )
+    }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ExcursionMapScreen(
     uiState: UiState,
@@ -205,11 +240,15 @@ private fun ExcursionMapScreen(
     onCursorMove: (latLon: LatLon, d: Double, ele: Double) -> Unit = { _, _, _ -> },
     onToggleDownloadMapOption: () -> Unit,
     onDownload: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onLayerSelection: () -> Unit
 ) {
     Scaffold(
         topBar = {
-            ExcursionMapTopAppBar(onBack = onBack)
+            ExcursionMapTopAppBar(
+                onBack = onBack,
+                onLayerSelection = onLayerSelection
+            )
         },
         bottomBar = {
             if (swipeableState.currentValue != States.COLLAPSED) {
@@ -359,7 +398,8 @@ private fun LazyListScope.downloadSection(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ExcursionMapTopAppBar(
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onLayerSelection: () -> Unit
 ) {
     TopAppBar(
         title = { Text("Excursions") }, // TODO: show "On foot", "Bike", etc
@@ -367,6 +407,14 @@ private fun ExcursionMapTopAppBar(
             IconButton(onClick = onBack) {
                 Icon(
                     painterResource(id = R.drawable.baseline_arrow_back_24), null,
+                )
+            }
+        },
+        actions = {
+            IconButton(onClick = onLayerSelection) {
+                Icon(
+                    painter = painterResource(id = R.drawable.layer),
+                    contentDescription = null,
                 )
             }
         }

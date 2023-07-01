@@ -369,6 +369,7 @@
     <string name="layer_osm_topo">TopoMap</string>
     <string name="layer_osm_street">StreetMap</string>
     <string name="layer_osm_opentopo">OpenTopoMap</string>
+    <string name="layer_osm_outdoors">Outdoors</string>
     <string name="place_search_hint">Search a place</string>
     <string name="add_layer">Add layer</string>
     <string name="validate_area">Validate</string>

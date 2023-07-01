@@ -38,7 +38,7 @@ import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.TopBar
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchAppBar(
+fun WmtsAppBar(
     state: TopBarState,
     onSearchClick: () -> Unit,
     onCloseSearch: () -> Unit,
