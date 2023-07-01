@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.SwipeableState
 import androidx.compose.material.rememberSwipeableState
 import androidx.compose.material3.Button
@@ -23,7 +24,9 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -247,7 +250,6 @@ private fun ExcursionMapScreen(
         topBar = {
             ExcursionMapTopAppBar(
                 onBack = onBack,
-                onLayerSelection = onLayerSelection
             )
         },
         bottomBar = {
@@ -287,7 +289,10 @@ private fun ExcursionMapScreen(
 
             is MapReady -> {
                 Box(modifier) {
-                    ExcursionMap(mapState = uiState.mapState)
+                    ExcursionMap(
+                        mapState = uiState.mapState,
+                        onLayerSelection = onLayerSelection
+                    )
                     BottomSheet(
                         swipeableState,
                         bottomSheetDataState,
@@ -399,7 +404,6 @@ private fun LazyListScope.downloadSection(
 @Composable
 private fun ExcursionMapTopAppBar(
     onBack: () -> Unit,
-    onLayerSelection: () -> Unit
 ) {
     TopAppBar(
         title = { Text("Excursions") }, // TODO: show "On foot", "Bike", etc
@@ -409,21 +413,33 @@ private fun ExcursionMapTopAppBar(
                     painterResource(id = R.drawable.baseline_arrow_back_24), null,
                 )
             }
-        },
-        actions = {
-            IconButton(onClick = onLayerSelection) {
-                Icon(
-                    painter = painterResource(id = R.drawable.layer),
-                    contentDescription = null,
-                )
-            }
         }
     )
 }
 
 @Composable
-private fun ExcursionMap(modifier: Modifier = Modifier, mapState: MapState) {
-    MapUI(modifier = modifier, state = mapState)
+private fun ExcursionMap(
+    modifier: Modifier = Modifier,
+    mapState: MapState,
+    onLayerSelection: () -> Unit
+) {
+    Box {
+        MapUI(modifier = modifier, state = mapState)
+
+        SmallFloatingActionButton(
+            onClick = onLayerSelection,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(12.dp),
+            shape = CircleShape
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.layers),
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                contentDescription = null
+            )
+        }
+    }
 }
 
 @OptIn(ExperimentalLayoutApi::class)

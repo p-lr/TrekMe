@@ -8,7 +8,7 @@
         app:actionViewClass="androidx.appcompat.widget.SearchView" />
     <item
         android:id="@+id/map_layer_menu_id"
-        android:icon="@drawable/layer"
+        android:icon="@drawable/layers"
         android:title="@string/mapcreate_define_layer"
         app:showAsAction="always" />
     <item

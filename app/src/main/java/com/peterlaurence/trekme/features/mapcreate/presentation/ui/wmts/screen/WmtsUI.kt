@@ -5,6 +5,7 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -258,7 +259,6 @@ private fun WmtsScaffold(
                 onCloseSearch,
                 onMenuClick,
                 onQueryTextSubmit,
-                onLayerSelection,
                 onZoomOnPosition,
                 onShowLayerOverlay,
                 onUseTrack
@@ -295,7 +295,9 @@ private fun WmtsScaffold(
                 WmtsUI(
                     modifier,
                     uiState.wmtsState,
+                    hasPrimaryLayers = (topBarState is Collapsed) && topBarState.hasPrimaryLayers,
                     onValidateArea,
+                    onLayerSelection
                 )
             }
         }
@@ -306,11 +308,31 @@ private fun WmtsScaffold(
 private fun WmtsUI(
     modifier: Modifier,
     wmtsState: WmtsState,
-    onValidateArea: () -> Unit
+    hasPrimaryLayers: Boolean,
+    onValidateArea: () -> Unit,
+    onLayerSelection: () -> Unit
 ) {
     when (wmtsState) {
         is MapReady -> {
-            MapUI(modifier, state = wmtsState.mapState)
+            Box(modifier) {
+                MapUI(state = wmtsState.mapState)
+
+                if (hasPrimaryLayers) {
+                    SmallFloatingActionButton(
+                        onClick = onLayerSelection,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(12.dp),
+                        shape = CircleShape
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.layers),
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            contentDescription = null
+                        )
+                    }
+                }
+            }
         }
         is Loading -> {
             LoadingScreen()

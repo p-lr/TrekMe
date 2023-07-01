@@ -44,7 +44,6 @@ fun WmtsAppBar(
     onCloseSearch: () -> Unit,
     onMenuClick: () -> Unit,
     onQueryTextSubmit: (String) -> Unit,
-    onLayerSelection: () -> Unit,
     onZoomOnPosition: () -> Unit,
     onShowLayerOverlay: () -> Unit,
     onUseTrack: () -> Unit
@@ -78,14 +77,6 @@ fun WmtsAppBar(
                             painter = painterResource(id = R.drawable.ic_baseline_search_24),
                             contentDescription = null,
                         )
-                    }
-                    if (state.hasPrimaryLayers) {
-                        IconButton(onClick = onLayerSelection) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.layer),
-                                contentDescription = null,
-                            )
-                        }
                     }
                     IconButton(onClick = onZoomOnPosition) {
                         Icon(
