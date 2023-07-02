@@ -39,6 +39,9 @@ class ExcursionSearchFragment : Fragment() {
                         onMenuClick = appEventBus::openDrawer,
                         onGoToMapList = {
                             appEventBus.navigateTo(AppEventBus.NavDestination.MapList)
+                        },
+                        onGoToShop = {
+                            appEventBus.navigateTo(AppEventBus.NavDestination.Shop)
                         }
                     )
                 }

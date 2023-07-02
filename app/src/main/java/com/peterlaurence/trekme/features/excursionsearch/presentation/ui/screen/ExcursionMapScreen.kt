@@ -39,6 +39,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,6 +60,7 @@ import com.peterlaurence.trekme.core.units.UnitFormatter.formatDuration
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnClassic
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnSpainData
+import com.peterlaurence.trekme.core.wmts.domain.model.MapSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.OpenTopoMap
 import com.peterlaurence.trekme.core.wmts.domain.model.OrdnanceSurveyData
 import com.peterlaurence.trekme.core.wmts.domain.model.OsmSourceData
@@ -96,9 +98,11 @@ import java.util.UUID
 fun ExcursionMapStateful(
     viewModel: ExcursionMapViewModel,
     onBack: () -> Unit,
-    onGoToMapList: () -> Unit
+    onGoToMapList: () -> Unit,
+    onGoToShop: () -> Unit
 ) {
     val uiState by viewModel.uiStateFlow.collectAsStateWithLifecycle()
+    val mapSourceData by viewModel.mapSourceDataFlow.collectAsStateWithLifecycle()
     val hasExtendedOffer by viewModel.extendedOfferFlow.collectAsState(initial = false)
     val swipeableState = rememberSwipeableState(initialValue = States.COLLAPSED)
     val geoRecordForSearchState by viewModel.geoRecordForSearchFlow.collectAsStateWithLifecycle()
@@ -181,7 +185,7 @@ fun ExcursionMapStateful(
         }
     }
 
-    var isShowingLayerSelectionDialog by remember { mutableStateOf(false) }
+    var isShowingLayerSelectionDialog by rememberSaveable { mutableStateOf(false) }
 
     ExcursionMapScreen(
         uiState = uiState,
@@ -213,6 +217,14 @@ fun ExcursionMapStateful(
     }
 
     if (isShowingLayerSelectionDialog) {
+        var selection by remember(mapSourceData) { mutableStateOf(mapSourceData) }
+
+        val requiresExtendedOffer: (MapSourceData) -> Boolean = remember(hasExtendedOffer) {
+            {
+                !hasExtendedOffer && viewModel.requiresOffer(it)
+            }
+        }
+
         MapSourceDataSelect(
             mapSourceDataList = listOf(
                 OsmSourceData(WorldStreetMap),
@@ -223,13 +235,19 @@ fun ExcursionMapStateful(
                 IgnSpainData,
                 SwissTopoData
             ),
-            hasExtendedOffer = hasExtendedOffer,
-            initialSelectedIndex = 0,
+            currentMapSourceData = selection,
             onMapSourceDataSelected = {
-                viewModel.onMapSourceDataChange(it)
+                if (!requiresExtendedOffer(it)) {
+                    isShowingLayerSelectionDialog = false
+                    viewModel.onMapSourceDataChange(it)
+                }
+                selection = it
+            },
+            requiresExtendedOffer = requiresExtendedOffer,
+            onDismiss = {
                 isShowingLayerSelectionDialog = false
             },
-            onDismiss = { isShowingLayerSelectionDialog = false }
+            onSeeOffer = onGoToShop
         )
     }
 }
@@ -314,16 +332,6 @@ private fun BottomSheet(
 ) {
     CollapsibleBottomSheet(
         swipeableState = swipeableState,
-//        header = {
-//            Row(
-//                Modifier
-//                    .fillMaxWidth()
-//                    .height(50.dp)
-//                    .background(Color.Gray)
-//            ) {
-//
-//            }
-//        },
         expandedRatio = expandedRatio,
         peakedRatio = peakedRatio,
         content = {
@@ -342,7 +350,7 @@ private fun BottomSheet(
                 },
                 onFailure = {
                     item("error") {
-                        Text("Error")
+                        Text(stringResource(id = R.string.excursion_download_error))
                     }
                 }
             )
@@ -406,7 +414,7 @@ private fun ExcursionMapTopAppBar(
     onBack: () -> Unit,
 ) {
     TopAppBar(
-        title = { Text("Excursions") }, // TODO: show "On foot", "Bike", etc
+        title = { Text(stringResource(id = R.string.excursions)) }, // TODO: show "On foot", "Bike", etc
         navigationIcon = {
             IconButton(onClick = onBack) {
                 Icon(

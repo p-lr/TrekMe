@@ -3,18 +3,22 @@ package com.peterlaurence.trekme.features.excursionsearch.presentation.ui.dialog
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.wmts.domain.model.*
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
@@ -22,38 +26,43 @@ import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeThem
 @Composable
 fun MapSourceDataSelect(
     mapSourceDataList: List<MapSourceData>,
-    initialSelectedIndex: Int,
-    hasExtendedOffer: Boolean,
+    currentMapSourceData: MapSourceData,
+    requiresExtendedOffer: (MapSourceData) -> Boolean,
     onMapSourceDataSelected: (MapSourceData) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onSeeOffer: () -> Unit
 ) {
 
-    var selectedIndex by rememberSaveable { mutableStateOf(initialSelectedIndex) }
+    val requiresOffer by remember(currentMapSourceData) {
+        derivedStateOf {
+            requiresExtendedOffer(currentMapSourceData)
+        }
+    }
 
     AlertDialog(
         title = { Text(text = stringResource(id = R.string.ign_select_layer_title)) },
         text = {
             MapSourceDataList(
                 mapSourceDataList,
-                selectedIndex,
-                onSelection = { selectedIndex = it }
+                selectedMapSource = currentMapSourceData,
+                requiresExtendedOffer = requiresExtendedOffer,
+                onSelection = onMapSourceDataSelected
             )
         },
         confirmButton = {
-            TextButton(
-                onClick = {
-                    val selected = mapSourceDataList.elementAtOrNull(selectedIndex)
-                    if (selected != null) {
-                        onMapSourceDataSelected(selected)
-                    }
+            if (requiresOffer) {
+                TextButton(
+                    onClick = onSeeOffer
+                ) {
+                    Text(stringResource(id = R.string.see_offer))
                 }
-            ) {
-                Text(stringResource(id = R.string.ok_dialog))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(id = R.string.cancel_dialog_string))
+            if (requiresOffer) {
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(id = R.string.cancel_dialog_string))
+                }
             }
         },
         onDismissRequest = onDismiss
@@ -63,28 +72,34 @@ fun MapSourceDataSelect(
 @Composable
 private fun MapSourceDataList(
     mapSourceDataList: List<MapSourceData>,
-    selectedIndex: Int,
-    onSelection: (index: Int) -> Unit
+    selectedMapSource: MapSourceData,
+    requiresExtendedOffer: (MapSourceData) -> Boolean,
+    onSelection: (MapSourceData) -> Unit
 ) {
-    val values = mapSourceDataList.map {
-        stringResource(id = it.getNameResId())
-    }
-
-    val groups = mapSourceDataList.groupBy {
-        it::class.java.simpleName
-    }
-
-    Column {
-        values.forEachIndexed { index, value ->
+    Column(Modifier.verticalScroll(rememberScrollState())) {
+        mapSourceDataList.forEach { mapSourceData ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .clickable { onSelection(index) }
+                    .fillMaxWidth()
+                    .clickable { onSelection(mapSourceData) }
                     .padding(end = 16.dp)
             ) {
                 RadioButton(
-                    selected = index == selectedIndex, onClick = { onSelection(index) })
-                Text(text = value)
+                    selected = mapSourceData == selectedMapSource, onClick = { onSelection(mapSourceData) })
+
+                if (requiresExtendedOffer(mapSourceData)) {
+                    Column {
+                        Text(text = stringResource(id = mapSourceData.getNameResId()))
+                        Text(
+                            stringResource(id = R.string.offer_suggestion_short),
+                            color = MaterialTheme.colorScheme.primary,
+                            fontSize = 12.sp
+                        )
+                    }
+                } else {
+                    Text(text = stringResource(id = mapSourceData.getNameResId()))
+                }
             }
         }
     }
@@ -92,18 +107,22 @@ private fun MapSourceDataList(
 
 @Preview(showBackground = true)
 @Composable
-fun PrimaryLayerDialogPreview() {
+private fun MapSourceDataSelectPreview() {
     TrekMeTheme {
-        var indexSelected by remember { mutableStateOf(0) }
-        MapSourceDataList(
-            listOf(
-                IgnSourceData(PlanIgnV2, emptyList()),
+        var selectedMapSource by remember { mutableStateOf<MapSourceData>(SwissTopoData) }
+
+        MapSourceDataSelect(
+            mapSourceDataList = listOf(
+                OsmSourceData(OpenTopoMap),
                 IgnSourceData(IgnClassic, emptyList()),
                 SwissTopoData,
                 UsgsData
             ),
-            indexSelected,
-            onSelection = { indexSelected = it }
+            currentMapSourceData = selectedMapSource,
+            requiresExtendedOffer = { it is IgnSourceData },
+            onMapSourceDataSelected = { selectedMapSource = it },
+            onDismiss = {},
+            onSeeOffer = {}
         )
     }
 }

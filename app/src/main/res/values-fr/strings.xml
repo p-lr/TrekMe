@@ -412,6 +412,7 @@
     <!-- Excursion search -->
     <string name="excursion_feature_menu">Chercher une excursion</string>
     <string name="excursion_search_placeholder">Recherche</string>
+    <string name="excursions">Excursions</string>
     <string name="use_my_location">Autour de moi</string>
     <string name="excursion_feature_banner">Cette fonctionnalité est toute nouvelle.
         La base de donnée des randonnées va se compléter progressivement.
@@ -442,6 +443,8 @@
     <string name="excursion_download_start">L\'excursion va être importée dans les cartes concernées.</string>
     <string name="excursion_download_error">Une erreur s\'est produite pendant le téléchargement.</string>
     <string name="excursion_map_download">Une carte va être téléchargée pour cette excursion.\nVoulez-vous suivre la progression du téléchargement ?</string>
+    <string name="offer_suggestion_short">Disponible avec TrekMe Extended</string>
+    <string name="see_offer">Voir l\'offre</string>
 
     <!-- General -->
     <string name="meters">mètres</string>

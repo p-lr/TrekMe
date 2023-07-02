@@ -21,6 +21,7 @@ import com.peterlaurence.trekme.core.map.domain.models.TileResult
 import com.peterlaurence.trekme.core.map.domain.models.TileStream
 import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamProviderDao
 import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamReporter
+import com.peterlaurence.trekme.core.wmts.domain.model.IgnClassic
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnSpainData
 import com.peterlaurence.trekme.core.wmts.domain.model.MapSourceData
@@ -107,7 +108,7 @@ class ExcursionMapViewModel @Inject constructor(
     val uiStateFlow: StateFlow<UiState> = _uiStateFlow.asStateFlow()
     private val mapStateFlow = _uiStateFlow.filterIsInstance<MapReady>().map { it.mapState }
 
-    private val mapSourceDataFlow = MutableStateFlow<MapSourceData>(OsmSourceData(WorldStreetMap))
+    val mapSourceDataFlow = MutableStateFlow<MapSourceData>(OsmSourceData(WorldStreetMap))
 
     private val _excursionItemsFlow = pendingSearchRepository.getSearchResultFlow().stateIn(
         viewModelScope, started = SharingStarted.Eagerly, initialValue = ResultL.loading()
@@ -176,6 +177,10 @@ class ExcursionMapViewModel @Inject constructor(
         if (normalized != null) {
             updatePosition(mapState, normalized.x, normalized.y)
         }
+    }
+
+    fun requiresOffer(mapSourceData: MapSourceData): Boolean {
+        return mapSourceData is IgnSourceData && mapSourceData.layer == IgnClassic
     }
 
     /**

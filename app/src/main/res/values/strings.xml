@@ -386,8 +386,9 @@
 
     <!-- Excursion search -->
     <string name="fragment_excursion_search" translatable="false">ExcursionSearchFragment</string>
-    <string name="excursion_feature_menu">Look for a hike</string>
+    <string name="excursion_feature_menu">Look for an excursion</string>
     <string name="excursion_search_placeholder">Search</string>
+    <string name="excursions">Excursions</string>
     <string name="use_my_location">Around me</string>
     <string name="excursion_feature_banner">This feature is brand new, and the hike database will complete over time.
         Soon, you\'ll be able to publish your own hikes!</string>
@@ -417,6 +418,8 @@
     <string name="excursion_download_start">The excursion will be imported into relevant maps.</string>
     <string name="excursion_download_error">An error occurred while downloading this excursion.</string>
     <string name="excursion_map_download">A map will be downloaded for this excursion.\nWould you like to see the download progress?</string>
+    <string name="offer_suggestion_short">Available with TrekMe Extended</string>
+    <string name="see_offer">See offer</string>
 
     <!-- SettingsFragment -->
     <string name="settings_frgmt_title">Settings</string>
