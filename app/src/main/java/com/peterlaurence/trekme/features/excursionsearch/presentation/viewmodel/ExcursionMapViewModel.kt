@@ -8,9 +8,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.billing.domain.model.ExtendedOfferStateOwner
 import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
+import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionSearchItem
 import com.peterlaurence.trekme.core.excursion.domain.repository.ExcursionRepository
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.georecord.domain.model.getBoundingBox
+import com.peterlaurence.trekme.core.geotools.distanceApprox
 import com.peterlaurence.trekme.core.location.domain.model.LatLon
 import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.core.location.domain.model.LocationSource
@@ -53,6 +55,7 @@ import com.peterlaurence.trekme.features.mapcreate.app.service.download.Download
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
 import com.peterlaurence.trekme.util.ResultL
 import com.peterlaurence.trekme.util.checkInternet
+import com.peterlaurence.trekme.util.fold
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -73,6 +76,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import ovh.plrapps.mapcompose.api.BoundingBox
 import ovh.plrapps.mapcompose.api.addLayer
 import ovh.plrapps.mapcompose.api.addMarker
 import ovh.plrapps.mapcompose.api.centroidX
@@ -82,6 +86,7 @@ import ovh.plrapps.mapcompose.api.hasMarker
 import ovh.plrapps.mapcompose.api.moveMarker
 import ovh.plrapps.mapcompose.api.removeAllLayers
 import ovh.plrapps.mapcompose.api.scale
+import ovh.plrapps.mapcompose.api.scrollTo
 import ovh.plrapps.mapcompose.api.setMapBackground
 import ovh.plrapps.mapcompose.ui.layout.Fit
 import ovh.plrapps.mapcompose.ui.layout.Forced
@@ -99,7 +104,7 @@ class ExcursionMapViewModel @Inject constructor(
     getMapInteractor: GetMapInteractor,
     private val excursionRepository: ExcursionRepository,
     private val downloadRepository: DownloadRepository,
-    private val extendedOfferStateOwner: ExtendedOfferStateOwner,
+    extendedOfferStateOwner: ExtendedOfferStateOwner,
     private val app: Application
 ) : ViewModel() {
     val locationFlow: Flow<Location> = locationSource.locationFlow
@@ -114,9 +119,10 @@ class ExcursionMapViewModel @Inject constructor(
         viewModelScope, started = SharingStarted.Eagerly, initialValue = ResultL.loading()
     )
 
-    val geoRecordForSearchFlow = geoRecordForSearchItemRepository.getGeoRecordForSearchFlow().stateIn(
-        viewModelScope, started = SharingStarted.Eagerly, initialValue = ResultL.loading()
-    )
+    val geoRecordForSearchFlow =
+        geoRecordForSearchItemRepository.getGeoRecordForSearchFlow().stateIn(
+            viewModelScope, started = SharingStarted.Eagerly, initialValue = ResultL.loading()
+        )
 
     val extendedOfferFlow = extendedOfferStateOwner.purchaseFlow.map {
         it == PurchaseState.PURCHASED
@@ -202,7 +208,8 @@ class ExcursionMapViewModel @Inject constructor(
      * The user has selected a pin, and clicked on the download button in the bottomsheet.
      */
     fun onDownload(withMap: Boolean) = viewModelScope.launch {
-        val geoRecordForSearchItem = geoRecordForSearchFlow.firstOrNull()?.getOrNull() ?: return@launch
+        val geoRecordForSearchItem =
+            geoRecordForSearchFlow.firstOrNull()?.getOrNull() ?: return@launch
 
         _events.send(Event.ExcursionDownloadStart)
 
@@ -229,7 +236,9 @@ class ExcursionMapViewModel @Inject constructor(
         when (result) {
             ExcursionRepository.PutExcursionResult.Ok,
             ExcursionRepository.PutExcursionResult.AlreadyExists,
-            ExcursionRepository.PutExcursionResult.Pending -> { /* Do nothing */ }
+            ExcursionRepository.PutExcursionResult.Pending -> { /* Do nothing */
+            }
+
             ExcursionRepository.PutExcursionResult.Error -> {
                 _events.send(Event.ExcursionDownloadError)
             }
@@ -284,21 +293,42 @@ class ExcursionMapViewModel @Inject constructor(
 
         val wmtsConfig = getWmtsConfig(mapSourceData)
         val initScaleAndScroll = if (previousMapState != null) {
-            Pair(
-                previousMapState.scale,
-                NormalizedPos(previousMapState.centroidX, previousMapState.centroidY)
+            ScaleAndScrollConfig(
+                scale = previousMapState.scale,
+                scroll = NormalizedPos(previousMapState.centroidX, previousMapState.centroidY)
             )
         } else {
             _uiStateFlow.value = AwaitingLocation
             val latLon = pendingSearchRepository.locationFlow.filterNotNull().first()
+
             _uiStateFlow.value = Loading
+            val excursionSearchItems = _excursionItemsFlow.first {
+                it.fold(
+                    onSuccess = { true },
+                    onLoading = { false },
+                    onFailure = { true }
+                )
+            }.getOrNull()
+
             val normalized = wgs84ToMercatorInteractor.getNormalized(latLon.lat, latLon.lon)
             if (normalized != null) {
-                Pair(0.0625f, normalized)
+                if (excursionSearchItems == null) {
+                    InitConfigError
+                } else {
+                    val bb = computeBoundingBox(excursionSearchItems, latLon)
+                    if (bb != null) {
+                        BoundingBoxConfig(bb)
+                    } else InitConfigError
+                }
             } else {
-                // TODO: error could not get location
                 return@coroutineScope
             }
+        }
+
+        /* If no excursions could be found, no need to display the map. */
+        if (initScaleAndScroll is InitConfigError) {
+            _uiStateFlow.value = Error.NO_EXCURSIONS
+            return@coroutineScope
         }
 
         val mapState = MapState(
@@ -324,8 +354,10 @@ class ExcursionMapViewModel @Inject constructor(
                 }
             }
 
-            scale(initScaleAndScroll.first)
-            scroll(x = initScaleAndScroll.second.x, y = initScaleAndScroll.second.y)
+            if (initScaleAndScroll is ScaleAndScrollConfig) {
+                scale(initScaleAndScroll.scale)
+                scroll(x = initScaleAndScroll.scroll.x, y = initScaleAndScroll.scroll.y)
+            }
 
             magnifyingFactor(
                 if (mapSourceData is OsmSourceData) 1 else 0
@@ -334,6 +366,12 @@ class ExcursionMapViewModel @Inject constructor(
             disableFlingZoom()
             /* Use grey background to contrast with the material 3 top app bar in light mode */
             setMapBackground(Color(0xFFF8F8F8))
+
+            if (initScaleAndScroll is BoundingBoxConfig) {
+                launch {
+                    scrollTo(initScaleAndScroll.bb, padding = Offset(0.2f, 0.2f))
+                }
+            }
         }
 
         val tileStreamProvider =
@@ -346,6 +384,52 @@ class ExcursionMapViewModel @Inject constructor(
         } else {
             Error.PROVIDER_OUTAGE
         }
+    }
+
+    private suspend fun computeBoundingBox(
+        excursionSearchItems: List<ExcursionSearchItem>,
+        location: LatLon
+    ): BoundingBox? {
+        val itemsWithDistance = withContext(Dispatchers.Default) {
+            excursionSearchItems.map {
+                Pair(it, distanceApprox(it.startLat, it.startLon, location.lat, location.lon))
+            }.sortedBy {
+                it.second
+            }
+        }
+
+        val selectedItems = mutableListOf<ExcursionSearchItem>()
+        for (itemWithDistance in itemsWithDistance) {
+            if (itemWithDistance.second > 2500) {
+                if (selectedItems.isNotEmpty()) break
+            }
+            selectedItems.add(itemWithDistance.first)
+        }
+
+        val bb = buildList {
+            for (item in selectedItems) {
+                add(LatLon(lat = item.startLat, lon = item.startLon))
+                add(
+                    LatLon(
+                        lat = location.lat - (item.startLat - location.lat),
+                        lon = location.lon - (item.startLon - location.lon)
+                    )
+                )
+            }
+        }
+
+        val normalized = bb.mapNotNull {
+            wgs84ToMercatorInteractor.getNormalized(it.lat, it.lon)
+        }
+
+        val minX: Double? = normalized.minOfOrNull { it.x }
+        val maxX: Double? = normalized.maxOfOrNull { it.x }
+        val minY: Double? = normalized.minOfOrNull { it.y }
+        val maxY: Double? = normalized.maxOfOrNull { it.y }
+
+        return if (minX != null && maxX != null && minY != null && maxY != null) {
+            BoundingBox(minX, minY, maxX, maxY)
+        } else null
     }
 
     private fun makeReporter(): TileStreamReporter {
@@ -418,10 +502,15 @@ class ExcursionMapViewModel @Inject constructor(
 
 private const val positionMarkerId = "position"
 
+private sealed interface InitScaleAndScrollConfig
+data class ScaleAndScrollConfig(val scale: Float, val scroll: NormalizedPos): InitScaleAndScrollConfig
+data class BoundingBoxConfig(val bb: BoundingBox): InitScaleAndScrollConfig
+object InitConfigError : InitScaleAndScrollConfig
+
 sealed interface UiState
 object AwaitingLocation : UiState
 object Loading : UiState
 data class MapReady(val mapState: MapState) : UiState
 enum class Error : UiState {
-    PROVIDER_OUTAGE
+    PROVIDER_OUTAGE, NO_EXCURSIONS
 }

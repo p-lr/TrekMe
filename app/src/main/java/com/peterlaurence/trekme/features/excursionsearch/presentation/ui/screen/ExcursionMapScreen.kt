@@ -297,8 +297,12 @@ private fun ExcursionMapScreen(
                 ErrorScreen(message = stringResource(id = R.string.provider_issue))
             }
 
+            Error.NO_EXCURSIONS -> {
+                ErrorScreen(message = stringResource(id = R.string.no_excursion_found))
+            }
+
             Loading -> {
-                LoadingScreen()
+                LoadingScreen(stringResource(id = R.string.awaiting_excursion_search))
             }
 
             AwaitingLocation -> {
