@@ -8,6 +8,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionSearchItem
+import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionType
 import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToMercatorInteractor
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.component.Cluster
 import kotlinx.coroutines.CoroutineScope
@@ -86,9 +87,19 @@ class MarkerLayer(
                     clickableAreaScale = Offset(1.5f, 1.5f),
                     renderingStrategy = RenderingStrategy.Clustering("default"),
                 ) {
+                    val painter = when(item.type) {
+                        ExcursionType.Hike -> painterResource(id = R.drawable.pin_hiking)
+                        ExcursionType.Running -> painterResource(id = R.drawable.pin_running)
+                        ExcursionType.MountainBike -> painterResource(id = R.drawable.pin_bike)
+                        ExcursionType.TravelBike -> painterResource(id = R.drawable.pin_bike)
+                        ExcursionType.HorseRiding -> painterResource(id = R.drawable.pin_horse)
+                        ExcursionType.Nautical -> painterResource(id = R.drawable.pin_sailing)
+                        ExcursionType.Aerial -> painterResource(id = R.drawable.pin_plane)
+                        ExcursionType.MotorisedVehicle -> painterResource(id = R.drawable.pin_motor_sports)
+                    }
                     Image(
                         modifier = Modifier.size(28.dp, 40.dp),
-                        painter = painterResource(id = R.drawable.pin_hiking),
+                        painter = painter,
                         contentDescription = null
                     )
                 }
