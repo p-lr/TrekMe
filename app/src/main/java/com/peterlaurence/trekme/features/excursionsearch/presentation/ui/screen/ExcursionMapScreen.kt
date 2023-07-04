@@ -76,7 +76,6 @@ import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeThem
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.component.ElevationGraph
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.component.ElevationGraphPoint
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.dialog.MapSourceDataSelect
-import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.AwaitingLocation
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.Error
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.ExcursionMapViewModel
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.Loading
@@ -303,10 +302,6 @@ private fun ExcursionMapScreen(
 
             Loading -> {
                 LoadingScreen(stringResource(id = R.string.awaiting_excursion_search))
-            }
-
-            AwaitingLocation -> {
-                LoadingScreen(stringResource(id = R.string.awaiting_location))
             }
 
             is MapReady -> {

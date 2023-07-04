@@ -66,7 +66,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
@@ -115,7 +114,7 @@ class ExcursionMapViewModel @Inject constructor(
 
     val mapSourceDataFlow = MutableStateFlow<MapSourceData>(OsmSourceData(WorldStreetMap))
 
-    private val _excursionItemsFlow = pendingSearchRepository.getSearchResultFlow().stateIn(
+    private val _excursionSearchFlow = pendingSearchRepository.getSearchResultFlow().stateIn(
         viewModelScope, started = SharingStarted.Eagerly, initialValue = ResultL.loading()
     )
 
@@ -133,7 +132,7 @@ class ExcursionMapViewModel @Inject constructor(
 
     val markerLayer = MarkerLayer(
         scope = viewModelScope,
-        excursionItemsFlow = _excursionItemsFlow.mapNotNull { it.getOrNull() },
+        excursionItemsFlow = _excursionSearchFlow.mapNotNull { it.getOrNull()?.items },
         mapStateFlow = mapStateFlow,
         wgs84ToMercatorInteractor = wgs84ToMercatorInteractor,
         onExcursionItemClick = { item ->
@@ -298,11 +297,8 @@ class ExcursionMapViewModel @Inject constructor(
                 scroll = NormalizedPos(previousMapState.centroidX, previousMapState.centroidY)
             )
         } else {
-            _uiStateFlow.value = AwaitingLocation
-            val latLon = pendingSearchRepository.locationFlow.filterNotNull().first()
-
             _uiStateFlow.value = Loading
-            val excursionSearchItems = _excursionItemsFlow.first {
+            val excursionSearchData = _excursionSearchFlow.first {
                 it.fold(
                     onSuccess = { true },
                     onLoading = { false },
@@ -310,18 +306,14 @@ class ExcursionMapViewModel @Inject constructor(
                 )
             }.getOrNull()
 
-            val normalized = wgs84ToMercatorInteractor.getNormalized(latLon.lat, latLon.lon)
-            if (normalized != null) {
-                if (excursionSearchItems == null) {
-                    InitConfigError
-                } else {
-                    val bb = computeBoundingBox(excursionSearchItems, latLon)
-                    if (bb != null) {
-                        BoundingBoxConfig(bb)
-                    } else InitConfigError
-                }
+            if (excursionSearchData == null) {
+                InitConfigError
             } else {
-                return@coroutineScope
+                val latLon = excursionSearchData.location
+                val bb = computeBoundingBox(excursionSearchData.items, latLon)
+                if (bb != null) {
+                    BoundingBoxConfig(bb)
+                } else InitConfigError
             }
         }
 
@@ -508,7 +500,6 @@ data class BoundingBoxConfig(val bb: BoundingBox): InitScaleAndScrollConfig
 object InitConfigError : InitScaleAndScrollConfig
 
 sealed interface UiState
-object AwaitingLocation : UiState
 object Loading : UiState
 data class MapReady(val mapState: MapState) : UiState
 enum class Error : UiState {

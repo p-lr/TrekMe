@@ -26,8 +26,6 @@ class PendingSearchRepository @Inject constructor(
      */
     private var queryFlow = MutableStateFlow<QueryData?>(null)
 
-    val locationFlow = MutableStateFlow<LatLon?>(null)
-
     fun queueSearch(lat: Double, lon: Double, category: ExcursionCategory?) {
         queryFlow.value = QueryAtPlace(lat, lon, category)
     }
@@ -36,7 +34,7 @@ class PendingSearchRepository @Inject constructor(
         queryFlow.value = QueryAtCurrentLocation(category)
     }
 
-    fun getSearchResultFlow(): Flow<ResultL<List<ExcursionSearchItem>>> = channelFlow {
+    fun getSearchResultFlow(): Flow<ResultL<ExcursionSearchData>> = channelFlow {
         queryFlow.collect { query ->
             send(ResultL.loading())
             send(
@@ -46,18 +44,17 @@ class PendingSearchRepository @Inject constructor(
                             is QueryAtCurrentLocation -> {
                                 val location =
                                     locationSource.locationFlow.firstOrNull() ?: throw Exception("Could not get location")
-                                locationFlow.value =
-                                    LatLon(location.latitude, location.longitude)
-                                api.search(
+                                val items = api.search(
                                     location.latitude,
                                     location.longitude,
                                     query.category
                                 )
+                                ExcursionSearchData(items, LatLon(location.latitude, location.longitude))
                             }
 
                             is QueryAtPlace -> {
-                                locationFlow.value = LatLon(query.lat, query.lon)
-                                api.search(query.lat, query.lon, query.category)
+                                val items = api.search(query.lat, query.lon, query.category)
+                                ExcursionSearchData(items, LatLon(query.lat, query.lon))
                             }
                         }
                     }.asResultL()
@@ -67,6 +64,8 @@ class PendingSearchRepository @Inject constructor(
             )
         }
     }
+
+    data class ExcursionSearchData(val items: List<ExcursionSearchItem>, val location: LatLon)
 
     private sealed interface QueryData
     private data class QueryAtPlace(val lat: Double, val lon: Double, val category: ExcursionCategory?) : QueryData
