@@ -56,6 +56,9 @@ import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRep
 import com.peterlaurence.trekme.util.ResultL
 import com.peterlaurence.trekme.util.checkInternet
 import com.peterlaurence.trekme.util.fold
+import com.peterlaurence.trekme.util.onFailure
+import com.peterlaurence.trekme.util.onLoading
+import com.peterlaurence.trekme.util.onSuccess
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -65,6 +68,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
@@ -97,7 +101,7 @@ import javax.inject.Inject
 class ExcursionMapViewModel @Inject constructor(
     locationSource: LocationSource,
     private val getTileStreamProviderDao: TileStreamProviderDao,
-    private val pendingSearchRepository: PendingSearchRepository,
+    pendingSearchRepository: PendingSearchRepository,
     private val geoRecordForSearchItemRepository: GeoRecordForSearchItemRepository,
     private val wgs84ToMercatorInteractor: Wgs84ToMercatorInteractor,
     getMapInteractor: GetMapInteractor,
@@ -108,7 +112,7 @@ class ExcursionMapViewModel @Inject constructor(
 ) : ViewModel() {
     val locationFlow: Flow<Location> = locationSource.locationFlow
 
-    private val _uiStateFlow = MutableStateFlow<UiState>(Loading)
+    private val _uiStateFlow = MutableStateFlow<UiState>(AwaitingSearch)
     val uiStateFlow: StateFlow<UiState> = _uiStateFlow.asStateFlow()
     private val mapStateFlow = _uiStateFlow.filterIsInstance<MapReady>().map { it.mapState }
 
@@ -154,13 +158,43 @@ class ExcursionMapViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             mapSourceDataFlow.collect {
-                updateMapState(it)
+                changeMapSource(it)
             }
         }
 
         viewModelScope.launch {
             if (!checkInternet()) {
                 _events.send(Event.NoInternet)
+            }
+        }
+
+        viewModelScope.launch {
+            /**
+             * This defines the behavior when a new search is done while the map is already displayed.
+             * In this case, we want to first show that a search is pending, then automatically
+             * scroll to the search location. In case of error, we also inform the user.
+             */
+            _excursionSearchFlow.collectLatest { searchResult ->
+                val previousMapState = _uiStateFlow.value.getMapState()
+                if (previousMapState != null) {
+                    searchResult.onLoading {
+                        _uiStateFlow.update { uiState ->
+                            if (uiState is MapReady) {
+                                uiState.copy(isSearchPending = true)
+                            } else uiState
+                        }
+                    }.onFailure {
+                        _events.send(Event.SearchError)
+                    }.onSuccess { searchData ->
+                        val latLon = searchData.location
+                        val bb = computeBoundingBox(searchData.items, latLon)
+                        if (bb != null) {
+                            launch {
+                                previousMapState.scrollToBoundingBox(bb)
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -281,14 +315,14 @@ class ExcursionMapViewModel @Inject constructor(
         }
     }
 
-    private suspend fun updateMapState(mapSourceData: MapSourceData) = coroutineScope {
+    /**
+     * This is invoked at initialization and when the user changes of layer.
+     */
+    private suspend fun changeMapSource(mapSourceData: MapSourceData) {
         val previousMapState = _uiStateFlow.value.getMapState()
 
         /* Shutdown the previous MapState, if any */
         previousMapState?.shutdown()
-
-        /* Display the loading screen while building the new MapState */
-        _uiStateFlow.value = Loading
 
         val wmtsConfig = getWmtsConfig(mapSourceData)
         val initScaleAndScroll = if (previousMapState != null) {
@@ -297,7 +331,7 @@ class ExcursionMapViewModel @Inject constructor(
                 scroll = NormalizedPos(previousMapState.centroidX, previousMapState.centroidY)
             )
         } else {
-            _uiStateFlow.value = Loading
+            _uiStateFlow.value = AwaitingSearch
             val excursionSearchData = _excursionSearchFlow.first {
                 it.fold(
                     onSuccess = { true },
@@ -320,8 +354,19 @@ class ExcursionMapViewModel @Inject constructor(
         /* If no excursions could be found, no need to display the map. */
         if (initScaleAndScroll is InitConfigError) {
             _uiStateFlow.value = Error.NO_EXCURSIONS
-            return@coroutineScope
+            return
         }
+
+        initMapState(mapSourceData, initScaleAndScroll, wmtsConfig)
+    }
+
+    private suspend fun initMapState(
+        mapSourceData: MapSourceData,
+        initScaleAndScroll: InitScaleAndScrollConfig,
+        wmtsConfig: WmtsConfig
+    ) = coroutineScope {
+        /* Display the loading screen while building the new MapState */
+        _uiStateFlow.value = LoadingLayer
 
         val mapState = MapState(
             19, wmtsConfig.mapSize, wmtsConfig.mapSize,
@@ -361,7 +406,7 @@ class ExcursionMapViewModel @Inject constructor(
 
             if (initScaleAndScroll is BoundingBoxConfig) {
                 launch {
-                    scrollTo(initScaleAndScroll.bb, padding = Offset(0.2f, 0.2f))
+                    scrollToBoundingBox(bb = initScaleAndScroll.bb)
                 }
             }
         }
@@ -372,10 +417,14 @@ class ExcursionMapViewModel @Inject constructor(
         _uiStateFlow.value = if (tileStreamProvider != null) {
             mapState.removeAllLayers()
             mapState.addLayer(tileStreamProvider.toMapComposeTileStreamProvider())
-            MapReady(mapState)
+            MapReady(mapState, isSearchPending = false)
         } else {
             Error.PROVIDER_OUTAGE
         }
+    }
+
+    private suspend fun MapState.scrollToBoundingBox(bb: BoundingBox) {
+        scrollTo(bb, padding = Offset(0.2f, 0.2f))
     }
 
     private suspend fun computeBoundingBox(
@@ -489,6 +538,7 @@ class ExcursionMapViewModel @Inject constructor(
         object NoInternet : Event
         object ExcursionDownloadStart : Event
         object ExcursionDownloadError : Event
+        object SearchError : Event
     }
 }
 
@@ -500,8 +550,9 @@ data class BoundingBoxConfig(val bb: BoundingBox): InitScaleAndScrollConfig
 object InitConfigError : InitScaleAndScrollConfig
 
 sealed interface UiState
-object Loading : UiState
-data class MapReady(val mapState: MapState) : UiState
+object AwaitingSearch : UiState
+object LoadingLayer : UiState
+data class MapReady(val mapState: MapState, val isSearchPending: Boolean) : UiState
 enum class Error : UiState {
     PROVIDER_OUTAGE, NO_EXCURSIONS
 }

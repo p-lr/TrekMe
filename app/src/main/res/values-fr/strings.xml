@@ -438,12 +438,14 @@
     <string name="elevation_cursor">altitude :</string>
     <string name="download_map_option">Télécharger la carte pour cette excursion</string>
     <string name="awaiting_location">En attente d\'une position GPS</string>
+    <string name="loading_layer">Chargement de la couche</string>
     <string name="awaiting_excursion_search">En attente de la recherche</string>
     <string name="no_internet_excursions">Vous devez être connecté à internet pour chercher une excursion</string>
     <string name="provider_issue">Le fournisseur de carte a une panne temporaire</string>
     <string name="no_excursion_found">Il n\'y a pour l\'instant pas d\'excursions publiées à cet endroit.</string>
     <string name="excursion_download_start">L\'excursion va être importée dans les cartes concernées.</string>
     <string name="excursion_download_error">Une erreur s\'est produite pendant le téléchargement.</string>
+    <string name="excursion_search_error">Une erreur s\'est produite pendant la recherche.</string>
     <string name="excursion_map_download">Une carte va être téléchargée pour cette excursion.\nVoulez-vous suivre la progression du téléchargement ?</string>
     <string name="offer_suggestion_short">Disponible avec TrekMe Extended</string>
     <string name="see_offer">Voir l\'offre</string>

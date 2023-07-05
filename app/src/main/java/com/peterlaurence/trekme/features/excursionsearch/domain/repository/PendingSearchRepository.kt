@@ -25,16 +25,7 @@ class PendingSearchRepository @Inject constructor(
      * is queued
      */
     private var queryFlow = MutableStateFlow<QueryData?>(null)
-
-    fun queueSearch(lat: Double, lon: Double, category: ExcursionCategory?) {
-        queryFlow.value = QueryAtPlace(lat, lon, category)
-    }
-
-    fun queueSearchAtCurrentLocation(category: ExcursionCategory?) {
-        queryFlow.value = QueryAtCurrentLocation(category)
-    }
-
-    fun getSearchResultFlow(): Flow<ResultL<ExcursionSearchData>> = channelFlow {
+    private val searchResultFlow : Flow<ResultL<ExcursionSearchData>> = channelFlow {
         queryFlow.collect { query ->
             send(ResultL.loading())
             send(
@@ -64,6 +55,16 @@ class PendingSearchRepository @Inject constructor(
             )
         }
     }
+
+    fun queueSearch(lat: Double, lon: Double, category: ExcursionCategory?) {
+        queryFlow.value = QueryAtPlace(lat, lon, category)
+    }
+
+    fun queueSearchAtCurrentLocation(category: ExcursionCategory?) {
+        queryFlow.value = QueryAtCurrentLocation(category)
+    }
+
+    fun getSearchResultFlow(): Flow<ResultL<ExcursionSearchData>> = searchResultFlow
 
     data class ExcursionSearchData(val items: List<ExcursionSearchItem>, val location: LatLon)
 

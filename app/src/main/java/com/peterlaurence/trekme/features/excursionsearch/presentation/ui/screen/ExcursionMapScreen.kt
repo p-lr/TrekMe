@@ -76,9 +76,10 @@ import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeThem
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.component.ElevationGraph
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.component.ElevationGraphPoint
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.dialog.MapSourceDataSelect
+import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.AwaitingSearch
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.Error
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.ExcursionMapViewModel
-import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.Loading
+import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.LoadingLayer
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.MapReady
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.UiState
 import com.peterlaurence.trekme.util.ResultL
@@ -128,6 +129,7 @@ fun ExcursionMapStateful(
     val noInternetWarning = stringResource(id = R.string.no_internet_excursions)
     val excursionDownloadStart = stringResource(id = R.string.excursion_download_start)
     val excursionDownloadError = stringResource(id = R.string.excursion_download_error)
+    val excursionSearchError = stringResource(id = R.string.excursion_download_error)
     var isShowingMapDownloadDialog by remember { mutableStateOf(false) }
     LaunchedEffectWithLifecycle(flow = viewModel.event) { event ->
         when (event) {
@@ -156,6 +158,14 @@ fun ExcursionMapStateful(
             ExcursionMapViewModel.Event.ExcursionDownloadError -> {
                 snackbarHostState.showSnackbar(
                     message = excursionDownloadError,
+                    withDismissAction = true,
+                    duration = SnackbarDuration.Long
+                )
+            }
+
+            ExcursionMapViewModel.Event.SearchError -> {
+                snackbarHostState.showSnackbar(
+                    message = excursionSearchError,
                     withDismissAction = true,
                     duration = SnackbarDuration.Long
                 )
@@ -300,7 +310,7 @@ private fun ExcursionMapScreen(
                 ErrorScreen(message = stringResource(id = R.string.no_excursion_found))
             }
 
-            Loading -> {
+            AwaitingSearch -> {
                 LoadingScreen(stringResource(id = R.string.awaiting_excursion_search))
             }
 
@@ -317,6 +327,10 @@ private fun ExcursionMapScreen(
                         onToggleDownloadMapOption
                     )
                 }
+            }
+
+            LoadingLayer -> {
+                LoadingScreen(stringResource(id = R.string.loading_layer))
             }
         }
     }

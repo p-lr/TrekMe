@@ -413,12 +413,14 @@
     <string name="elevation_cursor">elevation:</string>
     <string name="download_map_option">Download the map for this excursion</string>
     <string name="awaiting_location">Awaiting for GPS location</string>
+    <string name="loading_layer">Loading layer</string>
     <string name="awaiting_excursion_search">Awaiting search result</string>
     <string name="no_internet_excursions">You must be connected to internet to search for excursions</string>
     <string name="provider_issue">The map provider is having a temporary outage</string>
     <string name="no_excursion_found">No excursions could be found at this location</string>
     <string name="excursion_download_start">The excursion will be imported into relevant maps.</string>
     <string name="excursion_download_error">An error occurred while downloading this excursion.</string>
+    <string name="excursion_search_error">An error occurred while searching this excursion.</string>
     <string name="excursion_map_download">A map will be downloaded for this excursion.\nWould you like to see the download progress?</string>
     <string name="offer_suggestion_short">Available with TrekMe Extended</string>
     <string name="see_offer">See offer</string>
