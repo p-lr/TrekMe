@@ -109,8 +109,10 @@ fun ExcursionMapStateful(
     val hasContainingMap by viewModel.routeLayer.hasContainingMap.collectAsStateWithLifecycle()
     var isDownloadOptionChecked by remember { mutableStateOf(!hasContainingMap) }
 
-    val bottomSheetDataState: ResultL<BottomSheetData> by produceState(
-        initialValue = ResultL.loading(),
+    val bottomSheetDataState by produceState<ResultL<BottomSheetData?>>(
+        /* Do not use loading state at init as it triggers an indeterminate progress bar.
+         * In this context, null expresses an uninitialized state */
+        initialValue = ResultL.success(null),
         key1 = geoRecordForSearchState,
         key2 = isDownloadOptionChecked
     ) {
@@ -265,7 +267,7 @@ fun ExcursionMapStateful(
 private fun ExcursionMapScreen(
     uiState: UiState,
     swipeableState: SwipeableState<States>,
-    bottomSheetDataState: ResultL<BottomSheetData>,
+    bottomSheetDataState: ResultL<BottomSheetData?>,
     snackbarHostState: SnackbarHostState,
     onCursorMove: (latLon: LatLon, d: Double, ele: Double) -> Unit = { _, _, _ -> },
     onToggleDownloadMapOption: () -> Unit,
@@ -339,7 +341,7 @@ private fun ExcursionMapScreen(
 @Composable
 private fun BottomSheet(
     swipeableState: SwipeableState<States>,
-    bottomSheetDataState: ResultL<BottomSheetData>,
+    bottomSheetDataState: ResultL<BottomSheetData?>,
     onCursorMove: (latLon: LatLon, d: Double, ele: Double) -> Unit = { _, _, _ -> },
     onToggleDownloadMapOption: () -> Unit = {}
 ) {
@@ -357,9 +359,11 @@ private fun BottomSheet(
                     }
                 },
                 onSuccess = { data ->
-                    statisticsSection(data)
-                    elevationGraphSection(data, onCursorMove)
-                    downloadSection(data.isDownloadOptionChecked, onToggleDownloadMapOption)
+                    if (data != null) {
+                        statisticsSection(data)
+                        elevationGraphSection(data, onCursorMove)
+                        downloadSection(data.isDownloadOptionChecked, onToggleDownloadMapOption)
+                    }
                 },
                 onFailure = {
                     item("error") {
