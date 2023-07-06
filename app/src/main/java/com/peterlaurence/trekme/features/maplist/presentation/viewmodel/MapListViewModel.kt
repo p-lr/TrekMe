@@ -5,14 +5,14 @@ import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.domain.interactors.DeleteMapInteractor
-import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.core.map.domain.models.Map
-import com.peterlaurence.trekme.core.settings.Settings
+import com.peterlaurence.trekme.core.map.domain.models.MapDownloadPending
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
+import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.events.AppEventBus
-import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
 import com.peterlaurence.trekme.features.common.domain.repositories.OnBoardingRepository
 import com.peterlaurence.trekme.features.mapcreate.app.service.download.DownloadService
+import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
 import com.peterlaurence.trekme.features.maplist.presentation.model.MapItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import java.util.*
+import java.util.UUID
 import javax.inject.Inject
 
 /**
@@ -52,7 +52,7 @@ class MapListViewModel @Inject constructor(
                     MapRepository.Loading -> Loading
                     is MapRepository.MapList -> {
                         val favList = settings.getFavoriteMapIds().first()
-                        updateMapListInFragment(mapListState.mapList, favList)
+                        updateMapList(mapListState.mapList, favList)
                     }
                 }
             }
@@ -60,14 +60,16 @@ class MapListViewModel @Inject constructor(
 
         viewModelScope.launch {
             downloadRepository.downloadEvent.collect { event ->
-                when(event) {
+                when (event) {
                     is MapDownloadPending -> {
                         _mapListState.value = _mapListState.value.copy(
                             downloadProgress = event.progress,
                             isDownloadPending = true
                         )
                     }
-                    else -> { /* Nothing to do */ }
+
+                    else -> { /* Nothing to do */
+                    }
                 }
             }
         }
@@ -107,7 +109,7 @@ class MapListViewModel @Inject constructor(
 
         val ids = _mapListState.value.mapItems.filter { it.isFavorite }.map { it.mapId }
         val mapList = mapRepository.getCurrentMapList()
-        updateMapListInFragment(mapList, ids)
+        updateMapList(mapList, ids)
 
         /* Remember this setting */
         viewModelScope.launch {
@@ -139,12 +141,18 @@ class MapListViewModel @Inject constructor(
         app.startService(intent)
     }
 
-    private fun updateMapListInFragment(mapList: List<Map>, favoriteMapIds: List<UUID>) {
+    /**
+     * Order maps so that favorite appear first, then order by name.
+     */
+    private fun updateMapList(mapList: List<Map>, favoriteMapIds: List<UUID>) {
         /* Order map list with favorites first */
-        val items = mapList.map {
-            val isFavorite = favoriteMapIds.isNotEmpty() && favoriteMapIds.contains(it.id)
-            it.toMapItem(isFavorite)
-        }.sortedByDescending { it.isFavorite }
+        val items = mapList
+            .sortedBy { it.name.lowercase() }
+            .map {
+                val isFavorite = favoriteMapIds.isNotEmpty() && favoriteMapIds.contains(it.id)
+                it.toMapItem(isFavorite)
+            }
+            .sortedByDescending { it.isFavorite }
 
         _mapListState.value = MapListState(items, false)  // update with a copy of the list
     }
