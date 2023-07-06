@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.features.excursionsearch.presentation.ui.screen
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,9 +13,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.SwipeableState
 import androidx.compose.material.rememberSwipeableState
 import androidx.compose.material3.Button
@@ -43,6 +46,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -89,10 +93,12 @@ import com.peterlaurence.trekme.util.map
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import ovh.plrapps.mapcompose.api.setMapBackground
 import ovh.plrapps.mapcompose.api.setVisibleAreaPadding
 import ovh.plrapps.mapcompose.ui.MapUI
 import ovh.plrapps.mapcompose.ui.state.MapState
 import java.util.UUID
+
 
 @Composable
 fun ExcursionMapStateful(
@@ -270,10 +276,10 @@ private fun ExcursionMapScreen(
     bottomSheetDataState: ResultL<BottomSheetData?>,
     snackbarHostState: SnackbarHostState,
     onCursorMove: (latLon: LatLon, d: Double, ele: Double) -> Unit = { _, _, _ -> },
-    onToggleDownloadMapOption: () -> Unit,
-    onDownload: () -> Unit,
-    onBack: () -> Unit,
-    onLayerSelection: () -> Unit
+    onToggleDownloadMapOption: () -> Unit = {},
+    onDownload: () -> Unit = {},
+    onBack: () -> Unit = {},
+    onLayerSelection: () -> Unit = {}
 ) {
     Scaffold(
         topBar = {
@@ -320,6 +326,7 @@ private fun ExcursionMapScreen(
                 Box(modifier) {
                     ExcursionMap(
                         mapState = uiState.mapState,
+                        isSearchPending = uiState.isSearchPending,
                         onLayerSelection = onLayerSelection
                     )
                     BottomSheet(
@@ -446,10 +453,30 @@ private fun ExcursionMapTopAppBar(
 private fun ExcursionMap(
     modifier: Modifier = Modifier,
     mapState: MapState,
+    isSearchPending: Boolean,
     onLayerSelection: () -> Unit
 ) {
     Box {
         MapUI(modifier = modifier, state = mapState)
+
+        if (isSearchPending) {
+            Row(
+                modifier = Modifier
+                    .padding(top = 16.dp)
+                    .height(40.dp)
+                    .background(Color.White, RoundedCornerShape(50))
+                    .align(Alignment.TopCenter)
+                    .padding(horizontal = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                CircularProgressIndicator(
+                    Modifier.size(18.dp),
+                    strokeWidth = 2.dp
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(text = stringResource(id = R.string.awaiting_excursion_search))
+            }
+        }
 
         SmallFloatingActionButton(
             onClick = onLayerSelection,
@@ -640,43 +667,46 @@ private data class BottomSheetData(
     val isDownloadOptionChecked: Boolean
 )
 
-@Preview(showBackground = true, widthDp = 450, heightDp = 600)
+@Preview(showBackground = true)
 @Composable
-private fun BottomSheetPreview() {
-    val geoStats = GeoStatistics(
-        distance = 1527.0,
-        elevationMax = 2600.0,
-        elevationMin = 2200.0,
-        elevationUpStack = 550.0,
-        elevationDownStack = 451.0,
-        durationInSecond = 11658,
-        avgSpeed = null
-    )
+private fun ExcursionMapScreenPreview() {
+    val swipeableState = rememberSwipeableState(initialValue = States.PEAKED)
 
-    TrekMeTheme {
-        val swipeableState = rememberSwipeableState(initialValue = States.PEAKED)
-        val bottomSheetData by remember {
-            mutableStateOf(
-                ResultL.success(
-                    BottomSheetData(UUID.randomUUID(), geoStats, null, true)
-                )
-            )
-        }
-
-        Scaffold { paddingValues ->
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
-                BottomSheet(
-                    swipeableState = swipeableState,
-                    bottomSheetDataState = bottomSheetData
-                )
-            }
+    val mapState = remember {
+        MapState(5, 10000, 10000).apply {
+            setMapBackground(Color(0xffbde3f6))
         }
     }
 
+    val geoStats = remember {
+        GeoStatistics(
+            distance = 1527.0,
+            elevationMax = 2600.0,
+            elevationMin = 2200.0,
+            elevationUpStack = 550.0,
+            elevationDownStack = 451.0,
+            durationInSecond = 11658,
+            avgSpeed = null
+        )
+    }
+    val bottomSheetData by remember {
+        mutableStateOf(
+            ResultL.success(
+                BottomSheetData(UUID.randomUUID(), geoStats, null, true)
+            )
+        )
+    }
+
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    TrekMeTheme {
+        ExcursionMapScreen(
+            uiState = MapReady(mapState, isSearchPending = true),
+            swipeableState = swipeableState,
+            bottomSheetDataState = bottomSheetData,
+            snackbarHostState = snackbarHostState,
+        )
+    }
 }
 
 private const val expandedRatio = 0.6f

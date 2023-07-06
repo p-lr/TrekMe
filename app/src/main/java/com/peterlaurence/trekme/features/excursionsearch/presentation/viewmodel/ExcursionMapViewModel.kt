@@ -178,13 +178,10 @@ class ExcursionMapViewModel @Inject constructor(
                 val previousMapState = _uiStateFlow.value.getMapState()
                 if (previousMapState != null) {
                     searchResult.onLoading {
-                        _uiStateFlow.update { uiState ->
-                            if (uiState is MapReady) {
-                                uiState.copy(isSearchPending = true)
-                            } else uiState
-                        }
+                        setSearchPending(true)
                     }.onFailure {
                         _events.send(Event.SearchError)
+                        setSearchPending(false)
                     }.onSuccess { searchData ->
                         val latLon = searchData.location
                         val bb = computeBoundingBox(searchData.items, latLon)
@@ -193,6 +190,7 @@ class ExcursionMapViewModel @Inject constructor(
                                 previousMapState.scrollToBoundingBox(bb)
                             }
                         }
+                        setSearchPending(false)
                     }
                 }
             }
@@ -528,6 +526,14 @@ class ExcursionMapViewModel @Inject constructor(
             }
 
             else -> WmtsConfig(256, mapSize)
+        }
+    }
+
+    private fun setSearchPending(pending: Boolean) {
+        _uiStateFlow.update { uiState ->
+            if (uiState is MapReady) {
+                uiState.copy(isSearchPending = pending)
+            } else uiState
         }
     }
 
