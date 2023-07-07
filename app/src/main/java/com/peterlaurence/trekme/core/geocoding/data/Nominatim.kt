@@ -38,8 +38,13 @@ class Nominatim(private val client: OkHttpClient) : GeocodingBackend {
             val type = if (it.type.contains("residential") || it.type.contains("street")) {
                 Street
             } else POI
-            val name = it.displayName.substringBefore(",")
+
             val allInfos = it.displayName.split(',').map { it.trim() }
+            val name = if (allInfos.size > 4) {
+                allInfos.take(2).joinToString(separator = ", ")
+            } else {
+                it.displayName.substringBefore(",")
+            }
 
             val locality = if (allInfos.size > 4) {
                 "${allInfos[2]}, ${allInfos[allInfos.size - 2]}, ${allInfos[allInfos.size - 1]}"
