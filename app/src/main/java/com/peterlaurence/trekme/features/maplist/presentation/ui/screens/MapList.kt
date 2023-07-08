@@ -25,13 +25,65 @@ import com.peterlaurence.trekme.features.common.presentation.ui.scrollbar.drawVe
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.maplist.presentation.model.MapItem
 import com.peterlaurence.trekme.features.maplist.presentation.ui.components.DownloadCard
-import com.peterlaurence.trekme.features.maplist.presentation.ui.components.GoToMapCreationScreen
+import com.peterlaurence.trekme.features.maplist.presentation.ui.components.WelcomeScreen
 import com.peterlaurence.trekme.features.maplist.presentation.ui.components.MapCard
 import com.peterlaurence.trekme.features.maplist.presentation.ui.components.PendingScreen
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapListState
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapListViewModel
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapSettingsViewModel
 import java.util.*
+
+@Composable
+fun MapListStateful(
+    mapListViewModel: MapListViewModel,
+    mapSettingsViewModel: MapSettingsViewModel,
+    onNavigateToMapCreate: () -> Unit,
+    onNavigateToMapSettings: () -> Unit,
+    onNavigateToMap: (UUID) -> Unit,
+    onNavigateToExcursionSearch: () -> Unit
+) {
+    val intents = object : MapListIntents {
+        override fun onMapClicked(mapId: UUID) {
+            onNavigateToMap(mapId)
+        }
+
+        override fun onMapFavorite(mapId: UUID) {
+            mapListViewModel.toggleFavorite(mapId)
+        }
+
+        override fun onMapSettings(mapId: UUID) {
+            mapListViewModel.onMapSettings(mapId)
+
+            onNavigateToMapSettings()
+        }
+
+        override fun onSetMapImage(mapId: UUID, uri: Uri) {
+            mapSettingsViewModel.setMapImage(mapId, uri)
+        }
+
+        override fun onMapDelete(mapId: UUID) {
+            mapListViewModel.deleteMap(mapId)
+        }
+
+        override fun navigateToMapCreate(showOnBoarding: Boolean) {
+            /* First, let the app globally know about the user choice */
+            mapListViewModel.onNavigateToMapCreate(showOnBoarding)
+
+            onNavigateToMapCreate()
+        }
+
+        override fun navigateToExcursionSearch() {
+            onNavigateToExcursionSearch()
+        }
+
+        override fun onCancelDownload() {
+            mapListViewModel.onCancelDownload()
+        }
+    }
+
+    val mapListState by mapListViewModel.mapListState.collectAsState()
+    MapListUi(mapListState, intents, onMainMenuClick = mapListViewModel::onMainMenuClick)
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,7 +131,10 @@ private fun MapListUi(state: MapListState, intents: MapListIntents, onMainMenuCl
                         }
                     }
                 } else {
-                    GoToMapCreationScreen(intents::navigateToMapCreate)
+                    WelcomeScreen(
+                        onGoToMapCreation = intents::navigateToMapCreate,
+                        onGoToExcursionSearch = intents::navigateToExcursionSearch
+                    )
                 }
             }
         }
@@ -92,55 +147,6 @@ private fun LazyItemScope.AnimatedMapCard(mapItem: MapItem, intents: MapListInte
     MapCard(Modifier.animateItemPlacement(), mapItem, intents)
 }
 
-@Composable
-fun MapListStateful(
-    mapListViewModel: MapListViewModel,
-    mapSettingsViewModel: MapSettingsViewModel,
-    onNavigateToMapCreate: () -> Unit,
-    onNavigateToMapSettings: () -> Unit,
-    onNavigateToMap: (UUID) -> Unit
-) {
-    val intents = object : MapListIntents {
-        override fun onMapClicked(mapId: UUID) {
-            onNavigateToMap(mapId)
-        }
-
-        override fun onMapFavorite(mapId: UUID) {
-            mapListViewModel.toggleFavorite(mapId)
-        }
-
-        override fun onMapSettings(mapId: UUID) {
-            mapListViewModel.onMapSettings(mapId)
-
-            onNavigateToMapSettings()
-        }
-
-        override fun onSetMapImage(mapId: UUID, uri: Uri) {
-            mapSettingsViewModel.setMapImage(mapId, uri)
-        }
-
-        override fun onMapDelete(mapId: UUID) {
-            mapListViewModel.deleteMap(mapId)
-        }
-
-        override fun navigateToMapCreate(showOnBoarding: Boolean) {
-            /* First, let the app globally know about the user choice */
-            mapListViewModel.onNavigateToMapCreate(showOnBoarding)
-
-            onNavigateToMapCreate()
-        }
-
-        override fun onCancelDownload() {
-            mapListViewModel.onCancelDownload()
-        }
-    }
-
-    val mapListState by mapListViewModel.mapListState.collectAsState()
-    TrekMeTheme {
-        MapListUi(mapListState, intents, onMainMenuClick = mapListViewModel::onMainMenuClick)
-    }
-}
-
 interface MapListIntents {
     fun onMapClicked(mapId: UUID)
     fun onMapFavorite(mapId: UUID)
@@ -148,6 +154,7 @@ interface MapListIntents {
     fun onSetMapImage(mapId: UUID, uri: Uri)
     fun onMapDelete(mapId: UUID)
     fun navigateToMapCreate(showOnBoarding: Boolean)
+    fun navigateToExcursionSearch()
     fun onCancelDownload()
 }
 
@@ -195,6 +202,9 @@ private fun MapListPreview() {
         }
 
         override fun navigateToMapCreate(showOnBoarding: Boolean) {
+        }
+
+        override fun navigateToExcursionSearch() {
         }
 
         override fun onCancelDownload() {

@@ -117,6 +117,7 @@
     <string name="create_first_map_question">Comment voulez-vous créer votre première carte ?</string>
     <string name="with_onboarding_btn">Avec tutoriel</string>
     <string name="without_onboarding_btn">Sans tutoriel</string>
+    <string name="welcome_excursion_search">Recherche d\'excursions</string>
     <string name="onboarding_center_on_pos">Centrez sur votre position avec ce boutton</string>
     <string name="onboarding_select_area">Sélectionnez la zone à télécharger</string>
     <string name="download_confirm">Téléchargement lancé. Voir le statut dans les notifications.</string>
@@ -445,6 +446,7 @@
     <string name="no_excursion_found">Il n\'y a pour l\'instant pas d\'excursions publiées à cet endroit.</string>
     <string name="no_excursion_recommendation">Vous pouvez faire une recherche à un autre endroit, ou bien créer une carte.</string>
     <string name="no_excursion_create_map">Créer une carte</string>
+    <string name="welcome_screen_or">OU</string>
     <string name="excursion_download_start">L\'excursion va être importée dans les cartes concernées.</string>
     <string name="excursion_download_error">Une erreur s\'est produite pendant le téléchargement.</string>
     <string name="excursion_search_error">Une erreur s\'est produite pendant la recherche.</string>

@@ -172,6 +172,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 AppEventBus.NavDestination.Shop -> showShopFragment()
                 AppEventBus.NavDestination.MapList -> showMapListFragment()
                 AppEventBus.NavDestination.MapCreation -> showMapCreateFragment()
+                AppEventBus.NavDestination.ExcursionSearch -> showExcursionSearchFragment()
             }
         }.collectWhileStartedIn(this)
 

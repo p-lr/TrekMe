@@ -708,14 +708,6 @@ private fun EscapeHatchScreen(
     }
 }
 
-@Preview(showBackground = true, heightDp = 300)
-@Composable
-fun EscapePreview() {
-    TrekMeTheme {
-        EscapeHatchScreen()
-    }
-}
-
 @Preview(showBackground = true)
 @Composable
 private fun ExcursionMapScreenPreview() {
@@ -755,6 +747,14 @@ private fun ExcursionMapScreenPreview() {
             bottomSheetDataState = bottomSheetData,
             snackbarHostState = snackbarHostState,
         )
+    }
+}
+
+@Preview(showBackground = true, heightDp = 550)
+@Composable
+fun EscapePreview() {
+    TrekMeTheme {
+        EscapeHatchScreen()
     }
 }
 

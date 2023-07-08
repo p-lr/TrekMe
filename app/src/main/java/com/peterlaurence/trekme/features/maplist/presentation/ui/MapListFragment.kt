@@ -12,10 +12,13 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.events.AppEventBus
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.maplist.presentation.ui.screens.MapListStateful
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapListViewModel
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapSettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 /**
  * Shows the list of maps.
@@ -24,6 +27,9 @@ import dagger.hilt.android.AndroidEntryPoint
 class MapListFragment : Fragment() {
     private val mapListViewModel: MapListViewModel by activityViewModels()
     private val mapSettingsViewModel: MapSettingsViewModel by viewModels()
+
+    @Inject
+    lateinit var appEventBus: AppEventBus
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,26 +46,31 @@ class MapListFragment : Fragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
             setContent {
-                MapListStateful(
-                    mapListViewModel,
-                    mapSettingsViewModel,
-                    onNavigateToMapCreate = {
-                        val navController = findNavController()
-                        navController.navigate(R.id.action_global_mapCreateGraph)
-                    },
-                    onNavigateToMapSettings = {
-                        val action =
-                            MapListFragmentDirections.actionMapListFragmentToMapSettingsGraph()
-                        findNavController().navigate(action)
-                    },
-                    onNavigateToMap = { mapId ->
-                        val navController = findNavController()
-                        if (navController.currentDestination?.id == R.id.mapListFragment) {
-                            mapListViewModel.setMap(mapId)
-                            navController.navigate(R.id.action_global_mapFragment)
+                TrekMeTheme {
+                    MapListStateful(
+                        mapListViewModel,
+                        mapSettingsViewModel,
+                        onNavigateToMapCreate = {
+                            val navController = findNavController()
+                            navController.navigate(R.id.action_global_mapCreateGraph)
+                        },
+                        onNavigateToMapSettings = {
+                            val action =
+                                MapListFragmentDirections.actionMapListFragmentToMapSettingsGraph()
+                            findNavController().navigate(action)
+                        },
+                        onNavigateToMap = { mapId ->
+                            val navController = findNavController()
+                            if (navController.currentDestination?.id == R.id.mapListFragment) {
+                                mapListViewModel.setMap(mapId)
+                                navController.navigate(R.id.action_global_mapFragment)
+                            }
+                        },
+                        onNavigateToExcursionSearch = {
+                            appEventBus.navigateTo(AppEventBus.NavDestination.ExcursionSearch)
                         }
-                    }
-                )
+                    )
+                }
             }
         }
     }

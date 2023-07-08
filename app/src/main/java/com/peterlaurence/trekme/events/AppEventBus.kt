@@ -76,6 +76,6 @@ class AppEventBus {
     fun navigateTo(dest: NavDestination) = _navigateToFlow.tryEmit(dest)
 
     enum class NavDestination {
-        Shop, MapList, MapCreation
+        Shop, MapList, MapCreation, ExcursionSearch
     }
 }
