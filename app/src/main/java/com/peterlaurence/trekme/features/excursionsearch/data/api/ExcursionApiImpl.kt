@@ -5,6 +5,7 @@ import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionSearchItem
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionType
 import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordParser
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
+import com.peterlaurence.trekme.core.settings.backendApiServer
 import com.peterlaurence.trekme.features.excursionsearch.domain.model.ExcursionApi
 import com.peterlaurence.trekme.util.performRequest
 import kotlinx.serialization.Serializable
@@ -22,7 +23,7 @@ class ExcursionApiImpl(
 ) : ExcursionApi {
     private val requestBuilder = Request.Builder()
     private val json = Json { isLenient = true; ignoreUnknownKeys = true }
-    private val baseUrl = "http://192.168.1.18:8080/excursion"
+    private val baseUrl = "$backendApiServer/excursion"
     private val mediaType = "application/json; charset=utf-8".toMediaType()
 
     override suspend fun search(

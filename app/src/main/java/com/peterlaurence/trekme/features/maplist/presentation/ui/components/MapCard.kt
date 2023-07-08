@@ -210,6 +210,9 @@ private fun MapCardPreview() {
         override fun navigateToMapCreate(showOnBoarding: Boolean) {
         }
 
+        override fun navigateToExcursionSearch() {
+        }
+
         override fun onCancelDownload() {
         }
     }
