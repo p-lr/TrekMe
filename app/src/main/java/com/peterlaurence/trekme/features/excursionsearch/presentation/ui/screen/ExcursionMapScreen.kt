@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.features.excursionsearch.presentation.ui.screen
 
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -470,7 +471,7 @@ private fun ExcursionMap(
                 modifier = Modifier
                     .padding(top = 16.dp)
                     .height(40.dp)
-                    .background(Color.White, RoundedCornerShape(50))
+                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(50))
                     .align(Alignment.TopCenter)
                     .padding(horizontal = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -708,6 +709,7 @@ private fun EscapeHatchScreen(
     }
 }
 
+@Preview(uiMode = UI_MODE_NIGHT_YES)
 @Preview(showBackground = true)
 @Composable
 private fun ExcursionMapScreenPreview() {

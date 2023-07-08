@@ -16,6 +16,7 @@ import androidx.compose.material.SwipeableState
 import androidx.compose.material.swipeable
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -132,7 +133,7 @@ fun CollapsibleBottomSheet(
                 Modifier
                     .height(this@BoxWithConstraints.maxHeight * expandedRatio)
                     .clip(BottomSheetDefaults.ExpandedShape)
-                    .background(Color.White)
+                    .background(MaterialTheme.colorScheme.surface)
             ) {
                 header()
                 LazyColumn(
