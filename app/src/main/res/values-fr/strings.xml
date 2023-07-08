@@ -443,6 +443,8 @@
     <string name="no_internet_excursions">Vous devez être connecté à internet pour chercher une excursion</string>
     <string name="provider_issue">Le fournisseur de carte a une panne temporaire</string>
     <string name="no_excursion_found">Il n\'y a pour l\'instant pas d\'excursions publiées à cet endroit.</string>
+    <string name="no_excursion_recommendation">Vous pouvez faire une recherche à un autre endroit, ou bien créer une carte.</string>
+    <string name="no_excursion_create_map">Créer une carte</string>
     <string name="excursion_download_start">L\'excursion va être importée dans les cartes concernées.</string>
     <string name="excursion_download_error">Une erreur s\'est produite pendant le téléchargement.</string>
     <string name="excursion_search_error">Une erreur s\'est produite pendant la recherche.</string>

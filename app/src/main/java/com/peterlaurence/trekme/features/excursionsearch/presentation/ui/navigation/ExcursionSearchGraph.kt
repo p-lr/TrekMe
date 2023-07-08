@@ -11,7 +11,8 @@ fun ExcursionSearchGraph(
     modifier: Modifier = Modifier,
     onMenuClick: () -> Unit,
     onGoToMapList: () -> Unit,
-    onGoToShop: () -> Unit
+    onGoToShop: () -> Unit,
+    onGoToMapCreation: () -> Unit = {}
 ) {
     val navController = rememberNavController()
     NavHost(
@@ -26,7 +27,8 @@ fun ExcursionSearchGraph(
         excursionMapDestination(
             navController,
             onGoToMapList = onGoToMapList,
-            onGoToShop = onGoToShop
+            onGoToShop = onGoToShop,
+            onGoToMapCreation = onGoToMapCreation
         )
     }
 }

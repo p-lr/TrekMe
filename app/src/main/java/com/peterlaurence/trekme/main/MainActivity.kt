@@ -171,6 +171,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             when(dest) {
                 AppEventBus.NavDestination.Shop -> showShopFragment()
                 AppEventBus.NavDestination.MapList -> showMapListFragment()
+                AppEventBus.NavDestination.MapCreation -> showMapCreateFragment()
             }
         }.collectWhileStartedIn(this)
 

@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.features.excursionsearch.presentation.ui.screen
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,8 +17,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.SwipeableState
 import androidx.compose.material.rememberSwipeableState
 import androidx.compose.material3.Button
@@ -105,7 +108,8 @@ fun ExcursionMapStateful(
     viewModel: ExcursionMapViewModel,
     onBack: () -> Unit,
     onGoToMapList: () -> Unit,
-    onGoToShop: () -> Unit
+    onGoToShop: () -> Unit,
+    onGoToMapCreation: () -> Unit
 ) {
     val uiState by viewModel.uiStateFlow.collectAsStateWithLifecycle()
     val mapSourceData by viewModel.mapSourceDataFlow.collectAsStateWithLifecycle()
@@ -220,7 +224,8 @@ fun ExcursionMapStateful(
             viewModel.onDownload(isDownloadOptionChecked)
         },
         onBack = onBack,
-        onLayerSelection = { isShowingLayerSelectionDialog = true }
+        onLayerSelection = { isShowingLayerSelectionDialog = true },
+        onGoToMapCreation = onGoToMapCreation
     )
 
     if (isShowingMapDownloadDialog) {
@@ -279,7 +284,8 @@ private fun ExcursionMapScreen(
     onToggleDownloadMapOption: () -> Unit = {},
     onDownload: () -> Unit = {},
     onBack: () -> Unit = {},
-    onLayerSelection: () -> Unit = {}
+    onLayerSelection: () -> Unit = {},
+    onGoToMapCreation: () -> Unit = {}
 ) {
     Scaffold(
         topBar = {
@@ -315,7 +321,7 @@ private fun ExcursionMapScreen(
             }
 
             Error.NO_EXCURSIONS -> {
-                ErrorScreen(message = stringResource(id = R.string.no_excursion_found))
+                EscapeHatchScreen(modifier, onGoToMapCreation)
             }
 
             AwaitingSearch -> {
@@ -666,6 +672,49 @@ private data class BottomSheetData(
     val elevationGraphPoints: List<ElevationGraphPoint>?,
     val isDownloadOptionChecked: Boolean
 )
+
+@Composable
+private fun EscapeHatchScreen(
+    modifier: Modifier = Modifier,
+    onGoToMapCreation: () -> Unit = {}
+) {
+    Column(
+        modifier
+            .fillMaxSize()
+            .padding(horizontal = 32.dp)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.desert),
+            contentDescription = null,
+            modifier = Modifier
+                .padding(48.dp)
+                .fillMaxWidth()
+        )
+        Text(
+            text = stringResource(id = R.string.no_excursion_found),
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(48.dp))
+        Text(text = stringResource(id = R.string.no_excursion_recommendation))
+        Button(
+            onClick = onGoToMapCreation,
+            modifier = Modifier.padding(top = 16.dp)
+        ) {
+            Text(text = stringResource(id = R.string.no_excursion_create_map))
+        }
+    }
+}
+
+@Preview(showBackground = true, heightDp = 300)
+@Composable
+fun EscapePreview() {
+    TrekMeTheme {
+        EscapeHatchScreen()
+    }
+}
 
 @Preview(showBackground = true)
 @Composable

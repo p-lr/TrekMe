@@ -42,6 +42,9 @@ class ExcursionSearchFragment : Fragment() {
                         },
                         onGoToShop = {
                             appEventBus.navigateTo(AppEventBus.NavDestination.Shop)
+                        },
+                        onGoToMapCreation = {
+                           appEventBus.navigateTo(AppEventBus.NavDestination.MapCreation)
                         }
                     )
                 }

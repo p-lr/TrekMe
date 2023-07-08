@@ -13,7 +13,8 @@ private const val excursionMapDestination = "excursion_map"
 fun NavGraphBuilder.excursionMapDestination(
     navController: NavController,
     onGoToMapList: () -> Unit,
-    onGoToShop: () -> Unit
+    onGoToShop: () -> Unit,
+    onGoToMapCreation: () -> Unit
 ) {
     composable(excursionMapDestination) {
         val startGraphEntry = remember(it) {
@@ -24,7 +25,8 @@ fun NavGraphBuilder.excursionMapDestination(
             viewModel,
             onBack = { navController.navigateUp() },
             onGoToMapList = onGoToMapList,
-            onGoToShop = onGoToShop
+            onGoToShop = onGoToShop,
+            onGoToMapCreation = onGoToMapCreation
         )
     }
 }
