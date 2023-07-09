@@ -118,7 +118,7 @@ fun ExcursionMapStateful(
     val swipeableState = rememberSwipeableState(initialValue = States.COLLAPSED)
     val geoRecordForSearchState by viewModel.geoRecordForSearchFlow.collectAsStateWithLifecycle()
     val hasContainingMap by viewModel.routeLayer.hasContainingMap.collectAsStateWithLifecycle()
-    var isDownloadOptionChecked by remember { mutableStateOf(!hasContainingMap) }
+    var isDownloadOptionChecked by remember(hasContainingMap) { mutableStateOf(!hasContainingMap) }
 
     val bottomSheetDataState by produceState<ResultL<BottomSheetData?>>(
         /* Do not use loading state at init as it triggers an indeterminate progress bar.
@@ -158,14 +158,12 @@ fun ExcursionMapStateful(
                 )
             }
 
-            ExcursionMapViewModel.Event.ExcursionDownloadStart -> {
-                if (!isDownloadOptionChecked) {
-                    snackbarHostState.showSnackbar(
-                        message = excursionDownloadStart,
-                        withDismissAction = true,
-                        duration = SnackbarDuration.Long
-                    )
-                }
+            ExcursionMapViewModel.Event.ExcursionOnlyDownloadStart -> {
+                snackbarHostState.showSnackbar(
+                    message = excursionDownloadStart,
+                    withDismissAction = true,
+                    duration = SnackbarDuration.Long
+                )
             }
 
             ExcursionMapViewModel.Event.ExcursionDownloadError -> {

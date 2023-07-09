@@ -242,7 +242,9 @@ class ExcursionMapViewModel @Inject constructor(
         val geoRecordForSearchItem =
             geoRecordForSearchFlow.firstOrNull()?.getOrNull() ?: return@launch
 
-        _events.send(Event.ExcursionDownloadStart)
+        if (!withMap) {
+            _events.send(Event.ExcursionOnlyDownloadStart)
+        }
 
         val result = excursionRepository.putExcursion(
             id = geoRecordForSearchItem.searchItem.id,
@@ -542,7 +544,7 @@ class ExcursionMapViewModel @Inject constructor(
     sealed interface Event {
         object OnMarkerClick : Event
         object NoInternet : Event
-        object ExcursionDownloadStart : Event
+        object ExcursionOnlyDownloadStart : Event
         object ExcursionDownloadError : Event
         object SearchError : Event
     }

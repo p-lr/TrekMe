@@ -93,6 +93,9 @@ class RouteLayer(
             }
         }
 
+        /**
+         * Any time a new excursion is loaded, there's a new [BoundingBoxData].
+         */
         scope.launch {
             boundingBoxData.collect { bb ->
                 if (bb != null) {
