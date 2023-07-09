@@ -21,6 +21,7 @@ import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToMercatorInter
 import com.peterlaurence.trekme.core.map.domain.models.DownloadMapRequest
 import com.peterlaurence.trekme.core.map.domain.models.TileResult
 import com.peterlaurence.trekme.core.map.domain.models.TileStream
+import com.peterlaurence.trekme.core.map.domain.models.intersects
 import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamProviderDao
 import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamReporter
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnClassic
@@ -36,6 +37,7 @@ import com.peterlaurence.trekme.core.wmts.domain.model.WorldStreetMap
 import com.peterlaurence.trekme.core.wmts.domain.model.mapSize
 import com.peterlaurence.trekme.core.wmts.domain.tools.getMapSpec
 import com.peterlaurence.trekme.core.wmts.domain.tools.getNumberOfTiles
+import com.peterlaurence.trekme.features.common.domain.interactors.MapExcursionInteractor
 import com.peterlaurence.trekme.features.common.domain.util.toMapComposeTileStreamProvider
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.Config
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.ScaleLimitsConfig
@@ -104,7 +106,8 @@ class ExcursionMapViewModel @Inject constructor(
     pendingSearchRepository: PendingSearchRepository,
     private val geoRecordForSearchItemRepository: GeoRecordForSearchItemRepository,
     private val wgs84ToMercatorInteractor: Wgs84ToMercatorInteractor,
-    getMapInteractor: GetMapInteractor,
+    private val getMapInteractor: GetMapInteractor,
+    private val mapExcursionInteractor: MapExcursionInteractor,
     private val excursionRepository: ExcursionRepository,
     private val downloadRepository: DownloadRepository,
     extendedOfferStateOwner: ExtendedOfferStateOwner,
@@ -263,7 +266,16 @@ class ExcursionMapViewModel @Inject constructor(
                 )
             }
         } else {
-            // TODO: import in all maps which intersects
+            /* Import the excursion in all maps which intersect the corresponding bounding-box */
+            getMapInteractor.getMapList().forEach { map ->
+                launch {
+                    val excursion = excursionRepository.getExcursion(geoRecordForSearchItem.searchItem.id)
+                    val bb = routeLayer.getBoundingBox()
+                    if (bb != null && map.intersects(bb) && excursion != null) {
+                        mapExcursionInteractor.createExcursionRef(map, excursion)
+                    }
+                }
+            }
         }
 
         when (result) {

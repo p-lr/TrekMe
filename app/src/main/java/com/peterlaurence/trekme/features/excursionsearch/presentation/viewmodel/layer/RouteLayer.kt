@@ -105,6 +105,10 @@ class RouteLayer(
         }
     }
 
+    fun getBoundingBox(): BoundingBox? {
+        return boundingBoxData.value?.denormalized
+    }
+
     /**
      * If the user has a map which contains the bounding box of the selected excursion, then
      * by default we de-select the option to download the corresponding map (since upon excursion
