@@ -57,7 +57,7 @@ android {
 
 dependencies {
     def lifecycle_version = '2.5.1'
-    def coroutines_version = '1.7.0'
+    def coroutines_version = '1.7.2'
 
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 //    implementation project(":mapcompose-local")  // for dev purposes
@@ -69,14 +69,14 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1"
     implementation "androidx.lifecycle:lifecycle-runtime-compose:2.6.1"
-    implementation 'androidx.fragment:fragment-ktx:1.5.7'
+    implementation 'androidx.fragment:fragment-ktx:1.6.0'
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
     implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
     implementation "androidx.navigation:navigation-dynamic-features-fragment:$nav_version"
     implementation "androidx.navigation:navigation-compose:$nav_version"
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.datastore:datastore-preferences:1.0.0'
-    implementation 'androidx.activity:activity-compose:1.7.1'
+    implementation 'androidx.activity:activity-compose:1.7.2'
 
     // Compose // see https://developer.android.com/jetpack/compose/setup#bom-version-mapping
     implementation platform('androidx.compose:compose-bom:2023.05.01')
@@ -97,7 +97,7 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.7'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
-    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1'
     implementation "com.squareup.okhttp3:okhttp:4.9.1"
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.9.1'
     implementation "com.google.dagger:hilt-android:$hilt_version"

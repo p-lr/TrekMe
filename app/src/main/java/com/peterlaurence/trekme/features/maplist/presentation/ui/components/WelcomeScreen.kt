@@ -59,6 +59,10 @@ internal fun WelcomeScreen(
                 Text(stringResource(id = R.string.without_onboarding_btn).uppercase())
             }
 
+            // TODO: once excursion search is ready for downloading maps of any size, allow
+            // first-time users to begin with an excursion search
+            return@Column
+
             Box(
                 Modifier.padding(vertical = 32.dp)
             ) {
