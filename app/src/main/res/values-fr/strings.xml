@@ -416,8 +416,8 @@
     <string name="excursions">Excursions</string>
     <string name="use_my_location">Autour de moi</string>
     <string name="excursion_feature_banner">Cette fonctionnalité est toute nouvelle.
-        La base de donnée des randonnées va se compléter progressivement.
-        Bientôt, vous pourrez publier vos propes randonnées !</string>
+        La base de donnée des excursions sera complétée progressivement.
+    </string>
     <string name="excursion_search_button">Rechercher</string>
     <string name="excursion_title">Activités</string>
     <string name="excursion_all">Toutes</string>

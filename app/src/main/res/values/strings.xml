@@ -392,8 +392,9 @@
     <string name="excursion_search_placeholder">Search</string>
     <string name="excursions">Excursions</string>
     <string name="use_my_location">Around me</string>
-    <string name="excursion_feature_banner">This feature is brand new, and the hike database will complete over time.
-        Soon, you\'ll be able to publish your own hikes!</string>
+    <string name="excursion_feature_banner">This feature is brand new, and is still being actively worked on.
+        The excursion database will complete over time.
+    </string>
     <string name="excursion_search_button">Search</string>
     <string name="activity_label">Activity</string>
     <string name="excursion_title">Activities</string>
