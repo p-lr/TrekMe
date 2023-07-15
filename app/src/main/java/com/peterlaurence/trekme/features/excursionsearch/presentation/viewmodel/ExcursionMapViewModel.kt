@@ -10,8 +10,6 @@ import com.peterlaurence.trekme.core.billing.domain.model.ExtendedOfferStateOwne
 import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionSearchItem
 import com.peterlaurence.trekme.core.excursion.domain.repository.ExcursionRepository
-import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
-import com.peterlaurence.trekme.core.georecord.domain.model.getBoundingBox
 import com.peterlaurence.trekme.core.geotools.distanceApprox
 import com.peterlaurence.trekme.core.location.domain.model.LatLon
 import com.peterlaurence.trekme.core.location.domain.model.Location
@@ -296,27 +294,6 @@ class ExcursionMapViewModel @Inject constructor(
             geoRecord = geoRecordForSearchItem.geoRecord
         )
 
-        /* Now that excursion is downloaded, start map download */
-        if (withMap) {
-            launch {
-                scheduleDownload(
-                    geoRecord = geoRecordForSearchItem.geoRecord,
-                    excursionId = geoRecordForSearchItem.searchItem.id
-                )
-            }
-        } else {
-            /* Import the excursion in all maps which intersect the corresponding bounding-box */
-            getMapInteractor.getMapList().forEach { map ->
-                launch {
-                    val excursion = excursionRepository.getExcursion(geoRecordForSearchItem.searchItem.id)
-                    val bb = routeLayer.getBoundingBox()
-                    if (bb != null && map.intersects(bb) && excursion != null) {
-                        mapExcursionInteractor.createExcursionRef(map, excursion)
-                    }
-                }
-            }
-        }
-
         when (result) {
             ExcursionRepository.PutExcursionResult.Ok,
             ExcursionRepository.PutExcursionResult.AlreadyExists,
@@ -327,12 +304,27 @@ class ExcursionMapViewModel @Inject constructor(
                 _events.send(Event.ExcursionDownloadError)
             }
         }
+
+        /* Now that excursion is downloaded, start map download */
+        val bb = routeLayer.getBoundingBox() ?: return@launch
+        if (withMap) {
+            launch {
+                scheduleDownload(bb, excursionId = geoRecordForSearchItem.searchItem.id)
+            }
+        } else {
+            /* Import the excursion in all maps which intersect the corresponding bounding-box */
+            getMapInteractor.getMapList().forEach { map ->
+                launch {
+                    val excursion = excursionRepository.getExcursion(geoRecordForSearchItem.searchItem.id)
+                    if (map.intersects(bb) && excursion != null) {
+                        mapExcursionInteractor.createExcursionRef(map, excursion)
+                    }
+                }
+            }
+        }
     }
 
-    private suspend fun scheduleDownload(geoRecord: GeoRecord, excursionId: String) {
-        val bb = withContext(Dispatchers.Default) {
-            geoRecord.getBoundingBox()
-        } ?: return
+    private suspend fun scheduleDownload(bb: BoundingBox, excursionId: String) {
         val (p1, p2) = getPoints(bb) ?: return
 
         val wmtsConfig = getWmtsConfig(mapSourceDataFlow.value)
