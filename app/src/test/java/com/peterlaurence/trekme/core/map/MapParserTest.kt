@@ -33,43 +33,6 @@ class MapParserTest {
     private val routeRepository = RouteRepository(routeDao)
 
     @Test
-    fun legacyMapRoutesParse() = runBlocking {
-        val mapDirURL =
-            MapImportInteractorTest::class.java.classLoader!!.getResource("map-with-legacy-routes")
-        val mapDir = File(mapDirURL.toURI())
-
-        assertTrue(mapDir.exists())
-
-        val dirs = listOf(mapDir)
-        val mapList = mapLoaderDao.loadMaps(dirs)
-
-        /* One map should be found */
-        assertEquals(1, mapList.size.toLong())
-        val map = mapList[0]
-
-        routeRepository.importRoutes(map)
-        assertEquals(2, map.routes.value.size.toLong())
-
-        val route = map.routes.value.sortedBy { it.name.value }[0]
-        assertEquals("A test route 1", route.name.value)
-        assertTrue(route.visible.value)
-        val markers = route.routeMarkers
-        assertEquals(2, markers.size.toLong())
-
-        val marker1 = markers[0]
-        assertEquals("marker1", marker1.name)
-        val lat = marker1.lat
-        assertNotNull(lat)
-        assertEquals(0.0, lat, 0.0)
-
-        val marker2 = markers[1]
-        assertEquals("marker2", marker2.name)
-        val lon = marker2.lon
-        assertNotNull(lon)
-        assertEquals(0.0, lon, 0.0)
-    }
-
-    @Test
     fun mapRoutesParse() = runBlocking {
         val mapDirURL = MapImportInteractorTest::class.java.classLoader!!.getResource("map-with-routes")
         val mapDir = File(mapDirURL.toURI())

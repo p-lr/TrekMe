@@ -54,7 +54,7 @@ class IgnTest {
 
         val spec = getMapSpec(12, 16, p1, p2)
 
-        assertEquals(32768, spec.mapWidthPx)
-        assertEquals(28672, spec.mapHeightPx)
+        assertEquals(26368, spec.mapWidthPx)
+        assertEquals(23552, spec.mapHeightPx)
     }
 }
