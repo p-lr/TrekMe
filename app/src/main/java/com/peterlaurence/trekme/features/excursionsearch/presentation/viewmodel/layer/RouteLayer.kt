@@ -9,19 +9,17 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.location.domain.model.LatLon
-import com.peterlaurence.trekme.core.map.domain.interactors.GetMapInteractor
 import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToMercatorInteractor
 import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
 import com.peterlaurence.trekme.core.map.domain.models.Marker
-import com.peterlaurence.trekme.core.map.domain.models.contains
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.component.Cursor
+import com.peterlaurence.trekme.util.map
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
@@ -44,10 +42,9 @@ class RouteLayer(
     private val geoRecordFlow: Flow<GeoRecord>,
     private val mapStateFlow: Flow<MapState>,
     private val wgs84ToMercatorInteractor: Wgs84ToMercatorInteractor,
-    private val getMapInteractor: GetMapInteractor
 ) {
     private val boundingBoxData: MutableStateFlow<BoundingBoxData?> = MutableStateFlow(null)
-    val hasContainingMap: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val boundingBoxFlow: StateFlow<BoundingBox?> = boundingBoxData.map { it?.denormalized }
 
     private val cursorChannel = Channel<CursorData>(Channel.CONFLATED)
     private val cursorMarkerId = "cursor"
@@ -57,8 +54,8 @@ class RouteLayer(
     init {
         scope.launch {
             mapStateFlow.collectLatest { mapState ->
-                boundingBoxData.value = null
                 geoRecordFlow.collectLatest { geoRecord ->
+                    boundingBoxData.value = null
                     setGeoRecord(geoRecord, mapState)
                 }
             }
@@ -92,46 +89,10 @@ class RouteLayer(
                 }
             }
         }
-
-        /**
-         * Any time a new excursion is loaded, there's a new [BoundingBoxData].
-         */
-        scope.launch {
-            boundingBoxData.collect { bb ->
-                if (bb != null) {
-                    hasContainingMap.value = hasContainingMap(bb.denormalized)
-                }
-            }
-        }
     }
 
     fun getBoundingBox(): BoundingBox? {
         return boundingBoxData.value?.denormalized
-    }
-
-    /**
-     * If the user has a map which contains the bounding box of the selected excursion, then
-     * by default we de-select the option to download the corresponding map (since upon excursion
-     * download, we import it into all maps which can display the excursion).
-     */
-    private suspend fun hasContainingMap(boundingBox: BoundingBox): Boolean {
-        var hasMapContainingBoundingBox = false
-
-        coroutineScope {
-            launch {
-                val scope = this
-                getMapInteractor.getMapList().map { map ->
-                    launch {
-                        if (map.contains(boundingBox)) {
-                            hasMapContainingBoundingBox = true
-                            scope.cancel()
-                        }
-                    }
-                }
-            }
-        }
-
-        return hasMapContainingBoundingBox
     }
 
     fun centerOnGeoRecord(mapState: MapState, geoRecordId: UUID) = scope.launch {

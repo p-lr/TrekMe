@@ -18,9 +18,11 @@ import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.core.map.domain.interactors.GetMapInteractor
 import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToMercatorInteractor
+import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
 import com.peterlaurence.trekme.core.map.domain.models.DownloadMapRequest
 import com.peterlaurence.trekme.core.map.domain.models.TileResult
 import com.peterlaurence.trekme.core.map.domain.models.TileStream
+import com.peterlaurence.trekme.core.map.domain.models.contains
 import com.peterlaurence.trekme.core.map.domain.models.intersects
 import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamProviderDao
 import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamReporter
@@ -31,6 +33,7 @@ import com.peterlaurence.trekme.core.wmts.domain.model.MapSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.OrdnanceSurveyData
 import com.peterlaurence.trekme.core.wmts.domain.model.OsmSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.Outdoors
+import com.peterlaurence.trekme.core.wmts.domain.model.Point
 import com.peterlaurence.trekme.core.wmts.domain.model.SwissTopoData
 import com.peterlaurence.trekme.core.wmts.domain.model.UsgsData
 import com.peterlaurence.trekme.core.wmts.domain.model.WorldStreetMap
@@ -63,6 +66,7 @@ import com.peterlaurence.trekme.util.onLoading
 import com.peterlaurence.trekme.util.onSuccess
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -81,7 +85,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import ovh.plrapps.mapcompose.api.BoundingBox
+import ovh.plrapps.mapcompose.api.BoundingBox as NormalizedBoundingBox
 import ovh.plrapps.mapcompose.api.addLayer
 import ovh.plrapps.mapcompose.api.addMarker
 import ovh.plrapps.mapcompose.api.centroidX
@@ -127,12 +131,14 @@ class ExcursionMapViewModel @Inject constructor(
 
     val geoRecordForSearchFlow =
         geoRecordForSearchItemRepository.getGeoRecordForSearchFlow().stateIn(
-            viewModelScope, started = SharingStarted.Eagerly, initialValue = ResultL.loading()
+            viewModelScope, started = SharingStarted.Eagerly, initialValue = ResultL.success(null)
         )
 
     val extendedOfferFlow = extendedOfferStateOwner.purchaseFlow.map {
         it == PurchaseState.PURCHASED
     }
+
+    val mapDownloadStateFlow = MutableStateFlow<MapDownloadState>(Loading)
 
     private val _events = Channel<Event>(1)
     val event = _events.receiveAsFlow()
@@ -155,8 +161,11 @@ class ExcursionMapViewModel @Inject constructor(
         geoRecordFlow = geoRecordForSearchFlow.mapNotNull { it.getOrNull()?.geoRecord },
         mapStateFlow = mapStateFlow,
         wgs84ToMercatorInteractor = wgs84ToMercatorInteractor,
-        getMapInteractor = getMapInteractor
     )
+
+    private val minLevel = 12
+    private val maxLevel = 16
+    private val tileNumberLimit = 5900  // approx. 100 Mo
 
     init {
         viewModelScope.launch {
@@ -195,6 +204,36 @@ class ExcursionMapViewModel @Inject constructor(
                         }
                         setSearchPending(false)
                     }
+                }
+            }
+        }
+
+        /**
+         * Any time a new excursion is loaded, there's a new [BoundingBox].
+         */
+        viewModelScope.launch {
+            routeLayer.boundingBoxFlow.collect { bb ->
+                mapDownloadStateFlow.value = if (bb != null) {
+                    val mapSourceData = mapSourceDataFlow.value
+
+                    /* We'll require account creation for Osm map download */
+                    if (mapSourceData is OsmSourceData) {
+                        DownloadNotAllowed(reason = DownloadNotAllowedReason.Restricted)
+                    } else {
+                        getPoints(bb)?.let { (p1, p2) ->
+                            val tileCount = getNumberOfTiles(minLevel, maxLevel, p1, p2)
+                            if (tileCount > tileNumberLimit) {
+                                DownloadNotAllowed(reason = DownloadNotAllowedReason.TooBigMap)
+                            } else {
+                                MapDownloadData(
+                                    hasContainingMap = hasContainingMap(bb),
+                                    tileCount = tileCount
+                                )
+                            }
+                        } ?: Loading
+                    }
+                } else {
+                    Loading
                 }
             }
         }
@@ -291,40 +330,43 @@ class ExcursionMapViewModel @Inject constructor(
     }
 
     private suspend fun scheduleDownload(geoRecord: GeoRecord, excursionId: String) {
-        val request: DownloadMapRequest = withContext(Dispatchers.Default) {
-            val bb = geoRecord.getBoundingBox() ?: return@withContext null
-            val topLeft = LatLon(bb.maxLat, bb.minLon)
-            val bottomRight = LatLon(bb.minLat, bb.maxLon)
-            val p1 = wgs84ToMercatorInteractor.getProjected(topLeft.lat, topLeft.lon)
-                ?: return@withContext null
-            val p2 = wgs84ToMercatorInteractor.getProjected(bottomRight.lat, bottomRight.lon)
-                ?: return@withContext null
-
-            val minLevel = 12
-            val maxLevel = 16
-            val wmtsConfig = getWmtsConfig(mapSourceDataFlow.value)
-            val mapSpec = getMapSpec(minLevel, maxLevel, p1, p2, tileSize = wmtsConfig.tileSize)
-            val tileCount = getNumberOfTiles(minLevel, maxLevel, p1, p2)
-            val mapSourceData = mapSourceDataFlow.value
-
-            val tileStreamProvider = getTileStreamProviderDao.newTileStreamProvider(
-                mapSourceData
-            ).getOrNull() ?: return@withContext null
-
-            DownloadMapRequest(
-                mapSourceData,
-                mapSpec,
-                tileCount,
-                tileStreamProvider,
-                excursionIds = setOf(excursionId)
-            )
+        val bb = withContext(Dispatchers.Default) {
+            geoRecord.getBoundingBox()
         } ?: return
+        val (p1, p2) = getPoints(bb) ?: return
+
+        val wmtsConfig = getWmtsConfig(mapSourceDataFlow.value)
+        val mapSpec = getMapSpec(minLevel, maxLevel, p1, p2, tileSize = wmtsConfig.tileSize)
+        val tileCount = getNumberOfTiles(minLevel, maxLevel, p1, p2)
+        val mapSourceData = mapSourceDataFlow.value
+
+        val tileStreamProvider = getTileStreamProviderDao.newTileStreamProvider(
+            mapSourceData
+        ).getOrNull() ?: return
+
+        val request = DownloadMapRequest(
+            mapSourceData,
+            mapSpec,
+            tileCount,
+            tileStreamProvider,
+            excursionIds = setOf(excursionId)
+        )
 
         withContext(Dispatchers.Main) {
             downloadRepository.postDownloadMapRequest(request)
             val intent = Intent(app, DownloadService::class.java)
             app.startService(intent)
         }
+    }
+
+    private suspend fun getPoints(bb: BoundingBox): Pair<Point, Point>? = withContext(Dispatchers.Default) {
+        val topLeft = LatLon(bb.maxLat, bb.minLon)
+        val bottomRight = LatLon(bb.minLat, bb.maxLon)
+        val p1 = wgs84ToMercatorInteractor.getProjected(topLeft.lat, topLeft.lon)
+            ?: return@withContext null
+        val p2 = wgs84ToMercatorInteractor.getProjected(bottomRight.lat, bottomRight.lon)
+            ?: return@withContext null
+        Pair(p1, p2)
     }
 
     /**
@@ -435,14 +477,14 @@ class ExcursionMapViewModel @Inject constructor(
         }
     }
 
-    private suspend fun MapState.scrollToBoundingBox(bb: BoundingBox) {
+    private suspend fun MapState.scrollToBoundingBox(bb: NormalizedBoundingBox) {
         scrollTo(bb, padding = Offset(0.2f, 0.2f))
     }
 
     private suspend fun computeBoundingBox(
         excursionSearchItems: List<ExcursionSearchItem>,
         location: LatLon
-    ): BoundingBox? {
+    ): NormalizedBoundingBox? {
         val itemsWithDistance = withContext(Dispatchers.Default) {
             excursionSearchItems.map {
                 Pair(it, distanceApprox(it.startLat, it.startLon, location.lat, location.lon))
@@ -481,7 +523,7 @@ class ExcursionMapViewModel @Inject constructor(
         val maxY: Double? = normalized.maxOfOrNull { it.y }
 
         return if (minX != null && maxX != null && minY != null && maxY != null) {
-            BoundingBox(minX, minY, maxX, maxY)
+            NormalizedBoundingBox(minX, minY, maxX, maxY)
         } else null
     }
 
@@ -551,6 +593,31 @@ class ExcursionMapViewModel @Inject constructor(
         }
     }
 
+    /**
+     * If the user has a map which contains the bounding box of the selected excursion, then
+     * by default we de-select the option to download the corresponding map (since upon excursion
+     * download, we import it into all maps which can display the excursion).
+     */
+    private suspend fun hasContainingMap(boundingBox: BoundingBox): Boolean {
+        var hasMapContainingBoundingBox = false
+
+        coroutineScope {
+            launch {
+                val scope = this
+                getMapInteractor.getMapList().map { map ->
+                    launch {
+                        if (map.contains(boundingBox)) {
+                            hasMapContainingBoundingBox = true
+                            scope.cancel()
+                        }
+                    }
+                }
+            }
+        }
+
+        return hasMapContainingBoundingBox
+    }
+
     private data class WmtsConfig(val tileSize: Int, val mapSize: Int)
 
     sealed interface Event {
@@ -566,7 +633,7 @@ private const val positionMarkerId = "position"
 
 private sealed interface InitScaleAndScrollConfig
 data class ScaleAndScrollConfig(val scale: Float, val scroll: NormalizedPos): InitScaleAndScrollConfig
-data class BoundingBoxConfig(val bb: BoundingBox): InitScaleAndScrollConfig
+data class BoundingBoxConfig(val bb: NormalizedBoundingBox): InitScaleAndScrollConfig
 object InitConfigError : InitScaleAndScrollConfig
 
 sealed interface UiState
@@ -575,4 +642,13 @@ object LoadingLayer : UiState
 data class MapReady(val mapState: MapState, val isSearchPending: Boolean) : UiState
 enum class Error : UiState {
     PROVIDER_OUTAGE, NO_EXCURSIONS
+}
+
+sealed interface MapDownloadState
+object Loading : MapDownloadState
+data class DownloadNotAllowed(val reason: DownloadNotAllowedReason) : MapDownloadState
+data class MapDownloadData(val hasContainingMap: Boolean, val tileCount: Long) : MapDownloadState
+
+enum class DownloadNotAllowedReason {
+    Restricted, TooBigMap
 }

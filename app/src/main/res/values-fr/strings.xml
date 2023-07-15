@@ -437,7 +437,10 @@
     <string name="vertical_descent_stat">Dénivelé négatif</string>
     <string name="distance_cursor">distance :</string>
     <string name="elevation_cursor">altitude :</string>
-    <string name="download_map_option">Télécharger la carte pour cette excursion</string>
+    <string name="download_map_option">Télécharger la carte pour cette excursion (~%1$s Mo)</string>
+    <string name="restricted_download">Le téléchargement de carte sera prochainement disponible pour cette couche.</string>
+    <string name="area_too_big">Cette excursion couvre une vaste zone.</string>
+    <string name="unexpected_error">Une erreur</string>
     <string name="awaiting_location">En attente d\'une position GPS</string>
     <string name="loading_layer">Chargement de la couche</string>
     <string name="awaiting_excursion_search">En attente de la recherche</string>

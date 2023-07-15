@@ -51,6 +51,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -73,6 +74,7 @@ import com.peterlaurence.trekme.core.wmts.domain.model.OpenTopoMap
 import com.peterlaurence.trekme.core.wmts.domain.model.OrdnanceSurveyData
 import com.peterlaurence.trekme.core.wmts.domain.model.OsmSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.SwissTopoData
+import com.peterlaurence.trekme.core.wmts.domain.model.TILE_SIZE_IN_MO
 import com.peterlaurence.trekme.core.wmts.domain.model.UsgsData
 import com.peterlaurence.trekme.core.wmts.domain.model.WorldStreetMap
 import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.CollapsibleBottomSheet
@@ -85,9 +87,14 @@ import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.compone
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.component.ElevationGraphPoint
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.dialog.MapSourceDataSelect
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.AwaitingSearch
+import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.DownloadNotAllowed
+import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.DownloadNotAllowedReason
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.Error
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.ExcursionMapViewModel
+import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.Loading
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.LoadingLayer
+import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.MapDownloadData
+import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.MapDownloadState
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.MapReady
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.UiState
 import com.peterlaurence.trekme.util.ResultL
@@ -102,6 +109,7 @@ import ovh.plrapps.mapcompose.api.setVisibleAreaPadding
 import ovh.plrapps.mapcompose.ui.MapUI
 import ovh.plrapps.mapcompose.ui.state.MapState
 import java.util.UUID
+import kotlin.math.roundToInt
 
 
 @Composable
@@ -117,23 +125,27 @@ fun ExcursionMapStateful(
     val hasExtendedOffer by viewModel.extendedOfferFlow.collectAsState(initial = false)
     val swipeableState = rememberSwipeableState(initialValue = States.COLLAPSED)
     val geoRecordForSearchState by viewModel.geoRecordForSearchFlow.collectAsStateWithLifecycle()
-    val hasContainingMap by viewModel.routeLayer.hasContainingMap.collectAsStateWithLifecycle()
-    var isDownloadOptionChecked by remember(hasContainingMap) { mutableStateOf(!hasContainingMap) }
+    val mapDownloadState by viewModel.mapDownloadStateFlow.collectAsStateWithLifecycle()
+    var isDownloadOptionChecked by remember(mapDownloadState) { 
+        mutableStateOf(!((mapDownloadState as? MapDownloadData)?.hasContainingMap ?: true))
+    }
 
     val bottomSheetDataState by produceState<ResultL<BottomSheetData?>>(
         /* Do not use loading state at init as it triggers an indeterminate progress bar.
          * In this context, null expresses an uninitialized state */
         initialValue = ResultL.success(null),
         key1 = geoRecordForSearchState,
-        key2 = isDownloadOptionChecked
+        key2 = mapDownloadState,
+        key3 = isDownloadOptionChecked
     ) {
-        geoRecordForSearchState.map { geoRecordForSearchItem ->
-            value = ResultL.success(
+        value = geoRecordForSearchState.map { geoRecordForSearchItem ->
+            if (geoRecordForSearchItem != null) {
                 makeBottomSheetData(
                     geoRecordForSearchItem.geoRecord,
+                    mapDownloadState,
                     isDownloadOptionChecked
                 )
-            )
+            } else null
         }
     }
 
@@ -293,7 +305,12 @@ private fun ExcursionMapScreen(
             )
         },
         bottomBar = {
-            if (swipeableState.currentValue != States.COLLAPSED) {
+            val bottomSheetDataSuccess = bottomSheetDataState.getOrNull()
+            if (
+                swipeableState.currentValue != States.COLLAPSED
+                && bottomSheetDataSuccess != null
+                && bottomSheetDataSuccess.mapDownloadState != Loading
+            ) {
                 Row(
                     modifier = Modifier
                         .height(58.dp)
@@ -366,7 +383,11 @@ private fun BottomSheet(
                 onLoading = {
                     item {
                         Box(Modifier.fillMaxWidth()) {
-                            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .padding(vertical = 32.dp)
+                                    .align(Alignment.Center)
+                            )
                         }
                     }
                 },
@@ -374,7 +395,7 @@ private fun BottomSheet(
                     if (data != null) {
                         statisticsSection(data)
                         elevationGraphSection(data, onCursorMove)
-                        downloadSection(data.isDownloadOptionChecked, onToggleDownloadMapOption)
+                        downloadSection(data.mapDownloadState, data.isDownloadOptionChecked, onToggleDownloadMapOption)
                     }
                 },
                 onFailure = {
@@ -419,20 +440,50 @@ private fun LazyListScope.elevationGraphSection(
 }
 
 private fun LazyListScope.downloadSection(
+    mapDownloadState: MapDownloadState,
     isChecked: Boolean,
     onToggleDownloadMapOption: () -> Unit
 ) {
     item {
         Row(
-            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable(onClick = onToggleDownloadMapOption)
         ) {
-            Checkbox(
-                checked = isChecked,
-                onCheckedChange = { onToggleDownloadMapOption() })
-            Text(text = stringResource(id = R.string.download_map_option))
+            when (mapDownloadState) {
+                is DownloadNotAllowed -> {
+                    Image(
+                        painterResource(id = R.drawable.information),
+                        modifier = Modifier.padding(start = 16.dp, end = 8.dp),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.tertiary),
+                        contentDescription = null,
+                    )
+                    Text(
+                        text = when (mapDownloadState.reason) {
+                            DownloadNotAllowedReason.Restricted -> stringResource(id = R.string.restricted_download)
+                            DownloadNotAllowedReason.TooBigMap -> stringResource(id = R.string.area_too_big)
+                        },
+                        modifier = Modifier.padding(end = 16.dp),
+                    )
+                }
+                is MapDownloadData -> {
+                    Checkbox(
+                        checked = isChecked,
+                        onCheckedChange = { onToggleDownloadMapOption() }
+                    )
+                    Text(
+                        text = stringResource(
+                            id = R.string.download_map_option,
+                            (mapDownloadState.tileCount * TILE_SIZE_IN_MO).roundToInt()
+                        ),
+                        modifier = Modifier.padding(end = 16.dp, top = 12.dp)
+                    )
+                }
+                Loading -> CircularProgressIndicator(
+                    Modifier.padding(start = 16.dp, bottom = 16.dp).size(18.dp),
+                    strokeWidth = 2.dp
+                )
+            }
         }
     }
 }
@@ -650,6 +701,7 @@ private fun TrackStats(geoStatistics: GeoStatistics) {
 
 private suspend fun makeBottomSheetData(
     geoRecord: GeoRecord,
+    mapDownloadState: MapDownloadState,
     isDownloadOptionChecked: Boolean
 ): BottomSheetData {
     val points = mutableListOf<ElevationGraphPoint>()
@@ -662,13 +714,14 @@ private suspend fun makeBottomSheetData(
     }
     val elevationGraphPoints = points.ifEmpty { null }
 
-    return BottomSheetData(geoRecord.id, stats, elevationGraphPoints, isDownloadOptionChecked)
+    return BottomSheetData(geoRecord.id, stats, elevationGraphPoints, mapDownloadState, isDownloadOptionChecked)
 }
 
 private data class BottomSheetData(
     val id: UUID,
     val geoStatistics: GeoStatistics,
     val elevationGraphPoints: List<ElevationGraphPoint>?,
+    val mapDownloadState: MapDownloadState,
     val isDownloadOptionChecked: Boolean
 )
 
@@ -719,6 +772,8 @@ private fun ExcursionMapScreenPreview() {
         }
     }
 
+    val mapDownloadState = MapDownloadData(hasContainingMap = true, tileCount = 1500L)
+
     val geoStats = remember {
         GeoStatistics(
             distance = 1527.0,
@@ -733,7 +788,7 @@ private fun ExcursionMapScreenPreview() {
     val bottomSheetData by remember {
         mutableStateOf(
             ResultL.success(
-                BottomSheetData(UUID.randomUUID(), geoStats, null, true)
+                BottomSheetData(UUID.randomUUID(), geoStats, null, mapDownloadState, true)
             )
         )
     }

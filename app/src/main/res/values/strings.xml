@@ -413,7 +413,10 @@
     <string name="vertical_descent_stat">Vertical descent</string>
     <string name="distance_cursor">distance:</string>
     <string name="elevation_cursor">elevation:</string>
-    <string name="download_map_option">Download the map for this excursion</string>
+    <string name="download_map_option">Download the map for this excursion (~%1$s Mb)</string>
+    <string name="restricted_download">Map download isn\'t available for this layer yet.</string>
+    <string name="area_too_big">This excursion covers a wide area</string>
+    <string name="unexpected_error">An unexpected error occurred</string>
     <string name="awaiting_location">Awaiting for GPS location</string>
     <string name="loading_layer">Loading layer</string>
     <string name="awaiting_excursion_search">Awaiting search result</string>

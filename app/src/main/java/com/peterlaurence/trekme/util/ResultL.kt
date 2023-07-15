@@ -1,5 +1,5 @@
 @file:Suppress("UNCHECKED_CAST", "RedundantVisibilityModifier", "NOTHING_TO_INLINE", "unused")
-@file:OptIn(ExperimentalContracts::class)
+@file:OptIn(ExperimentalContracts::class, ExperimentalContracts::class)
 
 package com.peterlaurence.trekme.util
 
