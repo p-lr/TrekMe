@@ -63,7 +63,7 @@ fun MapStateful(
     val locationFlow = viewModel.locationFlow
     val elevationFix by viewModel.elevationFixFlow.collectAsState()
 
-    val location: Location? by locationFlow.collectAsStateWithLifecycle(initialValue = null, minActiveState = Lifecycle.State.RESUMED)
+    val locationState: State<Location?> = locationFlow.collectAsStateWithLifecycle(initialValue = null, minActiveState = Lifecycle.State.RESUMED)
 
     LaunchedEffect(lifecycleOwner) {
         launch {
@@ -125,7 +125,7 @@ fun MapStateful(
                         isShowingScaleIndicator,
                         rotationMode,
                         snackBarEvents,
-                        location,
+                        locationState,
                         elevationFix,
                         hasElevationFix = purchaseState == PurchaseState.PURCHASED,
                         hasBeacons = purchaseState == PurchaseState.PURCHASED,
@@ -160,7 +160,6 @@ fun MapStateful(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MapScaffold(
     modifier: Modifier = Modifier,
@@ -174,7 +173,7 @@ private fun MapScaffold(
     isShowingScaleIndicator: Boolean,
     rotationMode: RotationMode,
     snackBarEvents: List<SnackBarEvent>,
-    location: Location?,
+    locationState: State<Location?>,
     elevationFix: Int,
     hasElevationFix: Boolean,
     hasBeacons: Boolean,
@@ -271,7 +270,7 @@ private fun MapScaffold(
             isShowingSpeed,
             isShowingGpsData,
             isShowingScaleIndicator,
-            location,
+            locationState,
             elevationFix,
             hasElevationFix,
             onElevationFixUpdate

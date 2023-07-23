@@ -25,7 +25,7 @@ fun ScaleIndicator(
     widthPx: Int,
     widthRatio: Float,
     scaleText: String,
-    color: Color = MaterialTheme.colorScheme.tertiaryContainer
+    color: Color
 ) {
     Box(
         Modifier.height(25.dp),
