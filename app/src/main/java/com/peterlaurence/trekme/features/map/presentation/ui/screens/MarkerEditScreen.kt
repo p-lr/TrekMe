@@ -52,7 +52,7 @@ fun MarkerEditStateful(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {},
+                title = { Text(stringResource(id = R.string.marker_edit_screen_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBackAction) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "")

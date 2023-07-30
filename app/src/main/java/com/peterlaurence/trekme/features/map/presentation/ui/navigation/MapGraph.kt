@@ -9,7 +9,6 @@ import androidx.navigation.compose.rememberNavController
 @Composable
 fun MapGraph(
     modifier: Modifier = Modifier,
-    onMenuClick: () -> Unit
 ) {
     val navController = rememberNavController()
     NavHost(
@@ -28,12 +27,12 @@ fun MapGraph(
         )
 
         tracksManageScreen(
-            onNavigateToMap = { navController.navigateUp() },
-            onMenuClick = onMenuClick
+            onNavigateToMap = navController::navigateUp,
+            onBackClick = navController::navigateUp
         )
 
-        markerEditScreen(onBack = { navController.navigateUp() })
+        markerEditScreen(onBack = navController::navigateUp)
 
-        beaconEditScreen(onBack = { navController.navigateUp() })
+        beaconEditScreen(onBack = navController::navigateUp)
     }
 }

@@ -252,7 +252,8 @@ class MapViewModel @Inject constructor(
             mapState,
             landmarkLinesState,
             distanceLineState,
-            scaleIndicatorLayer.state
+            scaleIndicatorLayer.state,
+            map.name
         )
         _uiState.value = mapUiState
     }
@@ -275,7 +276,8 @@ data class MapUiState(
     val mapState: MapState,
     val landmarkLinesState: LandmarkLinesState,
     val distanceLineState: DistanceLineState,
-    val scaleIndicatorState: ScaleIndicatorState
+    val scaleIndicatorState: ScaleIndicatorState,
+    val mapName: String
 ) : UiState
 
 object Loading : UiState

@@ -38,6 +38,8 @@
     <string name="mapview_add_marker">Marqueur</string>
     <string name="mapview_add_beacon">Balise</string>
     <string name="move_marker">Déplacer</string>
+    <string name="marker_edit_screen_title">Modification du marqueur</string>
+    <string name="beacon_edit_screen_title">Modification de la balise</string>
     <string name="marker_name_label">Nom</string>
     <string name="beacon_setting_title">Taille balise</string>
     <string name="beacon_radius_label">Rayon</string>

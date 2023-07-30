@@ -14,8 +14,8 @@ import androidx.compose.material.DismissDirection.EndToStart
 import androidx.compose.material.DismissDirection.StartToEnd
 import androidx.compose.material.DismissValue.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.rememberDismissState
 import androidx.compose.material3.*
@@ -49,7 +49,7 @@ import kotlinx.coroutines.flow.update
 fun TracksManageStateful(
     viewModel: TracksManageViewModel = hiltViewModel(),
     onNavigateToMap: () -> Unit,
-    onMenuClick: () -> Unit
+    onBackClick: () -> Unit
 ) {
     val routes by viewModel.getRouteFlow().collectAsState()
     val excursionRefs by viewModel.getExcursionRefsFlow().collectAsState()
@@ -111,7 +111,7 @@ fun TracksManageStateful(
         topAppBarState = topAppBarState,
         snackbarHostState = snackbarHostState,
         selectables = selectables,
-        onMenuClick = onMenuClick,
+        onBackClick = onBackClick,
         onRename = { newName ->
             val selectable = selectables.firstOrNull { it.isSelected }
             if (selectable != null) {
@@ -193,13 +193,12 @@ fun TracksManageStateful(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TracksManageScreen(
     topAppBarState: TopAppBarState,
     snackbarHostState: SnackbarHostState,
     selectables: List<Selectable>,
-    onMenuClick: () -> Unit,
+    onBackClick: () -> Unit,
     onRename: (String) -> Unit,
     onGoToRoute: () -> Unit,
     onRouteClick: (Selectable) -> Unit,
@@ -213,7 +212,7 @@ private fun TracksManageScreen(
         topBar = {
             TrackTopAppbar(
                 state = topAppBarState,
-                onMenuClick = onMenuClick,
+                onBackClick = onBackClick,
                 onRouteRename = onRename,
                 onGoToRoute = onGoToRoute
             )
@@ -257,7 +256,7 @@ private fun TracksManageScreen(
 @Composable
 private fun TrackTopAppbar(
     state: TopAppBarState,
-    onMenuClick: () -> Unit,
+    onBackClick: () -> Unit,
     onRouteRename: (String) -> Unit,
     onGoToRoute: () -> Unit
 ) {
@@ -267,8 +266,8 @@ private fun TrackTopAppbar(
     TopAppBar(
         title = { Text(text = stringResource(id = R.string.tracks_manage_frgmt_title)) },
         navigationIcon = {
-            IconButton(onClick = onMenuClick) {
-                Icon(Icons.Filled.Menu, contentDescription = "")
+            IconButton(onClick = onBackClick) {
+                Icon(Icons.Filled.ArrowBack, contentDescription = "")
             }
         },
         actions = {
