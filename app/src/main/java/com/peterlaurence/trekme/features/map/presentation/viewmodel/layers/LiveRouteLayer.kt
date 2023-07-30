@@ -50,7 +50,7 @@ class LiveRouteLayer(
                     val pathData = pathBuilder.build()
                     if (pathData != null) {
                         if (mapState.hasPath(route.id)) {
-                            mapState.updatePath(route.id, pathData = pathData)
+                            mapState.updatePath(route.id, pathData = pathData, count = pathData.size)
                         } else {
                             addPath(mapState, route, pathData)
                         }
