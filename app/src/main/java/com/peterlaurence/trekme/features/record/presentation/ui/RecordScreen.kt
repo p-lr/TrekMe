@@ -10,11 +10,8 @@ import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.features.record.domain.model.RecordingData
-import com.peterlaurence.trekme.features.record.presentation.ui.components.ActionsStateful
 import com.peterlaurence.trekme.features.record.presentation.ui.components.GpxRecordListStateful
 import com.peterlaurence.trekme.features.record.presentation.ui.components.RecordTopAppbar
-import com.peterlaurence.trekme.features.record.presentation.ui.components.StatusStateful
-import com.peterlaurence.trekme.features.record.presentation.viewmodel.GpxRecordServiceViewModel
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordViewModel
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordingStatisticsViewModel
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
@@ -22,7 +19,6 @@ import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 
 @Composable
 fun RecordScreen(
-    gpxRecordServiceViewModel: GpxRecordServiceViewModel,
     statViewModel: RecordingStatisticsViewModel,
     recordViewModel: RecordViewModel,
     onElevationGraphClick: (RecordingData) -> Unit,
@@ -68,27 +64,8 @@ fun RecordScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .height(145.dp)
-            ) {
-                ActionsStateful(
-                    Modifier
-                        .weight(1f)
-                        .padding(top = 8.dp, start = 8.dp, end = 4.dp, bottom = 4.dp),
-                    viewModel = gpxRecordServiceViewModel
-                )
-                StatusStateful(
-                    Modifier
-                        .weight(1f)
-                        .padding(top = 8.dp, start = 4.dp, end = 8.dp, bottom = 4.dp),
-                    viewModel = gpxRecordServiceViewModel
-                )
-            }
-
             GpxRecordListStateful(
-                modifier = Modifier.padding(top = 4.dp, start = 8.dp, end = 8.dp, bottom = 8.dp),
+                modifier = Modifier.padding(8.dp),
                 statViewModel = statViewModel,
                 recordViewModel = recordViewModel,
                 onElevationGraphClick = onElevationGraphClick

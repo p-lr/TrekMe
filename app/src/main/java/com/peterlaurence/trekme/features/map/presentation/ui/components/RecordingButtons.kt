@@ -1,10 +1,16 @@
 package com.peterlaurence.trekme.features.map.presentation.ui.components
 
 import android.view.animation.OvershootInterpolator
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Transition
 import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -20,19 +26,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.Path
+import androidx.compose.ui.graphics.vector.PathNode
 import androidx.compose.ui.graphics.vector.addPathNodes
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.record.domain.model.GpxRecordState
-import com.peterlaurence.trekme.features.record.presentation.ui.components.widgets.MorphingShape
-import com.peterlaurence.trekme.features.record.presentation.ui.components.widgets.PathData
-
+import com.peterlaurence.trekme.util.lerp
 
 
 @Composable
@@ -190,6 +200,41 @@ private fun opaqueEquivalent(alpha: Float, color: Float): Float {
     return 1f - alpha * (1f - color)
 }
 
+/**
+ * Path morphs between two paths, and simultaneously rotates between 0° and 90°.
+ */
+@Composable
+private fun MorphingShape(
+    modifier: Modifier = Modifier,
+    size: Dp = 48.dp,
+    startPath: List<PathNode>,
+    destPath: List<PathNode>,
+    color: Color,
+    t: Float
+) {
+    val pathNodes = lerp(startPath, destPath, t)
+    val degree = t * 90
+
+    Image(
+        painter = rememberVectorPainter(
+            defaultWidth = size,
+            defaultHeight = size,
+            viewportWidth = 48f,
+            viewportHeight = 48f,
+            autoMirror = false
+        ) { _, _ ->
+            Path(
+                pathData = pathNodes,
+                fill = SolidColor(color)
+            )
+        },
+        modifier = modifier.rotate(degree),
+        contentDescription = null
+    )
+}
+
+private data class PathData(val path: List<PathNode>, val color: Color)
+
 /* Doesn't seem to work in preview mode, but works when deployed on device. */
 @Preview(showBackground = true)
 @Composable
@@ -214,5 +259,53 @@ private fun RecordingButtonsPreview() {
                 }
             }
         )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+@ExperimentalAnimationApi
+fun Preview0() {
+    val transition: Transition<Boolean> = updateTransition(targetState = false, label = "")
+    val t: Float by transition.animateFloat(
+        transitionSpec = { spring(stiffness = 50f) }, label = ""
+    ) { state ->
+        if (state) 0f else 1f
+    }
+    TrekMeTheme {
+        MorphingShape(Modifier, 48.dp, pausePath, playPathDest, Color.Blue, t)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun Preview1() {
+    TrekMeTheme {
+        MorphingShape(Modifier, 48.dp, pausePath, playPathDest, Color.Blue, 0.25f)
+    }
+}
+
+
+@Preview(showBackground = true)
+@Composable
+fun Preview2() {
+    TrekMeTheme {
+        MorphingShape(Modifier, 48.dp, pausePath, playPathDest, Color.Blue, 0.5f)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun Preview3() {
+    TrekMeTheme {
+        MorphingShape(Modifier, 48.dp, pausePath, playPathDest, Color.Blue, 0.75f)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun Preview4() {
+    TrekMeTheme {
+        MorphingShape(Modifier, 48.dp, pausePath, playPathDest, Color.Blue, 1f)
     }
 }

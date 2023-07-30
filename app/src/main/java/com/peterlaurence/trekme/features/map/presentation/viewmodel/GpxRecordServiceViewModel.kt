@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.features.record.presentation.viewmodel
+package com.peterlaurence.trekme.features.map.presentation.viewmodel
 
 import android.Manifest
 import android.app.Application

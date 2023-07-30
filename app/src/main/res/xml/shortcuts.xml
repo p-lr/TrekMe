@@ -5,7 +5,7 @@
         android:enabled="true"
         android:icon="@drawable/record_circle"
         android:shortcutShortLabel="@string/record_shortcut"
-        android:shortcutLongLabel="@string/record_menu_title">
+        android:shortcutLongLabel="@string/excursion_menu_title">
         <intent
             android:action="android.intent.action.VIEW"
             android:targetPackage="com.peterlaurence.trekme"

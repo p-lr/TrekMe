@@ -80,7 +80,7 @@
     <string name="confirm_import">Vous pouvez maintenant importer la carte</string>
     <string name="service_gpx_record_name">Service d\'enregistrement Gpx</string>
     <string name="service_gpx_record_action">Enregistrement GPX</string>
-    <string name="record_menu_title">Enregistrement GPX</string>
+    <string name="excursion_menu_title">Mes excursions</string>
     <string name="record_shortcut">Enr. GPX</string>
     <string name="control_card_title">Commandes</string>
     <string name="control_card_subtitle">Démarrer · arrêter · pauser</string>
@@ -314,7 +314,7 @@
     <string name="previously_connected_bt_devices">APPAREILS CONNECTÉS PRÉCÉDEMMENT</string>
     <string name="wifip2p_title">Partage de carte</string>
     <string name="mapcreate_title">Création de carte</string>
-    <string name="recording_frgmt_title">Enregistrement GPX</string>
+    <string name="my_excursions_frgmt_title">Mes excursions</string>
     <string name="select_bt_devices_title">Sélection du GPS actif</string>
     <string name="internal_gps">GPS interne</string>
     <string name="connection_bt_lost_msg">Connection au GPS Bluetooth perdue, tentative de re-connection…</string>

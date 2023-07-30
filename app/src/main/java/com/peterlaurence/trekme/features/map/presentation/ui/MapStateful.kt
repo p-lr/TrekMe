@@ -35,7 +35,7 @@ import com.peterlaurence.trekme.features.map.presentation.viewmodel.*
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimSolutionDialog
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimWarningDialog
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.LocationRationale
-import com.peterlaurence.trekme.features.record.presentation.viewmodel.GpxRecordServiceViewModel
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.GpxRecordServiceViewModel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.rotation
