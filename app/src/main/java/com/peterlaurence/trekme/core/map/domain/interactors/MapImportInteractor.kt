@@ -33,7 +33,7 @@ class MapImportInteractor @Inject constructor(
     private suspend fun parseMap(
         mapSeekerDao: MapSeekerDao, mDir: File,
     ): MapImportResult = withContext(Dispatchers.IO) {
-        val map = mapSeekerDao.seek(mDir)
+        val map = mapSeekerDao.seek(mDir).getOrNull()
         if (map != null) {
             mapRepository.addMaps(listOf(map))
         }

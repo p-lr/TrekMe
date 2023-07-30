@@ -85,7 +85,7 @@ class UnarchiveDaoImpl(
     }
 
     private suspend fun importMapFromFolder(folder: File) = withContext(ioDispatcher) {
-        val map = mapSeekerDao.seek(folder)
+        val map = mapSeekerDao.seek(folder).getOrNull()
         if (map != null) {
             mapRepository.addMaps(listOf(map))
         }

@@ -63,8 +63,7 @@ class MapSeekerDaoImpl(
         options.inJustDecodeBounds = true
     }
 
-    @Throws(FileBasedMapParseException::class, SecurityException::class)
-    override suspend fun seek(file: File): Map {
+    override suspend fun seek(file: File): Result<Map> = runCatching {
         if (!file.isDirectory) {
             throw FileBasedMapParseException(Issue.NOT_A_DIRECTORY)
         }
@@ -86,7 +85,7 @@ class MapSeekerDaoImpl(
             if (map != null) {
                 /* The nomedia file might already exist, but we do it just in case */
                 createNomediaFile(parentFolder)
-                return map
+                return@runCatching map
             }
         }
 
@@ -142,7 +141,7 @@ class MapSeekerDaoImpl(
         createNomediaFile(parentFolder)
 
         mapSaver.save(map)
-        return map
+        map
     }
 
     /**

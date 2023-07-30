@@ -11,8 +11,7 @@ interface MapSeekerDao {
     /**
      * Produces a [Map] from a given [File].
      */
-    @Throws(MapParseException::class)
-    suspend fun seek(file: File): Map?
+    suspend fun seek(file: File): Result<Map>
 
     open class MapParseException(message: String) : Exception(message)
 }
