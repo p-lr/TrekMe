@@ -231,7 +231,7 @@ fun Preview0() {
         if (state) 0f else 1f
     }
     TrekMeTheme {
-        MorphingShape(Modifier, pausePath, playPathDest, Color.Blue, t)
+        MorphingShape(Modifier, 48.dp, pausePath, playPathDest, Color.Blue, t)
     }
 }
 
@@ -239,7 +239,7 @@ fun Preview0() {
 @Composable
 fun Preview1() {
     TrekMeTheme {
-        MorphingShape(Modifier, pausePath, playPathDest, Color.Blue, 0.25f)
+        MorphingShape(Modifier, 48.dp, pausePath, playPathDest, Color.Blue, 0.25f)
     }
 }
 
@@ -248,7 +248,7 @@ fun Preview1() {
 @Composable
 fun Preview2() {
     TrekMeTheme {
-        MorphingShape(Modifier, pausePath, playPathDest, Color.Blue, 0.5f)
+        MorphingShape(Modifier, 48.dp, pausePath, playPathDest, Color.Blue, 0.5f)
     }
 }
 
@@ -256,7 +256,7 @@ fun Preview2() {
 @Composable
 fun Preview3() {
     TrekMeTheme {
-        MorphingShape(Modifier, pausePath, playPathDest, Color.Blue, 0.75f)
+        MorphingShape(Modifier, 48.dp, pausePath, playPathDest, Color.Blue, 0.75f)
     }
 }
 
@@ -264,6 +264,6 @@ fun Preview3() {
 @Composable
 fun Preview4() {
     TrekMeTheme {
-        MorphingShape(Modifier, pausePath, playPathDest, Color.Blue, 1f)
+        MorphingShape(Modifier, 48.dp, pausePath, playPathDest, Color.Blue, 1f)
     }
 }

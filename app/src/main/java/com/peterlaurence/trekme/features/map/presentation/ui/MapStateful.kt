@@ -9,6 +9,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
@@ -31,6 +32,11 @@ import com.peterlaurence.trekme.features.map.presentation.ui.components.*
 import com.peterlaurence.trekme.features.map.presentation.ui.screens.ErrorScaffold
 import com.peterlaurence.trekme.features.map.presentation.ui.screens.MapScreen
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.*
+import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimSolutionDialog
+import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimWarningDialog
+import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.LocationRationale
+import com.peterlaurence.trekme.features.record.presentation.viewmodel.GpxRecordServiceViewModel
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.rotation
 import java.util.*
@@ -39,6 +45,7 @@ import java.util.*
 fun MapStateful(
     viewModel: MapViewModel = viewModel(),
     statisticsViewModel: StatisticsViewModel = viewModel(),
+    gpxRecordServiceViewModel: GpxRecordServiceViewModel = viewModel(),
     onNavigateToTracksManage: () -> Unit,
     onNavigateToMarkerEdit: (markerId: String, mapId: UUID) -> Unit,
     onNavigateToBeaconEdit: (beaconId: String, mapId: UUID) -> Unit
@@ -143,7 +150,10 @@ fun MapStateful(
                         onToggleShowGpsData = viewModel::toggleShowGpsData,
                         onPositionFabClick = viewModel.locationOrientationLayer::centerOnPosition,
                         onCompassClick = viewModel::alignToNorth,
-                        onElevationFixUpdate = viewModel::onElevationFixUpdate
+                        onElevationFixUpdate = viewModel::onElevationFixUpdate,
+                        recordingButtons = {
+                            RecordingFabStateful(gpxRecordServiceViewModel)
+                        }
                     )
 
                     stats?.also {
@@ -191,7 +201,8 @@ private fun MapScaffold(
     onToggleShowGpsData: () -> Unit,
     onPositionFabClick: () -> Unit,
     onCompassClick: () -> Unit,
-    onElevationFixUpdate: (Int) -> Unit
+    onElevationFixUpdate: (Int) -> Unit,
+    recordingButtons: @Composable () -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -273,9 +284,67 @@ private fun MapScaffold(
             locationState,
             elevationFix,
             hasElevationFix,
-            onElevationFixUpdate
+            onElevationFixUpdate,
+            recordingButtons = recordingButtons
         )
     }
+}
+
+@Composable
+private fun RecordingFabStateful(viewModel: GpxRecordServiceViewModel) {
+    val gpxRecordState by viewModel.status.collectAsState()
+    val disableBatterySignal = remember { viewModel.disableBatteryOptSignal.receiveAsFlow() }
+    val showLocalisationRationale = remember { viewModel.showLocalisationRationale.receiveAsFlow() }
+    var isShowingBatteryWarning by rememberSaveable { mutableStateOf(false) }
+    var isShowingBatterySolution by rememberSaveable { mutableStateOf(false) }
+    var isShowingLocationRationale by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(LocalLifecycleOwner.current) {
+        launch {
+            disableBatterySignal.collect {
+                isShowingBatteryWarning = true
+            }
+        }
+
+        launch {
+            showLocalisationRationale.collect {
+                isShowingLocationRationale = true
+            }
+        }
+    }
+
+    if (isShowingBatteryWarning) {
+        BatteryOptimWarningDialog(
+            onShowSolution = {
+                isShowingBatterySolution = true
+                isShowingBatteryWarning = false
+            },
+            onDismissRequest = { isShowingBatteryWarning = false },
+        )
+    }
+
+    if (isShowingBatterySolution) {
+        BatteryOptimSolutionDialog(onDismissRequest = { isShowingBatterySolution = false })
+    }
+
+    if (isShowingLocationRationale) {
+        LocationRationale(
+            onConfirm = {
+                viewModel.requestBackgroundLocationPerm()
+                isShowingLocationRationale = false
+            },
+            onIgnore = {
+                viewModel.onIgnoreLocationRationale()
+                isShowingLocationRationale = false
+            },
+        )
+    }
+
+    RecordingButtons(
+        gpxRecordState,
+        onStartStopClick = viewModel::onStartStopClicked,
+        onPauseResumeClick = viewModel::onPauseResumeClicked
+    )
 }
 
 

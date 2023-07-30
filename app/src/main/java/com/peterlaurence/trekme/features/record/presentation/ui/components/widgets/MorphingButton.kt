@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.Path
 import androidx.compose.ui.graphics.vector.PathNode
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.util.lerp
 import kotlinx.coroutines.launch
@@ -112,6 +113,7 @@ fun MorphingButton(
         }
         MorphingShape(
             modifier = modifier,
+            size = 48.dp,
             startPathData.path,
             destPathData.path,
             color,
@@ -152,6 +154,7 @@ private fun TimeoutShape(
 @Composable
 fun MorphingShape(
     modifier: Modifier = Modifier,
+    size: Dp = 48.dp,
     startPath: List<PathNode>,
     destPath: List<PathNode>,
     color: Color,
@@ -162,8 +165,8 @@ fun MorphingShape(
 
     Image(
         painter = rememberVectorPainter(
-            defaultWidth = 48.dp,
-            defaultHeight = 48.dp,
+            defaultWidth = size,
+            defaultHeight = size,
             viewportWidth = 48f,
             viewportHeight = 48f,
             autoMirror = false

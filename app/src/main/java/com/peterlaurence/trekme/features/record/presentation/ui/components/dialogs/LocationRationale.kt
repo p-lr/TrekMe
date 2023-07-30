@@ -5,7 +5,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 
 /**
  * This rationale explains why we ask for background location permission when the user starts a GPX
@@ -22,14 +24,23 @@ fun LocationRationale(
         text = { Text(stringResource(id = R.string.background_location_disclaimer)) },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text(text = stringResource(id = R.string.close_dialog))
+                Text(text = stringResource(id = R.string.ok_dialog))
             }
         },
         dismissButton = {
             TextButton(onClick = onIgnore) {
-                Text(text = stringResource(id = R.string.understood_dialog))
+                Text(text = stringResource(id = R.string.no_authorize_dialog))
             }
         },
         onDismissRequest = {}  // on purpose
     )
+}
+
+@Preview(locale="en")
+@Preview(locale="fr")
+@Composable
+private fun LocationRationalePreview() {
+    TrekMeTheme {
+        LocationRationale({}, {})
+    }
 }

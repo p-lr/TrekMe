@@ -78,8 +78,9 @@
     <string name="with_onboarding_btn">With onboarding</string>
     <string name="without_onboarding_btn">Without onboarding</string>
     <string name="welcome_excursion_search">Search for excursions</string>
-    <string name="ok_dialog">OK</string>
+    <string name="ok_dialog">Ok</string>
     <string name="no_dialog">No</string>
+    <string name="no_authorize_dialog">Don\'t authorize</string>
     <string name="delete_dialog">Delete</string>
     <string name="map_manage_btn_string">Edit</string>
     <string name="download_map_dialog_title">Map download</string>
@@ -275,7 +276,7 @@
     <string name="automatic_import_feedback">Track imported in %1$d maps</string>
     <string name="location_info_title">Information</string>
     <string name="background_location_disclaimer">TrekMe collects location data during the GPX recording,
-        even when the app is closed or not in use.\n\nThis location data <b>isn\'t shared with anyone</b>,
+        even when the app is closed or not in use. In order to do that, TrekMe needs access to the location all the time.\n\nThis location data <b>isn\'t shared with anyone</b>,
         and gpx files are stored locally on your device.</string>
     <string name="recording_imported_success">Successfully imported in %1$d files</string>
     <string name="recording_imported_failure">Couldn\'t import %1$s</string>

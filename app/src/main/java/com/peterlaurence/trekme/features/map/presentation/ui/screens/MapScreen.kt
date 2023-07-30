@@ -36,7 +36,8 @@ fun MapScreen(
     locationState: State<Location?>,
     elevationFix: Int,
     hasElevationFix: Boolean,
-    onElevationFixUpdate: (Int) -> Unit
+    onElevationFixUpdate: (Int) -> Unit,
+    recordingButtons: @Composable () -> Unit
 ) {
     var isShowingElevationFixDialog by remember { mutableStateOf(false) }
 
@@ -76,7 +77,7 @@ fun MapScreen(
                 )
             }
 
-            // TODO: add recording buttons here
+            recordingButtons()
         }
 
         if (isShowingGpsData) {

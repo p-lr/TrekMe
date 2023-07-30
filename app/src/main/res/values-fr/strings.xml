@@ -21,8 +21,9 @@
     <string name="projected_y_short">N</string>
     <string name="projection_none">Aucune</string>
     <string name="calibration_projection_saved_ok">Projection changée</string>
-    <string name="ok_dialog">OK</string>
+    <string name="ok_dialog">Ok</string>
     <string name="no_dialog">Non</string>
+    <string name="no_authorize_dialog">Ne pas autoriser</string>
     <string name="import_menu_title">Importer une carte</string>
     <string name="import_folder_select_btn">Sélection du dossier d\'archives</string>
     <string name="extraction_lbl">Extraction</string>
@@ -236,8 +237,9 @@
     <string name="imported_new_map">Une nouvelle carte a été créée</string>
     <string name="location_info_title">Information</string>
     <string name="background_location_disclaimer">TrekMe collecte les données de localisation pendant un enregistrement GPX,
-        même lorsque l\'application est fermée ou inutilisée.\n\nCes informations de localisation sont stockées localement sur votre
-        appareil et ne sont <b>en aucun cas communiquées à des tiers</b>.</string>
+        même lorsque l\'application est fermée ou inutilisée. Pour cela, TrekMe doit avoir le niveau d\'accès à «toujours autoriser».\n\nCes informations de localisation sont stockées localement sur votre
+        appareil et ne sont <b>en aucun cas communiquées à des tiers</b>.
+    </string>
     <string name="close_dialog">Fermer</string>
     <string name="understood_dialog">J\'ai compris</string>
     <string name="privacy_policy_title">Politique de confidentialité</string>
