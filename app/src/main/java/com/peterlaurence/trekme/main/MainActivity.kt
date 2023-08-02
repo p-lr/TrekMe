@@ -24,6 +24,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.BuildConfig
 import com.peterlaurence.trekme.NavGraphDirections
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.map.domain.interactors.SetMapInteractor
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
 import com.peterlaurence.trekme.databinding.ActivityMainBinding
@@ -41,6 +42,7 @@ import com.peterlaurence.trekme.util.collectWhileStarted
 import com.peterlaurence.trekme.util.collectWhileStartedIn
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 
@@ -54,6 +56,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     @Inject
     lateinit var mapRepository: MapRepository
+
+    @Inject
+    lateinit var setMapInteractor: SetMapInteractor
 
     @Inject
     lateinit var mapArchiveEvents: MapArchiveEvents
@@ -94,6 +99,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 /* Only if the user is still on the WmtsFragment, navigate to the map list */
                 if (getString(R.string.map_wmts_label) == navController.currentDestination?.label) {
                     showMapListFragment(uuid)
+                }
+                val snackbar = showSnackbar(
+                    getString(R.string.service_download_finished),
+                    isLong = true
+                ) ?: return@MapDownloadEventHandler
+                snackbar.setAction(getString(R.string.show_map_action)) {
+                    lifecycleScope.launch {
+                        setMapInteractor.setMap(uuid)
+                        showMapFragment()
+                    }
                 }
             }
         )
@@ -365,11 +380,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    fun showSnackbar(message: String, isLong: Boolean = true) {
-        val drawer = findViewById<DrawerLayout>(R.id.drawer_layout) ?: return
-        Snackbar.make(
+    fun showSnackbar(message: String, isLong: Boolean = true): Snackbar? {
+        val drawer = findViewById<DrawerLayout>(R.id.drawer_layout) ?: return null
+        return Snackbar.make(
             drawer, message, if (isLong) Snackbar.LENGTH_LONG else Snackbar.LENGTH_SHORT
-        ).show()
+        ).also {
+            it.show()
+        }
     }
 
     fun showWarningDialog(

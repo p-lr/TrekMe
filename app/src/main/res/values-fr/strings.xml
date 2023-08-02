@@ -49,7 +49,6 @@
     <string name="wgs84_label">Coordonnées WGS84</string>
     <string name="projection_label">Coordonnées de projection</string>
     <string name="marker_changes_saved">Changements sauvegardés</string>
-    <string name="show_map_action">Voir carte</string>
     <string name="beacon_help">Une balise sert à vous alerter quand vous rentrez dans la zone de proximité (indiquée en
         pointillés).
         Le rayon d\'une balise est de 100m par défaut, mais il peut être modifié.
@@ -346,6 +345,7 @@
     <string name="loading_maps">Chargement des cartes…</string>
     <string name="download_pending_item">Téléchargement en cours</string>
     <string name="choose_map_thumbnail">Vous pouvez choisir une image pour illustrer votre carte.\nContinuer ?</string>
+    <string name="show_map_action">Ouvrir</string>
     <string name="validate_area">Valider</string>
     <string name="search_hint">Recherche…</string>
     <string name="mapcreate_out_of_bounds">Vous êtes hors des limites supportées pour cette carte</string>

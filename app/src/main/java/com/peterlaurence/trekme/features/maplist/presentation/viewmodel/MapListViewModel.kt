@@ -5,6 +5,7 @@ import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.domain.interactors.DeleteMapInteractor
+import com.peterlaurence.trekme.core.map.domain.interactors.SetMapInteractor
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.MapDownloadPending
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
@@ -31,6 +32,7 @@ import javax.inject.Inject
 class MapListViewModel @Inject constructor(
     private val settings: Settings,
     private val mapRepository: MapRepository,
+    private val setMapInteractor: SetMapInteractor,
     private val downloadRepository: DownloadRepository,
     private val onBoardingRepository: OnBoardingRepository,
     private val deleteMapInteractor: DeleteMapInteractor,
@@ -81,16 +83,8 @@ class MapListViewModel @Inject constructor(
         }
     }
 
-    fun setMap(mapId: UUID) {
-        val map = mapRepository.getMap(mapId) ?: return
-
-        // 1- Sets the map to the main entity responsible for this
-        mapRepository.setCurrentMap(map)
-
-        // 2- Remember this map in the case use wants to open TrekMe directly on this map
-        viewModelScope.launch {
-            settings.setLastMapId(mapId)
-        }
+    fun setMap(mapId: UUID) = viewModelScope.launch {
+        setMapInteractor.setMap(mapId)
     }
 
     /**

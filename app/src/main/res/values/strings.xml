@@ -87,6 +87,7 @@
     <string name="download_map_dialog_msg">Downloading %s…</string>
     <string name="map_delete_question">Are you sure to delete this map?</string>
     <string name="choose_map_thumbnail">You can choose a thumbnail image to illustrate your map, it\'ll be prettier!\nContinue?</string>
+    <string name="show_map_action">Show</string>
 
     <!-- Map Settings fragment -->
     <string name="fragment_settings" translatable="false">SettingsFragment</string>
@@ -244,7 +245,6 @@
     <string name="comment_label">Comment</string>
     <string name="save_action">Save</string>
     <string name="marker_changes_saved">Changes saved</string>
-    <string name="show_map_action">Show map</string>
     <string name="beacon_help">A beacon notifies you when you get close enough to it.
         The vicinity area is indicated with a dashed line.
         The beacon radius is 100m by default, but can be changed.\nThe alert is a sonar sound effect and a vibration.

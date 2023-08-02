@@ -3,6 +3,8 @@ package com.peterlaurence.trekme.main.eventhandler
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
@@ -31,7 +33,6 @@ class MapDownloadEventHandler(
         when (event) {
             is MapDownloadFinished -> {
                 onDownloadFinished(event.mapId)
-                showSnackbar(getString(R.string.service_download_finished))
             }
             is MapDownloadStorageError -> showWarningDialog(
                 getString(R.string.service_download_bad_storage),
