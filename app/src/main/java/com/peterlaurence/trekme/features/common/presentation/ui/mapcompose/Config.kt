@@ -10,8 +10,8 @@ data class LevelLimitsConfig(val levelMin: Int = 1, val levelMax: Int = 18) : Co
 data class BoundariesConfig(val boundingBoxList: List<BoundingBox>) : Config()
 
 val ignConfig = listOf(
-    ScaleLimitsConfig(maxScale = 0.25f),
-    ScaleForZoomOnPositionConfig(scale = 0.125f),
+    ScaleLimitsConfig(maxScale = 2f),
+    ScaleForZoomOnPositionConfig(scale = 0.25f),
     LevelLimitsConfig(levelMax = 18),
     BoundariesConfig(
         listOf(
@@ -28,8 +28,8 @@ val ignConfig = listOf(
 )
 
 val osmConfig = listOf(
-    ScaleLimitsConfig(maxScale = 0.25f),
-    ScaleForZoomOnPositionConfig(scale = 0.125f),
+    ScaleLimitsConfig(maxScale = 4f),
+    ScaleForZoomOnPositionConfig(scale = 1f),
     LevelLimitsConfig(levelMax = 16),
     BoundariesConfig(
         listOf(
@@ -39,8 +39,8 @@ val osmConfig = listOf(
 )
 
 val usgsConfig = listOf(
-    ScaleLimitsConfig(maxScale = 0.25f),
-    ScaleForZoomOnPositionConfig(scale = 0.125f),
+    ScaleLimitsConfig(maxScale = 4f),
+    ScaleForZoomOnPositionConfig(scale = 1f),
     LevelLimitsConfig(levelMax = 16),
     BoundariesConfig(
         listOf(
@@ -50,9 +50,9 @@ val usgsConfig = listOf(
 )
 
 val swissTopoConfig = listOf(
-    InitScaleAndScrollConfig(0.0006149545f, 21064, 13788),
-    ScaleLimitsConfig(minScale = 0.0006149545f, maxScale = 0.5f),
-    ScaleForZoomOnPositionConfig(scale = 0.125f),
+    InitScaleAndScrollConfig(0.0023791015f, 41197, 27324),
+    ScaleLimitsConfig(minScale = 0.0023791015f, maxScale = 2f),
+    ScaleForZoomOnPositionConfig(scale = 0.5f),
     LevelLimitsConfig(levelMax = 17),
     BoundariesConfig(
         listOf(
@@ -62,9 +62,9 @@ val swissTopoConfig = listOf(
 )
 
 val ignSpainConfig = listOf(
-    InitScaleAndScrollConfig(0.0003546317f, 11127, 8123),
-    ScaleLimitsConfig(minScale = 0.0003546317f, maxScale = 0.5f),
-    ScaleForZoomOnPositionConfig(scale = 0.125f),
+    InitScaleAndScrollConfig(8.1893284E-4f, 12958, 9399),
+    ScaleLimitsConfig(minScale = 8.1893284E-4f, maxScale = 2f),
+    ScaleForZoomOnPositionConfig(scale = 0.5f),
     LevelLimitsConfig(levelMax = 17),
     BoundariesConfig(
         listOf(
@@ -74,10 +74,10 @@ val ignSpainConfig = listOf(
 )
 
 val ordnanceSurveyConfig = listOf(
-    InitScaleAndScrollConfig(0.000830759f, 27011, 17261),
-    ScaleLimitsConfig(minScale = 0.000830759f, maxScale = 0.25f),
+    InitScaleAndScrollConfig(0.002746872f, 22207, 13755),
+    ScaleLimitsConfig(minScale = 0.002746872f, maxScale = 4f),
     LevelLimitsConfig(7, 16),
-    ScaleForZoomOnPositionConfig(scale = 0.125f),
+    ScaleForZoomOnPositionConfig(scale = 1f),
     BoundariesConfig(
         listOf(
             BoundingBox(49.8, 61.08, -8.32, 2.04)

@@ -61,6 +61,7 @@ import ovh.plrapps.mapcompose.ui.layout.Fit
 import ovh.plrapps.mapcompose.ui.layout.Forced
 import ovh.plrapps.mapcompose.ui.state.MapState
 import javax.inject.Inject
+import kotlin.math.pow
 
 /**
  * View-model for [WmtsFragment]. It takes care of:
@@ -181,8 +182,19 @@ class WmtsViewModel @Inject constructor(
         _wmtsState.value = Loading
         _topBarState.value = Empty
 
+        /* Depending on the max level, initialize the MapState with the right size and level count */
+        val mapConfiguration = getScaleAndScrollConfig(wmtsSource)
+        val levelMaxConfig = mapConfiguration.firstNotNullOfOrNull {
+            if (it is LevelLimitsConfig) it else null
+        }
+        val (wmtsLevelMax, size) = if (levelMaxConfig != null) {
+            val lvlMax = levelMaxConfig.levelMax
+            Pair(lvlMax, mapSizeAtLevel(lvlMax, tileSize = 256))
+        } else Pair(18, mapSize)
+
         val mapState = MapState(
-            19, mapSize, mapSize,
+            levelCount = wmtsLevelMax + 1, // wmts levels are 0-based
+            size, size,
             workerCount = 16
         ) {
             magnifyingFactor(
@@ -195,7 +207,6 @@ class WmtsViewModel @Inject constructor(
         }
 
         /* Apply configuration */
-        val mapConfiguration = getScaleAndScrollConfig(wmtsSource)
         mapConfiguration.forEach { conf ->
             when (conf) {
                 is ScaleLimitsConfig -> {
