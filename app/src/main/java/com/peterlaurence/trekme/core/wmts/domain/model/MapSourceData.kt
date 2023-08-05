@@ -30,6 +30,7 @@ fun MapSourceData.getNameResId(): Int {
                 OpenTopoMap -> R.string.layer_osm_opentopo
                 Outdoors -> R.string.layer_osm_outdoors
                 WorldStreetMap -> R.string.layer_osm_street
+                OsmAndHd -> R.string.layer_osm_street_hd
                 WorldTopoMap -> R.string.layer_osm_topo
             }
         }

@@ -38,6 +38,17 @@ val osmConfig = listOf(
     )
 )
 
+val osmHdConfig = listOf(
+    ScaleLimitsConfig(maxScale = 2f),
+    ScaleForZoomOnPositionConfig(scale = 0.5f),
+    LevelLimitsConfig(levelMax = 17),
+    BoundariesConfig(
+        listOf(
+            BoundingBox(-80.0, 83.0, -180.0, 180.0)        // World
+        )
+    )
+)
+
 val usgsConfig = listOf(
     ScaleLimitsConfig(maxScale = 4f),
     ScaleForZoomOnPositionConfig(scale = 1f),

@@ -11,6 +11,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,47 +29,116 @@ import com.peterlaurence.trekme.core.billing.domain.model.TrialAvailable
 import com.peterlaurence.trekme.features.common.presentation.ui.pager.HorizontalPager
 import com.peterlaurence.trekme.features.common.presentation.ui.pager.PagerState
 import com.peterlaurence.trekme.features.common.presentation.ui.pager.rememberPagerState
+import com.peterlaurence.trekme.features.common.presentation.ui.scrollbar.drawVerticalScrollbar
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.shop.presentation.ui.offers.*
 import com.peterlaurence.trekme.features.shop.presentation.viewmodel.ExtendedOfferViewModel
+import com.peterlaurence.trekme.features.shop.presentation.viewmodel.ExtendedWithIgnViewModel
 import com.peterlaurence.trekme.features.shop.presentation.viewmodel.GpsProPurchaseViewModel
 import java.util.*
 
 @Composable
 fun ShopStateful(
+    extendedWithIgnViewModel: ExtendedWithIgnViewModel = viewModel(),
     extendedOfferViewModel: ExtendedOfferViewModel = viewModel(),
-    gpsProPurchaseViewModel: GpsProPurchaseViewModel = viewModel()
+    gpsProPurchaseViewModel: GpsProPurchaseViewModel = viewModel(),
+    onMainMenuClick: () -> Unit
 ) {
+    val extendedOfferWithIgnPurchaseState by extendedWithIgnViewModel.purchaseFlow.collectAsState()
+    val monthlySubDetailsIgn by extendedWithIgnViewModel.monthlySubscriptionDetailsFlow.collectAsState()
+    val yearlySubDetailsIgn by extendedWithIgnViewModel.yearlySubscriptionDetailsFlow.collectAsState()
+
     val extendedOfferPurchaseState by extendedOfferViewModel.purchaseFlow.collectAsState()
     val monthlySubDetails by extendedOfferViewModel.monthlySubscriptionDetailsFlow.collectAsState()
     val yearlySubDetails by extendedOfferViewModel.yearlySubscriptionDetailsFlow.collectAsState()
+
+    var withIgn: Boolean by remember { mutableStateOf(false) }
+
+    val uiState by produceState(
+        initialValue = if (extendedOfferWithIgnPurchaseState == PurchaseState.PURCHASED) {
+            Purchased(isIgn = true)
+        } else if (extendedOfferPurchaseState == PurchaseState.PURCHASED) {
+            Purchased(isIgn = false)
+        } else {
+            Selection(
+                isIgn = false,
+                extendedOfferPurchaseState,
+                monthlySubDetails,
+                yearlySubDetails
+            )
+        },
+        key1 = withIgn,
+        key2 = extendedOfferPurchaseState,
+        key3 = extendedOfferWithIgnPurchaseState
+    ) {
+        value = if (extendedOfferWithIgnPurchaseState == PurchaseState.PURCHASED) {
+            Purchased(isIgn = true)
+        } else if (extendedOfferPurchaseState == PurchaseState.PURCHASED) {
+            Purchased(isIgn = false)
+        } else {
+            if (withIgn) {
+                Selection(
+                    isIgn = true,
+                    extendedOfferWithIgnPurchaseState,
+                    monthlySubDetailsIgn,
+                    yearlySubDetailsIgn
+                )
+            } else {
+                Selection(
+                    isIgn = false,
+                    extendedOfferPurchaseState,
+                    monthlySubDetails,
+                    yearlySubDetails
+                )
+            }
+        }
+    }
 
     val gpsProPurchaseState by gpsProPurchaseViewModel.purchaseFlow.collectAsState()
     val subDetails by gpsProPurchaseViewModel.subscriptionDetailsFlow.collectAsState()
 
     ShopUi(
-        extendedOfferPurchaseState = extendedOfferPurchaseState,
-        monthlySubDetails = monthlySubDetails,
-        yearlySubDetails = yearlySubDetails,
+        uiState = uiState,
         gpsProPurchaseState = gpsProPurchaseState,
         subDetails = subDetails,
-        onExtendedMonthlyPurchase = extendedOfferViewModel::buyMonthly,
-        onExtendedYearlyPurchase = extendedOfferViewModel::buyYearly,
+        onExtendedMonthlyPurchase = {
+            if (withIgn) {
+                extendedWithIgnViewModel.buyMonthly()
+            } else {
+                extendedOfferViewModel.buyMonthly()
+            }
+        },
+        onExtendedYearlyPurchase = {
+            if (withIgn) {
+                extendedWithIgnViewModel.buyYearly()
+            } else {
+                extendedOfferViewModel.buyYearly()
+            }
+        },
+        onIgnSelectionChanged = { withIgn = it },
         onGpsProPurchase = gpsProPurchaseViewModel::buy,
-        onMainMenuClick = extendedOfferViewModel::onMainMenuClick
+        onMainMenuClick = onMainMenuClick
     )
 }
 
+private sealed interface UiState
+private data class Purchased(val isIgn: Boolean) : UiState
+private data class Selection(
+    val isIgn: Boolean,
+    val purchaseState: PurchaseState,
+    val monthlySubDetails: SubscriptionDetails?,
+    val yearlySubDetails: SubscriptionDetails?
+) : UiState
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ShopUi(
-    extendedOfferPurchaseState: PurchaseState,
-    monthlySubDetails: SubscriptionDetails?,
-    yearlySubDetails: SubscriptionDetails?,
+private fun ShopUi(
+    uiState: UiState,
     gpsProPurchaseState: PurchaseState,
     subDetails: SubscriptionDetails?,
     onExtendedMonthlyPurchase: () -> Unit,
     onExtendedYearlyPurchase: () -> Unit,
+    onIgnSelectionChanged: (Boolean) -> Unit,
     onGpsProPurchase: () -> Unit,
     onMainMenuClick: () -> Unit
 ) {
@@ -86,21 +159,31 @@ fun ShopUi(
             pagerState = rememberPagerState(),
             firstOffer = OfferUi(
                 header = {
-                    ExtendedOfferHeader(
-                        extendedOfferPurchaseState,
-                        monthlySubDetails,
-                        yearlySubDetails
-                    )
+                    when (uiState) {
+                        is Purchased -> ExtendedOfferHeaderPurchased()
+                        is Selection -> ExtendedOfferHeader(
+                            uiState.purchaseState,
+                            uiState.monthlySubDetails,
+                            uiState.yearlySubDetails
+                        )
+                    }
                 },
-                content = { TrekMeExtendedContent() },
+                content = {
+                    when (uiState) {
+                        is Purchased -> TrekMeExtendedPurchasedContent(withIgn = uiState.isIgn)
+                        is Selection -> TrekMeExtendedContent(uiState.isIgn, onIgnSelectionChanged)
+                    }
+                },
                 footerButtons = {
-                    ExtendedOfferFooter(
-                        extendedOfferPurchaseState,
-                        monthlySubDetails,
-                        yearlySubDetails,
-                        onMonthlyPurchase = onExtendedMonthlyPurchase,
-                        onYearlyPurchase = onExtendedYearlyPurchase
-                    )
+                    when (uiState) {
+                        is Purchased -> ExtendedOfferFooterPurchased()
+                        is Selection -> ExtendedOfferFooterNotPurchased(
+                            uiState.monthlySubDetails,
+                            uiState.yearlySubDetails,
+                            onMonthlyPurchase = onExtendedMonthlyPurchase,
+                            onYearlyPurchase = onExtendedYearlyPurchase
+                        )
+                    }
                 }
             ),
             secondOffer = OfferUi(
@@ -168,7 +251,8 @@ private fun ShopCarousel(
                         Column(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(start = 32.dp, end = 32.dp, bottom = 32.dp)
+                                .padding(bottom = 32.dp)
+                                .drawVerticalScrollbar(scrollState)
                                 .verticalScroll(scrollState),
                         ) {
                             when (page) {
@@ -199,21 +283,25 @@ data class OfferUi(
 private fun ShopUiPreview() {
     TrekMeTheme {
         ShopUi(
-            extendedOfferPurchaseState = PurchaseState.NOT_PURCHASED,
-            monthlySubDetails = SubscriptionDetails(
-                UUID.randomUUID(),
-                price = "4.99€",
-                TrialAvailable(3)
-            ),
-            yearlySubDetails = SubscriptionDetails(
-                UUID.randomUUID(),
-                price = "15.99€",
-                TrialAvailable(5)
+            uiState = Selection(
+                isIgn = true,
+                purchaseState = PurchaseState.NOT_PURCHASED,
+                monthlySubDetails = SubscriptionDetails(
+                    UUID.randomUUID(),
+                    price = "4.99€",
+                    TrialAvailable(3)
+                ),
+                yearlySubDetails = SubscriptionDetails(
+                    UUID.randomUUID(),
+                    price = "15.99€",
+                    TrialAvailable(5)
+                )
             ),
             gpsProPurchaseState = PurchaseState.NOT_PURCHASED,
             subDetails = SubscriptionDetails(UUID.randomUUID(), price = "9.99€", TrialAvailable(3)),
             onExtendedMonthlyPurchase = {},
             onExtendedYearlyPurchase = {},
+            onIgnSelectionChanged = {},
             onGpsProPurchase = {}) {
         }
     }

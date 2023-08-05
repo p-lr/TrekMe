@@ -6,6 +6,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.peterlaurence.trekme.core.billing.di.IGN
 import com.peterlaurence.trekme.core.billing.domain.model.ExtendedOfferStateOwner
 import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionSearchItem
@@ -29,18 +30,20 @@ import com.peterlaurence.trekme.core.wmts.domain.model.IgnSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnSpainData
 import com.peterlaurence.trekme.core.wmts.domain.model.MapSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.OrdnanceSurveyData
+import com.peterlaurence.trekme.core.wmts.domain.model.OsmAndHd
 import com.peterlaurence.trekme.core.wmts.domain.model.OsmSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.Outdoors
 import com.peterlaurence.trekme.core.wmts.domain.model.Point
 import com.peterlaurence.trekme.core.wmts.domain.model.SwissTopoData
 import com.peterlaurence.trekme.core.wmts.domain.model.UsgsData
 import com.peterlaurence.trekme.core.wmts.domain.model.WorldStreetMap
-import com.peterlaurence.trekme.core.wmts.domain.model.mapSize
+import com.peterlaurence.trekme.core.wmts.domain.model.mapSizeAtLevel
 import com.peterlaurence.trekme.core.wmts.domain.tools.getMapSpec
 import com.peterlaurence.trekme.core.wmts.domain.tools.getNumberOfTiles
 import com.peterlaurence.trekme.features.common.domain.interactors.MapExcursionInteractor
 import com.peterlaurence.trekme.features.common.domain.util.toMapComposeTileStreamProvider
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.Config
+import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.LevelLimitsConfig
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.ScaleLimitsConfig
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.ignConfig
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.ignSpainConfig
@@ -112,7 +115,8 @@ class ExcursionMapViewModel @Inject constructor(
     private val mapExcursionInteractor: MapExcursionInteractor,
     private val excursionRepository: ExcursionRepository,
     private val downloadRepository: DownloadRepository,
-    extendedOfferStateOwner: ExtendedOfferStateOwner,
+    @IGN
+    extendedOfferWithIgnStateOwner: ExtendedOfferStateOwner,
     private val app: Application
 ) : ViewModel() {
     val locationFlow: Flow<Location> = locationSource.locationFlow
@@ -132,7 +136,7 @@ class ExcursionMapViewModel @Inject constructor(
             viewModelScope, started = SharingStarted.Eagerly, initialValue = ResultL.success(null)
         )
 
-    val extendedOfferFlow = extendedOfferStateOwner.purchaseFlow.map {
+    val extendedOfferFlow = extendedOfferWithIgnStateOwner.purchaseFlow.map {
         it == PurchaseState.PURCHASED
     }
 
@@ -415,7 +419,8 @@ class ExcursionMapViewModel @Inject constructor(
         _uiStateFlow.value = LoadingLayer
 
         val mapState = MapState(
-            19, wmtsConfig.mapSize, wmtsConfig.mapSize,
+            levelCount = wmtsConfig.wmtsLevelMax + 1, // wmts levels are 0-based,
+            wmtsConfig.mapSize, wmtsConfig.mapSize,
             tileSize = wmtsConfig.tileSize,
             workerCount = 16
         ) {
@@ -565,16 +570,28 @@ class ExcursionMapViewModel @Inject constructor(
     }
 
     private fun getWmtsConfig(mapSourceData: MapSourceData): WmtsConfig {
-        return when (mapSourceData) {
+        /* Depending on the max level, initialize the MapState with the right size and level count */
+        val mapConfiguration = getScaleAndScrollConfig(mapSourceData)
+        val levelMaxConfig = mapConfiguration.firstNotNullOfOrNull {
+            if (it is LevelLimitsConfig) it else null
+        }
+
+        fun makeConfig(maxLevel: Int, tileSize: Int): WmtsConfig {
+            return WmtsConfig(maxLevel, tileSize, mapSizeAtLevel(maxLevel, tileSize = tileSize))
+        }
+
+        val lvlMax = levelMaxConfig?.levelMax
+        val tileSize = when (mapSourceData) {
             is OsmSourceData -> {
                 when (mapSourceData.layer) {
-                    Outdoors -> WmtsConfig(512, mapSize * 2)
-                    else -> WmtsConfig(256, mapSize)
+                    Outdoors, OsmAndHd -> 512
+                    else -> 256
                 }
             }
-
-            else -> WmtsConfig(256, mapSize)
+            else -> 256
         }
+
+        return makeConfig(maxLevel = lvlMax ?: 18, tileSize)
     }
 
     private fun setSearchPending(pending: Boolean) {
@@ -610,7 +627,7 @@ class ExcursionMapViewModel @Inject constructor(
         return hasMapContainingBoundingBox
     }
 
-    private data class WmtsConfig(val tileSize: Int, val mapSize: Int)
+    private data class WmtsConfig(val wmtsLevelMax: Int, val tileSize: Int, val mapSize: Int)
 
     sealed interface Event {
         object OnMarkerClick : Event

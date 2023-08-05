@@ -104,6 +104,8 @@ public class MapGson {
      */
     public enum MapSource {
         IGN_LICENSED,  // special IGN WMTS source
+        IGN_FREE,
+        WMTS_LICENSED,
         WMTS,
         VIPS,   // Custom map
     }

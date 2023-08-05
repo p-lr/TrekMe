@@ -24,7 +24,6 @@ const val X1 = -X0
 const val Y1 = -Y0
 
 const val TILE_SIZE_IN_MO = 0.0169
-const val TILE_SIZE_PX = 256
 
 
 

@@ -1,11 +1,13 @@
 package com.peterlaurence.trekme.features.shop.presentation.ui.offers
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalUriHandler
@@ -13,6 +15,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.Hyphens
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,6 +42,11 @@ fun ExtendedOfferHeader(
 }
 
 @Composable
+fun ExtendedOfferHeaderPurchased() {
+    Header(title = stringResource(id = R.string.trekme_extended_offer), subTitle = stringResource(id = R.string.module_owned))
+}
+
+@Composable
 private fun ExtendedOfferHeaderUi(purchaseState: PurchaseState, trialInfo: TrialInfo) {
     val subTitle = when (purchaseState) {
         PurchaseState.CHECK_PENDING -> stringResource(id = R.string.module_check_pending)
@@ -56,20 +64,22 @@ private fun ExtendedOfferHeaderUi(purchaseState: PurchaseState, trialInfo: Trial
 }
 
 @Composable
-fun TrekMeExtendedContent() {
+fun TrekMeExtendedPurchasedContent(withIgn: Boolean) {
     CheckSeparator()
-    TitleRow(R.string.trekme_extended_ign_maps_title)
-    LineItem(R.string.trekme_extended_ign_maps_offline)
-    LineItem(R.string.trekme_extended_ign_maps_satellite)
+    TitleRow(R.string.trekme_extended_maps_title)
+    LineItem(R.string.trekme_extended_osm_hd_desc)
+    LineItem(id = R.string.osm_level_17)
+
+    if (withIgn) {
+        CheckSeparator()
+        TitleRow(R.string.trekme_extended_ign_maps_title)
+        LineItem(R.string.trekme_extended_ign_maps_offline)
+        LineItem(R.string.trekme_extended_ign_maps_satellite)
+        LineItem(R.string.trekme_extended_ign_overlay_desc)
+    }
 
     CheckSeparator()
-    TitleRow(R.string.trekme_extended_ign_overlay_title)
-    LineItem(R.string.trekme_extended_ign_overlay_1)
-    LineItem(R.string.trekme_extended_ign_overlay_2)
-    LineItem(R.string.trekme_extended_ign_overlay_3)
-
-    CheckSeparator()
-    TitleRow(R.string.trekme_extended_specificities)
+    TitleRow(R.string.trekme_extended_advanced_ft)
     LineItem(id = R.string.add_beacons)
     LineItem(id = R.string.create_map_from_track)
     LineItem(id = R.string.center_on_track)
@@ -77,7 +87,49 @@ fun TrekMeExtendedContent() {
     LineItem(id = R.string.osm_level_17)
     LineItem(id = R.string.no_ads)
 
-    NotaBene()
+    if (withIgn) {
+        NotaBene()
+    }
+}
+
+@Composable
+fun TrekMeExtendedContent(withIgn: Boolean, onIgnSelectionChanged: (Boolean) -> Unit) {
+    CheckSeparator()
+    TitleRow(R.string.trekme_extended_maps_title)
+    LineItem(R.string.trekme_extended_osm_hd_desc)
+    LineItem(id = R.string.osm_level_17)
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 32.dp)
+            .clickable { onIgnSelectionChanged(!withIgn) }
+    ) {
+        Checkbox(checked = withIgn, onCheckedChange = onIgnSelectionChanged)
+        Text(text = stringResource(id = R.string.trekme_extended_activate_ign), fontSize = 14.sp, fontWeight = FontWeight.Medium)
+    }
+
+    if (withIgn) {
+        CheckSeparator()
+        TitleRow(R.string.trekme_extended_ign_maps_title)
+        LineItem(R.string.trekme_extended_ign_maps_offline)
+        LineItem(R.string.trekme_extended_ign_maps_satellite)
+        LineItem(R.string.trekme_extended_ign_overlay_desc)
+    }
+
+    CheckSeparator()
+    TitleRow(R.string.trekme_extended_advanced_ft)
+    LineItem(id = R.string.add_beacons)
+    LineItem(id = R.string.create_map_from_track)
+    LineItem(id = R.string.center_on_track)
+    LineItem(id = R.string.define_elevation_fix)
+
+    LineItem(id = R.string.no_ads)
+
+    if (withIgn) {
+        NotaBene()
+    }
 }
 
 @Composable
@@ -104,19 +156,20 @@ private fun TitleRow(@StringRes id: Int) {
             .padding(bottom = 8.dp),
         horizontalArrangement = Arrangement.Center
     ) {
-        Text(stringResource(id), fontWeight = FontWeight.Medium)
+        Text(stringResource(id), fontWeight = FontWeight.Medium, style = TextStyle(hyphens = Hyphens.Auto))
     }
 }
 
 @Composable
 private fun LineItem(@StringRes id: Int) {
-    Row(Modifier.padding(bottom = 4.dp)) {
+    Row(Modifier.padding(bottom = 4.dp).padding(horizontal = 32.dp)) {
         Text("\u2022")
         Text(
             stringResource(id),
             fontSize = 14.sp,
             modifier = Modifier.padding(start = 8.dp),
-            lineHeight = 18.sp
+            lineHeight = 18.sp,
+            style = TextStyle(hyphens = Hyphens.Auto)
         )
     }
 }
@@ -134,83 +187,79 @@ private fun NotaBene() {
 
     Row {
         /* Set alpha to 0.7 for less emphasize */
-        Text(stringResource(id = R.string.nb), Modifier.alpha(0.7f))
+        Text(stringResource(id = R.string.nb), Modifier.alpha(0.7f).padding(start = 32.dp))
         Text(
             stringResource(R.string.ign_caution),
             fontSize = 14.sp,
             modifier = Modifier
-                .padding(start = 8.dp)
+                .padding(start = 8.dp, end = 32.dp)
                 .alpha(0.7f),
-            style = TextStyle(textAlign = TextAlign.Justify)
+            style = TextStyle(textAlign = TextAlign.Justify, hyphens = Hyphens.Auto)
         )
     }
 }
 
 @Composable
-fun ExtendedOfferFooter(
-    purchaseState: PurchaseState,
+fun ExtendedOfferFooterNotPurchased(
     monthlySubDetails: SubscriptionDetails?,
     yearlySubDetails: SubscriptionDetails?,
     onMonthlyPurchase: () -> Unit,
     onYearlyPurchase: () -> Unit
 ) {
-    val uriHandler = LocalUriHandler.current
-    val subscriptionCenterUri = stringResource(id = R.string.subscription_center)
-
-    ExtendedOfferFooterUi(
-        purchaseState,
+    ExtendedOfferFooterNotPurchased(
         pricePerMonth = monthlySubDetails?.price,
         pricePerYear = yearlySubDetails?.price,
         buyMonthlyOffer = onMonthlyPurchase,
         buyYearlyOffer = onYearlyPurchase,
-        manageSubscriptionCb = {
-            uriHandler.openUri(subscriptionCenterUri)
-        }
     )
 }
 
 @Composable
-private fun ExtendedOfferFooterUi(
-    purchaseState: PurchaseState,
+fun ExtendedOfferFooterPurchased() {
+    val uriHandler = LocalUriHandler.current
+    val subscriptionCenterUri = stringResource(id = R.string.subscription_center)
+
+    Button(
+        onClick = {
+            uriHandler.openUri(subscriptionCenterUri)
+        },
+        modifier = Modifier.padding(bottom = 18.dp),
+        shape = RoundedCornerShape(50),
+    ) {
+        Text(
+            text = stringResource(id = R.string.manage_subscription_btn),
+            letterSpacing = 1.2.sp
+        )
+    }
+}
+
+@Composable
+private fun ExtendedOfferFooterNotPurchased(
     pricePerMonth: String?,
     pricePerYear: String?,
     buyMonthlyOffer: () -> Unit,
     buyYearlyOffer: () -> Unit,
-    manageSubscriptionCb: () -> Unit
 ) {
-    if (purchaseState == PurchaseState.PURCHASED) {
-        Button(
-            onClick = manageSubscriptionCb,
-            modifier = Modifier.padding(bottom = 18.dp),
-            shape = RoundedCornerShape(50),
-        ) {
-            Text(
-                text = stringResource(id = R.string.manage_subscription_btn),
-                letterSpacing = 1.2.sp
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        if (pricePerMonth != null) {
+            PriceButton(
+                onClick = buyMonthlyOffer,
+                duration = stringResource(id = R.string.one_month),
+                price = pricePerMonth,
+                color = if (isSystemInDarkTheme()) dark_accentGreen else accentGreen
             )
         }
-    } else if (purchaseState == PurchaseState.NOT_PURCHASED) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            if (pricePerMonth != null) {
-                PriceButton(
-                    onClick = buyMonthlyOffer,
-                    duration = stringResource(id = R.string.one_month),
-                    price = pricePerMonth,
-                    color = if (isSystemInDarkTheme()) dark_accentGreen else accentGreen
-                )
-            }
-            if (pricePerYear != null) {
-                PriceButton(
-                    onClick = buyYearlyOffer,
-                    duration = stringResource(id = R.string.one_year),
-                    price = pricePerYear
-                )
-            }
+        if (pricePerYear != null) {
+            PriceButton(
+                onClick = buyYearlyOffer,
+                duration = stringResource(id = R.string.one_year),
+                price = pricePerYear
+            )
         }
     }
 }

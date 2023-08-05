@@ -202,6 +202,12 @@ object MapModule {
     fun provideCheckTileStreamProviderDao(): CheckTileStreamProviderDao {
         return CheckTileStreamProviderDaoImpl()
     }
+
+    @Singleton
+    @Provides
+    fun provideTagVerifierDao(@IoDispatcher ioDispatcher: CoroutineDispatcher): MapTagDao {
+        return MapTagDaoImpl(ioDispatcher)
+    }
 }
 
 /**

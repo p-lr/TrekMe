@@ -4,13 +4,14 @@ import android.app.Application
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.peterlaurence.trekme.core.billing.di.IGN
+import com.peterlaurence.trekme.core.billing.di.TrekmeExtended
 import com.peterlaurence.trekme.core.billing.domain.model.ExtendedOfferStateOwner
 import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.geocoding.domain.engine.GeoPlace
@@ -50,18 +51,19 @@ import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.swiss
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.usgsConfig
 import com.peterlaurence.trekme.features.mapcreate.domain.interactors.ParseGeoRecordInteractor
 import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToMercatorInteractor
+import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.osmHdConfig
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.toDomain
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.toModel
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.layers.RouteLayer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.layout.Fit
 import ovh.plrapps.mapcompose.ui.layout.Forced
 import ovh.plrapps.mapcompose.ui.state.MapState
 import javax.inject.Inject
-import kotlin.math.pow
 
 /**
  * View-model for [WmtsFragment]. It takes care of:
@@ -83,6 +85,9 @@ class WmtsViewModel @Inject constructor(
     private val geocodingRepository: GeocodingRepository,
     private val parseGeoRecordInteractor: ParseGeoRecordInteractor,
     private val wgs84ToMercatorInteractor: Wgs84ToMercatorInteractor,
+    @IGN
+    private val extendedOfferWithIgnStateOwner: ExtendedOfferStateOwner,
+    @TrekmeExtended
     private val extendedOfferStateOwner: ExtendedOfferStateOwner
 ) : ViewModel() {
 
@@ -97,7 +102,8 @@ class WmtsViewModel @Inject constructor(
     val wmtsSourceState = wmtsSourceRepository.wmtsSourceState
     val locationFlow = locationSource.locationFlow
 
-    val eventListState = mutableStateListOf<WmtsEvent>()
+    private val _eventsChannel = Channel<WmtsEvent>(1)
+    val events = _eventsChannel.receiveAsFlow()
 
     private val defaultIgnLayer: IgnLayer = IgnClassic
     private val defaultOsmLayer: OsmLayer = WorldStreetMap
@@ -108,13 +114,17 @@ class WmtsViewModel @Inject constructor(
     private val searchFieldState: MutableState<TextFieldValue> = mutableStateOf(TextFieldValue(""))
     private var hasPrimaryLayers = false
     private var hasOverlayLayers = false
-    private var hasExtendedOffer = false
+
+    val hasExtendedOffer = combine(extendedOfferWithIgnStateOwner.purchaseFlow, extendedOfferStateOwner.purchaseFlow) { x, y ->
+        x == PurchaseState.PURCHASED || y == PurchaseState.PURCHASED
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     private val routeLayer = RouteLayer(viewModelScope, wgs84ToMercatorInteractor)
     private val geoRecordUrls = mutableSetOf<Uri>()
 
     private val activePrimaryLayerForSource: MutableMap<WmtsSource, Layer> = mutableMapOf(
-        WmtsSource.IGN to defaultIgnLayer
+        WmtsSource.IGN to defaultIgnLayer,
+        WmtsSource.OPEN_STREET_MAP to defaultOsmLayer
     )
 
     init {
@@ -153,10 +163,6 @@ class WmtsViewModel @Inject constructor(
         }
     }
 
-    fun acknowledgeError() {
-        eventListState.removeFirstOrNull()
-    }
-
     fun onTrackImport(uri: Uri) = viewModelScope.launch {
         geoRecordUrls.add(uri)
         parseGeoRecordInteractor.parseGeoRecord(uri, app.applicationContext.contentResolver)?.also {
@@ -187,14 +193,18 @@ class WmtsViewModel @Inject constructor(
         val levelMaxConfig = mapConfiguration.firstNotNullOfOrNull {
             if (it is LevelLimitsConfig) it else null
         }
+
+        val tileSize = getTileSize(wmtsSource)
+
         val (wmtsLevelMax, size) = if (levelMaxConfig != null) {
             val lvlMax = levelMaxConfig.levelMax
-            Pair(lvlMax, mapSizeAtLevel(lvlMax, tileSize = 256))
-        } else Pair(18, mapSize)
+            Pair(lvlMax, mapSizeAtLevel(lvlMax, tileSize = tileSize))
+        } else Pair(18, mapSizeAtLevel(18, tileSize = tileSize))
 
         val mapState = MapState(
             levelCount = wmtsLevelMax + 1, // wmts levels are 0-based
             size, size,
+            tileSize = tileSize,
             workerCount = 16
         ) {
             magnifyingFactor(
@@ -236,9 +246,8 @@ class WmtsViewModel @Inject constructor(
 
         /* Apply former settings, if any */
         if (restorePrevious && previousMapState != null) {
-            mapState.scale = previousMapState.scale
             launch {
-                mapState.setScroll(previousMapState.scroll)
+                mapState.scrollTo(previousMapState.centroidX, previousMapState.centroidY, destScale = previousMapState.scale)
             }
             /* Restore the location of the place marker (not to confuse with the position marker) */
             previousMapState.getMarkerInfo(placeMarkerId)?.also { markerInfo ->
@@ -258,7 +267,7 @@ class WmtsViewModel @Inject constructor(
         _topBarState.value = Collapsed(
             hasPrimaryLayers = hasPrimaryLayers,
             hasOverlayLayers = hasOverlayLayers,
-            hasTrackImport = hasExtendedOffer
+            hasTrackImport = hasExtendedOffer.value
         )
 
         /* Restore the location marker right now - even if subsequent updates will do it anyway. */
@@ -276,11 +285,25 @@ class WmtsViewModel @Inject constructor(
         }
     }
 
+    private fun getTileSize(wmtsSource: WmtsSource): Int {
+        return if (wmtsSource == WmtsSource.OPEN_STREET_MAP) {
+            when (getActivePrimaryOsmLayer()) {
+                OsmAndHd, Outdoors -> 512
+                else -> 256
+            }
+        } else 256
+    }
+
     private fun getScaleAndScrollConfig(wmtsSource: WmtsSource): List<Config> {
         return when (wmtsSource) {
             WmtsSource.IGN -> ignConfig
             WmtsSource.SWISS_TOPO -> swissTopoConfig
-            WmtsSource.OPEN_STREET_MAP -> osmConfig
+            WmtsSource.OPEN_STREET_MAP -> {
+                when (getActivePrimaryOsmLayer()) {
+                    OsmAndHd, Outdoors -> osmHdConfig
+                    else -> osmConfig
+                }
+            }
             WmtsSource.USGS -> usgsConfig
             WmtsSource.IGN_SPAIN -> ignSpainConfig
             WmtsSource.ORDNANCE_SURVEY -> ordnanceSurveyConfig
@@ -288,7 +311,6 @@ class WmtsViewModel @Inject constructor(
     }
 
     private fun updateTopBarConfig(wmtsSource: WmtsSource) {
-        hasExtendedOffer = extendedOfferStateOwner.purchaseFlow.value == PurchaseState.PURCHASED
         hasPrimaryLayers = when (wmtsSource) {
             WmtsSource.IGN, WmtsSource.OPEN_STREET_MAP -> true
             else -> false
@@ -320,11 +342,20 @@ class WmtsViewModel @Inject constructor(
     }
 
     private fun getActivePrimaryOsmLayer(): OsmLayer {
-        return activePrimaryLayerForSource[WmtsSource.OPEN_STREET_MAP] as? OsmLayer ?: defaultOsmLayer
+        return activePrimaryLayerForSource[WmtsSource.OPEN_STREET_MAP] as? OsmLayer ?: run {
+            if (hasExtendedOffer.value) OsmAndHd else defaultOsmLayer
+        }
     }
 
     fun onPrimaryLayerDefined(layerId: String) = viewModelScope.launch {
         val wmtsSource = wmtsSourceRepository.wmtsSourceState.value ?: return@launch
+
+        if (wmtsSource == WmtsSource.OPEN_STREET_MAP) {
+            if (layerId == osmAndHd && !hasExtendedOffer.value) {
+                _eventsChannel.send(WmtsEvent.SHOW_TREKME_EXTENDED_ADVERT)
+                return@launch
+            }
+        }
         setPrimaryLayerForSourceFromId(wmtsSource, layerId)
 
         updateMapState(wmtsSource, true)
@@ -358,6 +389,7 @@ class WmtsViewModel @Inject constructor(
             osmTopo -> WorldTopoMap
             osmStreet -> WorldStreetMap
             openTopoMap -> OpenTopoMap
+            osmAndHd -> OsmAndHd
             else -> null
         }
     }
@@ -406,7 +438,7 @@ class WmtsViewModel @Inject constructor(
 
         /* Otherwise, honor the level limits configuration for this source, if any.
          * Make an exception for OSM in the case the user has the extended offer. */
-        val levelConf = if (wmtsSource == WmtsSource.OPEN_STREET_MAP && hasExtendedOffer) {
+        val levelConf = if (wmtsSource == WmtsSource.OPEN_STREET_MAP && hasExtendedOffer.value) {
             LevelLimitsConfig(levelMax = 17)
         } else {
             mapConfiguration.firstOrNull { conf -> conf is LevelLimitsConfig } as? LevelLimitsConfig
@@ -460,7 +492,8 @@ class WmtsViewModel @Inject constructor(
         val downloadForm = downloadFormData ?: return
         val (wmtsSource, p1, p2) = downloadForm
 
-        val mapSpec = getMapSpec(minLevel, maxLevel, p1.toDomain(), p2.toDomain())
+        val tileSize = getTileSize(wmtsSource)
+        val mapSpec = getMapSpec(minLevel, maxLevel, p1.toDomain(), p2.toDomain(), tileSize = tileSize)
         val tileCount = getNumberOfTiles(minLevel, maxLevel, p1.toDomain(), p2.toDomain())
         viewModelScope.launch {
             val tileStreamAndMapSource = createTileStreamProvider(
@@ -536,7 +569,7 @@ class WmtsViewModel @Inject constructor(
                 if (boxes.contains(location.latitude, location.longitude)) {
                     centerOnPosition()
                 } else {
-                    eventListState.add(WmtsEvent.CURRENT_LOCATION_OUT_OF_BOUNDS)
+                    _eventsChannel.send(WmtsEvent.CURRENT_LOCATION_OUT_OF_BOUNDS)
                 }
             }
         }.launchIn(viewModelScope)
@@ -569,7 +602,9 @@ class WmtsViewModel @Inject constructor(
         val boundaryConf = mapConfiguration.filterIsInstance<BoundariesConfig>().firstOrNull()
         boundaryConf?.boundingBoxList?.also { boxes ->
             if (!boxes.contains(place.lat, place.lon)) {
-                eventListState.add(WmtsEvent.PLACE_OUT_OF_BOUNDS)
+                viewModelScope.launch {
+                    _eventsChannel.send(WmtsEvent.PLACE_OUT_OF_BOUNDS)
+                }
                 return
             }
         }
@@ -618,7 +653,7 @@ class WmtsViewModel @Inject constructor(
         _topBarState.value = Collapsed(
             hasPrimaryLayers = hasPrimaryLayers,
             hasOverlayLayers = hasOverlayLayers,
-            hasTrackImport = hasExtendedOffer
+            hasTrackImport = hasExtendedOffer.value
         )
     }
 }
@@ -631,7 +666,7 @@ fun List<BoundingBox>.contains(latitude: Double, longitude: Double): Boolean {
 }
 
 enum class WmtsEvent {
-    CURRENT_LOCATION_OUT_OF_BOUNDS, PLACE_OUT_OF_BOUNDS
+    CURRENT_LOCATION_OUT_OF_BOUNDS, PLACE_OUT_OF_BOUNDS, SHOW_TREKME_EXTENDED_ADVERT
 }
 
 sealed interface UiState

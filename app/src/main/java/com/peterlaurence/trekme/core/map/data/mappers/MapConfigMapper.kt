@@ -2,12 +2,13 @@ package com.peterlaurence.trekme.core.map.data.mappers
 
 import android.graphics.Bitmap
 import com.peterlaurence.trekme.core.map.data.models.MapGson
+import com.peterlaurence.trekme.core.map.data.models.MapGson.MapSource
 import com.peterlaurence.trekme.core.map.domain.models.*
 import java.util.UUID
 
 
 fun MapGson.toDomain(elevationFix: Int, thumbnailImage: Bitmap?): MapConfig? {
-    val origin = providerToMapOrigin[provider.generated_by] ?: return null
+    val origin = getMapOrigin(provider.generated_by)
     val imageExtension = provider?.image_extension ?: return null
     val calibrationMethod = runCatching {
         CalibrationMethod.valueOf(calibration!!.calibration_method.uppercase())
@@ -47,12 +48,15 @@ private fun getOrCreateUUID(mapGson: MapGson): UUID {
     } ?: UUID.randomUUID()
 }
 
-
-private val providerToMapOrigin = mapOf(
-    MapGson.MapSource.IGN_LICENSED to Wmts(licensed = true),
-    MapGson.MapSource.WMTS to Wmts(licensed = false),
-    MapGson.MapSource.VIPS to Vips
-)
+private fun getMapOrigin(source: MapSource): MapOrigin {
+    return when(source) {
+        MapSource.IGN_LICENSED -> Ign(licensed = true)
+        MapSource.IGN_FREE -> Ign(licensed = false)
+        MapSource.WMTS_LICENSED -> Wmts(licensed = true)
+        MapSource.WMTS -> Wmts(licensed = false)
+        MapSource.VIPS  -> Vips
+    }
+}
 
 fun MapConfig.toMapGson(): MapGson {
     val mapGson = MapGson()
@@ -72,8 +76,9 @@ fun MapConfig.toMapGson(): MapGson {
     }
     mapGson.provider = MapGson.Provider().apply {
         generated_by = when(val origin = this@toMapGson.origin) {
-            Vips -> MapGson.MapSource.VIPS
-            is Wmts -> if (origin.licensed) MapGson.MapSource.IGN_LICENSED else MapGson.MapSource.WMTS
+            Vips -> MapSource.VIPS
+            is Ign -> if (origin.licensed) MapSource.IGN_LICENSED else MapSource.IGN_FREE
+            is Wmts -> if (origin.licensed) MapSource.WMTS_LICENSED else MapSource.WMTS
         }
         image_extension = this@toMapGson.imageExtension
     }

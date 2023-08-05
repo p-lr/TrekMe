@@ -2,6 +2,7 @@ package com.peterlaurence.trekme.core.wmts.data.urltilebuilder
 
 import com.peterlaurence.trekme.core.wmts.data.model.UrlTileBuilder
 import com.peterlaurence.trekme.core.wmts.domain.model.OpenTopoMap
+import com.peterlaurence.trekme.core.wmts.domain.model.OsmAndHd
 import com.peterlaurence.trekme.core.wmts.domain.model.OsmLayer
 import com.peterlaurence.trekme.core.wmts.domain.model.Outdoors
 import com.peterlaurence.trekme.core.wmts.domain.model.WorldStreetMap
@@ -29,6 +30,7 @@ class UrlTileBuilderOSM(private val layer: OsmLayer) : UrlTileBuilder {
             WorldStreetMap -> "https://tile.openstreetmap.org/$level/$col/$row.png"
             WorldTopoMap -> "https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/WMTS/tile/1.0.0/World_Topo_Map/default/GoogleMapsCompatible/$level/$row/$col.jpg"
             Outdoors -> "https://plrapps.ovh:5800/osm/outdoors/$level/$col/$row"
+            OsmAndHd -> "https://tile.osmand.net/hd/$level/$col/$row.png"
         }
     }
 }

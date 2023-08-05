@@ -28,11 +28,13 @@ object WorldTopoMap : OsmLayer(osmTopo)
 object WorldStreetMap : OsmLayer(osmStreet)
 object OpenTopoMap : OsmLayer(openTopoMap)
 object Outdoors : OsmLayer(osmOutdoors)
+object OsmAndHd : OsmLayer(osmAndHd)
 
 const val osmTopo = "osmTopo"
 const val osmStreet = "osmStreet"
 const val openTopoMap = "openTopoMap"
 const val osmOutdoors = "osmOutdoors"
+const val osmAndHd = "osmAndHd"
 
 /* All supported OSM layers */
-val osmLayersPrimary: List<OsmLayer> = listOf(WorldStreetMap, WorldTopoMap, OpenTopoMap)
+val osmLayersPrimary: List<OsmLayer> = listOf(WorldStreetMap, OsmAndHd, WorldTopoMap, OpenTopoMap)

@@ -1,10 +1,10 @@
 package com.peterlaurence.trekme.core.billing.domain.interactors
 
-import com.peterlaurence.trekme.core.billing.domain.repositories.ExtendedOfferRepository
+import com.peterlaurence.trekme.core.billing.domain.repositories.TrekmeExtendedWithIgnRepository
 import javax.inject.Inject
 
-class ExtendedOfferInteractor @Inject constructor(
-    private val repository: ExtendedOfferRepository
+class TrekmeExtendedWithIgnInteractor @Inject constructor(
+    private val repository: TrekmeExtendedWithIgnRepository
 ) {
     fun buyMonthlySubscription() {
         repository.buyMonthlySubscription()

@@ -12,12 +12,21 @@ import com.peterlaurence.trekme.core.wmts.domain.model.MapSpec
 import com.peterlaurence.trekme.core.wmts.domain.model.Tile
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.map.data.models.BitmapProvider
+import com.peterlaurence.trekme.core.map.data.models.makeTag
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnClassic
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnSourceData
+import com.peterlaurence.trekme.core.wmts.domain.model.IgnSpainData
 import com.peterlaurence.trekme.core.wmts.domain.model.MapSourceData
+import com.peterlaurence.trekme.core.wmts.domain.model.OpenTopoMap
+import com.peterlaurence.trekme.core.wmts.domain.model.OrdnanceSurveyData
+import com.peterlaurence.trekme.core.wmts.domain.model.OsmAndHd
 import com.peterlaurence.trekme.core.wmts.domain.model.OsmSourceData
+import com.peterlaurence.trekme.core.wmts.domain.model.Outdoors
+import com.peterlaurence.trekme.core.wmts.domain.model.SwissTopoData
+import com.peterlaurence.trekme.core.wmts.domain.model.UsgsData
 import com.peterlaurence.trekme.core.wmts.domain.model.WorldStreetMap
+import com.peterlaurence.trekme.core.wmts.domain.model.WorldTopoMap
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.firstOrNull
 import java.io.File
@@ -65,6 +74,10 @@ class MapDownloadDaoImpl(
             try {
                 val out = FileOutputStream(tileFile)
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+                val tag = makeTag(request.source)
+                if (tag != null) {
+                    out.write(tag)
+                }
                 out.flush()
                 out.close()
             } catch (e: Exception) {
@@ -87,7 +100,14 @@ class MapDownloadDaoImpl(
     }
 
     private suspend fun postProcess(mapSpec: MapSpec, source: MapSourceData, destDir: File): Map {
-        val mapOrigin = Wmts(licensed = source is IgnSourceData && source.layer == IgnClassic)
+        val mapOrigin = when (source) {
+            is IgnSourceData -> Ign(licensed = source.layer == IgnClassic)
+            IgnSpainData, OrdnanceSurveyData, SwissTopoData, UsgsData -> Wmts(licensed = false)
+            is OsmSourceData -> when(source.layer) {
+                OpenTopoMap, WorldStreetMap, WorldTopoMap -> Wmts(licensed = false)
+                OsmAndHd, Outdoors -> Wmts(licensed = true)
+            }
+        }
 
         val map = buildMap(mapSpec, mapOrigin, destDir)
 

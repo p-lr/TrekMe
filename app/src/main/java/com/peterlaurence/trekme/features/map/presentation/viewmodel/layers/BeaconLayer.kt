@@ -7,7 +7,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.map.domain.models.Beacon
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.features.map.domain.interactors.BeaconInteractor
@@ -29,7 +28,7 @@ import java.util.*
 class BeaconLayer(
     private val scope: CoroutineScope,
     private val dataStateFlow: Flow<DataState>,
-    private val purchaseFlow: Flow<PurchaseState>,
+    private val purchaseFlow: Flow<Boolean>,
     private val beaconInteractor: BeaconInteractor,
     private val onBeaconEdit: (Beacon, mapId: UUID) -> Unit,
     private val mapFeatureEvents: MapFeatureEvents
@@ -44,8 +43,8 @@ class BeaconLayer(
 
     init {
         scope.launch {
-            purchaseFlow.collectLatest {
-                if (it == PurchaseState.PURCHASED) {
+            purchaseFlow.collectLatest { purchased ->
+                if (purchased) {
                     dataStateFlow.collectLatest { (map, mapState) ->
                         beaconListState.clear()
                         onMapUpdate(map, mapState)

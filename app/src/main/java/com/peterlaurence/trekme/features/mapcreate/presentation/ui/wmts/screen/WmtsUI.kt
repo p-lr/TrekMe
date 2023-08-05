@@ -4,11 +4,30 @@ import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.BoxWithConstraintsScope
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallFloatingActionButton
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -23,19 +42,38 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.geocoding.domain.engine.GeoPlace
+import com.peterlaurence.trekme.core.wmts.domain.model.Layer
+import com.peterlaurence.trekme.core.wmts.domain.model.OsmAndHd
+import com.peterlaurence.trekme.core.wmts.domain.model.OsmLayer
+import com.peterlaurence.trekme.core.wmts.domain.model.Outdoors
 import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.ErrorScreen
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingScreen
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.DialogShape
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.OnBoardingTip
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.PopupOrigin
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.AdvertTrekmeExtendedDialog
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.LevelsDialogStateful
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.PrimaryLayerDialogStateful
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components.GeoPlaceListUI
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components.WmtsAppBar
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.DownloadFormData
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.PrimaryLayerSelectionData
-import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.*
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.AreaSelection
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.Collapsed
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.GeoplaceList
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.Loading
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.MapReady
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.OnBoardingState
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.ShowTip
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.TopBarState
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.UiState
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.Wmts
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.WmtsError
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.WmtsEvent
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.WmtsOnBoardingViewModel
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.WmtsState
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.WmtsViewModel
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.DefaultCanvas
@@ -52,18 +90,50 @@ fun WmtsStateful(
     viewModel: WmtsViewModel,
     onBoardingViewModel: WmtsOnBoardingViewModel,
     onShowLayerOverlay: () -> Unit,
-    onMenuClick: () -> Unit
+    onMenuClick: () -> Unit,
+    onGoToShop: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val topBarState by viewModel.topBarState.collectAsState()
     val onBoardingState by onBoardingViewModel.onBoardingState
     val wmtsSource by viewModel.wmtsSourceState.collectAsState()
+    val hasExtendedOffer by viewModel.hasExtendedOffer.collectAsState()
 
     LaunchedEffectWithLifecycle(flow = viewModel.locationFlow) {
         viewModel.onLocationReceived(it)
     }
 
-    val events = viewModel.eventListState.toList()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    val ok = stringResource(id = R.string.ok_dialog)
+    val outOfBounds = stringResource(id = R.string.mapcreate_out_of_bounds)
+    val outSideOfCoveredArea = stringResource(id = R.string.place_outside_of_covered_area)
+    var showTrekmeExtendedAdvert by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    LaunchedEffectWithLifecycle(viewModel.events) { event ->
+        val message = when (event) {
+            WmtsEvent.CURRENT_LOCATION_OUT_OF_BOUNDS -> outOfBounds
+            WmtsEvent.PLACE_OUT_OF_BOUNDS -> outSideOfCoveredArea
+            WmtsEvent.SHOW_TREKME_EXTENDED_ADVERT -> {
+                showTrekmeExtendedAdvert = true
+                return@LaunchedEffectWithLifecycle
+            }
+        }
+
+        /* Dismiss the currently showing snackbar, if any */
+        snackbarHostState.currentSnackbarData?.dismiss()
+
+        scope.launch {
+            snackbarHostState.showSnackbar(message, actionLabel = ok)
+        }
+    }
+
+    if (showTrekmeExtendedAdvert) {
+        AdvertTrekmeExtendedDialog(
+            onDismissRequest = { showTrekmeExtendedAdvert = false },
+            onSeeOffer = onGoToShop
+        )
+    }
 
     val launcher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -79,7 +149,7 @@ fun WmtsStateful(
     }
     primaryLayerSelectionData?.also { data ->
         PrimaryLayerDialogStateful(
-            layerIds = data.layerIds,
+            layerIdsAndAvailability = data.layerIdsAndAvailability,
             initialActiveLayerId = data.selectedLayerId,
             onLayerSelected = {
                 viewModel.onPrimaryLayerDefined(it)
@@ -114,15 +184,27 @@ fun WmtsStateful(
         val layers = viewModel.getAvailablePrimaryLayersForSource(source) ?: return@l
         val activeLayer = viewModel.getActivePrimaryLayerForSource(source) ?: return@l
 
-        primaryLayerSelectionData = PrimaryLayerSelectionData(layers.map { it.id }, activeLayer.id)
+        fun getLayerAvailability(layer: Layer): Boolean {
+            if (hasExtendedOffer) return true
+            return if (layer is OsmLayer) {
+                when (layer) {
+                    OsmAndHd, Outdoors -> false
+                    else -> true
+                }
+            } else true
+        }
+
+        primaryLayerSelectionData = PrimaryLayerSelectionData(
+            layers.map { layer -> layer.id to getLayerAvailability(layer) },
+            activeLayer.id
+        )
     }
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
         WmtsScaffold(
-            events = events,
+            snackbarHostState = snackbarHostState,
             topBarState = topBarState,
             uiState = uiState,
-            onAckError = viewModel::acknowledgeError,
             onToggleArea = {
                 viewModel.toggleArea()
                 onBoardingViewModel.onFabTipAck()
@@ -211,10 +293,9 @@ private fun BoxWithConstraintsScope.OnBoardingOverlay(
 
 @Composable
 private fun WmtsScaffold(
-    events: List<WmtsEvent>,
+    snackbarHostState: SnackbarHostState,
     topBarState: TopBarState,
     uiState: UiState,
-    onAckError: () -> Unit,
     onToggleArea: () -> Unit,
     onValidateArea: () -> Unit,
     onMenuClick: () -> Unit,
@@ -227,28 +308,6 @@ private fun WmtsScaffold(
     onShowLayerOverlay: () -> Unit,
     onUseTrack: () -> Unit
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
-
-
-    if (events.isNotEmpty()) {
-        val ok = stringResource(id = R.string.ok_dialog)
-        val message = when (events.first()) {
-            WmtsEvent.CURRENT_LOCATION_OUT_OF_BOUNDS -> stringResource(id = R.string.mapcreate_out_of_bounds)
-            WmtsEvent.PLACE_OUT_OF_BOUNDS -> stringResource(id = R.string.place_outside_of_covered_area)
-        }
-
-        SideEffect {
-            scope.launch {
-                /* Dismiss the currently showing snackbar, if any */
-                snackbarHostState.currentSnackbarData?.dismiss()
-
-                snackbarHostState.showSnackbar(message, actionLabel = ok)
-            }
-            onAckError()
-        }
-    }
-
     Scaffold(
         Modifier.fillMaxSize(),
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -268,6 +327,7 @@ private fun WmtsScaffold(
             when (uiState) {
                 is GeoplaceList -> {
                 }
+
                 is Wmts -> {
                     if (uiState.wmtsState is MapReady || uiState.wmtsState is AreaSelection) {
                         FabAreaSelection(onToggleArea)
@@ -291,6 +351,7 @@ private fun WmtsScaffold(
                     onGeoPlaceSelection
                 )
             }
+
             is Wmts -> {
                 WmtsUI(
                     modifier,
@@ -334,12 +395,15 @@ private fun WmtsUI(
                 }
             }
         }
+
         is Loading -> {
             LoadingScreen()
         }
+
         is AreaSelection -> {
             AreaSelectionScreen(modifier, wmtsState, onValidateArea)
         }
+
         is WmtsError -> {
             CustomErrorScreen(wmtsState)
         }

@@ -45,9 +45,14 @@ fun ErrorScaffold(
         }
     ) { paddingValues ->
         when (error) {
-            Error.LicenseError -> MissingOffer(
+            Error.IgnLicenseError -> MissingOffer(
                 Modifier.padding(paddingValues),
-                message = stringResource(R.string.missing_extended_offer),
+                message = stringResource(R.string.missing_extended_with_ign),
+                onShopClick
+            )
+            Error.WmtsLicenseError -> MissingOffer(
+                Modifier.padding(paddingValues),
+                message = stringResource(R.string.missing_extended),
                 onShopClick
             )
             Error.EmptyMap -> ErrorScreen(
@@ -99,6 +104,6 @@ private fun ErrorPreview1() {
 @Composable
 private fun ErrorPreview2() {
     TrekMeTheme {
-        ErrorScaffold(error = Error.LicenseError, onMainMenuClick = {}, onShopClick = {})
+        ErrorScaffold(error = Error.IgnLicenseError, onMainMenuClick = {}, onShopClick = {})
     }
 }

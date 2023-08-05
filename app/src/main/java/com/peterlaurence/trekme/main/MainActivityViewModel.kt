@@ -6,7 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.TrekMeContext
-import com.peterlaurence.trekme.core.billing.domain.interactors.ExtendedOfferInteractor
+import com.peterlaurence.trekme.core.billing.domain.interactors.TrekmeExtendedInteractor
+import com.peterlaurence.trekme.core.billing.domain.interactors.TrekmeExtendedWithIgnInteractor
 import com.peterlaurence.trekme.core.billing.domain.model.GpsProStateOwner
 import com.peterlaurence.trekme.core.location.domain.model.InternalGps
 import com.peterlaurence.trekme.core.map.domain.interactors.UpdateMapsInteractor
@@ -42,7 +43,8 @@ class MainActivityViewModel @Inject constructor(
     private val trekMeContext: TrekMeContext,
     private val settings: Settings,
     private val mapRepository: MapRepository,
-    private val extendedOfferInteractor: ExtendedOfferInteractor,
+    private val trekmeExtendedWithIgnInteractor: TrekmeExtendedWithIgnInteractor,
+    private val trekmeExtendedInteractor: TrekmeExtendedInteractor,
     private val gpsProStateOwner: GpsProStateOwner,
     private val appEventBus: AppEventBus,
     private val updateMapsInteractor: UpdateMapsInteractor
@@ -118,7 +120,8 @@ class MainActivityViewModel @Inject constructor(
     }
 
     fun onActivityResume() {
-        extendedOfferInteractor.acknowledgePurchase()
+        trekmeExtendedWithIgnInteractor.acknowledgePurchase()
+        trekmeExtendedInteractor.acknowledgePurchase()
     }
 
     private suspend fun showLastMap() {

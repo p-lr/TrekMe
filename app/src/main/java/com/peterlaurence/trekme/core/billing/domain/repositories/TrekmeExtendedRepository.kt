@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.core.billing.domain.repositories
 
 import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
-import com.peterlaurence.trekme.core.billing.di.IGN
+import com.peterlaurence.trekme.core.billing.di.TrekmeExtended
 import com.peterlaurence.trekme.core.billing.domain.api.BillingApi
 import com.peterlaurence.trekme.core.billing.domain.model.ExtendedOfferStateOwner
 import com.peterlaurence.trekme.core.billing.domain.model.SubscriptionDetails
@@ -16,9 +16,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ExtendedOfferRepository @Inject constructor(
+class TrekmeExtendedRepository @Inject constructor(
     @MainDispatcher mainDispatcher: CoroutineDispatcher,
-    @IGN private val billingApi: BillingApi
+    @TrekmeExtended private val billingApi: BillingApi
 ) : ExtendedOfferStateOwner {
     private val scope = CoroutineScope(mainDispatcher + SupervisorJob())
 

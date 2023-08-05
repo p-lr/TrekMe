@@ -1,31 +1,27 @@
 package com.peterlaurence.trekme.features.shop.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.peterlaurence.trekme.core.billing.domain.interactors.ExtendedOfferInteractor
+import com.peterlaurence.trekme.core.billing.di.TrekmeExtended
+import com.peterlaurence.trekme.core.billing.domain.interactors.TrekmeExtendedInteractor
 import com.peterlaurence.trekme.core.billing.domain.model.ExtendedOfferStateOwner
-import com.peterlaurence.trekme.events.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class ExtendedOfferViewModel @Inject constructor(
+    @TrekmeExtended
     extendedOfferStateOwner: ExtendedOfferStateOwner,
-    private val extendedOfferInteractor: ExtendedOfferInteractor,
-    private val appEventBus: AppEventBus
-): ViewModel() {
+    private val trekmeExtendedInteractor: TrekmeExtendedInteractor,
+) : ViewModel() {
     val purchaseFlow = extendedOfferStateOwner.purchaseFlow
     val monthlySubscriptionDetailsFlow = extendedOfferStateOwner.monthlySubDetailsFlow
     val yearlySubscriptionDetailsFlow = extendedOfferStateOwner.yearlySubDetailsFlow
 
     fun buyMonthly() {
-        extendedOfferInteractor.buyMonthlySubscription()
+        trekmeExtendedInteractor.buyMonthlySubscription()
     }
 
     fun buyYearly() {
-        extendedOfferInteractor.buyYearlySubscription()
-    }
-
-    fun onMainMenuClick() {
-        appEventBus.openDrawer()
+        trekmeExtendedInteractor.buyYearlySubscription()
     }
 }

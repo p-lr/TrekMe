@@ -20,7 +20,7 @@ fun Header(title: String, subTitle: String?) {
         modifier = Modifier
             .fillMaxWidth()
             .height(60.dp)
-            .background(MaterialTheme.colorScheme.tertiary),
+            .background(MaterialTheme.colorScheme.primary),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

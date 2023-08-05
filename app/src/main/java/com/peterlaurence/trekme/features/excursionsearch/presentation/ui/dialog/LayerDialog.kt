@@ -105,7 +105,7 @@ private fun MapSourceDataList(
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, widthDp = 450)
 @Composable
 private fun MapSourceDataSelectPreview() {
     TrekMeTheme {

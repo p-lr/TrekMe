@@ -40,6 +40,7 @@
     <string name="offer_gateway_navigation_button">Go to shop</string>
     <string name="offer_gateway_check_pending">Check pending…</string>
     <string name="offer_gateway_free_trial">Free trial</string>
+    <string name="offer_gateway_subscription_must_end">Your subscription to TrekMe Extended must end before you can select the IGN option.</string>
 
     <!-- GpxRecordService -->
     <string name="service_gpx_record_name">Gpx recording service</string>
@@ -221,7 +222,8 @@
     <string name="mile">ml</string>
     <string name="no_track_message">You haven\'t created nor imported any track yet.
         You can import a gpx track downloaded from a website (or a recording of your own) using the import button below.</string>
-    <string name="missing_extended_offer">To open this map, your TrekMe Extended subscription must be active.</string>
+    <string name="missing_extended_with_ign">To open this map, your TrekMe Extended subscription with IGN option must be active.</string>
+    <string name="missing_extended">To open this map, your TrekMe Extended subscription must be active.</string>
     <string name="empty_map">This map appears to be empty</string>
     <string name="navigate_to_shop">Go to shop</string>
     <string name="unknown_map_source">Unknown map source. The map configuration is incorrect.</string>
@@ -338,7 +340,7 @@
     <string name="place_outside_of_covered_area">The place is outside of the area covered by this map.</string>
     <string name="accessibility_mapsource_image" translatable="false">Map source image</string>
 
-    <!-- GoogleMapWmtsFragment -->
+    <!-- Map creation -->
     <string name="mapcreate_title">Map creation</string>
     <string name="mapcreate_zoom_on_position">Zoom on location</string>
     <string name="mapcreate_define_layer">Choose layer</string>
@@ -372,13 +374,15 @@
     <string name="layer_ign_slopes">Mountain Slopes</string>
     <string name="layer_ign_cadastre">Cadastre</string>
     <string name="layer_osm_topo">TopoMap</string>
-    <string name="layer_osm_street">StreetMap</string>
+    <string name="layer_osm_street">OpenStreetMap</string>
+    <string name="layer_osm_street_hd">OpenStreetMap HD</string>
     <string name="layer_osm_opentopo">OpenTopoMap</string>
     <string name="layer_osm_outdoors">Outdoors</string>
     <string name="place_search_hint">Search a place</string>
     <string name="add_layer">Add layer</string>
     <string name="validate_area">Validate</string>
     <string name="search_hint">Search…</string>
+    <string name="trekme_extended_advert">Enjoy far better image quality and more readable texts.</string>
 
     <!-- LayerOverlayFragment -->
     <string name="overlay_title">Layer name</string>
@@ -433,7 +437,7 @@
     <string name="excursion_download_error">An error occurred while downloading this excursion.</string>
     <string name="excursion_search_error">An error occurred while searching this excursion.</string>
     <string name="excursion_map_download">A map will be downloaded for this excursion.\nWould you like to see the download progress?</string>
-    <string name="offer_suggestion_short">Available with TrekMe Extended</string>
+    <string name="offer_suggestion_short">With TrekMe Extended + IGN</string>
     <string name="see_offer">See offer</string>
 
     <!-- SettingsFragment -->
@@ -538,14 +542,14 @@
     <string name="fragment_shop" translatable="false">ShopFragment</string>
     <string name="trekme_extended_offer" translatable="false">TrekMe Extended</string>
     <string name="trekme_extended_trial">7d of free trial</string>
+    <string name="trekme_extended_maps_title">Maps</string>
+    <string name="trekme_extended_osm_hd_desc">Download OSM HD maps, with a twice better resolution than standard and better readable texts</string>
+    <string name="trekme_extended_activate_ign">With IGN option</string>
     <string name="trekme_extended_ign_maps_title">IGN maps</string>
     <string name="trekme_extended_ign_maps_offline">Topographic IGN maps</string>
     <string name="trekme_extended_ign_maps_satellite">Satellite view</string>
-    <string name="trekme_extended_ign_overlay_title">Overlays (IGN only, for now)</string>
-    <string name="trekme_extended_ign_overlay_1">IGN slopes for mountain activities</string>
-    <string name="trekme_extended_ign_overlay_2">Cadastre</string>
-    <string name="trekme_extended_ign_overlay_3">Roads, paths and trails</string>
-    <string name="trekme_extended_specificities">Specificities</string>
+    <string name="trekme_extended_ign_overlay_desc">Overlay slopes for mountain activities, cadastre, roads, paths and trails</string>
+    <string name="trekme_extended_advanced_ft">Advanced features</string>
     <string name="add_beacons">Add beacons to alert you when you get close to specific locations</string>
     <string name="no_ads">No ads</string>
     <string name="create_map_from_track">Create a map from a gpx track</string>

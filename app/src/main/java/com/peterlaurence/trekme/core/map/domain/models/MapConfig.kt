@@ -22,6 +22,7 @@ data class Level(val level: Int, val tileSize: Size)
 data class Size(val width: Int, val height: Int)
 
 sealed interface MapOrigin
+data class Ign(val licensed: Boolean): MapOrigin
 data class Wmts(val licensed: Boolean): MapOrigin
 object Vips : MapOrigin
 

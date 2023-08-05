@@ -48,7 +48,7 @@ import kotlin.math.*
  * @param point1 A [Point] at any corner
  * @param point2 A [Point] at the opposite corner of [point1]
  */
-fun getMapSpec(levelMin: Int, levelMax: Int, point1: Point, point2: Point, tileSize: Int = TILE_SIZE_PX): MapSpec {
+fun getMapSpec(levelMin: Int, levelMax: Int, point1: Point, point2: Point, tileSize: Int): MapSpec {
     val (XLeft, YTop, XRight, YBottom) = orderCoordinates(point1, point2)
 
     val levelBuilder = LevelBuilder(levelMin, levelMax, XLeft, YTop, XRight, YBottom)

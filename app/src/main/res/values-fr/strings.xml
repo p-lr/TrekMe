@@ -159,7 +159,8 @@
     <string name="preference_root_location_title">Répertoire sélectionné</string>
     <string name="mapview_lock_on_position">Verrouiller la position</string>
     <string name="buy_btn">Acheter</string>
-    <string name="missing_extended_offer">Pour accéder à cette carte, votre abonnement TrekMe Extended doit être actif.</string>
+    <string name="missing_extended_with_ign">Pour accéder à cette carte, votre abonnement TrekMe Extended avec l\'option IGN doit être actif.</string>
+    <string name="missing_extended">Pour accéder à cette carte, votre abonnement TrekMe Extended doit être actif.</string>
     <string name="empty_map">Cette carte semble vide</string>
     <string name="navigate_to_shop">Aller à la boutique</string>
     <string name="ign_legal_notice_btn">mentions légales</string>
@@ -277,9 +278,11 @@
     <string name="layer_ign_satellite">Vues aériennes</string>
     <string name="layer_osm_topo">Topo</string>
     <string name="layer_osm_street">OSM</string>
+    <string name="layer_osm_street_hd">OpenStreetMap HD</string>
     <string name="layer_osm_opentopo">OpenTopoMap</string>
     <string name="layer_osm_outdoors">Outdoors</string>
     <string name="place_search_hint">Chercher un lieu</string>
+    <string name="trekme_extended_advert">Profitez d\'une bien meilleure qualité d\'image et de textes plus lisibles.</string>
     <string name="place_outside_of_covered_area">Ce lieu est hors de la zone couverte par cette carte.</string>
     <string name="mapcreate_overlay_layers">Superposer des couches</string>
     <string name="mapcreate_from_track">Utiliser une trace</string>
@@ -370,15 +373,15 @@
     <string name="preference_show_scale_indicator">Afficher l\'indicateur d\'échelle</string>
     <string name="shop_menu_title">Boutique</string>
     <string name="trekme_extended_trial">Essai gratuit de 7j</string>
+    <string name="trekme_extended_maps_title">Cartes</string>
+    <string name="trekme_extended_osm_hd_desc">Téléchargez des cartes OSM HD, avec une résolution deux fois meilleure et des textes plus lisibles.</string>
+    <string name="trekme_extended_activate_ign">Avec option IGN</string>
     <string name="trekme_extended_ign_maps_title">Cartes IGN</string>
-    <string name="trekme_extended_ign_maps_offline">Téléchargez des cartes IGN, pour utilisation hors ligne</string>
-    <string name="trekme_extended_ign_maps_satellite">Photos aériennes, et plan IGN</string>
-    <string name="trekme_extended_ign_overlay_title">Couches en superposition</string>
-    <string name="trekme_extended_ign_overlay_1">Carte IGN des pentes pour activité neige</string>
-    <string name="trekme_extended_ign_overlay_2">Parcelles cadastrales</string>
-    <string name="trekme_extended_ign_overlay_3">Réseau des routes, chemins et sentiers</string>
-    <string name="trekme_extended_specificities">Particularités</string>
-    <string name="add_beacons">Ajoutez des balises pour vous alerter quand vous vous rapprochez de lieux précis sur la carte</string>
+    <string name="trekme_extended_ign_maps_offline">Téléchargez des cartes IGN, pour utilisation hors ligne.</string>
+    <string name="trekme_extended_ign_maps_satellite">Photos aériennes, et carte IGN classique.</string>
+    <string name="trekme_extended_ign_overlay_desc">Superposez des couches : pentes pour activité neige, parcelles cadastrales, réseau des routes, chemins et sentiers.</string>
+    <string name="trekme_extended_advanced_ft">Fonctionnalités avancées</string>
+    <string name="add_beacons">Ajoutez des balises pour vous alerter quand vous vous rapprochez de lieux précis sur la carte.</string>
     <string name="no_ads">Pas de publicité</string>
     <string name="new_features">Des fonctionnalités exclusives seront ajoutées</string>
     <string name="offer_suggestion">Disponible avec TrekMe Extended 1 an, 7j d\'essai gratuit</string>
@@ -388,10 +391,12 @@
     <string name="free_trial">Essai gratuit de %1$dj</string>
     <string name="one_year">1 an</string>
     <string name="one_month">1 mois</string>
-    <string name="offer_gateway_suggest_navigation">Les cartes IGN sont accessibles avec TrekMe Extended</string>
+    <string name="offer_gateway_suggest_navigation">Les cartes IGN sont accessibles avec TrekMe Extended + IGN</string>
     <string name="offer_gateway_free_trial">Période d\'essai gratuite</string>
     <string name="offer_gateway_navigation_button">Voir les offres</string>
     <string name="offer_gateway_check_pending">Vérifications en cours…</string>
+    <string name="offer_gateway_subscription_must_end">Votre abonnement TrekMe Extended doit prendre fin avant de pouvoir choisir l\'option IGN.
+        Vous pouvez gérer votre abonnement depuis la gestion de vos abonnements dans l\'application Google Play.</string>
     <string name="ign_caution">Le serveur de carte de l\'IGN a parfois des lenteurs. Concrètement, vous voulez créer une carte IGN mais …
     rien ne s\'affiche. Dans ce cas, il est conseillé de réessayer plus tard dans la journée.</string>
     <string name="nb">N.B</string>
@@ -399,10 +404,10 @@
     <string name="tracks_manage_frgmt_title">Gestion des traces</string>
     <string name="settings_frgmt_title">Réglages</string>
     <string name="map_settings_frgmt_title">Réglages de carte</string>
-    <string name="center_on_track">Centrez directement sur une trace depuis la gestion des traces d\'une carte</string>
-    <string name="define_elevation_fix">Définissez une correction d\'altitude GPS</string>
-    <string name="osm_level_17">Débloquez le niveau 17 pour les cartes OpenStreetMap</string>
-    <string name="create_map_from_track">Créez une carte à partir d\'une trace gpx</string>
+    <string name="center_on_track">Centrez directement sur une trace depuis la gestion des traces d\'une carte.</string>
+    <string name="define_elevation_fix">Définissez une correction d\'altitude GPS.</string>
+    <string name="osm_level_17">Débloquez le niveau 17 pour les cartes OpenStreetMap.</string>
+    <string name="create_map_from_track">Créez une carte à partir d\'une trace gpx.</string>
     <string name="rate_the_app">Noter l\'application</string>
     <string name="user_feedback">Retours et suggestions</string>
     <string name="feedback_desc">Vous avez des idées d\'amélioration ou quelques soucis, n\'hésitez pas à m\'envoyer un mail.</string>
@@ -458,7 +463,7 @@
     <string name="excursion_download_error">Une erreur s\'est produite pendant le téléchargement.</string>
     <string name="excursion_search_error">Une erreur s\'est produite pendant la recherche.</string>
     <string name="excursion_map_download">Une carte va être téléchargée pour cette excursion.\nVoulez-vous suivre la progression du téléchargement ?</string>
-    <string name="offer_suggestion_short">Disponible avec TrekMe Extended</string>
+    <string name="offer_suggestion_short">Avec TrekMe Extended + IGN</string>
     <string name="see_offer">Voir l\'offre</string>
 
     <!-- General -->

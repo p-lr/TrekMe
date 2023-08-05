@@ -4,6 +4,8 @@ import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.peterlaurence.trekme.core.billing.di.IGN
+import com.peterlaurence.trekme.core.billing.di.TrekmeExtended
 import com.peterlaurence.trekme.core.billing.domain.model.ExtendedOfferStateOwner
 import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
@@ -17,12 +19,14 @@ import com.peterlaurence.trekme.features.common.domain.interactors.MapExcursionI
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.features.map.domain.interactors.RouteInteractor
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
-import com.peterlaurence.trekme.util.map
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -32,6 +36,9 @@ class TracksManageViewModel @Inject constructor(
     private val routeInteractor: RouteInteractor,
     private val removeRouteInteractor: RemoveRouteInteractor,
     private val mapExcursionInteractor: MapExcursionInteractor,
+    @IGN
+    extendedOfferWithIgnStateOwner: ExtendedOfferStateOwner,
+    @TrekmeExtended
     extendedOfferStateOwner: ExtendedOfferStateOwner,
     private val isUriSupportedInteractor: IsUriSupportedInteractor,
     private val importGeoRecordInteractor: ImportGeoRecordInteractor,
@@ -39,9 +46,9 @@ class TracksManageViewModel @Inject constructor(
     private val app: Application
 ) : ViewModel() {
 
-    val hasExtendedOffer = extendedOfferStateOwner.purchaseFlow.map {
-        it == PurchaseState.PURCHASED
-    }
+    val hasExtendedOffer = combine(extendedOfferWithIgnStateOwner.purchaseFlow, extendedOfferStateOwner.purchaseFlow) { x, y ->
+        x == PurchaseState.PURCHASED || y == PurchaseState.PURCHASED
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     private val _routeImportEvent = Channel<GeoRecordImportResult>(1)
     val routeImportEventFlow = _routeImportEvent.receiveAsFlow()

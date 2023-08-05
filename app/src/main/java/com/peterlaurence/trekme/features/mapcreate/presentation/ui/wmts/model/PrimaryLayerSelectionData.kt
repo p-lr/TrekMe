@@ -6,5 +6,5 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class PrimaryLayerSelectionData(
-    val layerIds: List<String>, val selectedLayerId: String
+    val layerIdsAndAvailability: List<Pair<String, Boolean>>, val selectedLayerId: String
 ) : Parcelable

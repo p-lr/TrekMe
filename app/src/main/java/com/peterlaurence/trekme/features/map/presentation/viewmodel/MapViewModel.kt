@@ -4,15 +4,19 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.peterlaurence.trekme.core.billing.di.IGN
+import com.peterlaurence.trekme.core.billing.di.TrekmeExtended
 import com.peterlaurence.trekme.core.billing.domain.model.ExtendedOfferStateOwner
 import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.core.map.domain.interactors.ElevationFixInteractor
 import com.peterlaurence.trekme.core.map.domain.models.ErrorIgnLicense
+import com.peterlaurence.trekme.core.map.domain.models.ErrorWmtsLicense
 import com.peterlaurence.trekme.core.map.domain.models.FreeLicense
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.ValidIgnLicense
+import com.peterlaurence.trekme.core.map.domain.models.ValidWmtsLicense
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.core.orientation.model.OrientationSource
 import com.peterlaurence.trekme.core.settings.Settings
@@ -52,6 +56,9 @@ class MapViewModel @Inject constructor(
     gpxRecordEvents: GpxRecordEvents,
     private val appEventBus: AppEventBus,
     private val mapLicenseInteractor: MapLicenseInteractor,
+    @IGN
+    extendedOfferWithIgnStateOwner: ExtendedOfferStateOwner,
+    @TrekmeExtended
     extendedOfferStateOwner: ExtendedOfferStateOwner,
     private val elevationFixInteractor: ElevationFixInteractor
 ) : ViewModel() {
@@ -65,7 +72,9 @@ class MapViewModel @Inject constructor(
     val elevationFixFlow: StateFlow<Int> = mapRepository.currentMapFlow.flatMapMerge {
         it?.elevationFix ?: MutableStateFlow(0)
     }.stateIn(viewModelScope, SharingStarted.Eagerly, 0)
-    val purchaseFlow: StateFlow<PurchaseState> = extendedOfferStateOwner.purchaseFlow
+    val purchaseFlow: StateFlow<Boolean> = combine(extendedOfferWithIgnStateOwner.purchaseFlow, extendedOfferStateOwner.purchaseFlow) { x, y ->
+        x == PurchaseState.PURCHASED || y == PurchaseState.PURCHASED
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, initialValue = false)
 
     val markerEditEvent: Flow<MapFeatureEvents.MarkerEditEvent> = mapFeatureEvents.navigateToMarkerEdit
     val beaconEditEvent: Flow<MapFeatureEvents.BeaconEditEvent> = mapFeatureEvents.navigateToBeaconEdit
@@ -164,14 +173,17 @@ class MapViewModel @Inject constructor(
 
         mapLicenseInteractor.getMapLicenseFlow(map).collectLatest { mapLicense ->
             when (mapLicense) {
-                is FreeLicense, ValidIgnLicense -> {
+                is FreeLicense, ValidIgnLicense, ValidWmtsLicense -> {
                     /* Reload the map only if we were previously in error state */
                     if (_uiState.value is Error) {
                         onMapChange(map)
                     }
                 }
                 is ErrorIgnLicense -> {
-                    _uiState.value = Error.LicenseError
+                    _uiState.value = Error.IgnLicenseError
+                }
+                is ErrorWmtsLicense -> {
+                    _uiState.value = Error.WmtsLicenseError
                 }
             }
         }
@@ -282,7 +294,7 @@ data class MapUiState(
 
 object Loading : UiState
 enum class Error : UiState {
-    LicenseError, EmptyMap
+    IgnLicenseError, WmtsLicenseError, EmptyMap
 }
 
 enum class SnackBarEvent {

@@ -93,7 +93,10 @@ class WmtsFragment : Fragment() {
                         viewModel,
                         onBoardingViewModel,
                         ::showLayerOverlay,
-                        appEventBus::openDrawer
+                        appEventBus::openDrawer,
+                        onGoToShop = {
+                            appEventBus.navigateTo(AppEventBus.NavDestination.Shop)
+                        }
                     )
                 }
             }

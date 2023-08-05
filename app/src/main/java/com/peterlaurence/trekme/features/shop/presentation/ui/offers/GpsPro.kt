@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -16,11 +17,15 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.Hyphens
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.billing.domain.model.*
+import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
+import com.peterlaurence.trekme.core.billing.domain.model.SubscriptionDetails
+import com.peterlaurence.trekme.core.billing.domain.model.TrialAvailable
+import com.peterlaurence.trekme.core.billing.domain.model.TrialUnavailable
 import com.peterlaurence.trekme.features.shop.presentation.ui.components.Header
 import com.peterlaurence.trekme.features.shop.presentation.ui.components.PriceButton
 
@@ -38,6 +43,7 @@ fun GpsProPurchaseHeader(purchaseState: PurchaseState, subDetails: SubscriptionD
                 null -> stringResource(id = R.string.module_error)
             }
         }
+
         PurchaseState.PURCHASE_PENDING -> stringResource(id = R.string.module_check_pending)
         PurchaseState.UNKNOWN -> stringResource(id = R.string.module_error)
     }
@@ -58,6 +64,7 @@ fun ColumnScope.GpsProPurchaseContent() {
     Text(
         stringResource(id = R.string.gps_pro_pres_p1_title),
         fontWeight = FontWeight.Medium,
+        modifier = Modifier.padding(horizontal = 32.dp)
     )
     Spacer(modifier = Modifier.padding(8.dp))
     Text(
@@ -65,18 +72,22 @@ fun ColumnScope.GpsProPurchaseContent() {
             id = R.string.gps_pro_pres_content
         ),
         textAlign = TextAlign.Justify,
-        fontSize = 14.sp
+        fontSize = 14.sp,
+        style = LocalTextStyle.current.copy(hyphens = Hyphens.Auto),
+        modifier = Modifier.padding(horizontal = 32.dp)
     )
     Spacer(modifier = Modifier.padding(8.dp))
     Text(
         stringResource(id = R.string.gps_pro_pres_p2_title),
         fontWeight = FontWeight.Medium,
+        modifier = Modifier.padding(horizontal = 32.dp)
     )
     Spacer(modifier = Modifier.padding(8.dp))
     for (device in supportedDevices) {
         Text(
             "• $device",
-            fontSize = 14.sp
+            fontSize = 14.sp,
+            modifier = Modifier.padding(horizontal = 32.dp)
         )
     }
     Spacer(modifier = Modifier.padding(8.dp))
@@ -85,7 +96,9 @@ fun ColumnScope.GpsProPurchaseContent() {
             id = R.string.gps_pro_pres_ending
         ),
         textAlign = TextAlign.Justify,
-        fontSize = 14.sp
+        fontSize = 14.sp,
+        style = LocalTextStyle.current.copy(hyphens = Hyphens.Auto),
+        modifier = Modifier.padding(horizontal = 32.dp)
     )
 }
 

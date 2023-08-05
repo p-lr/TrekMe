@@ -22,7 +22,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingScreen
@@ -51,7 +50,7 @@ fun MapStateful(
     onNavigateToBeaconEdit: (beaconId: String, mapId: UUID) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val purchaseState by viewModel.purchaseFlow.collectAsState()
+    val purchased by viewModel.purchaseFlow.collectAsState()
     val isShowingOrientation by viewModel.orientationVisibilityFlow()
         .collectAsState(initial = false)
     val isShowingDistance by viewModel.isShowingDistanceFlow().collectAsState()
@@ -134,8 +133,8 @@ fun MapStateful(
                         snackBarEvents,
                         locationState,
                         elevationFix,
-                        hasElevationFix = purchaseState == PurchaseState.PURCHASED,
-                        hasBeacons = purchaseState == PurchaseState.PURCHASED,
+                        hasElevationFix = purchased,
+                        hasBeacons = purchased,
                         onSnackBarShown = viewModel.snackBarController::onSnackBarShown,
                         onMainMenuClick = viewModel::onMainMenuClick,
                         onManageTracks = onNavigateToTracksManage,
