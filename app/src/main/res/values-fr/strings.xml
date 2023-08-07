@@ -115,6 +115,8 @@
     <string name="image_change_btn_txt">Changer l\'image</string>
     <string name="service_download_finished">Téléchargement de la carte terminé</string>
     <string name="map_size">Taille de la carte</string>
+    <string name="map_too_big">Carte volumineuse</string>
+    <string name="map_too_big_explanation">Il est conseillé de ne télécharger que la zone dont vous avez besoin, ou d\'adapter les niveaux de zoom.</string>
     <string name="delete_dialog">Supprimer</string>
     <string name="create_first_map_question">Comment voulez-vous créer votre première carte ?</string>
     <string name="with_onboarding_btn">Avec tutoriel</string>

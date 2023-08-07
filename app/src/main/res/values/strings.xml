@@ -355,6 +355,8 @@
     <string name="min_zoom">Minimum zoom</string>
     <string name="max_zoom">Maximun zoom</string>
     <string name="map_size">Map size</string>
+    <string name="map_too_big">Map too big</string>
+    <string name="map_too_big_explanation">It is advised to download only the area that you need, or to adapt zoom levels.</string>
     <string name="module_check_pending">Checking module..</string>
     <string name="offer_suggestion">Available with TrekMe Extended 1 year, 7d free trial</string>
     <string name="ign_buy_license_pending">Please wait a few minutes, payment is pending</string>

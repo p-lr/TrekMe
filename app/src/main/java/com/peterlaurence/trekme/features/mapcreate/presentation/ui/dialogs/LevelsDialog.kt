@@ -1,5 +1,7 @@
 package com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -8,6 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -20,6 +23,7 @@ import com.peterlaurence.trekme.core.wmts.domain.tools.toSizeInMo
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.Point
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.toDomain
+import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.*
 
@@ -203,6 +207,7 @@ private fun deNormalizedValue(level: Float, minLevel: Int, range: Int): Int {
     return minLevel + (range * level).toInt()
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MapSizeLine(modifier: Modifier = Modifier, mapSizeInMo: Long) {
     val locale = LocalConfiguration.current.locales.get(0) ?: Locale.ENGLISH
@@ -210,14 +215,47 @@ private fun MapSizeLine(modifier: Modifier = Modifier, mapSizeInMo: Long) {
         NumberFormat.getNumberInstance(locale)
     }
 
-    Row(modifier.fillMaxWidth()) {
+    Row(
+        modifier
+            .fillMaxWidth()
+            .height(24.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         Text(stringResource(id = R.string.map_size), fontWeight = FontWeight.Medium)
         Spacer(modifier = Modifier.weight(1f))
         Text(
             text = "${numberFormat.format(mapSizeInMo)} Mo",
-            modifier = Modifier.padding(end = 35.dp),
             fontWeight = FontWeight.Medium
         )
+        if (mapSizeInMo > 200) {
+            Spacer(modifier = Modifier.width(16.dp))
+            val tooltipState = remember { RichTooltipState() }
+            val scope = rememberCoroutineScope()
+            RichTooltipBox(
+                title = { Text(stringResource(id = R.string.map_too_big)) },
+                action = {
+                    TextButton(
+                        onClick = { scope.launch { tooltipState.dismiss() } }
+                    ) { Text("Ok") }
+                },
+                text = { Text(stringResource(id = R.string.map_too_big_explanation)) },
+                tooltipState = tooltipState
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.warning),
+                    modifier = Modifier
+                        .tooltipAnchor()
+                        .clickable {
+                            scope.launch {
+                                tooltipState.show()
+                            }
+                        },
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.tertiary),
+                    contentDescription = null
+                )
+            }
+
+        } else Modifier.width(35.dp)
     }
 }
 
@@ -229,7 +267,7 @@ fun LevelsDialogPreview() {
             minLevel = 1,
             maxLevel = 18,
             p1 = Point(0.0, 0.0),
-            p2 = Point(10000.0, 10000.0),
+            p2 = Point(100000.0, 100000.0),
             onDownloadClicked = { min, max ->
                 println("Download using min=$min max=$max")
             }
