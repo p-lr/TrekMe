@@ -24,6 +24,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.BuildConfig
 import com.peterlaurence.trekme.NavGraphDirections
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.map.domain.interactors.GetMapInteractor
 import com.peterlaurence.trekme.core.map.domain.interactors.SetMapInteractor
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
@@ -33,9 +34,12 @@ import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.events.WarningMessage
 import com.peterlaurence.trekme.events.gpspro.GpsProEvents
 import com.peterlaurence.trekme.events.maparchive.MapArchiveEvents
+import com.peterlaurence.trekme.events.recording.GpxRecordEvents
+import com.peterlaurence.trekme.features.common.domain.interactors.ImportGeoRecordInteractor
 import com.peterlaurence.trekme.main.eventhandler.MapArchiveEventHandler
 import com.peterlaurence.trekme.main.eventhandler.MapDownloadEventHandler
 import com.peterlaurence.trekme.main.eventhandler.PermissionRequestHandler
+import com.peterlaurence.trekme.main.eventhandler.RecordingEventHandler
 import com.peterlaurence.trekme.main.shortcut.Shortcut
 import com.peterlaurence.trekme.util.checkInternet
 import com.peterlaurence.trekme.util.collectWhileStarted
@@ -68,6 +72,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     @Inject
     lateinit var gpsProEvents: GpsProEvents
+
+    @Inject
+    lateinit var gpxRecordEvents: GpxRecordEvents
+
+    @Inject
+    lateinit var importGeoRecordInteractor: ImportGeoRecordInteractor
+
+    @Inject
+    lateinit var getMapInteractor: GetMapInteractor
 
     @Inject
     lateinit var appEventBus: AppEventBus
@@ -110,6 +123,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         showMapFragment()
                     }
                 }
+            }
+        )
+
+        /* Handle recording events */
+        RecordingEventHandler(
+            lifecycle,
+            gpxRecordEvents,
+            importGeoRecordInteractor,
+            getMapInteractor,
+            onImportDone = { importCount ->
+                val msg = getString(R.string.automatic_import_feedback, importCount)
+                showSnackBar(msg)
             }
         )
 
@@ -169,8 +194,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         appEventBus.genericMessageEvents.collectWhileStarted(this) {
             when (it) {
                 is StandardMessage -> {
-                    val duration = if (it.showLong) Snackbar.LENGTH_LONG else Snackbar.LENGTH_SHORT
-                    Snackbar.make(binding.navView, it.msg, duration).show()
+                    showSnackBar(it.msg, isLong = it.showLong)
                 }
                 is WarningMessage -> showWarningDialog(it.msg, it.title, null)
             }
@@ -194,6 +218,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         gpsProEvents.showBtDeviceSettingsFragmentSignal.collectWhileStarted(this) {
             showBtDeviceSettingsFragment()
         }
+    }
+
+    private fun showSnackBar(message: String, isLong: Boolean = false) {
+        val duration = if (isLong) Snackbar.LENGTH_LONG else Snackbar.LENGTH_SHORT
+        Snackbar.make(binding.navView, message, duration).show()
     }
 
     /**

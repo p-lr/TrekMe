@@ -439,7 +439,7 @@ désinstallé (c'est une contrainte du système Android).
 Reportez-vous à la section [Sauvegardez vos cartes](#TOC-Save-maps) pour voir comment contourner cette
 contrainte.
 
-Dans la section Téléchargment > "Répertoire de téléchargement", vous avez le choix entre deux répertoires
+Dans la section Dossier racine > "Répertoire sélectionné", vous avez le choix entre deux répertoires
  si vous avez une carte SD. Sinon, vous n'avez d'autre choix que d'utiliser la mémoire interne.
 
 <p align="center">

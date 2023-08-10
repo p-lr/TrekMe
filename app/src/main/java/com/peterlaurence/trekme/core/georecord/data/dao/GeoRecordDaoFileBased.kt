@@ -3,8 +3,6 @@ package com.peterlaurence.trekme.core.georecord.data.dao
 import android.app.Application
 import android.net.Uri
 import android.util.Log
-import androidx.lifecycle.ProcessLifecycleOwner
-import androidx.lifecycle.lifecycleScope
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.georecord.data.mapper.toGpx
@@ -18,7 +16,6 @@ import com.peterlaurence.trekme.core.georecord.app.TrekmeFilesProvider
 import com.peterlaurence.trekme.di.IoDispatcher
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
-import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.util.FileUtils
 import com.peterlaurence.trekme.util.stackTraceToString
 import kotlinx.coroutines.*
@@ -34,11 +31,9 @@ class GeoRecordDaoFileBased(
     private val app: Application,
     private val geoRecordParser: GeoRecordParser,
     private val appEventBus: AppEventBus,
-    private val gpxRecordEvents: GpxRecordEvents,
     @IoDispatcher
     private val ioDispatcher: CoroutineDispatcher
 ): GeoRecordDao {
-    private val primaryScope = ProcessLifecycleOwner.get().lifecycleScope
     private val contentResolver = app.applicationContext.contentResolver
     private val supportedFileFilter = filter@{ dir: File, filename: String ->
         /* We only look at files */
@@ -54,15 +49,6 @@ class GeoRecordDaoFileBased(
 
     init {
         initGeoRecords()
-
-        primaryScope.launch {
-            gpxRecordEvents.gpxFileWriteEvent.collect {
-                /* Remember the file <-> id association */
-                fileForId[it.geoRecord.id] = it.gpxFile
-
-                geoRecordFlow.value = geoRecordFlow.value + GeoRecordLightWeight(it.geoRecord.id, it.geoRecord.name)
-            }
-        }
     }
 
     /**

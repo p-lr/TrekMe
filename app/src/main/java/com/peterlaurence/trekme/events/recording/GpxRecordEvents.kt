@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.events.recording
 
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
-import com.peterlaurence.trekme.features.record.app.service.event.GpxFileWriteEvent
+import com.peterlaurence.trekme.features.record.app.service.event.NewExcursionEvent
 import com.peterlaurence.trekme.core.lib.gpx.model.TrackPoint
 import com.peterlaurence.trekme.features.record.domain.model.GpxRecordState
 import kotlinx.coroutines.channels.BufferOverflow
@@ -76,11 +76,11 @@ class GpxRecordEvents {
 
     /**********************************************************************************************/
 
-    private val _gpxFileWriteEvent = MutableSharedFlow<GpxFileWriteEvent>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    val gpxFileWriteEvent = _gpxFileWriteEvent.asSharedFlow()
+    private val _newExcursionEvent = MutableSharedFlow<NewExcursionEvent>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    val newExcursionEvent = _newExcursionEvent.asSharedFlow()
 
-    fun postGpxFileWriteEvent(event: GpxFileWriteEvent) {
-        _gpxFileWriteEvent.tryEmit(event)
+    fun postNewExcursionEvent(event: NewExcursionEvent) {
+        _newExcursionEvent.tryEmit(event)
     }
 
     /**********************************************************************************************/

@@ -13,6 +13,8 @@ import androidx.core.content.ContextCompat
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.appName
+import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionType
+import com.peterlaurence.trekme.core.excursion.domain.repository.ExcursionRepository
 import com.peterlaurence.trekme.core.georecord.data.mapper.gpxToDomain
 import com.peterlaurence.trekme.core.georecord.domain.logic.TrackStatCalculator
 import com.peterlaurence.trekme.core.georecord.domain.logic.distanceCalculatorFactory
@@ -27,10 +29,9 @@ import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.events.recording.LiveRoutePause
 import com.peterlaurence.trekme.events.recording.LiveRoutePoint
 import com.peterlaurence.trekme.events.recording.LiveRouteStop
-import com.peterlaurence.trekme.features.record.app.service.event.GpxFileWriteEvent
+import com.peterlaurence.trekme.features.record.app.service.event.NewExcursionEvent
 import com.peterlaurence.trekme.util.getBitmapFromDrawable
 import com.peterlaurence.trekme.core.lib.gpx.model.*
-import com.peterlaurence.trekme.core.lib.gpx.writeGpx
 import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
 import com.peterlaurence.trekme.features.record.domain.model.GpxRecordState
 import com.peterlaurence.trekme.main.MainActivity
@@ -38,8 +39,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
-import java.io.File
-import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
@@ -64,6 +63,9 @@ class GpxRecordService : Service() {
 
     @Inject
     lateinit var eventsGpx: GpxRecordEvents
+
+    @Inject
+    lateinit var excursionRepository: ExcursionRepository
 
     @Inject
     lateinit var eventBus: AppEventBus
@@ -153,7 +155,7 @@ class GpxRecordService : Service() {
     /**
      * When we stop recording the location events, create a [Gpx] object for further
      * serialization.
-     * Whatever the outcome of this process, a [GpxFileWriteEvent] is emitted in the
+     * Whatever the outcome of this process, a [NewExcursionEvent] is emitted in the
      * [THREAD_NAME] thread.
      */
     private fun createGpx() {
@@ -204,19 +206,23 @@ class GpxRecordService : Service() {
 
             val gpx = Gpx(metadata, trkList, wayPoints, appName, GPX_VERSION)
             try {
-                val gpxFileName = "$trackName.gpx"
-                val recordingsDir = trekMeContext.recordingsDir
-                    ?: error("Recordings dir is mandatory")
-                val gpxFile = File(recordingsDir, gpxFileName)
-                val fos = FileOutputStream(gpxFile)
-                writeGpx(gpx, fos)
-
                 /* Now that the file is written, send an event to the application */
                 val boundingBox = bounds?.let {
                     BoundingBox(it.minLat, it.maxLat, it.minLon, it.maxLon)
                 }
                 val geoRecord = gpxToDomain(gpx, name = trackName)
-                eventsGpx.postGpxFileWriteEvent(GpxFileWriteEvent(gpxFile, geoRecord, boundingBox))
+
+                runBlocking { // It's ok to block as we're running on a background thread
+                    excursionRepository.putExcursion(
+                        id = UUID.randomUUID().toString(),
+                        title = trackName,
+                        type = ExcursionType.Hike,
+                        description = "",
+                        geoRecord = geoRecord
+                    )
+                }
+
+                eventsGpx.postNewExcursionEvent(NewExcursionEvent(geoRecord, boundingBox))
             } catch (e: Exception) {
                 eventBus.postMessage(StandardMessage(getString(R.string.service_gpx_error)))
             } finally {

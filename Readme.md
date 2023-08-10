@@ -401,7 +401,7 @@ All your maps on the SD card will be deleted if TrekMe is uninstalled (Android e
 This is the reason why it's highly recommended to save the maps you wouldn't want to loose.
 To learn more about that, go to the "Save your maps" section.
 
-In the "Download" section > "Download folder", you can chose between to directories if you have an SD card. Otherwise, you don't have the choice but to use the internal memory:
+In the "Root folder" section > "Selected folder", you can chose between two directories if you have an SD card. Otherwise, you can only use the internal memory:
 
 <p align="center">
 <img src="doc/images/download_dir.jpg" width="300">
