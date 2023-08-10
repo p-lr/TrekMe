@@ -7,8 +7,7 @@ import com.peterlaurence.trekme.core.map.domain.interactors.GetMapInteractor
 import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
 import com.peterlaurence.trekme.core.map.domain.models.intersects
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
-import com.peterlaurence.trekme.features.common.domain.interactors.ImportGeoRecordInteractor
-import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
+import com.peterlaurence.trekme.features.common.domain.interactors.MapExcursionInteractor
 import com.peterlaurence.trekme.features.record.app.service.event.NewExcursionEvent
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
@@ -16,7 +15,7 @@ import kotlinx.coroutines.supervisorScope
 class RecordingEventHandler(
     private val lifecycle: Lifecycle,
     private val gpxRecordEvents: GpxRecordEvents,
-    private val importGeoRecordInteractor: ImportGeoRecordInteractor,
+    private val mapExcursionInteractor: MapExcursionInteractor,
     private val getMapInteractor: GetMapInteractor,
     private val onImportDone: (importCount: Int) -> Unit
 ) {
@@ -42,12 +41,8 @@ class RecordingEventHandler(
             getMapInteractor.getMapList().forEach { map ->
                 launch {
                     if (map.intersects(boundingBox)) {
-                        /* Import the new route */
-                        val result =
-                            importGeoRecordInteractor.applyGeoRecordToMap(event.geoRecord, map)
-                        if (result is GeoRecordImportResult.GeoRecordImportOk && result.newRouteCount >= 1) {
-                            importCount++
-                        }
+                        mapExcursionInteractor.createExcursionRef(map, event.excursionId)
+                        importCount++
                     }
                 }
             }

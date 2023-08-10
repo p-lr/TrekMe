@@ -93,7 +93,7 @@ class Settings @Inject constructor(
     }
 
     private fun checkAppPath(path: String): Boolean {
-        return trekMeContext.rootDirList.map {
+        return trekMeContext.rootDirListFlow.value.map {
             it.absolutePath
         }.contains(path)
     }

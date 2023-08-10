@@ -212,9 +212,10 @@ class GpxRecordService : Service() {
                 }
                 val geoRecord = gpxToDomain(gpx, name = trackName)
 
-                runBlocking { // It's ok to block as we're running on a background thread
-                    excursionRepository.putExcursion(
-                        id = UUID.randomUUID().toString(),
+                val excursionId = UUID.randomUUID().toString()
+                val result = runBlocking { // It's ok to block as we're running on a background thread
+                     excursionRepository.putExcursion(
+                        id = excursionId,
                         title = trackName,
                         type = ExcursionType.Hike,
                         description = "",
@@ -222,7 +223,9 @@ class GpxRecordService : Service() {
                     )
                 }
 
-                eventsGpx.postNewExcursionEvent(NewExcursionEvent(geoRecord, boundingBox))
+                if (result == ExcursionRepository.PutExcursionResult.Ok) {
+                    eventsGpx.postNewExcursionEvent(NewExcursionEvent(excursionId, boundingBox))
+                }
             } catch (e: Exception) {
                 eventBus.postMessage(StandardMessage(getString(R.string.service_gpx_error)))
             } finally {

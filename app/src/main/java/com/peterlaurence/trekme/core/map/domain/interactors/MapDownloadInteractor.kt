@@ -19,7 +19,6 @@ class MapDownloadInteractor @Inject constructor(
     private val saveMapInteractor: SaveMapInteractor,
     private val repository: DownloadRepository,
     private val importGeoRecordInteractor: ImportGeoRecordInteractor,
-    private val excursionRepository: ExcursionRepository,
     private val mapExcursionInteractor: MapExcursionInteractor,
     private val app: Application
 ) {
@@ -58,10 +57,7 @@ class MapDownloadInteractor @Inject constructor(
         saveMapInteractor.addAndSaveMap(map)
 
         excursionIds.forEach { id ->
-            val excursion = excursionRepository.getExcursion(id)
-            if (excursion != null) {
-                mapExcursionInteractor.createExcursionRef(map, excursion)
-            }
+            mapExcursionInteractor.createExcursionRef(map, id)
         }
         geoRecordUris.forEach { uri ->
             importGeoRecordInteractor.applyGeoRecordUriToMap(uri, app.contentResolver, map)

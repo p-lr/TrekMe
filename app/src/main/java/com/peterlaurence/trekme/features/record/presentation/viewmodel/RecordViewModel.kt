@@ -3,7 +3,6 @@ package com.peterlaurence.trekme.features.record.presentation.viewmodel
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.peterlaurence.trekme.core.excursion.domain.repository.ExcursionRepository
 import com.peterlaurence.trekme.core.georecord.domain.interactors.GeoRecordInteractor
 import com.peterlaurence.trekme.core.map.domain.interactors.GetMapInteractor
 import com.peterlaurence.trekme.events.AppEventBus
@@ -24,7 +23,6 @@ class RecordViewModel @Inject constructor(
     private val importGeoRecordInteractor: ImportGeoRecordInteractor,
     private val getMapInteractor: GetMapInteractor,
     private val mapExcursionInteractor: MapExcursionInteractor,
-    private val excursionRepository: ExcursionRepository,
     private val app: Application,
     private val appEventBus: AppEventBus,
 ) : ViewModel() {
@@ -43,12 +41,8 @@ class RecordViewModel @Inject constructor(
          * the data behind "recordId" (an excursion or a georecord). */
         val excursionId = geoRecordInteractor.getExcursionId(recordId)
         if (excursionId != null) {
-            val excursion = excursionRepository.getExcursion(excursionId)
-            val success = if (excursion != null) {
-                mapExcursionInteractor.createExcursionRef(map, excursion)
-                true
-            } else false
-            _excursionImportEvent.send(success)
+            mapExcursionInteractor.createExcursionRef(map, excursionId)
+            _excursionImportEvent.send(true)
         } else {
             val uri = geoRecordInteractor.getRecordUri(recordId) ?: return@launch
 

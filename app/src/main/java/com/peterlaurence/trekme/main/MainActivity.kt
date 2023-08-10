@@ -35,7 +35,7 @@ import com.peterlaurence.trekme.events.WarningMessage
 import com.peterlaurence.trekme.events.gpspro.GpsProEvents
 import com.peterlaurence.trekme.events.maparchive.MapArchiveEvents
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
-import com.peterlaurence.trekme.features.common.domain.interactors.ImportGeoRecordInteractor
+import com.peterlaurence.trekme.features.common.domain.interactors.MapExcursionInteractor
 import com.peterlaurence.trekme.main.eventhandler.MapArchiveEventHandler
 import com.peterlaurence.trekme.main.eventhandler.MapDownloadEventHandler
 import com.peterlaurence.trekme.main.eventhandler.PermissionRequestHandler
@@ -77,7 +77,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     lateinit var gpxRecordEvents: GpxRecordEvents
 
     @Inject
-    lateinit var importGeoRecordInteractor: ImportGeoRecordInteractor
+    lateinit var mapExcursionInteractor: MapExcursionInteractor
 
     @Inject
     lateinit var getMapInteractor: GetMapInteractor
@@ -130,7 +130,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         RecordingEventHandler(
             lifecycle,
             gpxRecordEvents,
-            importGeoRecordInteractor,
+            mapExcursionInteractor,
             getMapInteractor,
             onImportDone = { importCount ->
                 val msg = getString(R.string.automatic_import_feedback, importCount)

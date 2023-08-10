@@ -14,7 +14,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import java.io.File
 
@@ -87,12 +86,24 @@ class ExcursionRefDaoImpl(
         Unit
     }
 
-    override suspend fun removeExcursionRef(ref: ExcursionRef) = withContext(ioDispatcher) {
+    override suspend fun removeExcursionRef(map: Map, ref: ExcursionRef) = withContext(ioDispatcher) {
         val refFileBased = (ref as? ExcursionRefFileBased) ?: return@withContext
 
         runCatching {
-            refFileBased.file.delete()
+            if (refFileBased.file.delete()) {
+                map.excursionRefs.update {
+                    it.filterNot { r -> r.id == ref.id }
+                }
+            }
         }
         Unit
+    }
+
+    override suspend fun removeExcursionRef(map: Map, excursionRefId: String) {
+        val ref = map.excursionRefs.value.firstOrNull { it.id == excursionRefId }
+
+        if (ref != null) {
+            removeExcursionRef(map, ref)
+        }
     }
 }

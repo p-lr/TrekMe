@@ -19,10 +19,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -32,7 +32,7 @@ import java.util.Date
 import java.util.Locale
 
 class ExcursionDaoFileBased(
-    private val rootFolders: List<File>,
+    private val rootFolders: StateFlow<List<File>>,
     private val appDirFlow: Flow<File>,
     private val geoRecordParser: suspend (file: File) -> GeoRecord?,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
@@ -41,8 +41,9 @@ class ExcursionDaoFileBased(
     private val json = Json { isLenient = true; ignoreUnknownKeys = true }
 
     override suspend fun getExcursionsFlow(): StateFlow<List<Excursion>> {
+        val folders = rootFolders.first { it.isNotEmpty() }
         excursions.update {
-            excursionSearchTask(CONFIG_FILENAME, *rootFolders.toTypedArray())
+            excursionSearchTask(CONFIG_FILENAME, *folders.toTypedArray())
         }
         return excursions
     }

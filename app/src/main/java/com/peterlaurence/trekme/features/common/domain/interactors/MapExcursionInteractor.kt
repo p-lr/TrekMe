@@ -1,9 +1,10 @@
 package com.peterlaurence.trekme.features.common.domain.interactors
 
-import com.peterlaurence.trekme.core.excursion.domain.model.Excursion
+import com.peterlaurence.trekme.core.excursion.domain.repository.ExcursionRepository
 import com.peterlaurence.trekme.core.map.domain.dao.ExcursionRefDao
 import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
 import com.peterlaurence.trekme.core.map.domain.models.Map
+import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
@@ -14,6 +15,8 @@ import javax.inject.Inject
  */
 class MapExcursionInteractor @Inject constructor(
     private val excursionRefDao: ExcursionRefDao,
+    private val excursionRepository: ExcursionRepository,
+    private val mapRepository: MapRepository,
 ) {
     suspend fun importExcursions(map: Map) {
         excursionRefDao.importExcursionRefs(map)
@@ -33,10 +36,16 @@ class MapExcursionInteractor @Inject constructor(
     }
 
     suspend fun removeExcursionOnMap(map: Map, ref: ExcursionRef) {
-        map.excursionRefs.update {
-            it.filter { r -> r.id != ref.id }
+        excursionRefDao.removeExcursionRef(map, ref)
+    }
+
+    /**
+     * By design the [ExcursionRef].id is the same as the excursion id.
+     */
+    suspend fun removeExcursionOnMaps(excursionId: String) {
+        mapRepository.getCurrentMapList().forEach { map ->
+            excursionRefDao.removeExcursionRef(map, excursionRefId = excursionId)
         }
-        excursionRefDao.removeExcursionRef(ref)
     }
 
     suspend fun toggleVisibility(map: Map, ref: ExcursionRef) {
@@ -44,7 +53,10 @@ class MapExcursionInteractor @Inject constructor(
         excursionRefDao.saveExcursionRef(map, ref)
     }
 
-    suspend fun createExcursionRef(map: Map, excursion: Excursion) {
-        excursionRefDao.createExcursionRef(map, excursion)
+    suspend fun createExcursionRef(map: Map, excursionId: String) {
+        val excursion = excursionRepository.getExcursion(excursionId)
+        if (excursion != null) {
+            excursionRefDao.createExcursionRef(map, excursion)
+        }
     }
 }

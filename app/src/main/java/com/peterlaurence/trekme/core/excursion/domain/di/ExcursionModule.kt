@@ -26,7 +26,7 @@ object ExcursionModule {
         app: Application
     ): ExcursionDao {
         return ExcursionDaoFileBased(
-            rootFolders = trekMeContext.rootDirList,
+            rootFolders = trekMeContext.rootDirListFlow,
             appDirFlow = settings.getAppDir().filterNotNull(),
             geoRecordParser = { file ->
                 geoRecordParser.parse(file.toUri(), app.contentResolver)

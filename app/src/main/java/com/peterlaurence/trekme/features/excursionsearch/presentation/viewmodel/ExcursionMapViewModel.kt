@@ -319,9 +319,8 @@ class ExcursionMapViewModel @Inject constructor(
             /* Import the excursion in all maps which intersect the corresponding bounding-box */
             getMapInteractor.getMapList().forEach { map ->
                 launch {
-                    val excursion = excursionRepository.getExcursion(geoRecordForSearchItem.searchItem.id)
-                    if (map.intersects(bb) && excursion != null) {
-                        mapExcursionInteractor.createExcursionRef(map, excursion)
+                    if (map.intersects(bb)) {
+                        mapExcursionInteractor.createExcursionRef(map, excursionId = geoRecordForSearchItem.searchItem.id)
                     }
                 }
             }

@@ -9,6 +9,8 @@ import com.peterlaurence.trekme.core.map.data.MAP_FOLDER_NAME
 import com.peterlaurence.trekme.core.map.data.MAP_IMPORTED_FOLDER_NAME
 import com.peterlaurence.trekme.core.map.data.RECORDINGS_FOLDER_NAME
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
@@ -32,7 +34,7 @@ interface TrekMeContext {
     val defaultMapsDownloadDir: File?
     val importedDir: File?
     val recordingsDir: File?
-    var rootDirList: List<File>
+    val rootDirListFlow: StateFlow<List<File>>
     val credentialsDir: File
     suspend fun isAppDirReadOnly(): Boolean
     suspend fun init(applicationContext: Context)
@@ -40,7 +42,11 @@ interface TrekMeContext {
 }
 
 class TrekMeContextAndroid : TrekMeContext {
+    private val _rootDirListFlow = MutableStateFlow<List<File>>(emptyList())
+
     override var defaultAppDir: File? = null
+    override val rootDirListFlow: StateFlow<List<File>>
+        get() = _rootDirListFlow
 
     override val defaultMapsDownloadDir: File? by lazy {
         defaultAppDir?.let {
@@ -60,9 +66,6 @@ class TrekMeContextAndroid : TrekMeContext {
             File(it, RECORDINGS_FOLDER_NAME)
         }
     }
-
-    /* Possible root folders */
-    override var rootDirList: List<File> = emptyList()
 
     private val TAG = "TrekMeContextAndroid"
 
@@ -116,11 +119,11 @@ class TrekMeContextAndroid : TrekMeContext {
 
         if (android.os.Build.VERSION.SDK_INT >= Q) {
             defaultAppDir = dirs.firstOrNull()
-            rootDirList = dirs
+            _rootDirListFlow.value = dirs
         } else {
             defaultAppDir = File(Environment.getExternalStorageDirectory(), appFolderName)
             val otherDirs = dirs.drop(1)
-            rootDirList = listOfNotNull(defaultAppDir) + otherDirs
+            _rootDirListFlow.value = listOfNotNull(defaultAppDir) + otherDirs
         }
     }
 

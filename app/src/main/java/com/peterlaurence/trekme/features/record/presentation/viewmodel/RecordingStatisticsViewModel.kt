@@ -6,6 +6,7 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.georecord.domain.interactors.GeoRecordInteractor
+import com.peterlaurence.trekme.features.common.domain.interactors.MapExcursionInteractor
 import com.peterlaurence.trekme.features.common.domain.interactors.RemoveRouteInteractor
 import com.peterlaurence.trekme.features.common.domain.model.RecordingDataStateOwner
 import com.peterlaurence.trekme.features.common.domain.model.RecordingsAvailable
@@ -32,6 +33,7 @@ class RecordingStatisticsViewModel @Inject constructor(
     recordingDataStateOwner: RecordingDataStateOwner,
     private val geoRecordInteractor: GeoRecordInteractor,
     private val importRecordingsInteractor: ImportRecordingsInteractor,
+    private val mapExcursionInteractor: MapExcursionInteractor
 ) : ViewModel() {
 
     val recordingDataFlow: StateFlow<RecordingsState> = recordingDataStateOwner.recordingDataFlow
@@ -73,12 +75,21 @@ class RecordingStatisticsViewModel @Inject constructor(
     }
 
     fun onRequestDeleteRecordings(recordingDataList: List<RecordingData>) = viewModelScope.launch {
+        val ids = recordingDataList.map { it.id }
         /* Remove recordings */
         launch {
-            val success = geoRecordInteractor.delete(recordingDataList.map { it.id })
+            val success = geoRecordInteractor.delete(ids)
             /* If only one removal failed, notify the user */
             if (!success) {
                 recordingDeletionFailureChannel.send(Unit)
+            }
+        }
+
+        val excursionIds = geoRecordInteractor.getExcursionIds(ids)
+        /* Remove corresponding excursions on existing maps */
+        launch {
+            excursionIds.forEach { id ->
+                mapExcursionInteractor.removeExcursionOnMaps(id)
             }
         }
 

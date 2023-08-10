@@ -142,4 +142,10 @@ class GeoRecordRepository @Inject constructor(
             if (it.value == id) it.key else null
         }
     }
+
+    fun getExcursionIds(ids: List<UUID>): List<String> {
+        return rosetta.entries.mapNotNull {
+            if (it.value in ids) it.key else null
+        }
+    }
 }

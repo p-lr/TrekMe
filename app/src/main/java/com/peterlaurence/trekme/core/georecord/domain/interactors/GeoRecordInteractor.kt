@@ -34,4 +34,8 @@ class GeoRecordInteractor @Inject constructor(
     fun getExcursionId(id: UUID): String? {
         return repository.getExcursionId(id)
     }
+
+    fun getExcursionIds(ids: List<UUID>): List<String> {
+        return repository.getExcursionIds(ids)
+    }
 }
