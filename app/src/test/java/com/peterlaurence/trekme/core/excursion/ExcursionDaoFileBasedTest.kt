@@ -2,10 +2,8 @@ package com.peterlaurence.trekme.core.excursion
 
 import com.peterlaurence.trekme.core.excursion.data.dao.ExcursionDaoFileBased
 import com.peterlaurence.trekme.core.excursion.data.model.Waypoint
-import com.peterlaurence.trekme.core.georecord.data.mapper.gpxToDomain
-import com.peterlaurence.trekme.core.lib.gpx.parseGpxSafely
 import junit.framework.TestCase.assertEquals
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.*
 import org.junit.Test
@@ -13,7 +11,6 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import java.io.File
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
 class ExcursionDaoFileBasedTest {
     private val testScheduler = TestCoroutineScheduler()
@@ -21,13 +18,10 @@ class ExcursionDaoFileBasedTest {
     private val testScope = TestScope(testDispatcher)
 
     private val dao = ExcursionDaoFileBased(
-        listOfNotNull(excursionDir),
+        rootFolders = MutableStateFlow(listOfNotNull(excursionDir)),
         appDirFlow = flowOf(),
-        geoRecordParser = { file ->
-            parseGpxSafely(file.inputStream())?.let {
-                gpxToDomain(it, file.name)
-            }
-        },
+        uriReader = { _, _ -> },
+        nameReaderUri = { null },
         ioDispatcher = testDispatcher
     )
 
@@ -63,7 +57,7 @@ class ExcursionDaoFileBasedTest {
         assertEquals(1, excursions.value.size)
         val excursion = excursions.value.first()
         val geoRecord = dao.getGeoRecord(excursion)
-        assertEquals("sceaux.gpx", geoRecord?.name)
+        assertEquals("sceaux", geoRecord?.name)
     }
 
     companion object {

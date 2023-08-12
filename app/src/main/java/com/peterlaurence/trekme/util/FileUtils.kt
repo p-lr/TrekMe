@@ -30,7 +30,7 @@ fun writeToFile(st: String, out: File): Result<Unit> {
  *
  * @throws FileNotFoundException,
  */
-inline fun <T> readUri(uri: Uri, contentResolver: ContentResolver, reader: (FileInputStream) -> T): T? {
+suspend fun <T> readUri(uri: Uri, contentResolver: ContentResolver, reader: suspend (FileInputStream) -> T): T? {
     val parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "r")
     return parcelFileDescriptor?.use {
         val fileDescriptor = parcelFileDescriptor.fileDescriptor

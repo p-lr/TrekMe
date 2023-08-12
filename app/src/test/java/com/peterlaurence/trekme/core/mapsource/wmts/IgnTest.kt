@@ -10,7 +10,7 @@ class IgnTest {
     fun oneLevelTest() {
         val p1 = Point(275951.78, 6241946.52)
         val p2 = Point(276951.78, 6240946.52)
-        val tileSequence = getMapSpec(18, 18, p1, p2).tileSequence
+        val tileSequence = getMapSpec(18, 18, p1, p2, tileSize = 256).tileSequence
 
         val firstTile = tileSequence.first()
         assertEquals(132877, firstTile.col)
@@ -26,7 +26,7 @@ class IgnTest {
         val p1 = Point(250597.29, 6238768.52)
         val p2 = Point(306729.05, 6187019.47)
 
-        val tileSequence = getMapSpec(12, 16, p1, p2).tileSequence
+        val tileSequence = getMapSpec(12, 16, p1, p2, tileSize = 256).tileSequence
         val byLevel = tileSequence.groupBy {
             it.level
         }
@@ -52,7 +52,7 @@ class IgnTest {
         val p1 = Point(250597.29, 6238768.52)
         val p2 = Point(306729.05, 6187019.47)
 
-        val spec = getMapSpec(12, 16, p1, p2)
+        val spec = getMapSpec(12, 16, p1, p2, tileSize = 256)
 
         assertEquals(26368, spec.mapWidthPx)
         assertEquals(23552, spec.mapHeightPx)

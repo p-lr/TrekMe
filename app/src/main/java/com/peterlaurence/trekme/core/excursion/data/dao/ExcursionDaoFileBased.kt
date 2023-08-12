@@ -4,14 +4,17 @@ import android.net.Uri
 import com.peterlaurence.trekme.core.excursion.data.mapper.toData
 import com.peterlaurence.trekme.core.excursion.data.model.ExcursionConfig
 import com.peterlaurence.trekme.core.excursion.data.model.ExcursionFileBased
+import com.peterlaurence.trekme.core.excursion.data.model.Type
 import com.peterlaurence.trekme.core.excursion.data.model.Waypoint
 import com.peterlaurence.trekme.core.excursion.domain.dao.ExcursionDao
 import com.peterlaurence.trekme.core.excursion.domain.model.Excursion
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionType
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionWaypoint
 import com.peterlaurence.trekme.core.georecord.app.TrekmeFilesProvider
+import com.peterlaurence.trekme.core.georecord.data.mapper.gpxToDomain
 import com.peterlaurence.trekme.core.georecord.data.mapper.toGpx
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
+import com.peterlaurence.trekme.core.lib.gpx.parseGpxSafely
 import com.peterlaurence.trekme.core.lib.gpx.writeGpx
 import com.peterlaurence.trekme.util.FileUtils
 import kotlinx.coroutines.CoroutineDispatcher
@@ -26,6 +29,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -34,7 +38,8 @@ import java.util.Locale
 class ExcursionDaoFileBased(
     private val rootFolders: StateFlow<List<File>>,
     private val appDirFlow: Flow<File>,
-    private val geoRecordParser: suspend (file: File) -> GeoRecord?,
+    private val uriReader: suspend (uri: Uri, reader: suspend (FileInputStream) -> Unit) -> Unit,
+    private val nameReaderUri: (Uri) -> String?,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ExcursionDao {
     private val excursions = MutableStateFlow<List<ExcursionFileBased>>(emptyList())
@@ -113,7 +118,7 @@ class ExcursionDaoFileBased(
 
         val file = root.getGpxFile() ?: return null
 
-        return geoRecordParser(file)
+        return parseGpxFile(file)
     }
 
     override fun getGeoRecordUri(id: String): Uri? {
@@ -123,6 +128,51 @@ class ExcursionDaoFileBased(
 
         val file = excursion.root.getGpxFile() ?: return null
         return TrekmeFilesProvider.generateUri(file)
+    }
+
+    override suspend fun putExcursion(id: String, uri: Uri): Boolean {
+        return runCatching {
+            val root = appDirFlow.firstOrNull() ?: return false
+            val excursionsFolder = File(root, DIR_NAME)
+
+            withContext(ioDispatcher) {
+                uriReader(uri) { origStream ->
+                    val name = nameReaderUri(uri) ?: GPX_FILENAME
+
+                    /* We create dirs named after the gpx file name, and not using the current
+                     * date, since multiple uris can be imported concurrently hence they would end-up
+                     * with the same dir name. */
+                    val destFolder = File(excursionsFolder, name.substringBeforeLast("."))
+                    destFolder.mkdir()
+
+                    val destFile = File(destFolder, name)
+                    FileOutputStream(destFile).use { out ->
+                        origStream.copyTo(out)
+                    }
+                    val geoRecord = parseGpxFile(destFile)!! // on purpose
+
+                    /* Config File */
+                    val configFile = File(destFolder, CONFIG_FILENAME).also {
+                        it.createNewFile()
+                    }
+
+                    val config = ExcursionConfig(
+                        id,
+                        title = geoRecord.name,
+                        description = "",
+                        type = Type.Hike,
+                        photos = emptyList()
+                    )
+                    val str = json.encodeToString(config)
+                    FileUtils.writeToFile(str, configFile)
+
+                    /* Update the state */
+                    excursions.update {
+                        it + ExcursionFileBased(destFolder, config)
+                    }
+                }
+            }
+        }.isSuccess
     }
 
     override suspend fun putExcursion(
@@ -136,14 +186,7 @@ class ExcursionDaoFileBased(
             val root = appDirFlow.firstOrNull() ?: return false
             val excursionsFolder = File(root, DIR_NAME)
 
-            val date = Date()
-            val dateFormat = SimpleDateFormat("dd-MM-yyyy_HH-mm-ss", Locale.ENGLISH)
-            val folderName = "excursion-" + dateFormat.format(date)
-
-            val destFolder = File(excursionsFolder, folderName)
-            if (!destFolder.exists()) {
-                destFolder.mkdirs()
-            }
+            val destFolder = newExcursionFolder(excursionsFolder)
 
             /* Config File */
             val configFile = File(destFolder, CONFIG_FILENAME).also {
@@ -230,6 +273,26 @@ class ExcursionDaoFileBased(
             it.isFile && it.name.endsWith(".gpx")
         }
     }.getOrNull()
+
+    private fun newExcursionFolder(parent: File): File {
+        val date = Date()
+        val dateFormat = SimpleDateFormat("dd-MM-yyyy_HH-mm-ss", Locale.ENGLISH)
+        val folderName = "excursion-" + dateFormat.format(date)
+
+        val destFolder = File(parent, folderName)
+        if (!destFolder.exists()) {
+            destFolder.mkdirs()
+        }
+        return destFolder
+    }
+
+    private suspend fun parseGpxFile(file: File, name: String = file.nameWithoutExtension): GeoRecord? = withContext(ioDispatcher) {
+        FileInputStream(file).use {
+            parseGpxSafely(it)?.let { gpx ->
+                gpxToDomain(gpx, name)
+            }
+        }
+    }
 }
 
 
