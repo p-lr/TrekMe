@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface ExcursionDao {
     suspend fun getExcursionsFlow(): StateFlow<List<Excursion>>
-    suspend fun getWaypoints(excursion: Excursion): List<ExcursionWaypoint>
     suspend fun getGeoRecord(excursion: Excursion): GeoRecord?
     fun getGeoRecordUri(id: String): Uri?
     suspend fun putExcursion(id: String, title: String, type: ExcursionType, description: String, geoRecord: GeoRecord): Boolean
@@ -17,4 +16,8 @@ interface ExcursionDao {
     suspend fun deleteExcursions(ids: List<String>): Boolean
     suspend fun rename(id: String, newName: String): Boolean
     suspend fun updateGeoRecord(id: String, geoRecord: GeoRecord): Boolean
+    suspend fun initWaypoints(excursion: Excursion)
+    suspend fun updateWaypoint(excursion: Excursion, waypoint: ExcursionWaypoint, newLat: Double, newLon: Double)
+    suspend fun updateWaypoint(excursion: Excursion, waypoint: ExcursionWaypoint, name: String?, lat: Double?, lon: Double?, comment: String?)
+    suspend fun deleteWaypoint(excursion: Excursion, waypoint: ExcursionWaypoint)
 }

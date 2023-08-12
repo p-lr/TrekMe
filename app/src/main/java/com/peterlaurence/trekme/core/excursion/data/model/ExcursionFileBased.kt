@@ -4,6 +4,9 @@ import com.peterlaurence.trekme.core.excursion.data.mapper.toDomain
 import com.peterlaurence.trekme.core.excursion.domain.model.Excursion
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionPhoto
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionType
+import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionWaypoint
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.io.File
@@ -12,6 +15,8 @@ class ExcursionFileBased(
     val root: File,
     val config: ExcursionConfig
 ) : Excursion {
+    val waypointsFlow = MutableStateFlow<List<Waypoint>>(emptyList())
+
     override val id: String
         get() = config.id
     override val title: String
@@ -20,6 +25,8 @@ class ExcursionFileBased(
         get() = config.type.toDomain()
     override val description: String
         get() = config.description
+    override val waypoints: StateFlow<List<ExcursionWaypoint>>
+        get() = waypointsFlow
     override val photos: List<ExcursionPhoto>
         get() = config.photos
 }

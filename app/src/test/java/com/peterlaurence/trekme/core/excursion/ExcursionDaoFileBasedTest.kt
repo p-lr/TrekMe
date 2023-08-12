@@ -10,6 +10,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import java.io.File
+import kotlin.test.assertNotNull
 
 @RunWith(RobolectricTestRunner::class)
 class ExcursionDaoFileBasedTest {
@@ -43,11 +44,13 @@ class ExcursionDaoFileBasedTest {
 
         assertEquals(1, excursions.value.size)
         val excursion = excursions.value.first()
-        val waypoints = dao.getWaypoints(excursion)
-        assertEquals(2, waypoints.size)
-        assertEquals("p1", waypoints.first().photos.first().id)
-        assertEquals("wpt1 photo1", waypoints.first().photos.first().name)
-        assertEquals("p1.jpg", (waypoints.first() as Waypoint).photos.first().fileName)
+        dao.initWaypoints(excursion)
+        val waypoints = excursion.waypoints
+        assertNotNull(waypoints)
+        assertEquals(2, waypoints.value.size)
+        assertEquals("p1", waypoints.value.first().photos.first().id)
+        assertEquals("wpt1 photo1", waypoints.value.first().photos.first().name)
+        assertEquals("p1.jpg", (waypoints.value.first() as Waypoint).photos.first().fileName)
     }
 
     @Test

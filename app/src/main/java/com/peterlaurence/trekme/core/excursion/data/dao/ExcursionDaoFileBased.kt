@@ -17,6 +17,7 @@ import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.lib.gpx.parseGpxSafely
 import com.peterlaurence.trekme.core.lib.gpx.writeGpx
 import com.peterlaurence.trekme.util.FileUtils
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -34,6 +35,7 @@ import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicBoolean
 
 class ExcursionDaoFileBased(
     private val rootFolders: StateFlow<List<File>>,
@@ -44,11 +46,25 @@ class ExcursionDaoFileBased(
 ) : ExcursionDao {
     private val excursions = MutableStateFlow<List<ExcursionFileBased>>(emptyList())
     private val json = Json { isLenient = true; ignoreUnknownKeys = true }
+    private val hasInit = AtomicBoolean(false)
+    private val initTask = CompletableDeferred<Boolean>()
 
-    override suspend fun getExcursionsFlow(): StateFlow<List<Excursion>> {
+    private suspend fun loadExcursions() {
         val folders = rootFolders.first { it.isNotEmpty() }
         excursions.update {
             excursionSearchTask(CONFIG_FILENAME, *folders.toTypedArray())
+        }
+        initTask.complete(true)
+    }
+
+    override suspend fun getExcursionsFlow(): StateFlow<List<Excursion>> {
+        /* Lazy loading. Since this method is invoked concurrently, ensure that only one lazy
+         * initialization is done, and that meanwhile other invokes await. */
+        if (hasInit.compareAndSet(false, true)) {
+            loadExcursions()
+        } else {
+            /* Ensure that we wait for the initialization to complete */
+            initTask.await()
         }
         return excursions
     }
@@ -97,8 +113,11 @@ class ExcursionDaoFileBased(
         excursionList
     }
 
-    override suspend fun getWaypoints(excursion: Excursion): List<ExcursionWaypoint> {
-        val root = (excursion as? ExcursionFileBased)?.root ?: return emptyList()
+    /**
+     * Waypoints are lazy-loaded: they're initialized when ge
+     */
+    override suspend fun initWaypoints(excursion: Excursion) = withContext(ioDispatcher) {
+        val root = (excursion as? ExcursionFileBased)?.root ?: return@withContext
 
         val waypointsFile = File(root, WAYPOINTS_FILENAME)
         val waypoints = runCatching<List<Waypoint>> {
@@ -106,7 +125,70 @@ class ExcursionDaoFileBased(
                 json.decodeFromString(it)
             }
         }.getOrElse { emptyList() }
-        return waypoints
+
+        excursion.waypointsFlow.update { waypoints }
+    }
+
+    override suspend fun updateWaypoint(
+        excursion: Excursion,
+        waypoint: ExcursionWaypoint,
+        newLat: Double,
+        newLon: Double
+    ) = withContext(ioDispatcher) {
+        val root = (excursion as? ExcursionFileBased)?.root ?: return@withContext
+        val wpt = waypoint as? Waypoint ?: return@withContext
+
+        excursion.waypointsFlow.update {
+            it.filterNot { p -> p.id == waypoint.id } + wpt.copy(
+                latitude = newLat,
+                longitude = newLon
+            )
+        }
+
+        /* Re-write the waypoints file */
+        val wayPointsFile = File(root, WAYPOINTS_FILENAME)
+        FileUtils.writeToFile(json.encodeToString(excursion.waypointsFlow.value), wayPointsFile)
+    }
+
+    override suspend fun updateWaypoint(
+        excursion: Excursion,
+        waypoint: ExcursionWaypoint,
+        name: String?,
+        lat: Double?,
+        lon: Double?,
+        comment: String?
+    ) = withContext(ioDispatcher) {
+        val root = (excursion as? ExcursionFileBased)?.root ?: return@withContext
+        val wpt = waypoint as? Waypoint ?: return@withContext
+
+//        println("xxxxx updating flow ${excursion.waypointsFlow}")
+        excursion.waypointsFlow.update {
+            it.filterNot { p -> p.id == waypoint.id } +
+                    wpt.copy(
+                        name = name ?: wpt.name,
+                        latitude = lat ?: wpt.latitude,
+                        longitude = lon ?: wpt.longitude,
+                        comment = comment ?: wpt.comment
+                    )
+        }
+
+        /* Re-write the waypoints file */
+        val wayPointsFile = File(root, WAYPOINTS_FILENAME)
+        FileUtils.writeToFile(json.encodeToString(excursion.waypointsFlow.value), wayPointsFile)
+    }
+
+    override suspend fun deleteWaypoint(
+        excursion: Excursion, waypoint: ExcursionWaypoint
+    ) = withContext(ioDispatcher) {
+        val root = (excursion as? ExcursionFileBased)?.root ?: return@withContext
+
+        excursion.waypointsFlow.update {
+            it.filterNot { p -> p.id == waypoint.id }
+        }
+
+        /* Re-write the waypoints file */
+        val wayPointsFile = File(root, WAYPOINTS_FILENAME)
+        FileUtils.writeToFile(json.encodeToString(excursion.waypointsFlow.value), wayPointsFile)
     }
 
     /**

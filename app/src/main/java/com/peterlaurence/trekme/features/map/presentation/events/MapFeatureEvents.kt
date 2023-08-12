@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.features.map.presentation.events
 
+import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionWaypoint
 import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
 import com.peterlaurence.trekme.core.map.domain.models.Beacon
 import com.peterlaurence.trekme.core.map.domain.models.Marker
@@ -17,6 +18,14 @@ class MapFeatureEvents {
         MarkerEditEvent(marker, mapId)
     )
     data class MarkerEditEvent(val marker: Marker, val mapId: UUID)
+
+    /* region excursion waypoints */
+    private val _navigateToExcursionWaypointEdit = MutableSharedFlow<ExcursionWaypointEditEvent>(0, 1, BufferOverflow.DROP_OLDEST)
+    val navigateToExcursionWaypointEdit = _navigateToExcursionWaypointEdit.asSharedFlow()
+    fun postExcursionWaypointEditEvent(waypoint: ExcursionWaypoint, excursionId: String) = _navigateToExcursionWaypointEdit.tryEmit(
+        ExcursionWaypointEditEvent(waypoint, excursionId)
+    )
+    data class ExcursionWaypointEditEvent(val waypoint: ExcursionWaypoint, val excursionId: String)
 
     /* region beacon */
     private val _navigateToBeaconEdit = MutableSharedFlow<BeaconEditEvent>(0, 1, BufferOverflow.DROP_OLDEST)

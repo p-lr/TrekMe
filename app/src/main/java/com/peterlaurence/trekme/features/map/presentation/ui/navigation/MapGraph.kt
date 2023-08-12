@@ -21,6 +21,9 @@ fun MapGraph(
             onNavigateToMarkerEdit = { markerId, mapId ->
                 navController.navigateToMarkerEdit(markerId, mapId.toString())
             },
+            onNavigateToExcursionWaypointEdit = { waypointId, excursionId ->
+                navController.navigateToExcursionWaypointEdit(waypointId, excursionId)
+            },
             onNavigateToBeaconEdit = { beaconId, mapId ->
                 navController.navigateToBeaconEdit(beaconId, mapId.toString())
             }
@@ -32,6 +35,8 @@ fun MapGraph(
         )
 
         markerEditScreen(onBack = navController::navigateUp)
+
+        excursionWaypointEditScreen(onBack = navController::navigateUp)
 
         beaconEditScreen(onBack = navController::navigateUp)
     }

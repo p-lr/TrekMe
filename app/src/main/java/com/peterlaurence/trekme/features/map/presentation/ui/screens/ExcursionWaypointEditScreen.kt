@@ -19,29 +19,27 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.text.TextFieldCustom
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.features.map.presentation.viewmodel.MarkerEditViewModel
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.ExcursionWaypointEditViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MarkerEditStateful(
-    viewModel: MarkerEditViewModel = hiltViewModel(),
+fun ExcursionWaypointEditStateful(
+    viewModel: ExcursionWaypointEditViewModel = hiltViewModel(),
     onBackAction: () -> Unit
 ) {
-    val marker by viewModel.markerState.collectAsState()
+    val marker by viewModel.waypointState.collectAsState()
 
     var name by remember(marker) { mutableStateOf(marker?.name ?: "") }
-    var latField by remember { mutableStateOf(marker?.lat?.toString() ?: "") }
-    var lonField by remember { mutableStateOf(marker?.lon?.toString() ?: "") }
-    var commentField by remember { mutableStateOf(marker?.comment ?: "") }
+    var latField by remember(marker) { mutableStateOf(marker?.latitude?.toString() ?: "") }
+    var lonField by remember(marker) { mutableStateOf(marker?.longitude?.toString() ?: "") }
+    var commentField by remember(marker) { mutableStateOf(marker?.comment ?: "") }
 
     val saveMarker by rememberUpdatedState {
-        viewModel.saveMarker(
+        viewModel.saveWaypoint(
             lat = latField.toDoubleOrNull(),
             lon = lonField.toDoubleOrNull(),
             name = name,
@@ -188,18 +186,3 @@ private fun WaypointEditScreen(
         }
     }
 }
-
-@Preview(widthDp = 350, heightDp = 500)
-@Composable
-private fun MarkerEditPreview() {
-    TrekMeTheme {
-        WaypointEditScreen(
-            name = "A marker",
-            latitudeField = "12.57",
-            longitudeField = "46.58",
-            commentField = "A comment"
-        )
-    }
-}
-
-

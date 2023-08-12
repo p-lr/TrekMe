@@ -77,6 +77,7 @@ class MapViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.Eagerly, initialValue = false)
 
     val markerEditEvent: Flow<MapFeatureEvents.MarkerEditEvent> = mapFeatureEvents.navigateToMarkerEdit
+    val excursionWaypointEditEvent: Flow<MapFeatureEvents.ExcursionWaypointEditEvent> = mapFeatureEvents.navigateToExcursionWaypointEdit
     val beaconEditEvent: Flow<MapFeatureEvents.BeaconEditEvent> = mapFeatureEvents.navigateToBeaconEdit
 
     val locationOrientationLayer: LocationOrientationLayer = LocationOrientationLayer(
@@ -97,6 +98,15 @@ class MapViewModel @Inject constructor(
         markerInteractor,
         onMarkerEdit = { marker, mapId ->
             mapFeatureEvents.postMarkerEditEvent(marker, mapId)
+        }
+    )
+
+    val excursionWaypointLayer = ExcursionWaypointLayer(
+        viewModelScope,
+        dataStateFlow,
+        excursionInteractor,
+        onWaypointEdit = { waypoint, excursionId ->
+            mapFeatureEvents.postExcursionWaypointEditEvent(waypoint, excursionId)
         }
     )
 
@@ -252,6 +262,9 @@ class MapViewModel @Inject constructor(
 
             val markerHandled = markerLayer.onMarkerTap(mapState, map.id, id, x, y)
             if (markerHandled) return@onMarkerClick
+
+            val excursionWptHandled = excursionWaypointLayer.onMarkerTap(mapState, map.id, id, x, y)
+            if (excursionWptHandled) return@onMarkerClick
 
             beaconLayer.onMarkerTap(mapState, map.id, id, x, y)
         }

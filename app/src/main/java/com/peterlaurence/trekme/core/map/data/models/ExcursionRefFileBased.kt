@@ -1,7 +1,6 @@
 package com.peterlaurence.trekme.core.map.data.models
 
 import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
-import com.peterlaurence.trekme.core.map.domain.models.Route
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.io.File
 
@@ -22,7 +21,7 @@ class ExcursionRefFileBased(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as Route
+        other as ExcursionRefFileBased
 
         if (id != other.id) return false
 

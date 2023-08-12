@@ -47,6 +47,7 @@ fun MapStateful(
     gpxRecordServiceViewModel: GpxRecordServiceViewModel = viewModel(),
     onNavigateToTracksManage: () -> Unit,
     onNavigateToMarkerEdit: (markerId: String, mapId: UUID) -> Unit,
+    onNavigateToExcursionWaypointEdit: (waypointId: String, excursionId: String) -> Unit,
     onNavigateToBeaconEdit: (beaconId: String, mapId: UUID) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -87,6 +88,11 @@ fun MapStateful(
         launch {
             viewModel.markerEditEvent.collect {
                 onNavigateToMarkerEdit(it.marker.id, it.mapId)
+            }
+        }
+        launch {
+            viewModel.excursionWaypointEditEvent.collect {
+                onNavigateToExcursionWaypointEdit(it.waypoint.id, it.excursionId)
             }
         }
         launch {
