@@ -1,12 +1,10 @@
 package com.peterlaurence.trekme.core.georecord.di
 
-import android.app.Application
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.georecord.data.dao.GeoRecordDaoFileBased
-import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordParser
 import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordDao
+import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordParser
 import com.peterlaurence.trekme.di.IoDispatcher
-import com.peterlaurence.trekme.events.AppEventBus
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,15 +19,11 @@ object GeoRecordModule {
     @Provides
     fun bindGeoRecordFileBasedSource(
         trekMeContext: TrekMeContext,
-        app: Application,
         geoRecordParser: GeoRecordParser,
-        appEventBus: AppEventBus,
         @IoDispatcher ioDispatcher: CoroutineDispatcher
     ): GeoRecordDao = GeoRecordDaoFileBased(
         trekMeContext,
-        app,
         geoRecordParser,
-        appEventBus,
         ioDispatcher
     )
 }

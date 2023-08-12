@@ -36,28 +36,6 @@ class GeoRecordParserImpl @Inject constructor(
         }.getOrNull()
     }
 
-    override suspend fun copyAndParse(
-        uri: Uri, contentResolver: ContentResolver, copyFolder: File
-    ): Pair<GeoRecord, File>? {
-        return runCatching {
-            withContext(dispatcher) {
-                readUri(uri, contentResolver) { origStream ->
-                    val name = FileUtils.getFileRealFileNameFromURI(contentResolver, uri)
-                        ?: defaultRecordingName
-                    val destFile = File(copyFolder, name)
-                    FileOutputStream(destFile).use { fis ->
-                        origStream.copyTo(fis)
-                    }
-                    FileInputStream(destFile).use { fis ->
-                        parse(fis, name)?.let { geoRecord ->
-                            Pair(geoRecord, destFile)
-                        }
-                    }
-                }
-            }
-        }.getOrNull()
-    }
-
     override suspend fun parse(inputStream: InputStream, defaultName: String): GeoRecord? {
         return parseGpxSafely(inputStream)?.let { gpx ->
             gpxToDomain(gpx, defaultName)

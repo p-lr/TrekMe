@@ -1,40 +1,39 @@
 package com.peterlaurence.trekme.core.georecord.data.dao
 
-import android.app.Application
 import android.net.Uri
 import android.util.Log
-import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
+import com.peterlaurence.trekme.core.georecord.app.TrekmeFilesProvider
 import com.peterlaurence.trekme.core.georecord.data.mapper.toGpx
-import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordParser
 import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordDao
+import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordParser
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecordLightWeight
 import com.peterlaurence.trekme.core.georecord.domain.model.supportedGeoRecordFilesExtensions
 import com.peterlaurence.trekme.core.lib.gpx.writeGpx
-import com.peterlaurence.trekme.core.georecord.app.TrekmeFilesProvider
 import com.peterlaurence.trekme.di.IoDispatcher
-import com.peterlaurence.trekme.events.AppEventBus
-import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.util.FileUtils
 import com.peterlaurence.trekme.util.stackTraceToString
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.util.*
+import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
 class GeoRecordDaoFileBased(
     private val trekMeContext: TrekMeContext,
-    private val app: Application,
     private val geoRecordParser: GeoRecordParser,
-    private val appEventBus: AppEventBus,
     @IoDispatcher
     private val ioDispatcher: CoroutineDispatcher
-): GeoRecordDao {
-    private val contentResolver = app.applicationContext.contentResolver
+) : GeoRecordDao {
     private val supportedFileFilter = filter@{ dir: File, filename: String ->
         /* We only look at files */
         if (File(dir, filename).isDirectory) {
@@ -72,30 +71,6 @@ class GeoRecordDaoFileBased(
     override suspend fun getRecord(id: UUID): GeoRecord? {
         return fileForId[id]?.let { file ->
             parse(file)?.copy(id = id)
-        }
-    }
-
-    /**
-     * Resolves the given uri to an actual file, and copies it to the app's storage location for
-     * recordings. Then, the copied file is parsed to get the corresponding [GeoRecord] instance.
-     */
-    override suspend fun importGeoRecordFromUri(
-        uri: Uri
-    ): GeoRecord? {
-        val outputDir = trekMeContext.recordingsDir ?: return null
-        val result = geoRecordParser.copyAndParse(uri, contentResolver, outputDir)
-        return if (result != null) {
-            val (geoRecord, file) = result
-            fileForId[geoRecord.id] = file
-            geoRecordFlow.value = geoRecordFlow.value + GeoRecordLightWeight(geoRecord.id, geoRecord.name)
-            geoRecord
-        } else {
-            // TODO: this isn't the responsibility of the data layer
-            val name = FileUtils.getFileRealFileNameFromURI(contentResolver, uri)
-            val fileName = if (name != null && name.isNotEmpty()) name else "file"
-            val msg = app.applicationContext.getString(R.string.recording_imported_failure, fileName)
-            appEventBus.postMessage(StandardMessage(msg))
-            null
         }
     }
 
@@ -158,7 +133,10 @@ class GeoRecordDaoFileBased(
         return try {
             geoRecordParser.parse(FileInputStream(file), file.nameWithoutExtension)
         } catch (e: Exception) {
-            Log.e("GeoRecord", "The file ${file.name} was parsed with error ${stackTraceToString(e)}")
+            Log.e(
+                "GeoRecord",
+                "The file ${file.name} was parsed with error ${stackTraceToString(e)}"
+            )
             null
         }
     }

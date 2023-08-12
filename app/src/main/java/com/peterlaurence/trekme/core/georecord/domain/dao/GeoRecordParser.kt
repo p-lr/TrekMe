@@ -8,6 +8,5 @@ import java.io.InputStream
 
 interface GeoRecordParser {
     suspend fun parse(uri: Uri, contentResolver: ContentResolver): GeoRecord?
-    suspend fun copyAndParse(uri: Uri, contentResolver: ContentResolver, copyFolder: File): Pair<GeoRecord, File>?
     suspend fun parse(inputStream: InputStream, defaultName: String): GeoRecord?
 }

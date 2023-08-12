@@ -25,12 +25,6 @@ class GeoRecordInteractor @Inject constructor(
         repository.renameGeoRecord(id, newName)
     }
 
-    suspend fun import(uriList: List<Uri>): Int {
-        return uriList.count { uri ->
-            repository.importGeoRecordFromUri(uri) != null
-        }
-    }
-
     fun getExcursionId(id: UUID): String? {
         return repository.getExcursionId(id)
     }

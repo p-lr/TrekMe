@@ -94,10 +94,6 @@ class GeoRecordRepository @Inject constructor(
         }
     }
 
-    suspend fun importGeoRecordFromUri(uri: Uri): GeoRecord? {
-        return geoRecordDao.importGeoRecordFromUri(uri)
-    }
-
     suspend fun renameGeoRecord(id: UUID, newName: String): Boolean {
         val excursionId = rosetta.entries.firstNotNullOfOrNull {
             if (it.value == id) it.key else null
