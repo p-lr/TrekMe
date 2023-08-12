@@ -166,6 +166,9 @@ class ExcursionDaoFileBased(
                     val str = json.encodeToString(config)
                     FileUtils.writeToFile(str, configFile)
 
+                    /* Waypoints */
+                    writeWaypoints(destFolder, geoRecord)
+
                     /* Update the state */
                     excursions.update {
                         it + ExcursionFileBased(destFolder, config)
@@ -193,7 +196,8 @@ class ExcursionDaoFileBased(
                 it.createNewFile()
             }
 
-            val config = ExcursionConfig(id, title, description, type.toData(), photos = emptyList())
+            val config =
+                ExcursionConfig(id, title, description, type.toData(), photos = emptyList())
             val str = json.encodeToString(config)
             FileUtils.writeToFile(str, configFile)
 
@@ -206,6 +210,9 @@ class ExcursionDaoFileBased(
             withContext(ioDispatcher) {
                 writeGpx(gpx, FileOutputStream(gpxFile))
             }
+
+            /* Waypoints */
+            writeWaypoints(destFolder, geoRecord)
 
             /* Update the state */
             excursions.update {
@@ -286,11 +293,27 @@ class ExcursionDaoFileBased(
         return destFolder
     }
 
-    private suspend fun parseGpxFile(file: File, name: String = file.nameWithoutExtension): GeoRecord? = withContext(ioDispatcher) {
+    private suspend fun parseGpxFile(
+        file: File,
+        name: String = file.nameWithoutExtension
+    ): GeoRecord? = withContext(ioDispatcher) {
         FileInputStream(file).use {
             parseGpxSafely(it)?.let { gpx ->
                 gpxToDomain(gpx, name)
             }
+        }
+    }
+
+    private suspend fun writeWaypoints(destFolder: File, geoRecord: GeoRecord) {
+        val wayPointsFile = File(destFolder, WAYPOINTS_FILENAME)
+        val waypoints = geoRecord.markers.map {
+            Waypoint(
+                id = it.id, name = it.name, latitude = it.lat, longitude = it.lon,
+                elevation = it.elevation, comment = it.comment, photos = emptyList()
+            )
+        }
+        withContext(ioDispatcher) {
+            FileUtils.writeToFile(json.encodeToString(waypoints), wayPointsFile)
         }
     }
 }
