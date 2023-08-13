@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class ExcursionDaoFileBased(
     private val rootFolders: StateFlow<List<File>>,
     private val appDirFlow: Flow<File>,
-    private val uriReader: suspend (uri: Uri, reader: suspend (FileInputStream) -> Unit) -> Unit,
+    private val uriReader: suspend (uri: Uri, reader: suspend (FileInputStream) -> Excursion?) -> Excursion?,
     private val nameReaderUri: (Uri) -> String?,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ExcursionDao {
@@ -212,9 +212,9 @@ class ExcursionDaoFileBased(
         return TrekmeFilesProvider.generateUri(file)
     }
 
-    override suspend fun putExcursion(id: String, uri: Uri): Boolean {
+    override suspend fun putExcursion(id: String, uri: Uri): Excursion? {
         return runCatching {
-            val root = appDirFlow.firstOrNull() ?: return false
+            val root = appDirFlow.firstOrNull() ?: return null
             val excursionsFolder = File(root, DIR_NAME)
 
             withContext(ioDispatcher) {
@@ -224,7 +224,17 @@ class ExcursionDaoFileBased(
                     /* We create dirs named after the gpx file name, and not using the current
                      * date, since multiple uris can be imported concurrently hence they would end-up
                      * with the same dir name. */
-                    val destFolder = File(excursionsFolder, name.substringBeforeLast("."))
+                    val nameWithoutExtension = name.substringBeforeLast(".")
+                    val attempt = File(excursionsFolder, nameWithoutExtension)
+                    val destFolder = if (attempt.exists()) {
+                        val count = excursionsFolder.listFiles { f ->
+                            f.isDirectory && f.name.startsWith(nameWithoutExtension)
+                        }?.size ?: 0
+
+                        File(excursionsFolder, "$nameWithoutExtension-$count")
+                    } else {
+                        attempt
+                    }
                     destFolder.mkdir()
 
                     val destFile = File(destFolder, name)
@@ -251,13 +261,15 @@ class ExcursionDaoFileBased(
                     /* Waypoints */
                     writeWaypoints(destFolder, geoRecord)
 
+                    val newExcursion = ExcursionFileBased(destFolder, config)
                     /* Update the state */
                     excursions.update {
-                        it + ExcursionFileBased(destFolder, config)
+                        it + newExcursion
                     }
+                    newExcursion
                 }
             }
-        }.isSuccess
+        }.getOrNull()
     }
 
     override suspend fun putExcursion(

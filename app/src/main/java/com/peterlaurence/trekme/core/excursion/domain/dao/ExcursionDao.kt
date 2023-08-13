@@ -12,7 +12,7 @@ interface ExcursionDao {
     suspend fun getGeoRecord(excursion: Excursion): GeoRecord?
     fun getGeoRecordUri(id: String): Uri?
     suspend fun putExcursion(id: String, title: String, type: ExcursionType, description: String, geoRecord: GeoRecord): Boolean
-    suspend fun putExcursion(id: String, uri: Uri): Boolean
+    suspend fun putExcursion(id: String, uri: Uri): Excursion?
     suspend fun deleteExcursions(ids: List<String>): Boolean
     suspend fun rename(id: String, newName: String): Boolean
     suspend fun updateGeoRecord(id: String, geoRecord: GeoRecord): Boolean

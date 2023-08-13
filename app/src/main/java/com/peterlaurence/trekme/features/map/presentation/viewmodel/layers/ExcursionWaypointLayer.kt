@@ -70,7 +70,13 @@ class ExcursionWaypointLayer(
 
                 val iter = excursionWptListState.iterator()
                 for (entry in iter) {
-                    if (entry.key !in refs) iter.remove()
+                    /* The excursion ref has been removed, so remove all corresponding markers */
+                    if (entry.key !in refs) {
+                        entry.value.waypointsState.forEach { (_, u) ->
+                            mapState.removeMarker(u.idOnMap)
+                        }
+                        iter.remove()
+                    }
                 }
             }
         }
@@ -117,13 +123,13 @@ class ExcursionWaypointLayer(
                 true
             }
             id.startsWith(excursionWaypointPrefix) -> {
-                onExcursionWaypointTap(mapState, mapId, id, x, y)
+                onExcursionWaypointTap(mapState, id, x, y)
             }
             else -> false
         }
     }
 
-    private fun onExcursionWaypointTap(mapState: MapState, mapId: UUID, id: String, x: Double, y: Double): Boolean {
+    private fun onExcursionWaypointTap(mapState: MapState, id: String, x: Double, y: Double): Boolean {
         val payload = id.substringAfter("$excursionWaypointPrefix-")
         val ids = payload.split("|")
         if (ids.size != 2) return false

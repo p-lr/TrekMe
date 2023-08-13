@@ -2,7 +2,6 @@ package com.peterlaurence.trekme.core.map.domain.interactors
 
 import android.app.Application
 import android.net.Uri
-import com.peterlaurence.trekme.core.excursion.domain.repository.ExcursionRepository
 import com.peterlaurence.trekme.core.map.domain.dao.MapDownloadDao
 import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.core.map.domain.models.Map

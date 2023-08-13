@@ -11,7 +11,7 @@ import com.peterlaurence.trekme.features.common.domain.interactors.RemoveRouteIn
 import com.peterlaurence.trekme.features.common.domain.model.RecordingDataStateOwner
 import com.peterlaurence.trekme.features.common.domain.model.RecordingsAvailable
 import com.peterlaurence.trekme.features.common.domain.model.RecordingsState
-import com.peterlaurence.trekme.features.record.domain.interactors.ImportRecordingsInteractor
+import com.peterlaurence.trekme.features.common.domain.interactors.ImportRecordingsInteractor
 import com.peterlaurence.trekme.features.record.domain.model.RecordingData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
