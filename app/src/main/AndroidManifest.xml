@@ -21,6 +21,10 @@
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"
+        android:minSdkVersion="34" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"
+        android:minSdkVersion="34" />
 
     <application
         android:name=".TrekMeApp"
@@ -60,10 +64,12 @@
             android:exported="false" />
         <service
             android:name="com.peterlaurence.trekme.features.mapcreate.app.service.download.DownloadService"
+            android:foregroundServiceType="dataSync"
             android:enabled="true"
             android:exported="false" />
         <service
             android:name="com.peterlaurence.trekme.features.wifip2p.app.service.WifiP2pService"
+            android:foregroundServiceType="dataSync"
             android:enabled="true"
             android:exported="false" />
 

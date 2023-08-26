@@ -300,7 +300,9 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
         }
     }
 
-    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {
+    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
+        if (sharedPreferences == null) return
+        if (key == null) return
         val pref = findPreference<Preference>(key)
         if (pref != null) {
             pref.summary = sharedPreferences.getString(key, "default")

@@ -7,7 +7,7 @@ apply plugin: "androidx.navigation.safeargs"
 apply plugin: 'dagger.hilt.android.plugin'
 
 android {
-    compileSdk 33
+    compileSdk 34
 
     buildFeatures {
         viewBinding true
@@ -21,7 +21,7 @@ android {
     defaultConfig {
         applicationId "com.peterlaurence.trekme"
         minSdkVersion 24
-        targetSdkVersion 33
+        targetSdkVersion 34
         versionCode 193
         versionName "3.6.2"
 
