@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.documentfile.provider.DocumentFile
 import com.peterlaurence.trekme.core.map.data.MAP_IMPORTED_FOLDER_NAME
 import com.peterlaurence.trekme.core.map.data.utils.unarchive
+import com.peterlaurence.trekme.core.map.domain.dao.MapSaverDao
 import com.peterlaurence.trekme.core.map.domain.dao.MapSeekerDao
 import com.peterlaurence.trekme.core.map.domain.models.MapImportResult
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
@@ -37,7 +38,8 @@ class UnarchiveDaoImpl(
     private val settings: Settings,
     private val registry: MapArchiveRegistry,
     private val mapRepository: MapRepository,
-    private val mapSeekerDao: MapSeekerDao
+    private val mapSeekerDao: MapSeekerDao,
+    private val mapSaverDao: MapSaverDao
 ) : UnarchiveDao {
     override suspend fun unarchive(id: UUID): Flow<UnzipEvent> {
         return withContext(ioDispatcher) {
@@ -87,7 +89,14 @@ class UnarchiveDaoImpl(
     private suspend fun importMapFromFolder(folder: File) = withContext(ioDispatcher) {
         val map = mapSeekerDao.seek(folder).getOrNull()
         if (map != null) {
-            mapRepository.addMaps(listOf(map))
+            /* If a map with the same id already exists, change the id and save the the map */
+            val mapToAdd = if (map in mapRepository.getCurrentMapList()) {
+                val mapWithNewId = map.copy(map.configSnapshot.copy(uuid = UUID.randomUUID()))
+                mapSaverDao.save(mapWithNewId)
+                mapWithNewId
+            } else map
+
+            mapRepository.addMaps(listOf(mapToAdd))
         }
 
         MapImportResult(map, mapSeekerDao.status)

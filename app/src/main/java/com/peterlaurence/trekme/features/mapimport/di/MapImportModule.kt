@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.features.mapimport.di
 
 import android.app.Application
+import com.peterlaurence.trekme.core.map.domain.dao.MapSaverDao
 import com.peterlaurence.trekme.core.map.domain.dao.MapSeekerDao
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.core.settings.Settings
@@ -44,9 +45,10 @@ object MapImportModule {
         settings: Settings,
         mapArchiveRegistry: MapArchiveRegistry,
         mapRepository: MapRepository,
-        mapSeekerDao: MapSeekerDao
+        mapSeekerDao: MapSeekerDao,
+        mapSaverDao: MapSaverDao
     ): UnarchiveDao {
-        return UnarchiveDaoImpl(app, ioDispatcher, settings, mapArchiveRegistry, mapRepository, mapSeekerDao)
+        return UnarchiveDaoImpl(app, ioDispatcher, settings, mapArchiveRegistry, mapRepository, mapSeekerDao, mapSaverDao)
     }
 
     @Provides

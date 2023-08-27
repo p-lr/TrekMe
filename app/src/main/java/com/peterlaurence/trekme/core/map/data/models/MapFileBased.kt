@@ -166,14 +166,14 @@ class MapFileBased(
 
         other as MapFileBased
 
-        /* By design, only MapConfig participates in equals policy */
-        if (config != other.config) return false
+        /* By design, only uuid participates in equals policy */
+        if (config.uuid != other.config.uuid) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        /* By design, only MapConfig participates in hashcode policy */
-        return config.hashCode()
+        /* By design, only uuid participates in hashcode policy */
+        return config.uuid.hashCode()
     }
 }
