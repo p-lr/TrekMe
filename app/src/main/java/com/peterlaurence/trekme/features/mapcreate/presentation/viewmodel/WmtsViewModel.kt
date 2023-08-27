@@ -127,6 +127,8 @@ class WmtsViewModel @Inject constructor(
         WmtsSource.OPEN_STREET_MAP to defaultOsmLayer
     )
 
+    private var shouldCenterOnNextLocation = false
+
     init {
         viewModelScope.launch {
             wmtsSourceRepository.wmtsSourceState.collectLatest { source ->
@@ -541,6 +543,11 @@ class WmtsViewModel @Inject constructor(
             if (normalized != null) {
                 updatePosition(mapState, normalized.x, normalized.y)
             }
+
+            if (shouldCenterOnNextLocation) {
+                shouldCenterOnNextLocation = false
+                tryCenterOnPosition(location)
+            }
         }
     }
 
@@ -560,19 +567,28 @@ class WmtsViewModel @Inject constructor(
     }
 
     fun zoomOnPosition() {
-        val wmtsSource = wmtsSourceRepository.wmtsSourceState.value ?: return
-
-        locationSource.locationFlow.take(1).map { location ->
-            val mapConfiguration = getScaleAndScrollConfig(wmtsSource)
-            val boundaryConf = mapConfiguration.filterIsInstance<BoundariesConfig>().firstOrNull()
-            boundaryConf?.boundingBoxList?.also { boxes ->
-                if (boxes.contains(location.latitude, location.longitude)) {
-                    centerOnPosition()
-                } else {
-                    _eventsChannel.send(WmtsEvent.CURRENT_LOCATION_OUT_OF_BOUNDS)
-                }
+        viewModelScope.launch {
+            val cachedLocation = locationSource.locationFlow.replayCache.firstOrNull()
+            if (cachedLocation == null) {
+                _eventsChannel.send(WmtsEvent.AWAITING_LOCATION)
+                shouldCenterOnNextLocation = true
+            } else {
+                tryCenterOnPosition(cachedLocation)
             }
-        }.launchIn(viewModelScope)
+        }
+    }
+
+    private suspend fun tryCenterOnPosition(location: Location) {
+        val wmtsSource = wmtsSourceRepository.wmtsSourceState.value ?: return
+        val mapConfiguration = getScaleAndScrollConfig(wmtsSource)
+        val boundaryConf = mapConfiguration.filterIsInstance<BoundariesConfig>().firstOrNull()
+        boundaryConf?.boundingBoxList?.also { boxes ->
+            if (boxes.contains(location.latitude, location.longitude)) {
+                centerOnPosition()
+            } else {
+                _eventsChannel.send(WmtsEvent.CURRENT_LOCATION_OUT_OF_BOUNDS)
+            }
+        }
     }
 
     private fun centerOnPosition() {
@@ -666,7 +682,7 @@ fun List<BoundingBox>.contains(latitude: Double, longitude: Double): Boolean {
 }
 
 enum class WmtsEvent {
-    CURRENT_LOCATION_OUT_OF_BOUNDS, PLACE_OUT_OF_BOUNDS, SHOW_TREKME_EXTENDED_ADVERT
+    CURRENT_LOCATION_OUT_OF_BOUNDS, PLACE_OUT_OF_BOUNDS, AWAITING_LOCATION, SHOW_TREKME_EXTENDED_ADVERT
 }
 
 sealed interface UiState

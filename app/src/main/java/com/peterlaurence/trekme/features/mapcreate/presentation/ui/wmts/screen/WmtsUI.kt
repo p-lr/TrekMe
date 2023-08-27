@@ -108,12 +108,14 @@ fun WmtsStateful(
     val ok = stringResource(id = R.string.ok_dialog)
     val outOfBounds = stringResource(id = R.string.mapcreate_out_of_bounds)
     val outSideOfCoveredArea = stringResource(id = R.string.place_outside_of_covered_area)
+    val awaitingLocation = stringResource(id = R.string.awaiting_location)
     var showTrekmeExtendedAdvert by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     LaunchedEffectWithLifecycle(viewModel.events) { event ->
         val message = when (event) {
             WmtsEvent.CURRENT_LOCATION_OUT_OF_BOUNDS -> outOfBounds
             WmtsEvent.PLACE_OUT_OF_BOUNDS -> outSideOfCoveredArea
+            WmtsEvent.AWAITING_LOCATION -> awaitingLocation
             WmtsEvent.SHOW_TREKME_EXTENDED_ADVERT -> {
                 showTrekmeExtendedAdvert = true
                 return@LaunchedEffectWithLifecycle
