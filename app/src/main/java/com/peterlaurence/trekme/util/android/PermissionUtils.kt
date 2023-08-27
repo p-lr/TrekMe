@@ -62,3 +62,7 @@ fun hasPermissions(activity: Activity, vararg permissions: String): Boolean {
         ActivityCompat.checkSelfPermission(activity, it) == PackageManager.PERMISSION_GRANTED
     }
 }
+
+fun Activity.hasLocationPermission(): Boolean {
+    return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+}

@@ -24,6 +24,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.BuildConfig
 import com.peterlaurence.trekme.NavGraphDirections
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.core.map.domain.interactors.GetMapInteractor
 import com.peterlaurence.trekme.core.map.domain.interactors.SetMapInteractor
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
@@ -41,10 +42,12 @@ import com.peterlaurence.trekme.main.eventhandler.MapDownloadEventHandler
 import com.peterlaurence.trekme.main.eventhandler.PermissionRequestHandler
 import com.peterlaurence.trekme.main.eventhandler.RecordingEventHandler
 import com.peterlaurence.trekme.main.shortcut.Shortcut
+import com.peterlaurence.trekme.util.android.hasLocationPermission
 import com.peterlaurence.trekme.util.checkInternet
 import com.peterlaurence.trekme.util.collectWhileStarted
 import com.peterlaurence.trekme.util.collectWhileStartedIn
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.util.*
@@ -72,6 +75,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     @Inject
     lateinit var gpsProEvents: GpsProEvents
+
+    @Inject
+    lateinit var locationSource: LocationSource
 
     @Inject
     lateinit var gpxRecordEvents: GpxRecordEvents
@@ -261,6 +267,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
      */
     public override fun onStart() {
         permissionRequestHandler?.requestMinimalPermission()
+
+        /* Prefetch location now - useful to reduce wait time */
+        if (hasLocationPermission()) {
+            lifecycleScope.launch {
+                locationSource.locationFlow.first()
+            }
+        }
 
         val shortcut = when(intent.extras?.getString("shortcutKey")) {
             "recordings" -> Shortcut.RECORDINGS
