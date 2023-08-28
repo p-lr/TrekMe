@@ -61,7 +61,6 @@ fun MapStateful(
     val isShowingGpsData by viewModel.isShowingGpsDataFlow().collectAsState(initial = false)
     val isShowingScaleIndicator by viewModel.settings.getShowScaleIndicator()
         .collectAsState(initial = true)
-    val snackBarEvents = viewModel.snackBarController.snackBarEvents.toList()
     val stats by statisticsViewModel.stats.collectAsState(initial = null)
     val rotationMode by viewModel.settings.getRotationMode()
         .collectAsState(initial = RotationMode.NONE)
@@ -119,6 +118,23 @@ fun MapStateful(
         }
     }
 
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    val ok = stringResource(id = R.string.ok_dialog)
+    val outOfBounds = stringResource(id = R.string.map_screen_loc_outside_map)
+    LaunchedEffectWithLifecycle(flow = viewModel.events) { event ->
+        val msg = when(event) {
+            SnackBarEvent.CURRENT_LOCATION_OUT_OF_BOUNDS -> outOfBounds
+        }
+        scope.launch {
+            /* Dismiss the currently showing snackbar, if any */
+            snackbarHostState.currentSnackbarData?.dismiss()
+
+            snackbarHostState.showSnackbar(msg, actionLabel = ok)
+        }
+    }
+
     when (uiState) {
         Loading -> {
             LoadingScreen()
@@ -132,6 +148,7 @@ fun MapStateful(
                     MapScaffold(
                         Modifier.weight(1f, true),
                         uiState as MapUiState,
+                        snackbarHostState,
                         isShowingOrientation,
                         isShowingDistance,
                         isShowingDistanceOnTrack,
@@ -140,12 +157,11 @@ fun MapStateful(
                         isShowingGpsData,
                         isShowingScaleIndicator,
                         rotationMode,
-                        snackBarEvents,
                         locationState,
                         elevationFix,
                         hasElevationFix = purchased,
                         hasBeacons = purchased,
-                        onSnackBarShown = viewModel.snackBarController::onSnackBarShown,
+                        hasTrackFollow = purchased,
                         onMainMenuClick = viewModel::onMainMenuClick,
                         onManageTracks = onNavigateToTracksManage,
                         onToggleShowOrientation = viewModel::toggleShowOrientation,
@@ -157,6 +173,7 @@ fun MapStateful(
                         onToggleSpeed = viewModel::toggleSpeed,
                         onToggleLockOnPosition = viewModel.locationOrientationLayer::toggleLockedOnPosition,
                         onToggleShowGpsData = viewModel::toggleShowGpsData,
+                        onFollowTrack = { /* TODO */ },
                         onPositionFabClick = viewModel.locationOrientationLayer::centerOnPosition,
                         onCompassClick = viewModel::alignToNorth,
                         onElevationFixUpdate = viewModel::onElevationFixUpdate,
@@ -184,6 +201,7 @@ fun MapStateful(
 private fun MapScaffold(
     modifier: Modifier = Modifier,
     uiState: MapUiState,
+    snackbarHostState: SnackbarHostState,
     isShowingOrientation: Boolean,
     isShowingDistance: Boolean,
     isShowingDistanceOnTrack: Boolean,
@@ -192,12 +210,11 @@ private fun MapScaffold(
     isShowingGpsData: Boolean,
     isShowingScaleIndicator: Boolean,
     rotationMode: RotationMode,
-    snackBarEvents: List<SnackBarEvent>,
     locationState: State<Location?>,
     elevationFix: Int,
     hasElevationFix: Boolean,
     hasBeacons: Boolean,
-    onSnackBarShown: () -> Unit,
+    hasTrackFollow: Boolean,
     onMainMenuClick: () -> Unit,
     onManageTracks: () -> Unit,
     onToggleShowOrientation: () -> Unit,
@@ -209,31 +226,12 @@ private fun MapScaffold(
     onToggleSpeed: () -> Unit,
     onToggleLockOnPosition: () -> Unit,
     onToggleShowGpsData: () -> Unit,
+    onFollowTrack: () -> Unit,
     onPositionFabClick: () -> Unit,
     onCompassClick: () -> Unit,
     onElevationFixUpdate: (Int) -> Unit,
     recordingButtons: @Composable () -> Unit
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
-
-    if (snackBarEvents.isNotEmpty()) {
-        val ok = stringResource(id = R.string.ok_dialog)
-        val message = when (snackBarEvents.first()) {
-            SnackBarEvent.CURRENT_LOCATION_OUT_OF_BOUNDS -> stringResource(id = R.string.map_screen_loc_outside_map)
-        }
-
-        SideEffect {
-            scope.launch {
-                /* Dismiss the currently showing snackbar, if any */
-                snackbarHostState.currentSnackbarData?.dismiss()
-
-                snackbarHostState.showSnackbar(message, actionLabel = ok)
-            }
-            onSnackBarShown()
-        }
-    }
-
     Scaffold(
         modifier,
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -247,6 +245,7 @@ private fun MapScaffold(
                 isLockedOnPosition = isLockedOnPosition,
                 isShowingGpsData = isShowingGpsData,
                 hasBeacons = hasBeacons,
+                hasTrackFollow = hasTrackFollow,
                 onMenuClick = onMainMenuClick,
                 onManageTracks = onManageTracks,
                 onToggleShowOrientation = onToggleShowOrientation,
@@ -257,7 +256,8 @@ private fun MapScaffold(
                 onToggleDistanceOnTrack = onToggleDistanceOnTrack,
                 onToggleSpeed = onToggleSpeed,
                 onToggleLockPosition = onToggleLockOnPosition,
-                onToggleShowGpsData = onToggleShowGpsData
+                onToggleShowGpsData = onToggleShowGpsData,
+                onFollowTrack = onFollowTrack
             )
         },
         floatingActionButton = {

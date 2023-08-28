@@ -35,8 +35,10 @@ fun MapTopAppBar(
     isLockedOnPosition: Boolean,
     isShowingGpsData: Boolean,
     hasBeacons: Boolean,
+    hasTrackFollow: Boolean,
     onMenuClick: () -> Unit,
     onManageTracks: () -> Unit,
+    onFollowTrack: () -> Unit,
     onToggleShowOrientation: () -> Unit,
     onAddMarker: () -> Unit,
     onAddLandmark: () -> Unit,
@@ -146,6 +148,18 @@ fun MapTopAppBar(
                             Spacer(Modifier.weight(1f))
                         }
                     )
+                    if (hasTrackFollow) {
+                        DropdownMenuItem(
+                            onClick = {
+                                expandedMenu = false
+                                onFollowTrack()
+                            },
+                            text = {
+                                Text(stringResource(id = R.string.follow_track_menu))
+                                Spacer(Modifier.weight(1f))
+                            }
+                        )
+                    }
                     DropdownMenuItem(
                         onClick = onToggleSpeed,
                         text = {

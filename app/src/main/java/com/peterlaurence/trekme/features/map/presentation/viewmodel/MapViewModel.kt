@@ -26,10 +26,10 @@ import com.peterlaurence.trekme.features.common.domain.interactors.MapComposeTil
 import com.peterlaurence.trekme.features.common.domain.interactors.MapExcursionInteractor
 import com.peterlaurence.trekme.features.map.domain.interactors.*
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
-import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.SnackBarController
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -86,7 +86,9 @@ class MapViewModel @Inject constructor(
         dataStateFlow,
         mapInteractor,
         onOutOfBounds = {
-            snackBarController.showSnackBar(SnackBarEvent.CURRENT_LOCATION_OUT_OF_BOUNDS)
+            viewModelScope.launch {
+                _events.send(SnackBarEvent.CURRENT_LOCATION_OUT_OF_BOUNDS)
+            }
         }
     )
 
@@ -141,7 +143,8 @@ class MapViewModel @Inject constructor(
         mapExcursionInteractor
     )
 
-    val snackBarController = SnackBarController()
+    private val _events = Channel<SnackBarEvent>(1)
+    val events = _events.receiveAsFlow()
 
     init {
         mapRepository.currentMapFlow.map {

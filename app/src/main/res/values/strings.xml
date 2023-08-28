@@ -171,6 +171,7 @@
 
     <!-- Menu of the map view fragment -->
     <string name="manage_tracks_menu">Manage tracks</string>
+    <string name="follow_track_menu">Follow a track</string>
 
     <!-- Tracks manage fragment -->
     <string name="tracks_manage_frgmt_title">Tracks manage</string>
