@@ -42,6 +42,7 @@ class GpxRecordServiceViewModel @Inject constructor(
     val status: StateFlow<GpxRecordState> = gpxRecordEvents.serviceState
 
     val disableBatteryOptSignal = Channel<Unit>(1)
+    val ackBatteryOptSignal = Channel<Unit>(1)
     val showLocalisationRationale = Channel<Unit>(1)
 
     private var isButtonEnabled = true
@@ -87,6 +88,8 @@ class GpxRecordServiceViewModel @Inject constructor(
         /* Check battery optimization, and inform the user if needed */
         if (isBatteryOptimized()) {
             disableBatteryOptSignal.send(Unit)
+            /* Wait for the user to take action before continuing */
+            ackBatteryOptSignal.receive()
         }
 
         /* Start the service */

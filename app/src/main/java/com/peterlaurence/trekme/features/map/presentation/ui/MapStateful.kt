@@ -34,7 +34,7 @@ import com.peterlaurence.trekme.features.map.presentation.viewmodel.*
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimSolutionDialog
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimWarningDialog
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.LocationRationale
-import com.peterlaurence.trekme.features.map.presentation.viewmodel.GpxRecordServiceViewModel
+import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.rotation
@@ -70,7 +70,10 @@ fun MapStateful(
     val locationFlow = viewModel.locationFlow
     val elevationFix by viewModel.elevationFixFlow.collectAsState()
 
-    val locationState: State<Location?> = locationFlow.collectAsStateWithLifecycle(initialValue = null, minActiveState = Lifecycle.State.RESUMED)
+    val locationState: State<Location?> = locationFlow.collectAsStateWithLifecycle(
+        initialValue = null,
+        minActiveState = Lifecycle.State.RESUMED
+    )
 
     LaunchedEffect(lifecycleOwner) {
         launch {
@@ -120,6 +123,7 @@ fun MapStateful(
         Loading -> {
             LoadingScreen()
         }
+
         is MapUiState -> {
             /* Always use the light theme background (dark theme or not). Done this way, it
              * doesn't add a GPU overdraw. */
@@ -167,6 +171,7 @@ fun MapStateful(
                 }
             }
         }
+
         is Error -> ErrorScaffold(
             uiState as Error,
             onMainMenuClick = viewModel::onMainMenuClick,
@@ -305,18 +310,11 @@ private fun RecordingFabStateful(viewModel: GpxRecordServiceViewModel) {
     var isShowingBatterySolution by rememberSaveable { mutableStateOf(false) }
     var isShowingLocationRationale by rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect(LocalLifecycleOwner.current) {
-        launch {
-            disableBatterySignal.collect {
-                isShowingBatteryWarning = true
-            }
-        }
-
-        launch {
-            showLocalisationRationale.collect {
-                isShowingLocationRationale = true
-            }
-        }
+    LaunchedEffectWithLifecycle(flow = disableBatterySignal) {
+        isShowingBatteryWarning = true
+    }
+    LaunchedEffectWithLifecycle(flow = showLocalisationRationale) {
+        isShowingLocationRationale = true
     }
 
     if (isShowingBatteryWarning) {
@@ -325,12 +323,20 @@ private fun RecordingFabStateful(viewModel: GpxRecordServiceViewModel) {
                 isShowingBatterySolution = true
                 isShowingBatteryWarning = false
             },
-            onDismissRequest = { isShowingBatteryWarning = false },
+            onDismissRequest = {
+                isShowingBatteryWarning = false
+                viewModel.ackBatteryOptSignal.trySend(Unit)
+            },
         )
     }
 
     if (isShowingBatterySolution) {
-        BatteryOptimSolutionDialog(onDismissRequest = { isShowingBatterySolution = false })
+        BatteryOptimSolutionDialog(
+            onDismissRequest = {
+                isShowingBatterySolution = false
+                viewModel.ackBatteryOptSignal.trySend(Unit)
+            }
+        )
     }
 
     if (isShowingLocationRationale) {
