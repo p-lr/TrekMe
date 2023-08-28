@@ -5,6 +5,7 @@ import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
 import com.peterlaurence.trekme.core.map.domain.models.Beacon
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.map.domain.models.Route
+import com.peterlaurence.trekme.features.map.domain.core.TrackVicinityVerifier
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
@@ -64,6 +65,17 @@ class MapFeatureEvents {
 
     fun postScale(scale: Float) {
         _mapScaleFlow.value = scale
+    }
+    /* endregion */
+
+    /* region track follow */
+    val trackVicinityVerifier = Channel<TrackVicinityVerifier>(1)
+
+    private val _startTrackFollowService = Channel<Unit>(1)
+    val startTrackFollowService = _startTrackFollowService.receiveAsFlow()
+
+    fun postStartTrackFollowService() {
+        _startTrackFollowService.trySend(Unit)
     }
     /* endregion */
 }

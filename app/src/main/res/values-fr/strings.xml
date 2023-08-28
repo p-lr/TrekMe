@@ -191,6 +191,11 @@
     <string name="service_beacon_notification_name">Gestion des balises</string>
     <string name="service_beacon_stop">Arrêter</string>
 
+    <!-- TrackFollowService -->
+    <string name="service_track_follow_name">Service de suivi de trace</string>
+    <string name="service_track_follow_notification_name">Suivi de trace</string>
+    <string name="service_track_follow_stop">Stop</string>
+
     <string name="share_menu_title">Recevoir et envoyer</string>
     <string name="wifip2p_stop_btn">Stop</string>
     <string name="wifip2p_rcv_btn">Recevoir</string>
@@ -367,6 +372,7 @@
     <string name="elevation_fix_help">La correction est ajoutée à l\'altitude fournie par le GPS</string>
     <string name="beacon_background_loc_perm">Cette carte contient des balises, ce qui nécessite de collecter les données de localisation
         même lorsque l\'application est fermée ou inutilisée.\n\nCette autorisation <b>n\'est pour le moment pas accordée</b>.</string>
+    <string name="select_track_to_follow">Appuyez sur la trace à suivre</string>
 
     <string name="map_delete_landmark">Supprimer le marqueur</string>
     <string name="map_move_landmark">Déplacer le marqueur</string>

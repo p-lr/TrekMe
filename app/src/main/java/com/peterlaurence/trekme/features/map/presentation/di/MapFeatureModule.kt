@@ -4,13 +4,13 @@ import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvent
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ActivityRetainedComponent
-import dagger.hilt.android.scopes.ActivityRetainedScoped
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
 @Module
-@InstallIn(ActivityRetainedComponent::class)
+@InstallIn(SingletonComponent::class)
 object MapFeatureModule {
-    @ActivityRetainedScoped
+    @Singleton
     @Provides
     fun providesMapFeatureEvents(): MapFeatureEvents = MapFeatureEvents()
 }

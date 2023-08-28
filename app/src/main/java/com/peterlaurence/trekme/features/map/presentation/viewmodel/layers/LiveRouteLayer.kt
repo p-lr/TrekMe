@@ -91,7 +91,8 @@ class LiveRouteLayer(
             pathData,
             color = route.color.value.let { colorStr ->
                 Color(parseColor(colorStr))
-            }
+            },
+            zIndex = 2f
         )
     }
 }

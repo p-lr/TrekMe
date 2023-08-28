@@ -2,6 +2,7 @@ package com.peterlaurence.trekme.features.map.presentation.ui
 
 import android.content.Context
 import android.content.ContextWrapper
+import android.content.Intent
 import android.os.Build
 import android.view.Surface
 import androidx.appcompat.app.AppCompatActivity
@@ -27,6 +28,7 @@ import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingScreen
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.md_theme_light_background
+import com.peterlaurence.trekme.features.map.app.service.TrackFollowService
 import com.peterlaurence.trekme.features.map.presentation.ui.components.*
 import com.peterlaurence.trekme.features.map.presentation.ui.screens.ErrorScaffold
 import com.peterlaurence.trekme.features.map.presentation.ui.screens.MapScreen
@@ -74,6 +76,7 @@ fun MapStateful(
         minActiveState = Lifecycle.State.RESUMED
     )
 
+    val context = LocalContext.current
     LaunchedEffect(lifecycleOwner) {
         launch {
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
@@ -102,6 +105,12 @@ fun MapStateful(
                 onNavigateToBeaconEdit(it.beacon.id, it.mapId)
             }
         }
+        launch {
+            viewModel.startTrackFollowEvent.collect {
+                val intent = Intent(context, TrackFollowService::class.java)
+                context.startService(intent)
+            }
+        }
     }
 
     if (uiState is MapUiState) {
@@ -123,9 +132,11 @@ fun MapStateful(
 
     val ok = stringResource(id = R.string.ok_dialog)
     val outOfBounds = stringResource(id = R.string.map_screen_loc_outside_map)
+    val selectTrack = stringResource(id = R.string.select_track_to_follow)
     LaunchedEffectWithLifecycle(flow = viewModel.events) { event ->
         val msg = when(event) {
             SnackBarEvent.CURRENT_LOCATION_OUT_OF_BOUNDS -> outOfBounds
+            SnackBarEvent.SELECT_TRACK_TO_FOLLOW -> selectTrack
         }
         scope.launch {
             /* Dismiss the currently showing snackbar, if any */
@@ -173,7 +184,7 @@ fun MapStateful(
                         onToggleSpeed = viewModel::toggleSpeed,
                         onToggleLockOnPosition = viewModel.locationOrientationLayer::toggleLockedOnPosition,
                         onToggleShowGpsData = viewModel::toggleShowGpsData,
-                        onFollowTrack = { /* TODO */ },
+                        onFollowTrack = { viewModel.initiateTrackFollow() },
                         onPositionFabClick = viewModel.locationOrientationLayer::centerOnPosition,
                         onCompassClick = viewModel::alignToNorth,
                         onElevationFixUpdate = viewModel::onElevationFixUpdate,

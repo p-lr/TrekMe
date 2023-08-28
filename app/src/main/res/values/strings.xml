@@ -65,6 +65,11 @@
     <string name="service_beacon_notification_name">Beacon monitoring</string>
     <string name="service_beacon_stop">Stop</string>
 
+    <!-- TrackFollowService -->
+    <string name="service_track_follow_name">Track follow service</string>
+    <string name="service_track_follow_notification_name">Track follow monitoring</string>
+    <string name="service_track_follow_stop">Stop</string>
+
     <!-- MapDownloadDialog -->
     <string name="map_download_dialog_title">Current map download</string>
     <string name="map_download_dialog_progress">Progress</string>
@@ -235,6 +240,7 @@
     <string name="elevation_fix_name">Fix</string>
     <string name="elevation_fix_help">The fix value is added to the elevation from the GPS</string>
     <string name="beacon_background_loc_perm">This map has at least one beacon. As a result, the app needs to collect location data even when the app is closed or not in use.\n\nCurrently, the <b>authorization isn\'t granted</b>.</string>
+    <string name="select_track_to_follow">Press on the track to follow</string>
 
     <!-- Marker, landmark, beacon edit screens -->
     <string name="marker_edit_screen_title">Marker edit</string>
