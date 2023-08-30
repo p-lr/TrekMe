@@ -16,6 +16,9 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.features.map.domain.core.TrackVicinityVerifier
+import com.peterlaurence.trekme.features.map.domain.models.TrackFollowServiceState
+import com.peterlaurence.trekme.features.map.domain.models.TrackFollowServiceStopEvent
+import com.peterlaurence.trekme.features.map.domain.repository.TrackFollowRepository
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.main.MainActivity
 import com.peterlaurence.trekme.util.getBitmapFromDrawable
@@ -58,7 +61,12 @@ class TrackFollowService : Service() {
     lateinit var mapFeatureEvents: MapFeatureEvents
 
     @Inject
+    lateinit var trackFollowRepository: TrackFollowRepository
+
+    @Inject
     lateinit var locationSource: LocationSource
+
+    var data: TrackFollowRepository.ServiceData? = null
 
     private var vib: Vibrator? = null
     private val vibrationPattern =
@@ -163,8 +171,13 @@ class TrackFollowService : Service() {
         startForeground(notificationId, notificationBuilder.build())
 
         job = scope.launch {
-            val verifier = mapFeatureEvents.trackVicinityVerifier.receive()
-            processLocation(verifier)
+            val data = trackFollowRepository.serviceData.receive()
+            this@TrackFollowService.data = data
+
+            /* Notify the rest the app that the service is started */
+            trackFollowRepository.serviceState.value = TrackFollowServiceState.Started(data.mapId, data.trackId)
+
+            processLocation(data.verifier)
         }
 
         return START_NOT_STICKY
@@ -193,6 +206,10 @@ class TrackFollowService : Service() {
     private fun stopService() {
         scope.cancel()
         sound?.release()
+        trackFollowRepository.serviceState.value = TrackFollowServiceState.Stopped
+        data?.also {
+            mapFeatureEvents.postTrackFollowStopEvent(TrackFollowServiceStopEvent(it.mapId, it.trackId))
+        }
         stopSelf()
     }
 }

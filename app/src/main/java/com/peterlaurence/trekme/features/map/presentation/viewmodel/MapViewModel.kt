@@ -24,18 +24,55 @@ import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.features.common.domain.interactors.MapComposeTileStreamProviderInteractor
 import com.peterlaurence.trekme.features.common.domain.interactors.MapExcursionInteractor
-import com.peterlaurence.trekme.features.map.domain.interactors.*
+import com.peterlaurence.trekme.features.map.domain.interactors.BeaconInteractor
+import com.peterlaurence.trekme.features.map.domain.interactors.ExcursionInteractor
+import com.peterlaurence.trekme.features.map.domain.interactors.LandmarkInteractor
+import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
+import com.peterlaurence.trekme.features.map.domain.interactors.MapLicenseInteractor
+import com.peterlaurence.trekme.features.map.domain.interactors.MarkerInteractor
+import com.peterlaurence.trekme.features.map.domain.interactors.RouteInteractor
+import com.peterlaurence.trekme.features.map.domain.repository.TrackFollowRepository
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
-import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.*
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.BeaconLayer
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.DistanceLayer
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.DistanceLineState
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.ExcursionWaypointLayer
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.LandmarkLayer
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.LandmarkLinesState
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.LiveRouteLayer
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.LocationOrientationLayer
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.MarkerLayer
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.RouteLayer
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.ScaleIndicatorLayer
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.ScaleIndicatorState
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.TrackFollowLayer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapMerge
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import ovh.plrapps.mapcompose.api.*
+import ovh.plrapps.mapcompose.api.addLayer
+import ovh.plrapps.mapcompose.api.maxScale
+import ovh.plrapps.mapcompose.api.onMarkerClick
+import ovh.plrapps.mapcompose.api.rotateTo
+import ovh.plrapps.mapcompose.api.scale
+import ovh.plrapps.mapcompose.api.shouldLoopScale
 import ovh.plrapps.mapcompose.ui.state.MapState
-import java.util.*
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -50,6 +87,7 @@ class MapViewModel @Inject constructor(
     routeInteractor: RouteInteractor,
     excursionInteractor: ExcursionInteractor,
     mapExcursionInteractor: MapExcursionInteractor,
+    trackFollowRepository: TrackFollowRepository,
     private val mapComposeTileStreamProviderInteractor: MapComposeTileStreamProviderInteractor,
     val settings: Settings,
     private val mapFeatureEvents: MapFeatureEvents,
@@ -72,7 +110,10 @@ class MapViewModel @Inject constructor(
     val elevationFixFlow: StateFlow<Int> = mapRepository.currentMapFlow.flatMapMerge {
         it?.elevationFix ?: MutableStateFlow(0)
     }.stateIn(viewModelScope, SharingStarted.Eagerly, 0)
-    val purchaseFlow: StateFlow<Boolean> = combine(extendedOfferWithIgnStateOwner.purchaseFlow, extendedOfferStateOwner.purchaseFlow) { x, y ->
+    val purchaseFlow: StateFlow<Boolean> = combine(
+        extendedOfferWithIgnStateOwner.purchaseFlow,
+        extendedOfferStateOwner.purchaseFlow
+    ) { x, y ->
         x == PurchaseState.PURCHASED || y == PurchaseState.PURCHASED
     }.stateIn(viewModelScope, SharingStarted.Eagerly, initialValue = false)
 
@@ -124,7 +165,12 @@ class MapViewModel @Inject constructor(
         mapFeatureEvents
     )
 
-    val trackFollowLayer = TrackFollowLayer(viewModelScope, dataStateFlow, mapFeatureEvents)
+    private val trackFollowLayer = TrackFollowLayer(
+        viewModelScope,
+        dataStateFlow,
+        trackFollowRepository,
+        mapFeatureEvents,
+    )
 
     val distanceLayer = DistanceLayer(viewModelScope, dataStateFlow.map { it.mapState })
 
@@ -195,9 +241,11 @@ class MapViewModel @Inject constructor(
                         onMapChange(map)
                     }
                 }
+
                 is ErrorIgnLicense -> {
                     _uiState.value = Error.IgnLicenseError
                 }
+
                 is ErrorWmtsLicense -> {
                     _uiState.value = Error.WmtsLicenseError
                 }
@@ -296,7 +344,7 @@ class MapViewModel @Inject constructor(
     /* endregion */
 
     interface MarkerTapListener {
-        fun onMarkerTap(mapState: MapState, mapId: UUID, id: String, x: Double, y: Double) : Boolean
+        fun onMarkerTap(mapState: MapState, mapId: UUID, id: String, x: Double, y: Double): Boolean
     }
 }
 

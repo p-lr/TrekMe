@@ -5,7 +5,7 @@ import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
 import com.peterlaurence.trekme.core.map.domain.models.Beacon
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.map.domain.models.Route
-import com.peterlaurence.trekme.features.map.domain.core.TrackVicinityVerifier
+import com.peterlaurence.trekme.features.map.domain.models.TrackFollowServiceStopEvent
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
@@ -69,13 +69,16 @@ class MapFeatureEvents {
     /* endregion */
 
     /* region track follow */
-    val trackVicinityVerifier = Channel<TrackVicinityVerifier>(1)
-
     private val _startTrackFollowService = Channel<Unit>(1)
     val startTrackFollowService = _startTrackFollowService.receiveAsFlow()
 
     fun postStartTrackFollowService() {
         _startTrackFollowService.trySend(Unit)
     }
+
+    private val _trackFollowStopEvent = MutableSharedFlow<TrackFollowServiceStopEvent>(0, 1, BufferOverflow.DROP_OLDEST)
+    val trackFollowStopEvent = _trackFollowStopEvent.asSharedFlow()
+
+    fun postTrackFollowStopEvent(event: TrackFollowServiceStopEvent) = _trackFollowStopEvent.tryEmit(event)
     /* endregion */
 }

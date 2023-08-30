@@ -194,7 +194,7 @@
     <!-- TrackFollowService -->
     <string name="service_track_follow_name">Service de suivi de trace</string>
     <string name="service_track_follow_notification_name">Suivi de trace</string>
-    <string name="service_track_follow_stop">Stop</string>
+    <string name="service_track_follow_stop">Arrêter</string>
 
     <string name="share_menu_title">Recevoir et envoyer</string>
     <string name="wifip2p_stop_btn">Stop</string>
