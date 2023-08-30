@@ -69,10 +69,8 @@ class TrackFollowService : Service() {
     var data: TrackFollowRepository.ServiceData? = null
 
     private var vib: Vibrator? = null
-    private val vibrationPattern =
-        longArrayOf(0, 50, 200, 50, 200, 50, 200, 800, 200, 50, 200, 50, 200, 50)
-    private val vibrationAmplitudes =
-        intArrayOf(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255)
+    private val vibrationPattern = longArrayOf(0, 200, 50, 200, 50, 200, 50)
+    private val vibrationAmplitudes = intArrayOf(0, 255, 0, 255, 0, 255, 0)
 
     override fun onCreate() {
         super.onCreate()
@@ -100,7 +98,7 @@ class TrackFollowService : Service() {
             appEventBus.requestNotificationPermission()
         }
 
-        sound = MediaPlayer.create(applicationContext, R.raw.sonar)
+        sound = MediaPlayer.create(applicationContext, R.raw.stop)
 
         vib = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val vibratorManager =
@@ -188,7 +186,10 @@ class TrackFollowService : Service() {
             val isVicinity = verifier.isInVicinity(loc.latitude, loc.longitude)
 
             if (!isVicinity) {
-                sound?.start()
+                repeat(3) {
+                    sound?.start()
+                    delay(200)
+                }
                 vibrate(vibrationPattern)
             }
         }
