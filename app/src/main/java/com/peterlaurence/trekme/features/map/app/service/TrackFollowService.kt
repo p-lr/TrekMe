@@ -15,7 +15,7 @@ import androidx.core.content.ContextCompat
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.events.AppEventBus
-import com.peterlaurence.trekme.features.map.domain.core.TrackVicinityVerifier
+import com.peterlaurence.trekme.features.map.domain.core.TrackVicinityAlgorithm
 import com.peterlaurence.trekme.features.map.domain.models.TrackFollowServiceState
 import com.peterlaurence.trekme.features.map.domain.models.TrackFollowServiceStopEvent
 import com.peterlaurence.trekme.features.map.domain.repository.TrackFollowRepository
@@ -69,7 +69,7 @@ class TrackFollowService : Service() {
     var data: TrackFollowRepository.ServiceData? = null
 
     private var vib: Vibrator? = null
-    private val vibrationPattern = longArrayOf(0, 200, 50, 200, 50, 200, 50)
+    private val vibrationPattern = longArrayOf(0, 300, 500, 300, 500, 300, 500)
     private val vibrationAmplitudes = intArrayOf(0, 255, 0, 255, 0, 255, 0)
 
     override fun onCreate() {
@@ -174,23 +174,30 @@ class TrackFollowService : Service() {
 
             /* Notify the rest the app that the service is started */
             trackFollowRepository.serviceState.value = TrackFollowServiceState.Started(data.mapId, data.trackId)
+            val algorithm = TrackVicinityAlgorithm(data.verifier)
 
-            processLocation(data.verifier)
+            processLocation(algorithm)
         }
 
         return START_NOT_STICKY
     }
 
-    private suspend fun processLocation(verifier: TrackVicinityVerifier) {
+    private suspend fun processLocation(algorithm: TrackVicinityAlgorithm) {
         locationSource.locationFlow.collect { loc ->
-            val isVicinity = verifier.isInVicinity(loc.latitude, loc.longitude)
+            val shouldAlert = algorithm.processLocation(loc)
 
-            if (!isVicinity) {
-                repeat(3) {
-                    sound?.start()
-                    delay(200)
+            if (shouldAlert) {
+                coroutineScope {
+                    launch {
+                        repeat(3) {
+                            sound?.start()
+                            delay(500)
+                        }
+                    }
+                    launch {
+                        vibrate(vibrationPattern)
+                    }
                 }
-                vibrate(vibrationPattern)
             }
         }
     }
@@ -209,7 +216,9 @@ class TrackFollowService : Service() {
         sound?.release()
         trackFollowRepository.serviceState.value = TrackFollowServiceState.Stopped
         data?.also {
-            mapFeatureEvents.postTrackFollowStopEvent(TrackFollowServiceStopEvent(it.mapId, it.trackId))
+            mapFeatureEvents.postTrackFollowStopEvent(
+                TrackFollowServiceStopEvent(it.mapId, it.trackId)
+            )
         }
         stopSelf()
     }
