@@ -24,6 +24,7 @@ import com.peterlaurence.trekme.features.map.domain.repository.TrackFollowReposi
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.main.MainActivity
 import com.peterlaurence.trekme.util.getBitmapFromDrawable
+import com.peterlaurence.trekme.util.throttle
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import javax.inject.Inject
@@ -185,7 +186,7 @@ class TrackFollowService : Service() {
     }
 
     private suspend fun processLocation(algorithm: TrackVicinityAlgorithm) {
-        locationSource.locationFlow.collect { loc ->
+        locationSource.locationFlow.throttle(5000).collect { loc ->
             val shouldAlert = algorithm.processLocation(loc)
 
             if (shouldAlert) {
