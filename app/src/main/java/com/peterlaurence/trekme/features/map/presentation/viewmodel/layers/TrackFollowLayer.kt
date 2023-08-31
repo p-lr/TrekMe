@@ -35,6 +35,7 @@ class TrackFollowLayer(
     private val dataStateFlow: Flow<DataState>,
     private val trackFollowRepository: TrackFollowRepository,
     private val mapFeatureEvents: MapFeatureEvents,
+    private val onTrackSelected: () -> Unit
 ) {
     private val trackFollowHighlightId = "track-followed-highlight"
 
@@ -75,6 +76,7 @@ class TrackFollowLayer(
         mapState.onPathClick { id, _, _ ->
             val pathData = mapState.getPathData(id)
             if (pathData != null) {
+                onTrackSelected()
                 startTrackFollowService(pathData, map, id)
             }
 

@@ -134,15 +134,19 @@ fun MapStateful(
     val outOfBounds = stringResource(id = R.string.map_screen_loc_outside_map)
     val selectTrack = stringResource(id = R.string.select_track_to_follow)
     LaunchedEffectWithLifecycle(flow = viewModel.events) { event ->
-        val msg = when(event) {
-            SnackBarEvent.CURRENT_LOCATION_OUT_OF_BOUNDS -> outOfBounds
-            SnackBarEvent.SELECT_TRACK_TO_FOLLOW -> selectTrack
-        }
-        scope.launch {
+        fun showSnackbar(msg: String) = scope.launch {
             /* Dismiss the currently showing snackbar, if any */
             snackbarHostState.currentSnackbarData?.dismiss()
 
             snackbarHostState.showSnackbar(msg, actionLabel = ok)
+        }
+        fun dismissSnackbar() = scope.launch {
+            snackbarHostState.currentSnackbarData?.dismiss()
+        }
+        when(event) {
+            SnackBarEvent.CURRENT_LOCATION_OUT_OF_BOUNDS -> showSnackbar(outOfBounds)
+            SnackBarEvent.SELECT_TRACK_TO_FOLLOW -> showSnackbar(selectTrack)
+            SnackBarEvent.TRACK_TO_FOLLOW_SELECTED -> dismissSnackbar()
         }
     }
 

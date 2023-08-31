@@ -9,12 +9,14 @@ import android.content.Intent
 import android.graphics.Color
 import android.media.MediaPlayer
 import android.os.*
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.events.AppEventBus
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.md_theme_light_primary
 import com.peterlaurence.trekme.features.map.domain.core.TrackVicinityAlgorithm
 import com.peterlaurence.trekme.features.map.domain.models.TrackFollowServiceState
 import com.peterlaurence.trekme.features.map.domain.models.TrackFollowServiceStopEvent
@@ -136,7 +138,7 @@ class TrackFollowService : Service() {
             .setContentText(getText(R.string.service_track_follow_name))
             .setSmallIcon(R.drawable.transit_detour)
             .setContentIntent(onTapPendingIntent)
-            .setColor(getColor(R.color.colorAccent))
+            .setColor(md_theme_light_primary.toArgb())
             .addAction(
                 R.drawable.ic_stop_black_24dp,
                 getString(R.string.service_track_follow_stop),

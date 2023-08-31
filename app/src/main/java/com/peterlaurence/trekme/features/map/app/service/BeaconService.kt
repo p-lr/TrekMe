@@ -9,6 +9,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.media.MediaPlayer
 import android.os.*
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -17,6 +18,7 @@ import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.events.AppEventBus
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.md_theme_light_primary
 import com.peterlaurence.trekme.features.map.domain.core.BeaconVicinityAlgorithm
 import com.peterlaurence.trekme.main.MainActivity
 import com.peterlaurence.trekme.util.getBitmapFromDrawable
@@ -133,7 +135,7 @@ class BeaconService : Service() {
             .setContentText(getText(R.string.service_beacon_name))
             .setSmallIcon(R.drawable.ic_beacon_24dp)
             .setContentIntent(onTapPendingIntent)
-            .setColor(getColor(R.color.colorAccent))
+            .setColor(md_theme_light_primary.toArgb())
             .addAction(
                 R.drawable.ic_stop_black_24dp,
                 getString(R.string.service_beacon_stop),

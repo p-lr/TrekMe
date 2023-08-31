@@ -122,6 +122,9 @@ class MapViewModel @Inject constructor(
     val beaconEditEvent: Flow<MapFeatureEvents.BeaconEditEvent> = mapFeatureEvents.navigateToBeaconEdit
     val startTrackFollowEvent: Flow<Unit> = mapFeatureEvents.startTrackFollowService
 
+    private val _events = Channel<SnackBarEvent>(1)
+    val events = _events.receiveAsFlow()
+
     val locationOrientationLayer: LocationOrientationLayer = LocationOrientationLayer(
         viewModelScope,
         settings,
@@ -170,6 +173,11 @@ class MapViewModel @Inject constructor(
         dataStateFlow,
         trackFollowRepository,
         mapFeatureEvents,
+        onTrackSelected = {
+            viewModelScope.launch {
+                _events.send(SnackBarEvent.TRACK_TO_FOLLOW_SELECTED)
+            }
+        }
     )
 
     val distanceLayer = DistanceLayer(viewModelScope, dataStateFlow.map { it.mapState })
@@ -191,9 +199,6 @@ class MapViewModel @Inject constructor(
         excursionInteractor,
         mapExcursionInteractor
     )
-
-    private val _events = Channel<SnackBarEvent>(1)
-    val events = _events.receiveAsFlow()
 
     init {
         mapRepository.currentMapFlow.map {
@@ -370,5 +375,5 @@ enum class Error : UiState {
 }
 
 enum class SnackBarEvent {
-    CURRENT_LOCATION_OUT_OF_BOUNDS, SELECT_TRACK_TO_FOLLOW
+    CURRENT_LOCATION_OUT_OF_BOUNDS, SELECT_TRACK_TO_FOLLOW, TRACK_TO_FOLLOW_SELECTED
 }
