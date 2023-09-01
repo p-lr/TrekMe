@@ -7,17 +7,22 @@ import android.os.Build
 import android.view.Surface
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.Hyphens
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
@@ -133,6 +138,7 @@ fun MapStateful(
     val ok = stringResource(id = R.string.ok_dialog)
     val outOfBounds = stringResource(id = R.string.map_screen_loc_outside_map)
     val selectTrack = stringResource(id = R.string.select_track_to_follow)
+    var showTrackFollowDialog by rememberSaveable { mutableStateOf(false) }
     LaunchedEffectWithLifecycle(flow = viewModel.events) { event ->
         fun showSnackbar(msg: String) = scope.launch {
             /* Dismiss the currently showing snackbar, if any */
@@ -140,13 +146,17 @@ fun MapStateful(
 
             snackbarHostState.showSnackbar(msg, actionLabel = ok)
         }
+
         fun dismissSnackbar() = scope.launch {
             snackbarHostState.currentSnackbarData?.dismiss()
         }
-        when(event) {
-            SnackBarEvent.CURRENT_LOCATION_OUT_OF_BOUNDS -> showSnackbar(outOfBounds)
-            SnackBarEvent.SELECT_TRACK_TO_FOLLOW -> showSnackbar(selectTrack)
-            SnackBarEvent.TRACK_TO_FOLLOW_SELECTED -> dismissSnackbar()
+        when (event) {
+            MapEvent.CURRENT_LOCATION_OUT_OF_BOUNDS -> showSnackbar(outOfBounds)
+            MapEvent.SELECT_TRACK_TO_FOLLOW -> showSnackbar(selectTrack)
+            MapEvent.TRACK_TO_FOLLOW_SELECTED -> dismissSnackbar()
+            MapEvent.TRACK_TO_FOLLOW_ALREADY_RUNNING -> {
+                showTrackFollowDialog = true
+            }
         }
     }
 
@@ -208,6 +218,53 @@ fun MapStateful(
             uiState as Error,
             onMainMenuClick = viewModel::onMainMenuClick,
             onShopClick = viewModel::onShopClick
+        )
+    }
+
+    if (showTrackFollowDialog) {
+        AlertDialog(
+            title = {
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Image(
+                        painter = painterResource(id = R.drawable.transit_detour),
+                        modifier = Modifier
+                            .background(MaterialTheme.colorScheme.primary, CircleShape)
+                            .padding(6.dp)
+                            .align(Alignment.Center),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary),
+                        contentDescription = null
+                    )
+                }
+            },
+            text = {
+                Text(
+                    stringResource(id = R.string.track_follow_already_running),
+                    fontSize = 16.sp,
+                    style = LocalTextStyle.current.copy(hyphens = Hyphens.Auto)
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { showTrackFollowDialog = false }) {
+                    Text(stringResource(id = R.string.cancel_dialog_string))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        /* Stop the service */
+                        val intent = Intent(context, TrackFollowService::class.java)
+                        intent.action = TrackFollowService.stopAction
+                        context.startService(intent)
+
+                        showTrackFollowDialog = false
+                    }
+                ) {
+                    Text(text = stringResource(id = R.string.service_track_follow_stop))
+                }
+            },
+            onDismissRequest = {
+                showTrackFollowDialog = false
+            }
         )
     }
 }

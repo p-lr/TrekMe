@@ -374,6 +374,7 @@
     <string name="beacon_background_loc_perm">Cette carte contient des balises, ce qui nécessite de collecter les données de localisation
         même lorsque l\'application est fermée ou inutilisée.\n\nCette autorisation <b>n\'est pour le moment pas accordée</b>.</string>
     <string name="select_track_to_follow">Appuyez sur la trace à suivre</string>
+    <string name="track_follow_already_running">Le suivi de trace est déjà en cours d\'exécution. Voulez-vous l\'arrêter ?</string>
 
     <string name="map_delete_landmark">Supprimer le marqueur</string>
     <string name="map_move_landmark">Déplacer le marqueur</string>

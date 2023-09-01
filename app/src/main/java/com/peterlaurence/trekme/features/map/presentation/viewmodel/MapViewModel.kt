@@ -28,6 +28,7 @@ import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.domain.interactors.MapLicenseInteractor
 import com.peterlaurence.trekme.features.map.domain.interactors.MarkerInteractor
 import com.peterlaurence.trekme.features.map.domain.interactors.RouteInteractor
+import com.peterlaurence.trekme.features.map.domain.models.TrackFollowServiceState
 import com.peterlaurence.trekme.features.map.domain.repository.TrackFollowRepository
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.BeaconLayer
@@ -84,7 +85,7 @@ class MapViewModel @Inject constructor(
     routeInteractor: RouteInteractor,
     excursionInteractor: ExcursionInteractor,
     mapExcursionInteractor: MapExcursionInteractor,
-    trackFollowRepository: TrackFollowRepository,
+    private val trackFollowRepository: TrackFollowRepository,
     private val mapComposeTileStreamProviderInteractor: MapComposeTileStreamProviderInteractor,
     val settings: Settings,
     private val mapFeatureEvents: MapFeatureEvents,
@@ -112,7 +113,7 @@ class MapViewModel @Inject constructor(
     val beaconEditEvent: Flow<MapFeatureEvents.BeaconEditEvent> = mapFeatureEvents.navigateToBeaconEdit
     val startTrackFollowEvent: Flow<Unit> = mapFeatureEvents.startTrackFollowService
 
-    private val _events = Channel<SnackBarEvent>(1)
+    private val _events = Channel<MapEvent>(1)
     val events = _events.receiveAsFlow()
 
     val locationOrientationLayer: LocationOrientationLayer = LocationOrientationLayer(
@@ -122,7 +123,7 @@ class MapViewModel @Inject constructor(
         mapInteractor,
         onOutOfBounds = {
             viewModelScope.launch {
-                _events.send(SnackBarEvent.CURRENT_LOCATION_OUT_OF_BOUNDS)
+                _events.send(MapEvent.CURRENT_LOCATION_OUT_OF_BOUNDS)
             }
         }
     )
@@ -165,7 +166,7 @@ class MapViewModel @Inject constructor(
         mapFeatureEvents,
         onTrackSelected = {
             viewModelScope.launch {
-                _events.send(SnackBarEvent.TRACK_TO_FOLLOW_SELECTED)
+                _events.send(MapEvent.TRACK_TO_FOLLOW_SELECTED)
             }
         }
     )
@@ -249,8 +250,12 @@ class MapViewModel @Inject constructor(
     }
 
     fun initiateTrackFollow() = viewModelScope.launch {
-        _events.send(SnackBarEvent.SELECT_TRACK_TO_FOLLOW)
-        trackFollowLayer.start()
+        if (trackFollowRepository.serviceState.value is TrackFollowServiceState.Started) {
+            _events.send(MapEvent.TRACK_TO_FOLLOW_ALREADY_RUNNING)
+        } else {
+            _events.send(MapEvent.SELECT_TRACK_TO_FOLLOW)
+            trackFollowLayer.start()
+        }
     }
 
     fun toggleShowOrientation() = viewModelScope.launch {
@@ -364,6 +369,6 @@ enum class Error : UiState {
     IgnLicenseError, WmtsLicenseError, EmptyMap
 }
 
-enum class SnackBarEvent {
-    CURRENT_LOCATION_OUT_OF_BOUNDS, SELECT_TRACK_TO_FOLLOW, TRACK_TO_FOLLOW_SELECTED
+enum class MapEvent {
+    CURRENT_LOCATION_OUT_OF_BOUNDS, SELECT_TRACK_TO_FOLLOW, TRACK_TO_FOLLOW_SELECTED, TRACK_TO_FOLLOW_ALREADY_RUNNING
 }
