@@ -1,7 +1,9 @@
 package com.peterlaurence.trekme.features.map.presentation.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
@@ -16,6 +18,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.flowlayout.FlowMainAxisAlignment
 import com.peterlaurence.trekme.features.common.presentation.ui.flowlayout.FlowRow
@@ -155,8 +158,11 @@ fun MapTopAppBar(
                                 onFollowTrack()
                             },
                             text = {
-                                Text(stringResource(id = R.string.follow_track_menu))
-                                Spacer(Modifier.weight(1f))
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(stringResource(id = R.string.follow_track_menu))
+                                    Spacer(Modifier.weight(1f))
+                                    ChipNew()
+                                }
                             }
                         )
                     }
@@ -254,6 +260,21 @@ private fun IconAndText(icon: @Composable (Modifier) -> Unit, textId: Int, onCli
     ) {
         icon(Modifier.align(Alignment.TopCenter))
         Text(stringResource(id = textId), Modifier.align(Alignment.BottomCenter))
+    }
+}
+
+@Composable
+private fun ChipNew() {
+    Box(modifier = Modifier
+        .background(MaterialTheme.colorScheme.tertiary, RoundedCornerShape(5.dp))
+        .padding(start = 6.dp, end = 6.dp, bottom = 1.dp)
+    ) {
+        Text(
+            modifier = Modifier.align(Alignment.Center),
+            text = stringResource(id = R.string.new_text),
+            color = MaterialTheme.colorScheme.onTertiary,
+            fontSize = 12.sp,
+        )
     }
 }
 

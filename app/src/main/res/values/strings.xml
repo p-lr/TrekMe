@@ -30,7 +30,7 @@
     <string name="cancel_dialog_string">Cancel</string>
     <string name="start_dialog_string">Start</string>
     <string name="understood_dialog">I understand</string>
-    <string name="delayed_button_desc">Start / Strop a GPX recording</string>
+    <string name="new_text">new</string>
 
     <!-- Map Creation -->
     <string name="onboarding_map_create">Select a map source.</string>

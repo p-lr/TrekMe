@@ -253,6 +253,7 @@
     </string>
     <string name="close_dialog">Fermer</string>
     <string name="understood_dialog">J\'ai compris</string>
+    <string name="new_text">nouveau</string>
     <string name="privacy_policy_title">Politique de confidentialité</string>
     <string name="privacy_policy_desc">Nous respectons votre vie privée et ne communiquerons jamais
         votre position ou toute autre donnée personnelle à des tiers. Nous ne stockons pas ces informations
@@ -316,7 +317,6 @@
     <string name="recording_show_elevations_desc">Afficher le profil altimétrique</string>
     <string name="elevation_profile_title">Profil altimétrique</string>
     <string name="recording_delete_desc">Supprimer un enregistrement</string>
-    <string name="delayed_button_desc">Démarrer / Arrêter un enregistrment GPX</string>
     <string name="mapreate_warning_vps">Nous ne parvenons pas à récupérer certaines données. Si votre connexion internet fonctionne normalement, l\'infrastructure de TrekMe est peut-être impactée.</string>
     <string name="location_disabled_warning">La localisation doit être activée sur votre appareil pour lancer un enregistrement.</string>
     <string name="preference_zoom_when_centered_compl">(actuel : %1$s)</string>
