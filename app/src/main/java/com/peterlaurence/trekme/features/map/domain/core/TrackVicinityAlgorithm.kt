@@ -18,8 +18,8 @@ class TrackVicinityAlgorithm(private val trackVicinityVerifier: TrackVicinityVer
      * If the location isn't in the vicinity, fire an alert if the last alert occurred more than 20
      * seconds ago.
      */
-    suspend fun processLocation(location: Location): Boolean {
-        val isInside = trackVicinityVerifier.isInVicinity(location.latitude, location.longitude)
+    suspend fun processLocation(location: Location, threshold: Int): Boolean {
+        val isInside = trackVicinityVerifier.isInVicinity(location.latitude, location.longitude, threshold)
         return if (!isInside) {
             val mark = timeSource.markNow()
             lastAlertTime?.let { lastMark ->

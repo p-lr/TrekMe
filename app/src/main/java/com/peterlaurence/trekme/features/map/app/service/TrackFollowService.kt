@@ -15,6 +15,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.location.domain.model.LocationSource
+import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.md_theme_light_primary
 import com.peterlaurence.trekme.features.map.domain.core.TrackVicinityAlgorithm
@@ -27,6 +28,8 @@ import com.peterlaurence.trekme.util.getBitmapFromDrawable
 import com.peterlaurence.trekme.util.throttle
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
 import javax.inject.Inject
 
 /**
@@ -68,6 +71,9 @@ class TrackFollowService : Service() {
 
     @Inject
     lateinit var locationSource: LocationSource
+
+    @Inject
+    lateinit var settings: Settings
 
     var data: TrackFollowRepository.ServiceData? = null
 
@@ -186,8 +192,8 @@ class TrackFollowService : Service() {
     }
 
     private suspend fun processLocation(algorithm: TrackVicinityAlgorithm) {
-        locationSource.locationFlow.throttle(5000).collect { loc ->
-            val shouldAlert = algorithm.processLocation(loc)
+        combine(locationSource.locationFlow.throttle(5000), settings.getTrackFollowThreshold()) { loc, threshold ->
+            val shouldAlert = algorithm.processLocation(loc, threshold)
 
             if (shouldAlert) {
                 coroutineScope {
@@ -202,7 +208,7 @@ class TrackFollowService : Service() {
                     }
                 }
             }
-        }
+        }.collect()
     }
 
     private fun vibrate(pattern: LongArray) {

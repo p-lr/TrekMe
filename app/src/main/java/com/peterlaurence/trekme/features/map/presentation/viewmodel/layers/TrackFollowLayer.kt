@@ -103,7 +103,7 @@ class TrackFollowLayer(
             val mapState = MapState(levelCount = 1, fullWidth = map.widthPx, fullHeight = map.heightPx).apply {
                 addPath(trackFollowedId, pathData, simplify = 2f)
             }
-            var pixelThreshold: Int? = null
+            var pixelPerMeterThreshold: Double? = null
 
             init {
                 ProcessLifecycleOwner.get().lifecycleScope.launch {
@@ -113,12 +113,12 @@ class TrackFollowLayer(
                         distanceApprox(latLonLeft[1], latLonLeft[0], latLonRight[1], latLonRight[0])
                     }
 
-                    pixelThreshold = (100 * map.widthPx / mapWidthInMeters).toInt()
+                    pixelPerMeterThreshold = map.widthPx.toDouble() / mapWidthInMeters
                 }
             }
 
-            override suspend fun isInVicinity(latitude: Double, longitude: Double): Boolean {
-                val pixelThreshold = this.pixelThreshold ?: return true
+            override suspend fun isInVicinity(latitude: Double, longitude: Double, thresholdInMeters: Int): Boolean {
+                val pixelThreshold = ((this.pixelPerMeterThreshold ?: return true) * thresholdInMeters).toInt()
                 val normalized = getNormalizedCoordinates(latitude, longitude, map.mapBounds, map.projection)
                 return withContext(Dispatchers.Default) {
                     mapState.isPathWithinRange(trackFollowedId, pixelThreshold, normalized[0], normalized[1])

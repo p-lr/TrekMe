@@ -468,6 +468,8 @@
     <string name="preference_max_scale">Max scale</string>
     <string name="preference_magnifying_factor">Magnifying factor</string>
     <string name="preference_magnifying_key" translatable="false">pref_map_magnifying</string>
+    <string name="preference_track_follow">Alert threshold - track follow</string>
+    <string name="preference_track_follow_key" translatable="false">pref_track_follow</string>
     <string name="preference_rotation_mode_key" translatable="false">pref_rotation_mode</string>
     <string name="preference_rotation_mode">Rotation mode</string>
     <string name="preference_rotate_with_orientation">Rotate only when showing orientation</string>

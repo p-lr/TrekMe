@@ -22,6 +22,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.theme.md_theme_l
 import com.peterlaurence.trekme.features.map.domain.core.BeaconVicinityAlgorithm
 import com.peterlaurence.trekme.main.MainActivity
 import com.peterlaurence.trekme.util.getBitmapFromDrawable
+import com.peterlaurence.trekme.util.throttle
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
@@ -178,7 +179,7 @@ class BeaconService : Service() {
 
     private suspend fun processBeacons(map: Map) {
         val algorithm = BeaconVicinityAlgorithm()
-        combine(locationSource.locationFlow, map.beacons) { loc, beacons ->
+        combine(locationSource.locationFlow.throttle(3000), map.beacons) { loc, beacons ->
             if (beacons.isEmpty()) stopService()
 
             val alertedBeacons = algorithm.processLocation(loc, beacons)

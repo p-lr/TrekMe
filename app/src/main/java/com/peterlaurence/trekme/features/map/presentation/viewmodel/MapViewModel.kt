@@ -4,10 +4,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.peterlaurence.trekme.core.billing.di.IGN
-import com.peterlaurence.trekme.core.billing.di.TrekmeExtended
-import com.peterlaurence.trekme.core.billing.domain.model.ExtendedOfferStateOwner
-import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
+import com.peterlaurence.trekme.core.billing.domain.interactors.HasOneExtendedOfferInteractor
 import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.core.map.domain.interactors.ElevationFixInteractor
@@ -94,10 +91,7 @@ class MapViewModel @Inject constructor(
     gpxRecordEvents: GpxRecordEvents,
     private val appEventBus: AppEventBus,
     private val mapLicenseInteractor: MapLicenseInteractor,
-    @IGN
-    extendedOfferWithIgnStateOwner: ExtendedOfferStateOwner,
-    @TrekmeExtended
-    extendedOfferStateOwner: ExtendedOfferStateOwner,
+    hasOneExtendedOfferInteractor: HasOneExtendedOfferInteractor,
     private val elevationFixInteractor: ElevationFixInteractor
 ) : ViewModel() {
     private val dataStateFlow = MutableSharedFlow<DataState>(1, 0, BufferOverflow.DROP_OLDEST)
@@ -110,12 +104,8 @@ class MapViewModel @Inject constructor(
     val elevationFixFlow: StateFlow<Int> = mapRepository.currentMapFlow.flatMapMerge {
         it?.elevationFix ?: MutableStateFlow(0)
     }.stateIn(viewModelScope, SharingStarted.Eagerly, 0)
-    val purchaseFlow: StateFlow<Boolean> = combine(
-        extendedOfferWithIgnStateOwner.purchaseFlow,
-        extendedOfferStateOwner.purchaseFlow
-    ) { x, y ->
-        x == PurchaseState.PURCHASED || y == PurchaseState.PURCHASED
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, initialValue = false)
+
+    val purchaseFlow: StateFlow<Boolean> = hasOneExtendedOfferInteractor.getPurchaseFlow(viewModelScope)
 
     val markerEditEvent: Flow<MapFeatureEvents.MarkerEditEvent> = mapFeatureEvents.navigateToMarkerEdit
     val excursionWaypointEditEvent: Flow<MapFeatureEvents.ExcursionWaypointEditEvent> = mapFeatureEvents.navigateToExcursionWaypointEdit

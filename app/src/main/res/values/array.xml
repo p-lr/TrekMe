@@ -35,6 +35,12 @@
         <item>1</item>
     </string-array>
 
+    <string-array name="track_follow_thresholds" translatable="false">
+        <item>50</item>
+        <item>100</item>
+        <item>200</item>
+    </string-array>
+
     <string-array name="rotation_modes" translatable="false">
         <item>@string/preference_rotate_none</item>
         <item>@string/preference_rotate_with_orientation</item>

@@ -17,6 +17,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.StartOnPolicy
 import com.peterlaurence.trekme.core.units.MeasurementSystem
+import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.settings.presentation.viewmodel.SettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -44,6 +45,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private var defineScaleCenteredPref: CheckBoxPreference? = null
     private var scaleCenteredPref: SeekBarPreference? = null
     private var showScaleIndicatorPref: CheckBoxPreference? = null
+    private var trackFollowPref: ListPreference? = null
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.app_settings)
@@ -67,6 +69,16 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.purchaseFlow.collect { purchased ->
+                    trackFollowPref?.apply {
+                        isVisible = purchased
+                    }
+                }
+            }
+        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -157,6 +169,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 }
             }
         }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.trackFollowThreshold.collect {
+                    updateTrackFollowThreshold(it)
+                }
+            }
+        }
     }
 
     private fun updateDownloadDirList(dirs: Array<String>) {
@@ -184,6 +204,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         measurementSystemPref?.setSummaryAndValue(txt)
+        /* Now that the measurement system changed, update the track-follow entries */
+        setTrackFollowEntries()
     }
 
     private fun updateMaxScale(scale: Float) {
@@ -217,6 +239,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
         showScaleIndicatorPref?.isChecked = show
     }
 
+    private fun updateTrackFollowThreshold(valueInMeters: Int) {
+        trackFollowPref?.apply {
+            summary = UnitFormatter.formatDistance(valueInMeters.toDouble())
+            value = valueInMeters.toString()
+        }
+    }
+
     private fun initComponents() {
         startOnPref = preferenceManager.findPreference(getString(R.string.preference_starton_key))
         measurementSystemPref =
@@ -235,6 +264,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             preferenceManager.findPreference(getString(R.string.preference_zoom_when_centered_key))
         showScaleIndicatorPref =
             preferenceManager.findPreference(getString(R.string.preference_show_scale_indicator_key))
+        trackFollowPref = preferenceManager.findPreference(getString(R.string.preference_track_follow_key))
 
         scaleCenteredPref?.title = getString(R.string.preference_zoom_when_centered)
 
@@ -309,6 +339,19 @@ class SettingsFragment : PreferenceFragmentCompat() {
             viewModel.setShowScaleIndicator(checked)
             true
         }
+
+        setTrackFollowEntries()
+        trackFollowPref?.setOnPreferenceChangeListener { _, newValue ->
+            val threshold= (newValue as String).toInt()
+            viewModel.setTrackFollowThreshold(threshold)
+            true
+        }
+    }
+
+    private fun setTrackFollowEntries() {
+        trackFollowPref?.entries = resources.getStringArray(R.array.track_follow_thresholds).map {
+            UnitFormatter.formatDistance(it.toDouble())
+        }.toTypedArray()
     }
 
     private fun ListPreference.setSummaryAndValue(txt: String) = apply {

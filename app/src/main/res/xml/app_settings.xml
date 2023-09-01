@@ -56,5 +56,11 @@
             android:title="@string/preference_magnifying_factor"
             android:entries="@array/magnifying_factors"
             android:entryValues="@array/magnifying_factors" />
+
+        <ListPreference
+            android:key="@string/preference_track_follow_key"
+            android:title="@string/preference_track_follow"
+            android:entryValues="@array/track_follow_thresholds"
+            app:isPreferenceVisible="false"/>
     </PreferenceCategory>
 </PreferenceScreen>

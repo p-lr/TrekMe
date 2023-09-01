@@ -14,7 +14,6 @@ import com.peterlaurence.trekme.core.units.DistanceUnit
 import com.peterlaurence.trekme.core.units.MeasurementSystem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -65,6 +64,7 @@ class Settings @Inject constructor(
     private val measurementSystem = stringPreferencesKey("measurementSystem")
     private val locationRationale = booleanPreferencesKey("locationDisclaimer")
     private val locationProducerInfo = stringPreferencesKey("locationProducerInfo")
+    private val trackFollowThreshold = intPreferencesKey("trackFollowThreshold")
 
     /**
      * Get the current application directory as [File].
@@ -330,6 +330,19 @@ class Settings @Inject constructor(
     suspend fun setLocationProducerInfo(info: LocationProducerInfo) {
         dataStore.edit {
             it[locationProducerInfo] = Json.encodeToString(info)
+        }
+    }
+
+    /**
+     * Get the threshold, in meters.
+     */
+    fun getTrackFollowThreshold(): Flow<Int> {
+        return dataStore.data.map { it[trackFollowThreshold] ?: 50 }
+    }
+
+    suspend fun setTrackFollowThreshold(valueInMeters: Int) {
+        dataStore.edit {
+            it[trackFollowThreshold] = valueInMeters
         }
     }
 }

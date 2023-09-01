@@ -2,6 +2,7 @@ package com.peterlaurence.trekme.features.settings.presentation.viewmodel
 
 import androidx.lifecycle.*
 import com.peterlaurence.trekme.core.TrekMeContext
+import com.peterlaurence.trekme.core.billing.domain.interactors.HasOneExtendedOfferInteractor
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.settings.StartOnPolicy
@@ -16,7 +17,8 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
         trekMeContext: TrekMeContext,
-        private val settings: Settings
+        private val settings: Settings,
+        hasOneExtendedOfferInteractor: HasOneExtendedOfferInteractor
 ) : ViewModel() {
     private val _appDirList = MutableStateFlow<List<String>>(emptyList())
     val appDirListFlow: StateFlow<List<String>> = _appDirList.asStateFlow()
@@ -31,6 +33,8 @@ class SettingsViewModel @Inject constructor(
     val scaleRatioCenteredFlow: Flow<Float> = settings.getScaleRatioCentered()
     val measurementSystemFlow: Flow<MeasurementSystem> = settings.getMeasurementSystem()
     val showScaleIndicatorFlow: Flow<Boolean> = settings.getShowScaleIndicator()
+    val trackFollowThreshold: Flow<Int> = settings.getTrackFollowThreshold()
+    val purchaseFlow: StateFlow<Boolean> = hasOneExtendedOfferInteractor.getPurchaseFlow(viewModelScope)
 
     init {
         /* App dir list */
@@ -80,5 +84,9 @@ class SettingsViewModel @Inject constructor(
     fun setScaleRatioCentered(percent: Float) = viewModelScope.launch {
         require(percent in 0f..100f)
         settings.setScaleRatioCentered(percent)
+    }
+
+    fun setTrackFollowThreshold(valueInMeters: Int) = viewModelScope.launch {
+        settings.setTrackFollowThreshold(valueInMeters)
     }
 }

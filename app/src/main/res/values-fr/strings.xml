@@ -177,6 +177,7 @@
     <string name="ign_buy_license_pending">Veillez attendre quelques minutes, paiement en cours</string>
     <string name="maps_category">Cartes</string>
     <string name="preference_magnifying_factor">Facteur de grossissement</string>
+    <string name="preference_track_follow">Seuil d\'alerte (suivi de trace)</string>
     <string name="preference_rotation_mode">Mode de rotation</string>
     <string name="preference_rotate_with_orientation">Tourner la carte selon l\'orientation</string>
     <string name="preference_rotate_none">Aucune rotation</string>
