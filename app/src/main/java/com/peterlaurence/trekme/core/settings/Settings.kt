@@ -62,7 +62,6 @@ class Settings @Inject constructor(
     private val showScaleIndicator = booleanPreferencesKey("showScaleIndicator")
     private val scaleRatioCentered = floatPreferencesKey("scaleRatioCentered")
     private val measurementSystem = stringPreferencesKey("measurementSystem")
-    private val locationRationale = booleanPreferencesKey("locationDisclaimer")
     private val locationProducerInfo = stringPreferencesKey("locationProducerInfo")
     private val trackFollowThreshold = intPreferencesKey("trackFollowThreshold")
 
@@ -301,16 +300,6 @@ class Settings @Inject constructor(
     suspend fun setLastMapId(id: UUID) {
         dataStore.edit {
             it[lastMapId] = id.toString()
-        }
-    }
-
-    fun isShowingLocationRationale(): Flow<Boolean> {
-        return dataStore.data.map { it[locationRationale] ?: true }
-    }
-
-    suspend fun discardLocationDisclaimer() {
-        dataStore.edit {
-            it[locationRationale] = false
         }
     }
 

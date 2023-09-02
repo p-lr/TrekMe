@@ -1,19 +1,10 @@
 package com.peterlaurence.trekme.features.map.presentation.viewmodel
 
-import android.Manifest
 import android.app.Application
-import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.location.LocationManager
-import android.os.Build
-import android.os.PowerManager
-import androidx.core.app.ActivityCompat
-import androidx.core.location.LocationManagerCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.WarningMessage
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
@@ -26,7 +17,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -40,13 +31,13 @@ class GpxRecordServiceViewModel @Inject constructor(
     private val gpxRecordEvents: GpxRecordEvents,
     private val appEventBus: AppEventBus,
     private val app: Application,
-    private val settings: Settings,
 ) : ViewModel() {
     val status: StateFlow<GpxRecordState> = gpxRecordEvents.serviceState
 
-    val disableBatteryOptSignal = Channel<Unit>(1)
     val ackBatteryOptSignal = Channel<Unit>(1)
-    val showLocalisationRationale = Channel<Unit>(1)
+
+    private val _events = Channel<Event>(1)
+    val events = _events.receiveAsFlow()
 
     private var isButtonEnabled = true
 
@@ -71,6 +62,7 @@ class GpxRecordServiceViewModel @Inject constructor(
             when (gpxRecordEvents.serviceState.value) {
                 GpxRecordState.STOPPED -> { /* Nothing to do */
                 }
+
                 GpxRecordState.STARTED, GpxRecordState.RESUMED -> gpxRecordEvents.pauseRecording()
                 GpxRecordState.PAUSED -> gpxRecordEvents.resumeRecording()
             }
@@ -90,7 +82,7 @@ class GpxRecordServiceViewModel @Inject constructor(
 
         /* Check battery optimization, and inform the user if needed */
         if (isBatteryOptimized(app.applicationContext)) {
-            disableBatteryOptSignal.send(Unit)
+            _events.send(Event.DisableBatteryOptSignal)
             /* Wait for the user to take action before continuing */
             ackBatteryOptSignal.receive()
         }
@@ -99,14 +91,8 @@ class GpxRecordServiceViewModel @Inject constructor(
         val intent = Intent(app, GpxRecordService::class.java)
         app.startService(intent)
 
-        /* The background location permission is asked after the rationale is closed. But it doesn't
-         * matter that the recording is already started - it works even when the permission is
-         * granted during the recording. */
-        // TODO: to decide whether the rationale should be shown or not, we shouldn't check for a remembered
-        // setting. Instead, we should use the api Activity.shouldShowRequestPermissionRationale, just like
-        // it's done for the track-follow feature.
-        if (!isBackgroundLocationGranted(app.applicationContext) && settings.isShowingLocationRationale().first()) {
-            showLocalisationRationale.send(Unit)
+        if (!isBackgroundLocationGranted(app.applicationContext)) {
+            _events.send(Event.BackgroundLocationNotGranted)
         } else {
             /* If the disclaimer is discarded, ask for the permission anyway */
             requestBackgroundLocationPerm()
@@ -117,8 +103,9 @@ class GpxRecordServiceViewModel @Inject constructor(
         appEventBus.requestBackgroundLocation()
     }
 
-    fun onIgnoreLocationRationale() = viewModelScope.launch {
-        settings.discardLocationDisclaimer()
+    sealed interface Event {
+        object DisableBatteryOptSignal : Event
+        object BackgroundLocationNotGranted : Event
     }
 }
 
