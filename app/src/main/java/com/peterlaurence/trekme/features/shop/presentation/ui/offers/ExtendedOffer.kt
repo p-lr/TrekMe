@@ -80,11 +80,11 @@ fun TrekMeExtendedPurchasedContent(withIgn: Boolean) {
 
     CheckSeparator()
     TitleRow(R.string.trekme_extended_advanced_ft)
+    LineItem(id = R.string.track_follow_shop)
     LineItem(id = R.string.add_beacons)
     LineItem(id = R.string.create_map_from_track)
     LineItem(id = R.string.center_on_track)
     LineItem(id = R.string.define_elevation_fix)
-    LineItem(id = R.string.osm_level_17)
     LineItem(id = R.string.no_ads)
 
     if (withIgn) {
@@ -120,6 +120,7 @@ fun TrekMeExtendedContent(withIgn: Boolean, onIgnSelectionChanged: (Boolean) -> 
 
     CheckSeparator()
     TitleRow(R.string.trekme_extended_advanced_ft)
+    LineItem(id = R.string.track_follow_shop)
     LineItem(id = R.string.add_beacons)
     LineItem(id = R.string.create_map_from_track)
     LineItem(id = R.string.center_on_track)
@@ -162,7 +163,10 @@ private fun TitleRow(@StringRes id: Int) {
 
 @Composable
 private fun LineItem(@StringRes id: Int) {
-    Row(Modifier.padding(bottom = 4.dp).padding(horizontal = 32.dp)) {
+    Row(
+        Modifier
+            .padding(bottom = 4.dp)
+            .padding(horizontal = 32.dp)) {
         Text("\u2022")
         Text(
             stringResource(id),
@@ -187,7 +191,10 @@ private fun NotaBene() {
 
     Row {
         /* Set alpha to 0.7 for less emphasize */
-        Text(stringResource(id = R.string.nb), Modifier.alpha(0.7f).padding(start = 32.dp))
+        Text(stringResource(id = R.string.nb),
+            Modifier
+                .alpha(0.7f)
+                .padding(start = 32.dp))
         Text(
             stringResource(R.string.ign_caution),
             fontSize = 14.sp,
