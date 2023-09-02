@@ -2,10 +2,14 @@ package com.peterlaurence.trekme.util.android
 
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.pm.PackageManager
+import android.location.LocationManager
 import android.os.Build
+import android.os.PowerManager
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
+import androidx.core.location.LocationManagerCompat
 
 /* Permission-group codes */
 const val REQUEST_LOCATION = 1
@@ -37,6 +41,23 @@ fun requestBackgroundLocationPermission(activity: Activity) {
     }
 }
 
+fun isBackgroundLocationGranted(appContext: Context): Boolean {
+    if (Build.VERSION.SDK_INT < 29) return true
+    val permissionLocation = ActivityCompat.checkSelfPermission(
+        appContext,
+        Manifest.permission.ACCESS_BACKGROUND_LOCATION
+    )
+    return permissionLocation == PackageManager.PERMISSION_GRANTED
+}
+
+fun shouldShowBackgroundLocPermRationale(activity: Activity): Boolean {
+    return if (Build.VERSION.SDK_INT < 29) {
+        false
+    } else {
+        ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+    }
+}
+
 fun requestNotificationPermission(activity: Activity) {
     if (Build.VERSION.SDK_INT < 33) return
     val permission = ActivityCompat.checkSelfPermission(activity,
@@ -65,4 +86,15 @@ fun hasPermissions(activity: Activity, vararg permissions: String): Boolean {
 
 fun Activity.hasLocationPermission(): Boolean {
     return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+}
+
+fun isLocationEnabled(appContext: Context): Boolean {
+    val lm = appContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    return LocationManagerCompat.isLocationEnabled(lm)
+}
+
+fun isBatteryOptimized(appContext: Context): Boolean {
+    val pm = appContext.getSystemService(Context.POWER_SERVICE) as PowerManager
+    val name = appContext.packageName
+    return !pm.isIgnoringBatteryOptimizations(name)
 }

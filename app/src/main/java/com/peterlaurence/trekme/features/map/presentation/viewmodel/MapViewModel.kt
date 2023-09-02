@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.features.map.presentation.viewmodel
 
+import android.app.Application
 import androidx.compose.runtime.State
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
@@ -93,7 +94,8 @@ class MapViewModel @Inject constructor(
     private val appEventBus: AppEventBus,
     private val mapLicenseInteractor: MapLicenseInteractor,
     hasOneExtendedOfferInteractor: HasOneExtendedOfferInteractor,
-    private val elevationFixInteractor: ElevationFixInteractor
+    private val elevationFixInteractor: ElevationFixInteractor,
+    app: Application
 ) : ViewModel() {
     private val dataStateFlow = MutableSharedFlow<DataState>(1, 0, BufferOverflow.DROP_OLDEST)
 
@@ -159,11 +161,13 @@ class MapViewModel @Inject constructor(
         mapFeatureEvents
     )
 
-    private val trackFollowLayer = TrackFollowLayer(
+    val trackFollowLayer = TrackFollowLayer(
         viewModelScope,
         dataStateFlow,
         trackFollowRepository,
         mapFeatureEvents,
+        app.applicationContext,
+        appEventBus,
         onTrackSelected = {
             viewModelScope.launch {
                 _events.send(MapEvent.TRACK_TO_FOLLOW_SELECTED)
@@ -253,7 +257,6 @@ class MapViewModel @Inject constructor(
         if (trackFollowRepository.serviceState.value is TrackFollowServiceState.Started) {
             _events.send(MapEvent.TRACK_TO_FOLLOW_ALREADY_RUNNING)
         } else {
-            _events.send(MapEvent.SELECT_TRACK_TO_FOLLOW)
             trackFollowLayer.start()
         }
     }
@@ -370,5 +373,5 @@ enum class Error : UiState {
 }
 
 enum class MapEvent {
-    CURRENT_LOCATION_OUT_OF_BOUNDS, SELECT_TRACK_TO_FOLLOW, TRACK_TO_FOLLOW_SELECTED, TRACK_TO_FOLLOW_ALREADY_RUNNING
+    CURRENT_LOCATION_OUT_OF_BOUNDS, TRACK_TO_FOLLOW_SELECTED, TRACK_TO_FOLLOW_ALREADY_RUNNING
 }

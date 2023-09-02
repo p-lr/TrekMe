@@ -19,6 +19,9 @@ import com.peterlaurence.trekme.events.WarningMessage
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.features.record.app.service.GpxRecordService
 import com.peterlaurence.trekme.features.record.domain.model.GpxRecordState
+import com.peterlaurence.trekme.util.android.isBackgroundLocationGranted
+import com.peterlaurence.trekme.util.android.isBatteryOptimized
+import com.peterlaurence.trekme.util.android.isLocationEnabled
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -76,7 +79,7 @@ class GpxRecordServiceViewModel @Inject constructor(
 
     private suspend fun startRecording() {
         /* Check location service. If disabled, no need to go further. */
-        if (!isLocationEnabled()) {
+        if (!isLocationEnabled(app.applicationContext)) {
             val msg = WarningMessage(
                 title = app.applicationContext.getString(R.string.warning_title),
                 msg = app.applicationContext.getString(R.string.location_disabled_warning)
@@ -86,7 +89,7 @@ class GpxRecordServiceViewModel @Inject constructor(
         }
 
         /* Check battery optimization, and inform the user if needed */
-        if (isBatteryOptimized()) {
+        if (isBatteryOptimized(app.applicationContext)) {
             disableBatteryOptSignal.send(Unit)
             /* Wait for the user to take action before continuing */
             ackBatteryOptSignal.receive()
@@ -99,36 +102,15 @@ class GpxRecordServiceViewModel @Inject constructor(
         /* The background location permission is asked after the rationale is closed. But it doesn't
          * matter that the recording is already started - it works even when the permission is
          * granted during the recording. */
-        if (!isBackgroundLocationGranted() && settings.isShowingLocationRationale().first()) {
+        // TODO: to decide whether the rationale should be shown or not, we shouldn't check for a remembered
+        // setting. Instead, we should use the api Activity.shouldShowRequestPermissionRationale, just like
+        // it's done for the track-follow feature.
+        if (!isBackgroundLocationGranted(app.applicationContext) && settings.isShowingLocationRationale().first()) {
             showLocalisationRationale.send(Unit)
         } else {
             /* If the disclaimer is discarded, ask for the permission anyway */
             requestBackgroundLocationPerm()
         }
-    }
-
-    /**
-     * Check the battery optimization.
-     */
-    private fun isBatteryOptimized(): Boolean {
-        val pm = app.applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager
-        val name = app.applicationContext.packageName
-        return !pm.isIgnoringBatteryOptimizations(name)
-    }
-
-    private fun isBackgroundLocationGranted(): Boolean {
-        if (Build.VERSION.SDK_INT < 29) return true
-        val permissionLocation = ActivityCompat.checkSelfPermission(
-            app.applicationContext,
-            Manifest.permission.ACCESS_BACKGROUND_LOCATION
-        )
-        return permissionLocation == PackageManager.PERMISSION_GRANTED
-    }
-
-    private fun isLocationEnabled(): Boolean {
-        val lm =
-            app.applicationContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        return LocationManagerCompat.isLocationEnabled(lm)
     }
 
     fun requestBackgroundLocationPerm() {

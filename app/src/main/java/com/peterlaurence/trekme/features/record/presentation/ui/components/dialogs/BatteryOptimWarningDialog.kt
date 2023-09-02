@@ -5,12 +5,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.Hyphens
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -19,6 +21,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeThem
 
 @Composable
 fun BatteryOptimWarningDialog(
+    text: String,
     onShowSolution: () -> Unit,
     onDismissRequest: () -> Unit
 ) {
@@ -26,7 +29,7 @@ fun BatteryOptimWarningDialog(
     AlertDialog(
         title = { Text(text = stringResource(id = R.string.warning_title)) },
         text = {
-            BatteryOptimLayout()
+            BatteryOptimLayout(text)
         },
         confirmButton = {
             TextButton(onClick = onShowSolution) {
@@ -43,17 +46,14 @@ fun BatteryOptimWarningDialog(
 }
 
 @Composable
-private fun BatteryOptimLayout() {
+private fun BatteryOptimLayout(text: String) {
     Surface {
         Column(
             Modifier
                 .padding(horizontal = 24.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            Text(
-                stringResource(id = R.string.battery_warn_message),
-                textAlign = TextAlign.Justify
-            )
+            Text(text, textAlign = TextAlign.Justify, style = LocalTextStyle.current.copy(hyphens = Hyphens.Auto))
         }
     }
 }
@@ -62,6 +62,6 @@ private fun BatteryOptimLayout() {
 @Composable
 private fun BatteryOptimLayoutPreview() {
     TrekMeTheme {
-        BatteryOptimWarningDialog(onShowSolution = {}, onDismissRequest = {})
+        BatteryOptimWarningDialog("Some warning", onShowSolution = {}, onDismissRequest = {})
     }
 }

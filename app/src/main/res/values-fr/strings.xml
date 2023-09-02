@@ -221,11 +221,15 @@
     <string name="map_image_import_ok">Image changée</string>
     <string name="map_image_import_error">Erreur lors du changement d\'image :(</string>
     <string name="calibration_projection_error">Erreur lors du changement de projection :(</string>
-    <string name="battery_warn_message">L\'enregistrement GPX sera probablement interrompu, car l\'optimisation de la batterie est activée
+    <string name="battery_warn_message_gpx_recording">L\'enregistrement GPX sera probablement interrompu, car l\'optimisation de la batterie est activée
         pour TrekMe.\nUn enregistrement GPX est lancé sous forme de service Android, qui tourne en tâche de fond.
-        Mais certains téléphones sont réglés de manière à limiter ces services, pour économiser la
-        batterie.
+        Mais certains téléphones sont réglés de manière à limiter ces services, pour économiser la batterie.
         Dans le cas d\'un enregistrement GPX, il est normal de consommer un peu de batterie. Mais Android ne
+        fait pas de distinction, et peut arrêter brutalement le service (et TrekMe avec).</string>
+    <string name="battery_warn_message_track_follow">Le suivi de trace sera probablement interrompu, car l\'optimisation de la batterie est activée
+        pour TrekMe.\nLe suivi de trace est lancé sous forme de service Android, qui tourne en tâche de fond.
+        Mais certains téléphones sont réglés de manière à limiter ces services, pour économiser la batterie.
+        Dans le cas du suivi de trace, il est normal de consommer un peu de batterie. Mais Android ne
         fait pas de distinction, et peut arrêter brutalement le service (et TrekMe avec).</string>
     <string name="battery_warn_solution_btn_txt">Voir la solution</string>
     <string name="battery_warn_solution_title">Solution</string>
@@ -247,9 +251,12 @@
     <string name="service_gpx_location_error">TrekMe n\'a pas accès à votre position :(</string>
     <string name="imported_new_map">Une nouvelle carte a été créée</string>
     <string name="location_info_title">Information</string>
-    <string name="background_location_disclaimer">TrekMe collecte les données de localisation pendant un enregistrement GPX,
-        même lorsque l\'application est fermée ou inutilisée. Pour cela, TrekMe doit avoir le niveau d\'accès à «toujours autoriser».\n\nCes informations de localisation sont stockées localement sur votre
+    <string name="background_location_rationale_gpx_recording">Pour réaliser un enregistrement GPX, TrekMe doit avoir accès à votre position en arrière plan même lorsque
+        l\'application est fermée ou inutilisée. Pour cela, l\'autorisation de position doit être mise à «toujours autoriser» ou équivalent.\n\nCes informations de position sont stockées localement sur votre
         appareil et ne sont <b>en aucun cas communiquées à des tiers</b>.
+    </string>
+    <string name="background_location_rationale_track_follow">Pour vérifier à intervalle régulier votre distance par rapport à la trace suivie, TrekMe doit avoir accès à votre position en arrière plan.\nPour
+        cela, l\'autorisation de position doit être mise à «toujours autoriser» ou équivalent.\n\nVotre position ne sera <b>en aucun cas communiquées à des tiers</b>.
     </string>
     <string name="close_dialog">Fermer</string>
     <string name="understood_dialog">J\'ai compris</string>

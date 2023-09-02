@@ -1,11 +1,15 @@
 package com.peterlaurence.trekme.features.map.presentation.viewmodel.layers
 
+import android.content.Context
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.geotools.distanceApprox
 import com.peterlaurence.trekme.core.map.domain.models.Map
+import com.peterlaurence.trekme.events.AppEventBus
+import com.peterlaurence.trekme.events.WarningMessage
 import com.peterlaurence.trekme.features.map.domain.core.TrackVicinityVerifier
 import com.peterlaurence.trekme.features.map.domain.core.getLonLatFromNormalizedCoordinate
 import com.peterlaurence.trekme.features.map.domain.core.getNormalizedCoordinates
@@ -13,12 +17,17 @@ import com.peterlaurence.trekme.features.map.domain.models.TrackFollowServiceSta
 import com.peterlaurence.trekme.features.map.domain.repository.TrackFollowRepository
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
+import com.peterlaurence.trekme.util.android.isBackgroundLocationGranted
+import com.peterlaurence.trekme.util.android.isBatteryOptimized
+import com.peterlaurence.trekme.util.android.isLocationEnabled
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ovh.plrapps.mapcompose.api.addPath
@@ -37,9 +46,16 @@ class TrackFollowLayer(
     private val dataStateFlow: Flow<DataState>,
     private val trackFollowRepository: TrackFollowRepository,
     private val mapFeatureEvents: MapFeatureEvents,
+    private val appContext: Context,
+    private val appEventBus: AppEventBus,
     private val onTrackSelected: () -> Unit
 ) {
     private val trackFollowHighlightId = "track-followed-highlight"
+
+    val ackBatteryOptSignal = Channel<Unit>(1)
+
+    private val _events = Channel<Event>(1)
+    val events = _events.receiveAsFlow()
 
     init {
         scope.launch {
@@ -72,8 +88,19 @@ class TrackFollowLayer(
         }
     }
 
+    /**
+     * 3 steps:
+     * 1. Check that location is enabled and that battery optimization is disabled
+     * 2. Make paths clickable and start the service upon path selection
+     * 3. Check for background location permission
+     */
     fun start() = scope.launch {
+        /* Step 1 */
+        checkLocationAndBatteryOpt()
+
+        /* Step 2 */
         val (map, mapState) = dataStateFlow.firstOrNull() ?: return@launch
+        _events.send(Event.SelectTrackToFollow)
 
         mapState.onPathClick { id, _, _ ->
             val pathData = mapState.getPathData(id)
@@ -93,6 +120,36 @@ class TrackFollowLayer(
             if (p.zIndex == 0f) {
                 updatePath(p.id, clickable = true)
             }
+        }
+
+        /* Step 3 */
+        checkBackgroundLocationPerm()
+    }
+
+    private suspend fun checkLocationAndBatteryOpt() {
+        /* Check location service. If disabled, no need to go further. */
+        if (!isLocationEnabled(appContext)) {
+            val msg = WarningMessage(
+                title = appContext.getString(R.string.warning_title),
+                msg = appContext.getString(R.string.location_disabled_warning)
+            )
+            appEventBus.postMessage(msg)
+            return
+        }
+
+        /* Check battery optimization, and inform the user if needed */
+        if (isBatteryOptimized(appContext)) {
+            _events.send(Event.DisableBatteryOptSignal)
+            /* Wait for the user to take action before continuing */
+            ackBatteryOptSignal.receive()
+        }
+    }
+
+    private suspend fun checkBackgroundLocationPerm() {
+        if (!isBackgroundLocationGranted(appContext)) {
+            _events.send(Event.BackgroundLocationNotGranted)
+        } else {
+            _events.send(Event.RequestBackgroundLocationPerm)
         }
     }
 
@@ -153,5 +210,12 @@ class TrackFollowLayer(
                 cnt++
             }
         }
+    }
+
+    sealed interface Event {
+        object DisableBatteryOptSignal : Event
+        object BackgroundLocationNotGranted : Event
+        object RequestBackgroundLocationPerm : Event
+        object SelectTrackToFollow : Event
     }
 }

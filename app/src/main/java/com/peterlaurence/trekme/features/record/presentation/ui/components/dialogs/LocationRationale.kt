@@ -16,12 +16,13 @@ import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeThem
  */
 @Composable
 fun LocationRationale(
+    text: String,
     onConfirm: () -> Unit,
     onIgnore: () -> Unit,
 ) {
     AlertDialog(
         title = { Text(text = stringResource(id = R.string.location_info_title)) },
-        text = { Text(stringResource(id = R.string.background_location_disclaimer)) },
+        text = { Text(text) },
         confirmButton = {
             TextButton(onClick = onConfirm) {
                 Text(text = stringResource(id = R.string.ok_dialog))
@@ -41,6 +42,6 @@ fun LocationRationale(
 @Composable
 private fun LocationRationalePreview() {
     TrekMeTheme {
-        LocationRationale({}, {})
+        LocationRationale(text = stringResource(id = R.string.background_location_rationale_gpx_recording), {}, {})
     }
 }

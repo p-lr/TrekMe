@@ -38,10 +38,14 @@ import com.peterlaurence.trekme.features.map.presentation.ui.components.*
 import com.peterlaurence.trekme.features.map.presentation.ui.screens.ErrorScaffold
 import com.peterlaurence.trekme.features.map.presentation.ui.screens.MapScreen
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.*
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.TrackFollowLayer
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimSolutionDialog
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimWarningDialog
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.LocationRationale
+import com.peterlaurence.trekme.util.android.requestBackgroundLocationPermission
+import com.peterlaurence.trekme.util.android.shouldShowBackgroundLocPermRationale
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.rotation
@@ -137,25 +141,50 @@ fun MapStateful(
 
     val ok = stringResource(id = R.string.ok_dialog)
     val outOfBounds = stringResource(id = R.string.map_screen_loc_outside_map)
-    val selectTrack = stringResource(id = R.string.select_track_to_follow)
     var showTrackFollowDialog by rememberSaveable { mutableStateOf(false) }
     LaunchedEffectWithLifecycle(flow = viewModel.events) { event ->
-        fun showSnackbar(msg: String) = scope.launch {
-            /* Dismiss the currently showing snackbar, if any */
-            snackbarHostState.currentSnackbarData?.dismiss()
-
-            snackbarHostState.showSnackbar(msg, actionLabel = ok)
-        }
-
         fun dismissSnackbar() = scope.launch {
             snackbarHostState.currentSnackbarData?.dismiss()
         }
         when (event) {
-            MapEvent.CURRENT_LOCATION_OUT_OF_BOUNDS -> showSnackbar(outOfBounds)
-            MapEvent.SELECT_TRACK_TO_FOLLOW -> showSnackbar(selectTrack)
+            MapEvent.CURRENT_LOCATION_OUT_OF_BOUNDS -> showSnackbar(scope, snackbarHostState, outOfBounds, ok)
+
             MapEvent.TRACK_TO_FOLLOW_SELECTED -> dismissSnackbar()
             MapEvent.TRACK_TO_FOLLOW_ALREADY_RUNNING -> {
                 showTrackFollowDialog = true
+            }
+        }
+    }
+
+    val activity = context.getActivity()
+    val selectTrack = stringResource(id = R.string.select_track_to_follow)
+    var isShowingBatteryWarning by rememberSaveable { mutableStateOf(false) }
+    var isShowingBatterySolution by rememberSaveable { mutableStateOf(false) }
+    var isShowingLocationRationale by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffectWithLifecycle(flow = viewModel.trackFollowLayer.events) { event ->
+        when (event) {
+            TrackFollowLayer.Event.DisableBatteryOptSignal -> isShowingBatteryWarning = true
+            TrackFollowLayer.Event.RequestBackgroundLocationPerm -> {
+                if (activity != null) {
+                    requestBackgroundLocationPermission(activity)
+                }
+            }
+
+            TrackFollowLayer.Event.BackgroundLocationNotGranted -> {
+                /* In this case, check if we should show a rationale. Whatever the outcome, we'll ask
+                 * for the permission. */
+                if (activity == null) return@LaunchedEffectWithLifecycle
+                if (shouldShowBackgroundLocPermRationale(activity)) {
+                    isShowingLocationRationale = true
+                } else {
+                    /* Request permission anyway */
+                    requestBackgroundLocationPermission(activity)
+                }
+            }
+
+            TrackFollowLayer.Event.SelectTrackToFollow -> {
+                showSnackbar(scope, snackbarHostState, selectTrack, ok)
             }
         }
     }
@@ -265,6 +294,44 @@ fun MapStateful(
             onDismissRequest = {
                 showTrackFollowDialog = false
             }
+        )
+    }
+
+    if (isShowingBatteryWarning) {
+        BatteryOptimWarningDialog(
+            text = stringResource(id = R.string.battery_warn_message_track_follow),
+            onShowSolution = {
+                isShowingBatterySolution = true
+                isShowingBatteryWarning = false
+            },
+            onDismissRequest = {
+                isShowingBatteryWarning = false
+                viewModel.trackFollowLayer.ackBatteryOptSignal.trySend(Unit)
+            },
+        )
+    }
+
+    if (isShowingBatterySolution) {
+        BatteryOptimSolutionDialog(
+            onDismissRequest = {
+                isShowingBatterySolution = false
+                viewModel.trackFollowLayer.ackBatteryOptSignal.trySend(Unit)
+            }
+        )
+    }
+
+    if (isShowingLocationRationale) {
+        LocationRationale(
+            text = stringResource(id = R.string.background_location_rationale_track_follow),
+            onConfirm = {
+                if (activity != null) {
+                    requestBackgroundLocationPermission(activity)
+                }
+                isShowingLocationRationale = false
+            },
+            onIgnore = {
+                isShowingLocationRationale = false
+            },
         )
     }
 }
@@ -391,6 +458,7 @@ private fun RecordingFabStateful(viewModel: GpxRecordServiceViewModel) {
 
     if (isShowingBatteryWarning) {
         BatteryOptimWarningDialog(
+            text = stringResource(id = R.string.battery_warn_message_gpx_recording),
             onShowSolution = {
                 isShowingBatterySolution = true
                 isShowingBatteryWarning = false
@@ -413,6 +481,7 @@ private fun RecordingFabStateful(viewModel: GpxRecordServiceViewModel) {
 
     if (isShowingLocationRationale) {
         LocationRationale(
+            text = stringResource(id = R.string.background_location_rationale_gpx_recording),
             onConfirm = {
                 viewModel.requestBackgroundLocationPerm()
                 isShowingLocationRationale = false
@@ -465,4 +534,16 @@ private tailrec fun Context.getActivity(): AppCompatActivity? = when (this) {
     is AppCompatActivity -> this
     is ContextWrapper -> baseContext.getActivity()
     else -> null
+}
+
+fun showSnackbar(
+    scope: CoroutineScope,
+    snackbarHostState: SnackbarHostState,
+    msg: String,
+    okString: String
+) = scope.launch {
+    /* Dismiss the currently showing snackbar, if any */
+    snackbarHostState.currentSnackbarData?.dismiss()
+
+    snackbarHostState.showSnackbar(msg, actionLabel = okString)
 }
