@@ -141,7 +141,7 @@
     <string name="import_result_recap">Résultat d\'import\n  Routes: %s \n  Marqueurs: %s</string>
     <string name="gpx_import_error_msg">Oups.. il y a eu problème pendant l\'import</string>
     <string name="about">À propos</string>
-    <string name="help_url">https://github.com/peterLaurence/TrekMe/blob/master/Readme.fr.md#sommaire</string>
+    <string name="help_url">https://github.com/p-lr/TrekMe/blob/master/Readme.fr.md#sommaire</string>
     <string name="map_download_dialog_error">Une erreur est survenue durant l\'import de la carte, qui n\'apparaîtra probablement pas dans la liste des cartes, ou bien elle ne sera pas calibrée. Le plus simple est de télécharger à nouveau votre carte. Désolé :(</string>
     <string name="bad_storage_status">Votre carte SD présente un problème. TrekMe ne peut télécharger des cartes ou fonctionner normalement dans ces conditions.</string>
     <string name="storage_read_only">Votre carte SD est en lecture seule. TrekMe ne peut télécharger des cartes ou fonctionner normalement dans ces conditions.</string>

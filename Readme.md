@@ -6,33 +6,34 @@
 <img src="doc/images/map-list-en.jpg" width="200"> &nbsp&nbsp&nbsp <img src="doc/images/trekme-example.jpg" width="200">
 </p>
 
-## <a name="TOC-Summary"></a>Summary
+## Summary
 
-1. [Overview](#TOC-Overview)
-2. [Features summary](#TOC-Features-sum)
-3. [Create a map](#TOC-Create-a-map)
-  * [Select an area](#TOC-Select-area)
-  * [From an archive](#TOC-Import-from-archive)
-  * [Receive a map](#TOC-Share-maps)
-  * [Manual map creation](#TOC-The-hard-way)
-4. [Features](#TOC-Features)
-  * [Measure a distance](#TOC-Measure-distance)
-  * [Show the speed](#TOC-Show-speed)
-  * [Add markers](#TOC-Add-markers)
-  * [Add a landmark](#TOC-Add-landmarks)
-  * [Lock the view on current position](#TOC-Lock-view)
-  * [Visualize a recording in real time](#TOC-Display-live-route)
-  * [Import a GPX track](#TOC-GPX-track-import)
-  * [GPX recording](#TOC-GPX-recording)
-5. [Settings](#TOC-Settings)
-  * [Start on the last map](#TOC-Start-on-last-map)
-  * [Download folder](#TOC-Download-dir)
-  * [Rotation mode](#TOC-Rotation-mode)
-6. [Save your maps](#TOC-Save-maps)
-7. [Share your maps](#TOC-Share-maps)
+1. [Overview](#overview)
+2. [Features summary](#features-summary)
+3. [Create a map](#create-a-map)
+  * [Select an area](#select-an-area)
+  * [From an archive](#import-from-an-archive)
+  * [Receive a map](#map-sharing)
+  * [Manual map creation](#manual-map-creation---the-hard-way)
+4. [Features](#features)
+  * [Measure a distance](#measure-a-distance)
+  * [Show the speed](#show-the-speed)
+  * [Add markers](#add-markers)
+  * [Add a landmark](#add-landmarks)
+  * [Lock the view on current position](#lock-the-view-on-current-position)
+  * [Visualize a recording in real time](#visualize-a-recording-in-real-time)
+  * [Import a GPX track](#import-a-gpx-track)
+  * [GPX recording](#gpx-recording)
+  * [Manage excursions](#manage-excursions)
+5. [Settings](#settings)
+  * [Start on the last map](#start-on-the-last-map)
+  * [Download folder](#download-folder)
+  * [Rotation mode](#rotation-mode)
+6. [Save your maps](#save-your-maps)
+7. [Share your maps](#map-sharing)
 
 
-## <a name="TOC-Overview"></a>Overview
+## Overview
 
 TrekMe is an Android trekking app to get live position on a map and other useful information, without
 ever needing an internet connection (except when creating a map).
@@ -42,7 +43,7 @@ You can download an area of your choice so the cached tiles are available for of
 
 Perhaps most importantly, TrekMe is _designed_ to consume few CPU resources, to preserve the device's battery. 
 
-## <a name="TOC-Features-sum"></a>Features summary
+## Features summary
 
 * Support in-app map creation from:
 	- United States's USGS
@@ -59,7 +60,7 @@ Perhaps most importantly, TrekMe is _designed_ to consume few CPU resources, to 
 * GPX track recording
 * Beacons to alert when getting close to specific locations
 
-## <a name="TOC-Create-a-map"></a>Create a map
+## Create a map
 
 There are four ways to create a map:
 
@@ -70,7 +71,7 @@ There are four ways to create a map:
 
 The preferred and easiest way is the first one. Below are detailed each of these methods.
 
-### <a name="TOC-Select-area"></a>Select an area
+### Select an area
 
 In this mode, you use a specific map provider. Google map is a well known example of map provider. 
 But their maps aren't ideal for hiking. When possible, it is better to use maps with more terrain
@@ -148,7 +149,7 @@ From the map configuration view, you can:
 * Change the name,
 * Save the map
 
-### <a name="TOC-Import-from-archive"></a>Import from an archive
+### Import from an archive
 
 A map can also be created from an existing archive. The archive can be made by yourself or someone 
 else (see below to create an archive). An archive is a zip file.
@@ -157,11 +158,11 @@ To import from an archive, use the main menu and choose "Import a map". Then, pr
 and select that folder. Then, TrekMe shows you the recognized archives, which you can individually
 import.
 
-### <a name="TOC-Import-from-sharing"></a>Receive a map
+### Receive a map
 
-See [Map Sharing](#TOC-Share-maps).
+See [Map Sharing](#map-sharing).
 
-### <a name="TOC-The-hard-way"></a>Manual map creation - the hard way
+### Manual map creation - the hard way
 
 If you own a paper map, just scan it, then prepare it to use inside TrekMe (see below). It also works
  if you have a huge single image (several Gb), as TrekMe is designed to work with arbitrary map size.
@@ -180,9 +181,9 @@ Beginners are strongly advised to read the Technical Basis from the [User Guide]
 Then, proceed with the [Manual map creation guide](MapCreation-Manual.md).
 
    
-## <a name="TOC-Features"></a>Features
+## Features
 
-### <a name="TOC-Measure-distance"></a>Measure a distance
+### Measure a distance
 
 Distance can be measured using two different tools in TrekMe:
 
@@ -212,7 +213,7 @@ distance is shown.
 
 The distance accounts for elevation *only if* the track contains elevation data for each point.
 
-### <a name="TOC-Show-speed"></a>Show the speed
+### Show the speed
 
 The speed indicator overlays the speed in km/h at the top of the screen. Note that it requires a few 
 seconds before the speed can be displayed.
@@ -222,7 +223,7 @@ seconds before the speed can be displayed.
 </p>
 Then choose "Show the speed". If your screen is large enough, there is an icon to directly access it.
 
-### <a name="TOC-Add-markers"></a>Add markers
+### Add markers
 
 Press the marker button to add a new marker at the center of the screen:
 
@@ -254,7 +255,7 @@ Here is the marker edition view:
 
 Nothing is changed until you save your changes.
 
-### <a name="TOC-Add-landmarks"></a>Add landmarks
+### Add landmarks
 
 A landmark is a specific marker. A purple line is drawn between it and your current position. So it helps when you need to always know the direction of a specific place, which may be outside of the area that your screen covers.
 
@@ -270,7 +271,7 @@ Often, we want to display our orientation in the same time. We can also add seve
 <img src="doc/images/landmark-2.jpg" width="300">
 </p>
 
-### <a name="TOC-Lock-view"></a>Lock the view on current position
+### Lock the view on current position
 
 Sometimes, you want the view to automatically follow your position. To do that, use the menu as shown bellow:
 
@@ -280,7 +281,7 @@ Sometimes, you want the view to automatically follow your position. To do that, 
 
 Then select "Lock on position". Now, everytime the application gets a location update (approximately every second), the view centers on this new location.
 
-### <a name="TOC-Display-live-route"></a>Visualize a recording in real time
+### Visualize a recording in real time
 
 When you start a recording from the "GPX Record" option menu, the recording can be seen in real time on any map that covers your current area.
 It appears as a yellow route.
@@ -291,7 +292,7 @@ Even if you close TrekMe, you will find your live route the next time you open i
 <img src="doc/images/live-route.jpg" width="300">
 </p>
 
-### <a name="TOC-GPX-track-import"></a>Import a GPX track
+### Import a GPX track
 
 While viewing a map, press the button below on the upper right corner :
 
@@ -317,27 +318,29 @@ Using the menu at the top right corner (the three vertical dots), which appears 
 * Rename the selected track
 * Center on the selected track on the map (only available with TrekMe Extended)
 
-### <a name="TOC-GPX-recording"></a>GPX recording
+### GPX recording
 
 It is possible to record your position and create a GPX file, to later import into a map or share
 with other people.
 
-From the "GPX Record" option menu, you get the following interface:
+From inside any map, there's a button at the top left corner:
 
 <p align="center">
-<img src="doc/images/gpx-recording-en.jpg" width="300">
+<img src="doc/images/mountainview.jpg" width="300">
 </p>
 
-The recording can be started, stopped, or paused from the control panel. When recording, the location service
-runs in the background. It continues to run even if TrekMe is stopped, until you decide to stop it
-from inside the app.
-If you have Android 10 or above, you need to make sure that the location permission for TrekMe is set
-to "Allow all the time", and not just when using the app. Otherwise, some points won't be recorded 
-and straight lines will appear on the track.
+The recording can be started, stopped, or paused. When recording, the location service
+runs in the background. It continues to run even if TrekMe is stopped, until you decide to stop it.
+If you have Android 10 or above, you need to:
 
-An indicator reports back the status of the location service. A panel shows the list of recordings.
+- make sure that the location permission for TrekMe is set to "Allow all the time", and not just when using the app.
+- ensure that the battery optimization is disabled for TrekMe 
 
-From there, when selecting a track, four buttons at the bottom-left enable you to :
+Otherwise, some points won't be recorded and straight lines will appear on the track.
+
+### Manage excursions
+
+From the main menu > My excursions, the list of gpx recordings appear. Four buttons at the bottom-left enable you to:
 
 * Rename the track,
 * Import the track into an existing map (press the import button at the bottom of the list, then choose the map),
@@ -378,11 +381,11 @@ minimum and maximum elevations.
 <img src="doc/images/ele-profile-en.jpg" width="300">
 </p>
 
-## <a name="TOC-Settings"></a>Settings
+## Settings
 
 Settings are accessible from the main menu > Settings.
 
-### <a name="TOC-Start-on-last-map"></a>Start on the last map
+### Start on the last map
 
 By default, TrekMe starts on the list of maps. But it's possible to start on the last viewed map. In the "General" section > "Start TrekMe on"
 
@@ -391,7 +394,7 @@ By default, TrekMe starts on the list of maps. But it's possible to start on the
 </p>
 
 
-### <a name="TOC-Download-dir"></a>Download folder
+### Download folder
 
 By default, TrekMe stores everything on the internal memory. But if you have an SD card, **and** if it's mounted as portable device, you can use it to store some of your maps.
 
@@ -411,7 +414,7 @@ The first directory always corresponds to the internal memory. The second, if av
 
 Once the download folder is changed, your next map download will use it. But existing maps aren't moved.
 
-### <a name="TOC-Rotation-mode"></a>Rotation mode
+### Rotation mode
 
 Three rotation modes are available:
 
@@ -438,7 +441,7 @@ In this mode, you can rotate the map as will. The compass is always displayed, a
 the map to the North. You can also enable or disable orientation display - it won't have consequences 
 on the orientation of the map.
 
-### <a name="TOC-Save-maps"></a>Save your maps
+### Save your maps
 
 Starting from Android 10, all maps (no matter if they're on the internal memory or SD card) are
 deleted when TrekMe is uninstalled. Consequently, it's highly recommended to use the backup feature
@@ -460,7 +463,7 @@ An archive contains everything related to the map (calibration, routes, points o
 
 Once archived, a map can be restored using the import feature.
 
-### <a name="TOC-Share-maps"></a>Map sharing
+### Map sharing
 
 A map is sometimes heavy and takes quite some time to download. When a friend also has TrekMe, it's
 possible send him/her one of your maps. This feature requires the Wifi to be enabled on the two devices,

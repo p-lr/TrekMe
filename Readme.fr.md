@@ -6,35 +6,36 @@
 <img src="doc/images/map-list.jpg" width="200"> &nbsp&nbsp&nbsp <img src="doc/images/trekme-example.jpg" width="200">
 </p>
 
-## <a name="TOC-Summary"></a>Sommaire
+## Sommaire
 
-1. [Introduction](#TOC-Overview)
-2. [Résumé des fonctionnalités](#TOC-Features-sum)
-3. [Créer une carte](#TOC-Create-a-map)
-  * [Sélectionner une zone](#TOC-Select-area)
-  * [Depuis une archive](#TOC-Import-from-archive)
-  * [Recevoir une carte](#TOC-Share-maps)
-  * [Création manuelle](#TOC-The-hard-way)
-4. [Fonctionnalités](#TOC-Features)
-  * [Mesurer une distance](#TOC-Measure-distance)
-  * [Afficher la vitesse](#TOC-Show-speed)
-  * [Ajouter un marqueur](#TOC-Add-markers)
-  * [Ajouter un repère](#TOC-Add-landmarks)
-  * [Verrouiller la vue sur la position courante](#TOC-Lock-view)
-  * [Visualiser un enregistrement en temps réel](#TOC-Display-live-route)
-  * [Importer une trace GPX](#TOC-GPX-track-import)
-  * [S'enregistrer au format GPX](#TOC-GPX-recording)
-5. [Paramètres](#TOC-Settings)
-  * [Démarrer sur la dernière carte](#TOC-Start-on-last-map)
-  * [Dossier de téléchargement](#TOC-Download-dir)
-  * [Mode de rotation](#TOC-Rotation-mode)
-6. [Sauvegardez vos cartes](#TOC-Save-maps)
-7. [Partage de carte](#TOC-Share-maps)
-8. [Cartes IGN](#TOC-IGN-maps)
+1. [Introduction](#introduction)
+2. [Résumé des fonctionnalités](#résumé-des-fonctionnalités)
+3. [Créer une carte](#créer-une-carte)
+  * [Sélectionner une zone](#sélectionner-une-zone)
+  * [Depuis une archive](#depuis-une-archive)
+  * [Recevoir une carte](#recevoir-une-carte)
+  * [Création manuelle](#création-manuelle---le-plus-difficile)
+4. [Fonctionnalités](#fonctionnalités)
+  * [Mesurer une distance](#mesurer-une-distance)
+  * [Afficher la vitesse](#afficher-la-vitesse)
+  * [Ajouter un marqueur](#ajout-de-marqueurs)
+  * [Ajouter un repère](#ajout-de-points-de-repère)
+  * [Verrouiller la vue sur la position courante](#verrouiller-la-vue-sur-la-position-courante)
+  * [Visualiser un enregistrement en temps réel](#visualiser-un-enregistrement-en-temps-réel)
+  * [Importer une trace GPX](#import-dun-fichier-gpx)
+  * [S'enregistrer au format GPX](#enregistrement-gpx)
+  * [Gérer les excursions](#gérer-les-excursions)
+5. [Paramètres](#paramètres)
+  * [Démarrer sur la dernière carte](#démarrer-sur-la-dernière-carte)
+  * [Dossier de téléchargement](#dossier-de-téléchargement)
+  * [Mode de rotation](#mode-de-rotation)
+6. [Sauvegardez vos cartes](#sauvegardez-vos-cartes)
+7. [Partage de carte](#partage-de-carte)
+8. [Cartes IGN](#cartes-ign)
 9. [Que faire si...](doc/troubleshoot/troubleshoot.fr.md)
 
 
-## <a name="TOC-Overview"></a>Introduction
+## Introduction
 
 TrekMe est une application Android permettant de se localiser sur une carte topographique, sans 
 nécessiter de connexion internet (sauf chez soi au moment de créer la carte). Il est possible de 
@@ -43,7 +44,7 @@ nécessiter de connexion internet (sauf chez soi au moment de créer la carte). 
 L'accent a été mis sur la faible consommation des ressources, pour *maximiser l'autonomie* lors d'une 
 randonnée. L'application est aussi très fluide de manière générale.
 
-## <a name="TOC-Features-sum"></a>Résumé des fonctionnalités
+## Résumé des fonctionnalités
 
 * Création de cartes depuis l'application:
     - France IGN (requiert une [souscription](#TOC-IGN-maps))
@@ -59,7 +60,7 @@ randonnée. L'application est aussi très fluide de manière générale.
 * Verrouiller la vue à la position courante
 * Balises pour alerter à l'approche de lieux précis sur la carte
 
-## <a name="TOC-Create-a-map"></a>Créer une carte
+## Créer une carte
 
 Il y a quatre manières de créer une carte :
 1. Sélectionner une zone avec une source de carte comme l'IGN par ex
@@ -70,7 +71,7 @@ Il y a quatre manières de créer une carte :
 La méthode la plus facile et recommandée est la première. Ci-dessous sont décrites chacune de ces
  méthodes.
 
-### <a name="TOC-Select-area"></a>Sélectionner une zone
+### Sélectionner une zone
 
 Ici, on utilise une source de carte spécifique. Google map est un exemple de source très connu. Mais
  leurs cartes ne sont pas idéales pour la randonnée (on souhaite avoir des cartes plus adaptées).
@@ -160,7 +161,7 @@ Attention, il ne faut pas changer la projection ni les points de calibration d'u
 avez téléchargé. Il s'agit d'options pour les utilisateurs avertis. Une erreur à ce niveau 
 introduirait un biais dans votre positionnement sur la carte.
 
-### <a name="TOC-Import-from-archive"></a>Depuis une archive
+### Depuis une archive
 
 Une carte peut aussi être créée en important une archive d'une carte existante. L'archive peut avoir 
 été faite par vous même ou quelqu'un d'autre (voir plus bas pour créer une archive). Elle se présente
@@ -170,11 +171,11 @@ bouton "Importer depuis un dossier", au milieu de l'écran. Naviguez alors vers 
 la ou les archives et sélectionnez-le. TrekMe liste alors les archives reconnues, que vous pouvez 
 importer individuellement.
 
-### <a name="TOC-Import-from-sharing"></a>Recevoir une carte
+### Recevoir une carte
 
 Reportez-vous à la section [Partage de carte](#TOC-Share-maps).
 
-### <a name="TOC-The-hard-way"></a>Création manuelle - le plus difficile
+### Création manuelle - le plus difficile
 
 Il est possible d'utiliser votre propre carte si vous la scannez et suivez le tutoriel pour l'utiliser
 avec TrekMe.
@@ -192,9 +193,9 @@ Pour les personnes voulant apprendre, il est conseillé de lire ce [guide](UserG
 Ensuite, poursuivez avec le [Guide de création manuelle de carte](MapCreation-Manual.md).
 
    
-## <a name="TOC-Features"></a>Fonctionnalités
+## Fonctionnalités
 
-### <a name="TOC-Measure-distance"></a>Mesurer une distance
+### Mesurer une distance
 
 Il y deux manières de mesurer une distance dans TrekMe :
 
@@ -224,7 +225,7 @@ portion de la trace entre les deux ronds est en rouge et sa longueur est indiqu�
 La distance affichée tient compte du dénivellé *si* la trace contient l'information d'altitude pour
 chacun des points.
 
-### <a name="TOC-Show-speed"></a>Afficher la vitesse
+### Afficher la vitesse
 
 C'est une option en haut à droite alors qu'une carte est affichée.
 La vitesse s'affiche en km/h au bout de quelques secondes.
@@ -235,7 +236,7 @@ La vitesse s'affiche en km/h au bout de quelques secondes.
 
 Selon la taille de votre écran, un bouton peut rendre cette fonctionnalité directement accessible.
 
-### <a name="TOC-Add-markers"></a>Ajout de marqueurs
+### Ajout de marqueurs
 
 Utilisez le bouton d'ajout de marqueur, ce qui affiche un nouveau marqueur au centre de l'écran, 
 comme celui-ci :
@@ -271,7 +272,7 @@ Voici un exemple de fiche d'un marqueur :
 La plupart du temps, on se contente de modifier seulement le nom ou le commentaire.
 Rien n'est modifié tant que vous ne sauvegardez pas vos modifications (bouton "disquette" en haut).
 
-### <a name="TOC-Add-landmarks"></a>Ajout de points de repère
+### Ajout de points de repère
 
 Un point de repère est un marqueur spécial. Une ligne de couleur violette se dessine entre votre 
 position actuelle et le repère. De cette manière vous pouvez vous fixer un objectif éloigné et 
@@ -290,7 +291,7 @@ En général, on affiche en même temps l'orientation. On peut aussi en ajouter 
 <img src="doc/images/landmark-2.jpg" width="300">
 </p>
 
-### <a name="TOC-Lock-view"></a>Verrouiller la vue sur la position courante
+### Verrouiller la vue sur la position courante
 
 Parfois, on veut que la vue reste centrée sur notre position (on ne veut pas que le point bleu sorte 
 de l'écran). Pour cela, il faut activer le verrouillage sur la position. Utilisez alors le menu 
@@ -303,7 +304,7 @@ comme ci-dessous :
 Puis sélectionnez "Verrouiller sur la position". Dans ce mode, à chaque fois que l'application reçoit
  votre position (environ toutes les secondes), la vue se déplace et le point bleu reste au centre.
 
-### <a name="TOC-Display-live-route"></a>Visualiser un enregistrement en temps réel
+### Visualiser un enregistrement en temps réel
 
 Par défaut, lorsque vous lancez un enregistrement GPX (depuis le menu "Enregistrement du parcours"), 
 l'enregistrement en cours s'affiche sur votre carte, sous forme de trace jaune.
@@ -316,7 +317,7 @@ Même si vous quittez TrekMe, vous retrouverez la trace en temps réel sur votre
 <img src="doc/images/live-route.jpg" width="300">
 </p>
 
-### <a name="TOC-GPX-track-import"></a>Import d'un fichier GPX
+### Import d'un fichier GPX
 
 Alors que vous visionnez une carte, utilisez le menu en haut à droite :
 
@@ -349,28 +350,30 @@ Avec le menu en haut à droite, qui appraît quand vous sélectionnez une trace,
 * Renommer la trace sélectionnée
 * Aller directement sur la trace sélectionnée sur la carte (cette fonctionnalité n'est disponible qu'avec l'offre TrekMe Extended).
 
-### <a name="TOC-GPX-recording"></a>Enregistrement GPX
+### Enregistrement GPX
 
 Il est possible d'enregistrer votre parcours au format GPX, pour ensuite l'importer dans une carte 
 ou le partager.
 
-Depuis le menu principal allez à "Enregistrement GPX". Vous arrivez à une interface comme
- celle-ci :
+Un enregistrement GPX peut être lancé depuis n'importe quelle carte, à l'aide du bouton en haut à gauche :
 
 <p align="center">
-<img src="doc/images/gpx-recording-fr.jpg" width="300">
+<img src="doc/images/mountainview.jpg" width="300">
 </p>
 
-Un enregistrement peut être démarré, arrêté ou mis en pause depuis le panneau "Commandes".
-Quand un enregistrement est en cours, un service spécifique est démarré, qui fonctionne même si TrekMe 
-est arrêté. Ce service s'arrête dès que vous l'arrêtez depuis le panneau "Commandes".
-Si vous avez Android 10 ou plus, vous devez vous assurer que TrekMe a l'autorisation de localisation 
-en mode "Toujours autoriser", et pas seulement si l'application est en cours d'utilisation. Sinon,
-l'enregistrement n'enregistrera parfois pas de points et des lignes droites apparaîtront.
+Un enregistrement peut être démarré, arrêté ou mis en pause.
+Quand un enregistrement est en cours, un service spécifique est démarré et fonctionne même si TrekMe 
+est arrêté.
+Si vous avez Android 10 ou plus, vous devez vous assurer :
 
-Un indicateur dans le panneau "Statut du service" affiche le statut du service.
+- que TrekMe a l'autorisation de localisation en mode "Toujours autoriser", et pas seulement si l'application est en cours d'utilisation. 
+- que l'optimisation de la batterie est désactivée pour TrekMe.
 
-Un dernier panneau affiche la liste des enregistrements effectués.
+Sinon, l'enregistrement n'enregistrera parfois pas de points et des lignes droites apparaîtront.
+
+### Gérer les excursions
+
+La liste des enregistrements effectués est accessible depuis le menu > "Mes excursions".
 En sélectionnant un enregistrement, quatre boutons en bas à gauche vous permettent respectivement de :
 
 * Renommer le fichier gpx
@@ -412,11 +415,11 @@ les altitudes min, max, et le dénivelé (non-cumulé).
 <img src="doc/images/ele-profile-fr.jpg" width="300">
 </p>
 
-## <a name="TOC-Settings"></a>Paramètres
+## Paramètres
 
 Les paramètres de TrekMe sont accessibles depuis le menu principal > Paramètres.
 
-### <a name="TOC-Start-on-last-map"></a>Démarrer sur la dernière carte
+### Démarrer sur la dernière carte
 
 Par défaut, TrekMe démarre sur la liste des cartes. Mais vous pouvez aussi démarrer sur la dernière 
 carte visitée. Dans la section "Général" > "Lancer TrekMe sur" :
@@ -426,7 +429,7 @@ carte visitée. Dans la section "Général" > "Lancer TrekMe sur" :
 </p>
 
 
-### <a name="TOC-Download-dir"></a>Dossier de téléchargement
+### Dossier de téléchargement
 
 Par défaut, TrekMe enregistre tout sur la mémoire interne. Mais si vous avez une carte SD, **et** que
  celle-ci est montée en tant que **stockage amovible**, alors vous pouvez l'utiliser pour stocker 
@@ -452,7 +455,7 @@ SD. Ce dossier est `Android/data/com.peterlaurence.trekme/downloaded`.
 Une fois le répertoire modifié, votre prochain téléchargement de carte utilisera ce dossier. Mais 
 les cartes existantes ne sont pas déplacées.
 
-### <a name="TOC-Rotation-mode"></a>Mode de rotation
+### Mode de rotation
 
 Vous pouvez sélectionner parmi trois modes de rotation:
 
@@ -480,7 +483,7 @@ Dans ce mode, vous pouvez tourner la carte à volonté. La boussole s'affiche to
 aligne la carte sur le Nord. Vous pouvez aussi afficher ou masquer l'orientation, sans conséquence sur
 l'alignement de la carte.
 
-### <a name="TOC-Save-maps"></a>Sauvegardez vos cartes
+### Sauvegardez vos cartes
 
 A partir d'Android 10, toutes les cartes (qu'elles soient sur mémoire interne ou carte SD) sont supprimées
 si TrekMe est désinstallé. Il vous est donc fortement conseillé d'utiliser la fonctionnalité de sauvegarde
@@ -504,7 +507,7 @@ Une archive contient tout ce qui est relatif à la carte (calibration, traces, p
 
 Une fois archivée, une carte peut être restaurée avec la fonctionnalité d'import de carte.
 
-### <a name="TOC-Share-maps"></a>Partage de carte
+### Partage de carte
 
 Une carte est parfois volumineuse et longue à télécharger. Quand un(e) ami(e) a aussi TrekMe, vous
 pouvez lui envoyer directement une de vos cartes. Cela fonctionne avec la Wifi, sans nécessité d'être
@@ -529,7 +532,7 @@ Si les deux appareils mettent vraiment trop de temps à se connecter et à débu
 de 5 min), essayez d'arrêter et relancer respectivement la réception et l'envoi. En dernier recours,
 redémarrer les deux apprareils puis re-tentez la procédure.
 
-## <a name="TOC-IGN-maps"></a>Cartes IGN
+## Cartes IGN
 
 TrekMe propose deux offres dites "Extended" en versions annuelle et mensuelle, avec une semaine 
 d'essai gratuite sans engagement.
