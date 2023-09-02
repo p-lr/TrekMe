@@ -221,7 +221,7 @@ class RouteLayer(
      */
     private fun CoroutineScope.processRoute(route: Route, map: Map, mapState: MapState) {
         /* React to color change */
-        launch(Dispatchers.Default) {
+        launch {
             route.color.collect { color ->
                 mapState.updatePath(
                     route.id,
@@ -231,7 +231,7 @@ class RouteLayer(
         }
 
         /* React to visibility change */
-        launch(Dispatchers.Default) {
+        launch {
             route.visible.collect { visible ->
                 val existing = staticRoutesData.value[route]
                 if (visible) {
