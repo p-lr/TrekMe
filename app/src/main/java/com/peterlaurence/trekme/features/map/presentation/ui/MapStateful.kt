@@ -46,7 +46,6 @@ import com.peterlaurence.trekme.util.android.requestBackgroundLocationPermission
 import com.peterlaurence.trekme.util.android.shouldShowBackgroundLocPermRationale
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.rotation
 import java.util.*
@@ -183,6 +182,8 @@ fun MapStateful(
         }
     }
 
+    var isShowingTrackFollowHelp by rememberSaveable { mutableStateOf(false) }
+
     when (uiState) {
         Loading -> {
             LoadingScreen()
@@ -225,6 +226,7 @@ fun MapStateful(
                         onPositionFabClick = viewModel.locationOrientationLayer::centerOnPosition,
                         onCompassClick = viewModel::alignToNorth,
                         onElevationFixUpdate = viewModel::onElevationFixUpdate,
+                        onShowTrackFollowHelp = { isShowingTrackFollowHelp = true },
                         recordingButtons = {
                             RecordingFabStateful(gpxRecordServiceViewModel)
                         }
@@ -328,6 +330,20 @@ fun MapStateful(
             },
         )
     }
+
+    if (isShowingTrackFollowHelp) {
+        AlertDialog(
+            onDismissRequest = { isShowingTrackFollowHelp = false },
+            text = {
+                Text(text = stringResource(id = R.string.track_follow_help))
+            },
+            confirmButton = {
+                TextButton(onClick = { isShowingTrackFollowHelp = false }) {
+                    Text(text = stringResource(id = R.string.ok_dialog))
+                }
+            },
+        )
+    }
 }
 
 @Composable
@@ -363,6 +379,7 @@ private fun MapScaffold(
     onPositionFabClick: () -> Unit,
     onCompassClick: () -> Unit,
     onElevationFixUpdate: (Int) -> Unit,
+    onShowTrackFollowHelp: () -> Unit,
     recordingButtons: @Composable () -> Unit
 ) {
     Scaffold(
@@ -390,7 +407,8 @@ private fun MapScaffold(
                 onToggleSpeed = onToggleSpeed,
                 onToggleLockPosition = onToggleLockOnPosition,
                 onToggleShowGpsData = onToggleShowGpsData,
-                onFollowTrack = onFollowTrack
+                onFollowTrack = onFollowTrack,
+                onShowTrackFollowHelp = onShowTrackFollowHelp
             )
         },
         floatingActionButton = {
@@ -442,9 +460,14 @@ private fun RecordingFabStateful(viewModel: GpxRecordServiceViewModel) {
     var isShowingLocationRationale by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffectWithLifecycle(flow = viewModel.events) { event ->
-        when(event) {
-            GpxRecordServiceViewModel.Event.BackgroundLocationNotGranted -> isShowingLocationRationale = true
-            GpxRecordServiceViewModel.Event.DisableBatteryOptSignal -> isShowingBatteryWarning = true
+        when (event) {
+            GpxRecordServiceViewModel.Event.BackgroundLocationNotGranted -> {
+                isShowingLocationRationale = true
+            }
+
+            GpxRecordServiceViewModel.Event.DisableBatteryOptSignal -> {
+                isShowingBatteryWarning = true
+            }
         }
     }
 

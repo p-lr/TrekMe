@@ -242,7 +242,9 @@
     <string name="beacon_background_loc_perm">This map has at least one beacon. As a result, the app needs to collect location data even when the app is closed or not in use.\n\nCurrently, the <b>authorization isn\'t granted</b>.</string>
     <string name="select_track_to_follow">Press on the track to follow</string>
     <string name="track_follow_already_running">The track-follow service is already running. Do you want to stop it?</string>
-
+    <string name="track_follow_help">When following a track, your distance to the track is checked and if you move more than (say) 50m away from the track, you get notified with a sound and vibration.\n\nThe
+        alert threshold can be changed in the settings.
+    </string>
     <!-- Marker, landmark, beacon edit screens -->
     <string name="marker_edit_screen_title">Marker edit</string>
     <string name="beacon_edit_screen_title">Beacon edit</string>
