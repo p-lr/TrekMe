@@ -173,7 +173,7 @@ importer individuellement.
 
 ### Recevoir une carte
 
-Reportez-vous à la section [Partage de carte](#TOC-Share-maps).
+Reportez-vous à la section [Partage de carte](#partage-de-carte).
 
 ### Création manuelle - le plus difficile
 
@@ -319,20 +319,13 @@ Même si vous quittez TrekMe, vous retrouverez la trace en temps réel sur votre
 
 ### Import d'un fichier GPX
 
-Alors que vous visionnez une carte, utilisez le menu en haut à droite :
+Alors que vous visionnez une carte, utilisez le menu en haut à droite, puis sélectionnez "Gérer les traces":
 
 <p align="center">
-<img src="doc/images/upper-right-menu-fr.jpg" width="300">
+<img src="doc/images/open-manage-tracks-fr.jpg" width="300">
 </p>
 
-Puis, sélectionnez "Gérer les traces":
-
-<p align="center">
-<img src="doc/images/manage-tracks-fr.jpg" width="300">
-</p>
-
-La liste des traces disponibles pour votre carte s'affiche alors (il est possible à ce stade qu'il y 
-en ait aucune) :
+La liste des traces disponibles pour votre carte s'affiche alors (à ce stade il peut y en avoir aucune) :
 
 <p align="center">
 <img src="doc/images/track-list-fr.jpg" width="300">

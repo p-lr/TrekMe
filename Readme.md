@@ -297,7 +297,7 @@ Even if you close TrekMe, you will find your live route the next time you open i
 While viewing a map, press the button below on the upper right corner :
 
 <p align="center">
-<img src="doc/images/manage-tracks.jpg" width="300">
+<img src="doc/images/open-manage-tracks-en.jpg" width="300">
 </p>
 
 Then, a list of currently available tracks opens up: 
