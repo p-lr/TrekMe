@@ -22,8 +22,8 @@ android {
         applicationId "com.peterlaurence.trekme"
         minSdkVersion 24
         targetSdkVersion 34
-        versionCode 197
-        versionName "3.7.1"
+        versionCode 198
+        versionName "3.7.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -61,7 +61,7 @@ dependencies {
 
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 //    implementation project(":mapcompose-local")  // for dev purposes
-    implementation 'ovh.plrapps:mapcompose:2.9.0'
+    implementation 'ovh.plrapps:mapcompose:2.9.1'
     implementation 'com.android.billingclient:billing:6.0.1'
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"

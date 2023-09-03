@@ -191,7 +191,7 @@ class TrackFollowLayer(
         mapState.updatePath(trackId, zIndex = 1f)
         val p = mapState.getPathData(trackId)
         if (p != null) {
-            mapState.addPath(trackFollowHighlightId, p, color = Color.Black, clickable = true, zIndex = 0f, width = 6.dp)
+            mapState.addPath(trackFollowHighlightId, p, color = Color.Black, clickable = false, zIndex = 0f, width = 6.dp)
         }
     }
 
