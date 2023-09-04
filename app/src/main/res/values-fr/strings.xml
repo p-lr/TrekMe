@@ -385,6 +385,7 @@
     <string name="track_follow_help">Vous choisissez une trace à suivre, et si vous vous éloignez de plus de 50m de la trace, vous êtes alerté par un son et une vibration.\n\nLe
         seuil d\'alerte est de 50m par défaut, et peut être changé dans les réglages.
     </string>
+    <string name="itinerary_error">Désolé, aucune app de navigation trouvée</string>
     <string name="map_delete_landmark">Supprimer le marqueur</string>
     <string name="map_move_landmark">Déplacer le marqueur</string>
     <string name="no_ele_profile_data">Ce fichier GPX est peut-être vide, ou une erreur s\'est produite.</string>

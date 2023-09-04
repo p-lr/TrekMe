@@ -37,7 +37,8 @@ class ExcursionWaypointLayer(
     private val scope: CoroutineScope,
     private val dataStateFlow: Flow<DataState>,
     private val excursionInteractor: ExcursionInteractor,
-    private val onWaypointEdit: (ExcursionWaypoint, excursionId: String) -> Unit
+    private val onWaypointEdit: (ExcursionWaypoint, excursionId: String) -> Unit,
+    private val onStartItinerary: (ExcursionWaypoint) -> Unit
 ) : MapViewModel.MarkerTapListener {
     /**
      * Correspondence between excursion ids and their [ExcursionWaypointsState].
@@ -193,6 +194,9 @@ class ExcursionWaypointLayer(
                     onMoveAction = {
                         mapState.removeCallout(calloutId)
                         morphToDynamic(wptState, x, y, mapState)
+                    },
+                    onStartItinerary = {
+                        onStartItinerary(waypoint)
                     }
                 )
             }

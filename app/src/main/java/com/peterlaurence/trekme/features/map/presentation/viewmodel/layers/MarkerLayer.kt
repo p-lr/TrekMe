@@ -33,7 +33,8 @@ class MarkerLayer(
     private val scope: CoroutineScope,
     private val dataStateFlow: Flow<DataState>,
     private val markerInteractor: MarkerInteractor,
-    private val onMarkerEdit: (Marker, UUID) -> Unit
+    private val onMarkerEdit: (Marker, UUID) -> Unit,
+    private val onStartItinerary: (Marker) -> Unit
 ) : MapViewModel.MarkerTapListener {
     /**
      * Correspondence between marker (domain) ids and their associated view state.
@@ -151,6 +152,9 @@ class MarkerLayer(
                     onMoveAction = {
                         mapState.removeCallout(calloutId)
                         morphToDynamic(markerState, x, y, mapState)
+                    },
+                    onStartItinerary = {
+                        onStartItinerary(marker)
                     }
                 )
             }

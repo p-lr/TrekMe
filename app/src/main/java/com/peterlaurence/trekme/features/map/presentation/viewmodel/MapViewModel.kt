@@ -31,7 +31,12 @@ import com.peterlaurence.trekme.features.map.domain.interactors.MarkerInteractor
 import com.peterlaurence.trekme.features.map.domain.interactors.RouteInteractor
 import com.peterlaurence.trekme.features.map.domain.models.TrackFollowServiceState
 import com.peterlaurence.trekme.features.map.domain.repository.TrackFollowRepository
+import com.peterlaurence.trekme.features.map.presentation.events.BeaconEditEvent
+import com.peterlaurence.trekme.features.map.presentation.events.ExcursionWaypointEditEvent
+import com.peterlaurence.trekme.features.map.presentation.events.ItineraryEvent
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
+import com.peterlaurence.trekme.features.map.presentation.events.MarkerEditEvent
+import com.peterlaurence.trekme.features.map.presentation.events.PlaceableEvent
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.BeaconLayer
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.DistanceLayer
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.DistanceLineState
@@ -110,9 +115,7 @@ class MapViewModel @Inject constructor(
 
     val purchaseFlow: StateFlow<Boolean> = hasOneExtendedOfferInteractor.getPurchaseFlow(viewModelScope)
 
-    val markerEditEvent: Flow<MapFeatureEvents.MarkerEditEvent> = mapFeatureEvents.navigateToMarkerEdit
-    val excursionWaypointEditEvent: Flow<MapFeatureEvents.ExcursionWaypointEditEvent> = mapFeatureEvents.navigateToExcursionWaypointEdit
-    val beaconEditEvent: Flow<MapFeatureEvents.BeaconEditEvent> = mapFeatureEvents.navigateToBeaconEdit
+    val placeableEvents: Flow<PlaceableEvent> = mapFeatureEvents.placeableEvents
     val startTrackFollowEvent: Flow<Unit> = mapFeatureEvents.startTrackFollowService
 
     private val _events = Channel<MapEvent>(1)
@@ -137,7 +140,10 @@ class MapViewModel @Inject constructor(
         dataStateFlow,
         markerInteractor,
         onMarkerEdit = { marker, mapId ->
-            mapFeatureEvents.postMarkerEditEvent(marker, mapId)
+            mapFeatureEvents.postPlaceableEvent(MarkerEditEvent(marker, mapId))
+        },
+        onStartItinerary = { marker ->
+            mapFeatureEvents.postPlaceableEvent(ItineraryEvent(marker.lat, marker.lon))
         }
     )
 
@@ -146,7 +152,10 @@ class MapViewModel @Inject constructor(
         dataStateFlow,
         excursionInteractor,
         onWaypointEdit = { waypoint, excursionId ->
-            mapFeatureEvents.postExcursionWaypointEditEvent(waypoint, excursionId)
+            mapFeatureEvents.postPlaceableEvent(ExcursionWaypointEditEvent(waypoint, excursionId))
+        },
+        onStartItinerary = {
+            mapFeatureEvents.postPlaceableEvent(ItineraryEvent(it.latitude, it.longitude))
         }
     )
 
@@ -156,7 +165,7 @@ class MapViewModel @Inject constructor(
         purchaseFlow,
         beaconInteractor,
         onBeaconEdit = { beacon, mapId ->
-            mapFeatureEvents.postBeaconEditEvent(beacon, mapId)
+            mapFeatureEvents.postPlaceableEvent(BeaconEditEvent(beacon, mapId))
         },
         mapFeatureEvents
     )

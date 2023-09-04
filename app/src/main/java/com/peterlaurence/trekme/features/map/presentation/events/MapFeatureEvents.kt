@@ -12,30 +12,11 @@ import kotlinx.coroutines.flow.*
 import java.util.*
 
 class MapFeatureEvents {
-    /* region markers */
-    private val _navigateToMarkerEdit = MutableSharedFlow<MarkerEditEvent>(0, 1, BufferOverflow.DROP_OLDEST)
-    val navigateToMarkerEdit = _navigateToMarkerEdit.asSharedFlow()
-    fun postMarkerEditEvent(marker: Marker, mapId: UUID) = _navigateToMarkerEdit.tryEmit(
-        MarkerEditEvent(marker, mapId)
-    )
-    data class MarkerEditEvent(val marker: Marker, val mapId: UUID)
+    /* region placeable */
+    private val _placeableEvents = MutableSharedFlow<PlaceableEvent>(0, 1, BufferOverflow.DROP_OLDEST)
+    val placeableEvents = _placeableEvents.asSharedFlow()
 
-    /* region excursion waypoints */
-    private val _navigateToExcursionWaypointEdit = MutableSharedFlow<ExcursionWaypointEditEvent>(0, 1, BufferOverflow.DROP_OLDEST)
-    val navigateToExcursionWaypointEdit = _navigateToExcursionWaypointEdit.asSharedFlow()
-    fun postExcursionWaypointEditEvent(waypoint: ExcursionWaypoint, excursionId: String) = _navigateToExcursionWaypointEdit.tryEmit(
-        ExcursionWaypointEditEvent(waypoint, excursionId)
-    )
-    data class ExcursionWaypointEditEvent(val waypoint: ExcursionWaypoint, val excursionId: String)
-
-    /* region beacon */
-    private val _navigateToBeaconEdit = MutableSharedFlow<BeaconEditEvent>(0, 1, BufferOverflow.DROP_OLDEST)
-    val navigateToBeaconEdit = _navigateToBeaconEdit.asSharedFlow()
-    fun postBeaconEditEvent(beacon: Beacon, mapId: UUID) = _navigateToBeaconEdit.tryEmit(
-        BeaconEditEvent(beacon, mapId)
-    )
-
-    data class BeaconEditEvent(val beacon: Beacon, val mapId: UUID)
+    fun postPlaceableEvent(event: PlaceableEvent) = _placeableEvents.tryEmit(event)
 
     private val _hasBeacons = Channel<Unit>(1)
     val hasBeaconsFlow = _hasBeacons.receiveAsFlow() // This channel-based flow works well with only one collector
@@ -82,3 +63,9 @@ class MapFeatureEvents {
     fun postTrackFollowStopEvent(event: TrackFollowServiceStopEvent) = _trackFollowStopEvent.tryEmit(event)
     /* endregion */
 }
+
+sealed interface PlaceableEvent
+data class MarkerEditEvent(val marker: Marker, val mapId: UUID): PlaceableEvent
+data class ExcursionWaypointEditEvent(val waypoint: ExcursionWaypoint, val excursionId: String): PlaceableEvent
+data class BeaconEditEvent(val beacon: Beacon, val mapId: UUID): PlaceableEvent
+data class ItineraryEvent(val latitude: Double, val longitude: Double): PlaceableEvent

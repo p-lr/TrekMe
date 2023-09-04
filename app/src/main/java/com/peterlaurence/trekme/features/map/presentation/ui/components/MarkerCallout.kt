@@ -1,14 +1,20 @@
 package com.peterlaurence.trekme.features.map.presentation.ui.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.Hyphens
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpSize
@@ -27,7 +33,8 @@ fun MarkerCallout(
     onAnimationDone: () -> Unit,
     onEditAction: () -> Unit,
     onMoveAction: () -> Unit,
-    onDeleteAction: () -> Unit
+    onDeleteAction: () -> Unit,
+    onStartItinerary: () -> Unit
 ) {
     Callout(
         shouldAnimate = shouldAnimate,
@@ -38,14 +45,34 @@ fun MarkerCallout(
             Modifier.size(size),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = title,
-                modifier = Modifier.padding(top = 8.dp, start = 8.dp, end = 8.dp),
-                fontWeight = FontWeight.Medium,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis,
-                fontSize = 14.sp
-            )
+            Box(Modifier.fillMaxWidth()) {
+                Text(
+                    text = title,
+                    modifier = Modifier
+                        .padding(top = 11.dp, start = 8.dp, end = 8.dp)
+                        .align(Alignment.TopCenter),
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                    style = LocalTextStyle.current.copy(hyphens = Hyphens.Auto),
+                    fontSize = 14.sp
+                )
+
+                Image(
+                    painter = painterResource(id = R.drawable.ic_itinerary),
+                    modifier = Modifier
+                        .padding(top = 8.dp, end = 8.dp)
+                        .clip(CircleShape)
+                        .clickable(onClick = onStartItinerary)
+                        .padding(0.dp)
+                        .alpha(1f)
+                        .size(24.dp)
+                        .align(Alignment.TopEnd),
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                    contentDescription = null
+                )
+            }
+
             Text(
                 text = subTitle,
                 modifier = Modifier.padding(vertical = 4.dp),
@@ -117,7 +144,8 @@ private fun MarkerCalloutPreview() {
             onAnimationDone = {},
             onEditAction = {},
             onMoveAction = {},
-            onDeleteAction = {}
+            onDeleteAction = {},
+            onStartItinerary = {}
         )
     }
 }

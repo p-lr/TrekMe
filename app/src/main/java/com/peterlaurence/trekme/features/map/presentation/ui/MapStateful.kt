@@ -33,7 +33,12 @@ import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingScreen
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.md_theme_light_background
+import com.peterlaurence.trekme.features.map.app.intents.itineraryToMarker
 import com.peterlaurence.trekme.features.map.app.service.TrackFollowService
+import com.peterlaurence.trekme.features.map.presentation.events.BeaconEditEvent
+import com.peterlaurence.trekme.features.map.presentation.events.ExcursionWaypointEditEvent
+import com.peterlaurence.trekme.features.map.presentation.events.ItineraryEvent
+import com.peterlaurence.trekme.features.map.presentation.events.MarkerEditEvent
 import com.peterlaurence.trekme.features.map.presentation.ui.components.*
 import com.peterlaurence.trekme.features.map.presentation.ui.screens.ErrorScaffold
 import com.peterlaurence.trekme.features.map.presentation.ui.screens.MapScreen
@@ -84,7 +89,25 @@ fun MapStateful(
         minActiveState = Lifecycle.State.RESUMED
     )
 
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
     val context = LocalContext.current
+    val itineraryError = stringResource(id = R.string.itinerary_error)
+    val ok = stringResource(id = R.string.ok_dialog)
+    LaunchedEffectWithLifecycle(flow = viewModel.placeableEvents) { event ->
+        when(event) {
+            is MarkerEditEvent -> onNavigateToMarkerEdit(event.marker.id, event.mapId)
+            is ExcursionWaypointEditEvent -> onNavigateToExcursionWaypointEdit(event.waypoint.id, event.excursionId)
+            is BeaconEditEvent -> onNavigateToBeaconEdit(event.beacon.id, event.mapId)
+            is ItineraryEvent -> {
+                val success = itineraryToMarker(event.latitude, event.longitude, context)
+                if (!success) {
+                    showSnackbar(scope, snackbarHostState, itineraryError, ok)
+                }
+            }
+        }
+    }
     LaunchedEffect(lifecycleOwner) {
         launch {
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
@@ -96,21 +119,6 @@ fun MapStateful(
         launch {
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 viewModel.checkMapLicense()
-            }
-        }
-        launch {
-            viewModel.markerEditEvent.collect {
-                onNavigateToMarkerEdit(it.marker.id, it.mapId)
-            }
-        }
-        launch {
-            viewModel.excursionWaypointEditEvent.collect {
-                onNavigateToExcursionWaypointEdit(it.waypoint.id, it.excursionId)
-            }
-        }
-        launch {
-            viewModel.beaconEditEvent.collect {
-                onNavigateToBeaconEdit(it.beacon.id, it.mapId)
             }
         }
         launch {
@@ -135,10 +143,6 @@ fun MapStateful(
         }
     }
 
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
-
-    val ok = stringResource(id = R.string.ok_dialog)
     val outOfBounds = stringResource(id = R.string.map_screen_loc_outside_map)
     var showTrackFollowDialog by rememberSaveable { mutableStateOf(false) }
     LaunchedEffectWithLifecycle(flow = viewModel.events) { event ->
