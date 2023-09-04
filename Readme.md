@@ -24,6 +24,7 @@
   * [Visualize a recording in real time](#visualize-a-recording-in-real-time)
   * [Import a GPX track](#import-a-gpx-track)
   * [GPX recording](#gpx-recording)
+  * [Follow a track](#follow-a-track)
   * [Manage excursions](#manage-excursions)
 5. [Settings](#settings)
   * [Start on the last map](#start-on-the-last-map)
@@ -221,7 +222,6 @@ seconds before the speed can be displayed.
 <p align="center">
 <img src="doc/images/speed.jpg" width="300">
 </p>
-Then choose "Show the speed". If your screen is large enough, there is an icon to directly access it.
 
 ### Add markers
 
@@ -250,16 +250,12 @@ From here you can:
 Here is the marker edition view:
 
 <p align="center">
-<img src="doc/images/marker-edit.jpg" width="300">
+<img src="doc/images/marker-edit-en.jpg" width="300">
 </p>
-
-Nothing is changed until you save your changes.
 
 ### Add landmarks
 
 A landmark is a specific marker. A purple line is drawn between it and your current position. So it helps when you need to always know the direction of a specific place, which may be outside of the area that your screen covers.
-
-To add a landmark, it is the same logic as for markers. But this time we use the lighthouse icon.
 
 <p align="center">
 <img src="doc/images/landmark-1.jpg" width="300">
@@ -284,7 +280,7 @@ Then select "Lock on position". Now, everytime the application gets a location u
 ### Visualize a recording in real time
 
 When you start a recording from the "GPX Record" option menu, the recording can be seen in real time on any map that covers your current area.
-It appears as a yellow route.
+It appears as an orange route.
 
 Even if you close TrekMe, you will find your live route the next time you open it, until you stop the recording.
 
@@ -337,6 +333,33 @@ If you have Android 10 or above, you need to:
 - ensure that the battery optimization is disabled for TrekMe 
 
 Otherwise, some points won't be recorded and straight lines will appear on the track.
+
+### Follow a track
+
+Sometimes, we want to use the phone as little as possible. However, we take the risk to take a wrong
+path and realize it a bit too late.
+
+To avoid this problem, the track following feature alerts you when you get off the track. The alert
+threshold is 50m by default but can be changed in the settings. This feature is only available with
+"TrekMe Extended" offers.
+
+The track following can be started from any map, in the top-right menu:
+
+<p align="center">
+<img src="doc/images/track-follow-en.jpg" width="300">
+</p>
+
+Then, select the track to follow by pressing on it on the map. The selected track is then highlighted
+with a thin black stroke:
+
+<p align="center">
+<img src="doc/images/track-follow-selected.jpg" width="300">
+</p>
+
+The track following feature runs as a background service, which only works when all below conditions are met:
+- Battery optimization is disabled for TrekMe
+- Location authorization is set to "allow all the time"
+- Location is enabled on the device
 
 ### Manage excursions
 

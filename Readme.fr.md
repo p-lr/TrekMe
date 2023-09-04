@@ -24,6 +24,7 @@
   * [Visualiser un enregistrement en temps réel](#visualiser-un-enregistrement-en-temps-réel)
   * [Importer une trace GPX](#import-dun-fichier-gpx)
   * [S'enregistrer au format GPX](#enregistrement-gpx)
+  * [Suivre une trace](#suivre-une-trace)
   * [Gérer les excursions](#gérer-les-excursions)
 5. [Paramètres](#paramètres)
   * [Démarrer sur la dernière carte](#démarrer-sur-la-dernière-carte)
@@ -263,23 +264,17 @@ On peut alors :
 * Déplacer le marqueur (il reprend sa forme avec les flèches qui tournent, indiquant qu'il peut être 
 déplacé)
 
-Voici un exemple de fiche d'un marqueur :
-
 <p align="center">
-<img src="doc/images/marker-edit.jpg" width="300">
+<img src="doc/images/marker-edit-fr.jpg" width="300">
 </p>
 
 La plupart du temps, on se contente de modifier seulement le nom ou le commentaire.
-Rien n'est modifié tant que vous ne sauvegardez pas vos modifications (bouton "disquette" en haut).
 
 ### Ajout de points de repère
 
 Un point de repère est un marqueur spécial. Une ligne de couleur violette se dessine entre votre 
 position actuelle et le repère. De cette manière vous pouvez vous fixer un objectif éloigné et 
-toujours voir à l'écran la direction vers ce repère.
-
-Pour ajouter un point de repère, c'est le même principe que pour les marqueurs mais on utilise 
-l'icone de phare (comme un amer en navigation maritime).
+toujours voir à l'écran la direction du repère.
 
 <p align="center">
 <img src="doc/images/landmark-1.jpg" width="300">
@@ -307,7 +302,7 @@ Puis sélectionnez "Verrouiller sur la position". Dans ce mode, à chaque fois q
 ### Visualiser un enregistrement en temps réel
 
 Par défaut, lorsque vous lancez un enregistrement GPX (depuis le menu "Enregistrement du parcours"), 
-l'enregistrement en cours s'affiche sur votre carte, sous forme de trace jaune.
+l'enregistrement en cours s'affiche sur votre carte, sous forme de trace orange.
 Cela ne fonctionne que pour les cartes qui couvrent la zone dans laquelle vous êtes au moment de 
 l'enregistrement.
 
@@ -363,6 +358,32 @@ Si vous avez Android 10 ou plus, vous devez vous assurer :
 - que l'optimisation de la batterie est désactivée pour TrekMe.
 
 Sinon, l'enregistrement n'enregistrera parfois pas de points et des lignes droites apparaîtront.
+
+### Suivre une trace
+
+Parfois, on souhaite utiliser le moins possible le téléphone. Mais on prend le risque de se tromper 
+de chemin et de s'en apercevoir assez tard, ce qui peut significativement prolonger la randonnée.
+
+Pour éviter ce problème, le suivi de trace permet d'être alerté quand on s'écarte de plus de 50m (par défaut)
+d'une trace. Cette fonctionnalité n'est disponible qu'avec les offres "TrekMe Extended".
+Le suivi de trace se lance depuis une carte, dans le menu en haut à droite:
+
+<p align="center">
+<img src="doc/images/track-follow-fr.jpg" width="300">
+</p>
+
+Puis, sélectionnez la trace à suivre en appuyant dessus sur la carte. La trace sélectionnée prend 
+alors un léger contour noir.
+
+<p align="center">
+<img src="doc/images/track-follow-selected.jpg" width="300">
+</p>
+
+Le suivi de trace fonctionne grâce à un service en tâche de fond. Ce service ne peut fonctionner que 
+si toutes les conditions suivantes sont remplies :
+- L'optimisation de la batterie est désactivée pour TrekMe
+- L'autorisation de localisation est réglée sur "toujours autoriser"
+- La localisation est activée sur l'appareil
 
 ### Gérer les excursions
 
