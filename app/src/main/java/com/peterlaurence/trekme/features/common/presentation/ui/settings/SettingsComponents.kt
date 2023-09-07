@@ -17,17 +17,24 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -84,7 +91,7 @@ fun <T> ListSetting(
     subTitle: String? = null,
     onValueSelected: (index: Int, v: T, name: String) -> Unit = { _, _, _ -> }
 ) {
-    var isShowingDialog by remember { mutableStateOf(false) }
+    var isShowingDialog by rememberSaveable { mutableStateOf(false) }
 
     Column(
         Modifier
@@ -119,10 +126,12 @@ fun <T> ListSetting(
                 Column {
                     values.forEachIndexed { index, pair ->
                         Row(
-                            modifier = Modifier.fillMaxWidth().clickable {
-                                isShowingDialog = false
-                                onValueSelected(index, pair.first, pair.second)
-                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    isShowingDialog = false
+                                    onValueSelected(index, pair.first, pair.second)
+                                },
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             RadioButton(
@@ -147,6 +156,77 @@ fun <T> ListSetting(
     }
 }
 
+@Composable
+fun EditTextSetting(name: String, value: String, onValueChanged: (String) -> Unit) {
+    var isShowingDialog by rememberSaveable { mutableStateOf(false) }
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background)
+            .height(settingHeight)
+            .clickable { isShowingDialog = true }
+            .padding(start = paddingStart),
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(text = name, fontSize = mainFontSize, color = MaterialTheme.colorScheme.onBackground)
+        Text(
+            text = value,
+            fontSize = subtitleFontSize,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+        )
+    }
+
+
+    if (isShowingDialog) {
+        var textFieldValue by remember { mutableStateOf(TextFieldValue(value, selection = TextRange(value.length))) }
+        val focusRequester = remember { FocusRequester() }
+
+        AlertDialog(
+            title = {
+                Text(
+                    text = name,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            },
+            text = {
+                TextField(
+                    value = textFieldValue,
+                    onValueChange = { textFieldValue = it },
+                    modifier = Modifier.focusRequester(focusRequester)
+                )
+            },
+            onDismissRequest = { isShowingDialog = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        isShowingDialog = false
+                        onValueChanged(textFieldValue.text)
+                    }
+                ) {
+                    Text(text = stringResource(id = R.string.ok_dialog))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        isShowingDialog = false
+                        textFieldValue = textFieldValue.copy(text = value)
+                    }
+                ) {
+                    Text(text = stringResource(id = R.string.cancel_dialog_string))
+                }
+            }
+        )
+
+        LaunchedEffect(Unit) {
+            runCatching { focusRequester.requestFocus() }
+        }
+    }
+}
+
 private val mainFontSize = 16.sp
 private val subtitleFontSize = 14.sp
 
@@ -163,6 +243,8 @@ private fun SettingPreview() {
 
         var selectedIndex by remember { mutableIntStateOf(0) }
         var subTitle by remember { mutableStateOf("2") }
+
+        var name by remember { mutableStateOf("Mountain View") }
 
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) }
@@ -188,6 +270,7 @@ private fun SettingPreview() {
                         }
                     }
                 )
+                EditTextSetting("Name", name, onValueChanged = { v -> name = v })
             }
         }
     }
