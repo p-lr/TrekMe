@@ -218,7 +218,7 @@ fun ElevationGraph(
             }
 
             /* Draw elevation ticks lines */
-            for (i in niceScale.niceMin.toInt()..niceScale.niceMax.toInt() step niceScale.tickSpacing.toInt()) {
+            for (i in niceScale.niceMin.toInt()..niceScale.niceMax.toInt() step niceScale.tickSpacing.toInt().coerceAtLeast(1)) {
                 val ele = i.toDouble()
 
                 if (ele in yRange) {
