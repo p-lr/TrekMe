@@ -36,6 +36,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
@@ -44,7 +45,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun SettingDivider() {
-    Divider()
+    Divider(thickness = Dp.Hairline)
 }
 
 @Composable
@@ -62,13 +63,13 @@ fun HeaderSetting(name: String) {
 }
 
 @Composable
-fun ButtonSetting(name: String, subTitle: String? = null, onClick: () -> Unit = {}) {
+fun ButtonSetting(name: String, subTitle: String? = null, enabled: Boolean, onClick: () -> Unit = {}) {
     Column(
         Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background)
-            .height(settingHeight)
-            .clickable(onClick = onClick)
+            .height(getSettingHeight(hasSubtitle = subTitle != null))
+            .clickable(onClick = onClick, enabled = enabled)
             .padding(start = paddingStart),
         verticalArrangement = Arrangement.Center
     ) {
@@ -89,7 +90,7 @@ fun <T> ListSetting(
     values: List<Pair<T, String>>,
     selectedIndex: Int,
     subTitle: String? = null,
-    onValueSelected: (index: Int, v: T, name: String) -> Unit = { _, _, _ -> }
+    onValueSelected: (index: Int, v: T) -> Unit = { _, _ -> }
 ) {
     var isShowingDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -97,7 +98,7 @@ fun <T> ListSetting(
         Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background)
-            .height(settingHeight)
+            .height(getSettingHeight(hasSubtitle = subTitle != null))
             .clickable { isShowingDialog = true }
             .padding(start = paddingStart),
         verticalArrangement = Arrangement.Center
@@ -130,7 +131,7 @@ fun <T> ListSetting(
                                 .fillMaxWidth()
                                 .clickable {
                                     isShowingDialog = false
-                                    onValueSelected(index, pair.first, pair.second)
+                                    onValueSelected(index, pair.first)
                                 },
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
@@ -138,7 +139,7 @@ fun <T> ListSetting(
                                 selected = index == selectedIndex,
                                 onClick = {
                                     isShowingDialog = false
-                                    onValueSelected(index, pair.first, pair.second)
+                                    onValueSelected(index, pair.first)
                                 }
                             )
                             Text(text = pair.second, fontSize = 18.sp)
@@ -164,7 +165,7 @@ fun EditTextSetting(name: String, value: String, onValueChanged: (String) -> Uni
         Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background)
-            .height(settingHeight)
+            .height(getSettingHeight(hasSubtitle = true))
             .clickable { isShowingDialog = true }
             .padding(start = paddingStart),
         verticalArrangement = Arrangement.Center
@@ -231,7 +232,10 @@ private val mainFontSize = 16.sp
 private val subtitleFontSize = 14.sp
 
 private val paddingStart = 72.dp
-private val settingHeight = 72.dp
+private val settingHeightWithSubtitle = 72.dp
+private val settingHeightNoSubtitle = 53.dp
+
+private fun getSettingHeight(hasSubtitle: Boolean) = if (hasSubtitle) settingHeightWithSubtitle else settingHeightNoSubtitle
 
 
 @Preview
@@ -252,7 +256,7 @@ private fun SettingPreview() {
             Column(Modifier.padding(it)) {
                 SettingDivider()
                 HeaderSetting("Map")
-                ButtonSetting(name = "Size", subTitle = "266.2 Mo")
+                ButtonSetting(name = "Size", subTitle = "266.2 Mo", enabled = true)
                 ListSetting(
                     name = "Number of points",
                     selectedIndex = selectedIndex,
@@ -262,7 +266,7 @@ private fun SettingPreview() {
                         "value3" to "6"
                     ),
                     subTitle = subTitle,
-                    onValueSelected = { i, v, name ->
+                    onValueSelected = { i, v ->
                         selectedIndex = i
                         subTitle = name
                         scope.launch {

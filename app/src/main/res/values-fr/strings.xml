@@ -220,6 +220,7 @@
     <string name="storage_perm_denied">Veuillez activer la permission de stockage</string>
     <string name="map_image_import_ok">Image changée</string>
     <string name="map_image_import_error">Erreur lors du changement d\'image :(</string>
+    <string name="map_settings_error">Désolé, une erreur est survenue</string>
     <string name="calibration_projection_error">Erreur lors du changement de projection :(</string>
     <string name="battery_warn_message_gpx_recording">L\'enregistrement GPX sera probablement interrompu, car l\'optimisation de la batterie est activée
         pour TrekMe.\nUn enregistrement GPX est lancé sous forme de service Android, qui tourne en tâche de fond.

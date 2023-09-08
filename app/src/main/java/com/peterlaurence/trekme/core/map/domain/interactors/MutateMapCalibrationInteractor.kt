@@ -17,7 +17,7 @@ class MutateMapCalibrationInteractor @Inject constructor(
      */
     suspend fun mutateProjection(map: Map, projectionName: String?) = runCatching {
         val projectionType = projectionHashMap[projectionName]
-        val projection = projectionType?.newInstance()
+        val projection = projectionType?.getDeclaredConstructor()?.newInstance()
         val oldConfig = map.configSnapshot
         val newConfig = oldConfig.copy(calibration = oldConfig.calibration?.copy(projection = projection))
 

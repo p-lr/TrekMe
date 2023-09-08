@@ -3,6 +3,8 @@ package com.peterlaurence.trekme.features.maplist.presentation.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,7 +25,8 @@ import ovh.plrapps.mapcompose.ui.MapUI
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalibrationStateful(
-    viewModel: CalibrationViewModel
+    viewModel: CalibrationViewModel,
+    onBackClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val events = viewModel.acknowledgeableEvents
@@ -55,6 +58,16 @@ fun CalibrationStateful(
             }
 
             Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = { Text(text = stringResource(id = R.string.calibration_preferences_category)) },
+                        navigationIcon = {
+                            IconButton(onClick = onBackClick) {
+                                Icon(Icons.Filled.ArrowBack, contentDescription = "")
+                            }
+                        }
+                    )
+                },
                 snackbarHost = { SnackbarHost(snackbarHostState) }
             ) { paddingValues ->
                 Column(Modifier.padding(paddingValues)) {

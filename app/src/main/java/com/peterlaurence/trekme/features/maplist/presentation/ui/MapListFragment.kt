@@ -56,7 +56,7 @@ class MapListFragment : Fragment() {
                         },
                         onNavigateToMapSettings = {
                             val action =
-                                MapListFragmentDirections.actionMapListFragmentToMapSettingsGraph()
+                            MapListFragmentDirections.actionMapListFragmentToMapSettingsFragment2()
                             findNavController().navigate(action)
                         },
                         onNavigateToMap = { mapId ->

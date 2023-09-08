@@ -9,13 +9,13 @@
         android:id="@+id/mapListFragment"
         android:name="com.peterlaurence.trekme.features.maplist.presentation.ui.MapListFragment"
         android:label="@string/fragment_map_list">
-        <action
-            android:id="@+id/action_mapListFragment_to_mapSettingsGraph"
-            app:destination="@id/map_settings_graph" />
         <argument
             android:name="scrollToPosition"
             app:argType="integer"
             android:defaultValue="-1" />
+        <action
+            android:id="@+id/action_mapListFragment_to_mapSettingsFragment2"
+            app:destination="@id/mapSettingsFragment2" />
     </fragment>
     <fragment
         android:id="@+id/settingsFragment"
@@ -101,21 +101,6 @@
         android:label="MapFragment" >
     </fragment>
     <action android:id="@+id/action_global_mapFragment" app:destination="@id/mapFragment"/>
-    <navigation android:id="@+id/map_settings_graph"
-        app:startDestination="@id/mapSettingsFragment">
-        <fragment
-            android:id="@+id/mapSettingsFragment"
-            android:name="com.peterlaurence.trekme.features.maplist.presentation.ui.MapSettingsFragment"
-            android:label="MapSettingsFragment">
-            <action
-                android:id="@+id/action_mapSettingsFragment_to_calibrationFragment"
-                app:destination="@id/calibrationFragment" />
-        </fragment>
-        <fragment
-            android:id="@+id/calibrationFragment"
-            android:name="com.peterlaurence.trekme.features.maplist.presentation.ui.CalibrationFragment"
-            android:label="CalibrationFragment" />
-    </navigation>
     <fragment
         android:id="@+id/shopFragment"
         android:name="com.peterlaurence.trekme.features.shop.presentation.ui.ShopFragment"
@@ -144,4 +129,16 @@
         android:id="@+id/excursionSearchFragment"
         android:name="com.peterlaurence.trekme.features.excursionsearch.presentation.ui.ExcursionSearchFragment"
         android:label="@string/fragment_excursion_search" /><action android:id="@+id/action_global_excursionSearchFragment" app:destination="@id/excursionSearchFragment"/>
+    <fragment
+        android:id="@+id/mapSettingsFragment2"
+        android:name="com.peterlaurence.trekme.features.maplist.presentation.ui.MapSettingsFragment2"
+        android:label="MapSettingsFragment2" >
+        <action
+            android:id="@+id/action_mapSettingsFragment2_to_calibrationFragment2"
+            app:destination="@id/calibrationFragment2" />
+    </fragment>
+    <fragment
+        android:id="@+id/calibrationFragment2"
+        android:name="com.peterlaurence.trekme.features.maplist.presentation.ui.CalibrationFragment2"
+        android:label="CalibrationFragment2" />
 </navigation>

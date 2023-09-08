@@ -1,7 +1,6 @@
 package com.peterlaurence.trekme.core.map.domain.repository
 
 import com.peterlaurence.trekme.core.map.domain.models.Map
-import com.peterlaurence.trekme.features.maplist.presentation.ui.MapSettingsFragment
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,7 +11,7 @@ import java.util.UUID
  *
  * * the [Map] list
  * * the [Map] that should be used when navigating to the feature showing the map.
- * * the [Map] that should be displayed when navigating to the [MapSettingsFragment]
+ * * the [Map] that should be displayed when navigating to the map settings
  */
 class MapRepository {
     private val _mapListFlow = MutableStateFlow<MapListState>(Loading)

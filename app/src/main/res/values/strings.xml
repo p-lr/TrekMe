@@ -100,6 +100,7 @@
     <string name="map_settings_frgmt_title">Map settings</string>
     <string name="map_image_import_ok">Image set successfully</string>
     <string name="map_image_import_error">Error while changing the image :(</string>
+    <string name="map_settings_error">Sorry, something went wrong</string>
 
     <!-- Save map dialog fragment -->
     <string name="archive_dialog_title">Save map</string>
@@ -142,7 +143,7 @@
     <string name="fourth_calibration_pt" translatable="false">Fourth calibration point</string>
 
 
-    <!-- Keys and ids of graphical components -->
+    <!-- Map settings -->
     <string name="preference_change_image_key" translatable="false">pref_image_preference</string>
     <string name="preference_projection_key" translatable="false">pref_projection_preference</string>
     <string name="preference_numpoints_key" translatable="false">pref_points_number_preference</string>
@@ -157,6 +158,8 @@
     <string name="elevation_short">Ele</string>
     <string name="projected_x_short">E</string>
     <string name="projected_y_short">N</string>
+    <string name="pseudo_mercator" translatable="false">Pseudo Mercator</string>
+    <string name="utm" translatable="false">Universal Transverse Mercator</string>
 
     <!-- MapImport fragment -->
     <string name="fragment_map_import" translatable="false">fragment_map_import</string>

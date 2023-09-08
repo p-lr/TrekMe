@@ -2,26 +2,24 @@ package com.peterlaurence.trekme.features.maplist.presentation.viewmodel
 
 import android.app.Application
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.interactors.*
 import com.peterlaurence.trekme.core.map.domain.models.CalibrationMethod
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
-import com.peterlaurence.trekme.features.maplist.presentation.events.*
-import com.peterlaurence.trekme.util.stackTraceAsString
+import com.peterlaurence.trekme.util.ResultL
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import java.util.*
 import javax.inject.Inject
 
 /**
- * The view-model for the MapSettingsFragment.
+ * The view-model for the map settings.
  *
- * @author P.Laurence on 14/08/20
+ * @since 14/08/20
  */
 @HiltViewModel
 class MapSettingsViewModel @Inject constructor(
@@ -33,35 +31,36 @@ class MapSettingsViewModel @Inject constructor(
     private val archiveMapInteractor: ArchiveMapInteractor,
     private val mapRepository: MapRepository
 ) : ViewModel() {
-
-    private val _mapImageImportEvents =
-        MutableSharedFlow<MapImageImportResult>(0, 1, BufferOverflow.DROP_OLDEST)
-    val mapImageImportEvents = _mapImageImportEvents.asSharedFlow()
-
     val mapFlow: StateFlow<Map?> = mapRepository.settingsMapFlow
+
+    val mapSize: MutableStateFlow<ResultL<Long?>> = MutableStateFlow(ResultL.success(mapFlow.value?.sizeInBytes?.value))
+
+    private val _mapImageImportEvent = Channel<Boolean>(1)
+    val mapImageImportEvent = _mapImageImportEvent.receiveAsFlow()
 
     /**
      * Changes the thumbnail of a [Map].
      */
     fun setMapImage(mapId: UUID, uri: Uri) = viewModelScope.launch {
         val map = mapRepository.getMap(mapId) ?: return@launch
+        setMapThumbnailInteractor.setMapThumbnail(map, uri)
+    }
 
-        try {
-            setMapThumbnailInteractor.setMapThumbnail(map, uri).onSuccess {
-                _mapImageImportEvents.tryEmit(MapImageImportResult(true))
-            }.onFailure {
-                _mapImageImportEvents.tryEmit(MapImageImportResult(false))
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, e.stackTraceAsString())
-            _mapImageImportEvents.tryEmit(MapImageImportResult(false))
+    /**
+     * Changes the thumbnail of a [Map].
+     */
+    fun setMapImage(map: Map, uri: Uri) = viewModelScope.launch {
+        setMapThumbnailInteractor.setMapThumbnail(map, uri).onSuccess {
+            _mapImageImportEvent.send(true)
+        }.onFailure {
+            _mapImageImportEvent.send(false)
         }
     }
 
     /**
      * Start zipping a map and write the zip archive to the directory defined by the provided [uri].
      * Internally uses a [Flow] which only emits distinct events. Those events are listened by the
-     * main activity, and not the [MapSettingsFragment], because the user might leave this view ;
+     * main activity, because the user might leave this view ;
      * we want to reliably inform the user when this task is finished.
      */
     fun archiveMap(map: Map, uri: Uri) {
@@ -74,11 +73,11 @@ class MapSettingsViewModel @Inject constructor(
         }
     }
 
-    fun setCalibrationPointsNumber(map: Map, numberStr: String?) {
-        val newCalibrationMethod = when (numberStr) {
-            "2" -> CalibrationMethod.SIMPLE_2_POINTS
-            "3" -> CalibrationMethod.CALIBRATION_3_POINTS
-            "4" -> CalibrationMethod.CALIBRATION_4_POINTS
+    fun setCalibrationPointsNumber(map: Map, number: Int) {
+        val newCalibrationMethod = when (number) {
+            2 -> CalibrationMethod.SIMPLE_2_POINTS
+            3 -> CalibrationMethod.CALIBRATION_3_POINTS
+            4 -> CalibrationMethod.CALIBRATION_4_POINTS
             else -> CalibrationMethod.SIMPLE_2_POINTS
         }
 
@@ -91,9 +90,12 @@ class MapSettingsViewModel @Inject constructor(
         mutateMapCalibrationInteractor.mutateProjection(map, projectionName)
     }
 
-    suspend fun computeMapSize(map: Map): Long? {
-        return updateMapSizeInteractor.updateMapSize(map).getOrNull()
+    fun computeMapSize(map: Map) = viewModelScope.launch {
+        mapSize.value = ResultL.loading()
+        updateMapSizeInteractor.updateMapSize(map).onSuccess {
+            mapSize.value = ResultL.success(it)
+        }.onFailure {
+            mapSize.value = ResultL.success(null)
+        }
     }
 }
-
-private const val TAG = "MapSettingsViewModel.kt"
