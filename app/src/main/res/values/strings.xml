@@ -97,6 +97,8 @@
 
     <!-- Map Settings fragment -->
     <string name="fragment_settings" translatable="false">SettingsFragment</string>
+    <string name="map_settings_show_advanced">Show advanced settings</string>
+    <string name="map_settings_hide_advanced">Hide advanced settings</string>
     <string name="map_settings_frgmt_title">Map settings</string>
     <string name="map_image_import_ok">Image set successfully</string>
     <string name="map_image_import_error">Error while changing the image :(</string>

@@ -426,6 +426,8 @@
     <string name="go_to_track_on_map">Voir sur la carte</string>
     <string name="tracks_manage_frgmt_title">Gestion des traces</string>
     <string name="settings_frgmt_title">Réglages</string>
+    <string name="map_settings_show_advanced">Afficher options avancées</string>
+    <string name="map_settings_hide_advanced">Cacher options avancées</string>
     <string name="map_settings_frgmt_title">Réglages de carte</string>
     <string name="center_on_track">Centrez directement sur une trace depuis la gestion des traces d\'une carte.</string>
     <string name="define_elevation_fix">Définissez une correction d\'altitude GPS.</string>

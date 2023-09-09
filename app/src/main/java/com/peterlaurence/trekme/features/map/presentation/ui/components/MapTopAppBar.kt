@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.features.map.presentation.ui
+package com.peterlaurence.trekme.features.map.presentation.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -22,9 +22,6 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.flowlayout.FlowMainAxisAlignment
 import com.peterlaurence.trekme.features.common.presentation.ui.flowlayout.FlowRow
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.features.map.presentation.ui.components.Beacon
-import com.peterlaurence.trekme.features.map.presentation.ui.components.LandMark
-import com.peterlaurence.trekme.features.map.presentation.ui.components.Marker
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
