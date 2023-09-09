@@ -327,8 +327,10 @@ private fun TrackTopAppbar(
                 TextField(
                     value = name,
                     onValueChange = { name = it },
-                    colors = TextFieldDefaults.textFieldColors(
-                        containerColor = Color.Transparent,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        disabledContainerColor = Color.Transparent,
                     )
                 )
             },
