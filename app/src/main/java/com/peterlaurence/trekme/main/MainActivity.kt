@@ -117,7 +117,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             onDownloadFinished = { uuid ->
                 /* Only if the user is still on the WmtsFragment, navigate to the map list */
                 if (getString(R.string.map_wmts_label) == navController.currentDestination?.label) {
-                    showMapListFragment(uuid)
+                    showMapListFragment()
                 }
                 val snackbar = showSnackbar(
                     getString(R.string.service_download_finished),
@@ -327,20 +327,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         navController.navigate(R.id.action_global_mapFragment)
     }
 
-    /**
-     * Navigate to the map-list fragment, optionally providing the id of the map the map-list fragment
-     * should immediately scroll to.
-     */
-    private fun showMapListFragment(mapId: UUID? = null) {
+    private fun showMapListFragment() {
         if (getString(R.string.fragment_map_list) != navController.currentDestination?.label) {
-            val action = NavGraphDirections.actionGlobalMapListFragment().apply {
-                if (mapId != null) {
-                    val index = viewModel.getMapIndex(mapId)
-                    if (index != -1) {
-                        scrollToPosition = index
-                    }
-                }
-            }
+            val action = NavGraphDirections.actionGlobalMapListFragment()
             val options = navOptions {
                 popUpTo(R.id.mapListFragment) {
                     inclusive = true

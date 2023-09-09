@@ -8,15 +8,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.features.maplist.presentation.ui.screens.MapListStateful
-import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapListViewModel
-import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapSettingsViewModel
+import com.peterlaurence.trekme.features.maplist.presentation.ui.navigation.MapListGraph
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -25,8 +21,6 @@ import javax.inject.Inject
  */
 @AndroidEntryPoint
 class MapListFragment : Fragment() {
-    private val mapListViewModel: MapListViewModel by activityViewModels()
-    private val mapSettingsViewModel: MapSettingsViewModel by viewModels()
 
     @Inject
     lateinit var appEventBus: AppEventBus
@@ -47,22 +41,14 @@ class MapListFragment : Fragment() {
 
             setContent {
                 TrekMeTheme {
-                    MapListStateful(
-                        mapListViewModel,
-                        mapSettingsViewModel,
+                    MapListGraph(
                         onNavigateToMapCreate = {
                             val navController = findNavController()
                             navController.navigate(R.id.action_global_mapCreateGraph)
-                        },
-                        onNavigateToMapSettings = {
-                            val action =
-                            MapListFragmentDirections.actionMapListFragmentToMapSettingsFragment2()
-                            findNavController().navigate(action)
-                        },
+                                                },
                         onNavigateToMap = { mapId ->
                             val navController = findNavController()
                             if (navController.currentDestination?.id == R.id.mapListFragment) {
-                                mapListViewModel.setMap(mapId)
                                 navController.navigate(R.id.action_global_mapFragment)
                             }
                         },

@@ -16,6 +16,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.models.CalibrationMethod
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.*
@@ -25,7 +26,7 @@ import ovh.plrapps.mapcompose.ui.MapUI
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalibrationStateful(
-    viewModel: CalibrationViewModel,
+    viewModel: CalibrationViewModel = hiltViewModel(),
     onBackClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()

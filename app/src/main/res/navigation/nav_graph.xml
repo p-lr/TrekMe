@@ -9,13 +9,6 @@
         android:id="@+id/mapListFragment"
         android:name="com.peterlaurence.trekme.features.maplist.presentation.ui.MapListFragment"
         android:label="@string/fragment_map_list">
-        <argument
-            android:name="scrollToPosition"
-            app:argType="integer"
-            android:defaultValue="-1" />
-        <action
-            android:id="@+id/action_mapListFragment_to_mapSettingsFragment2"
-            app:destination="@id/mapSettingsFragment2" />
     </fragment>
     <fragment
         android:id="@+id/settingsFragment"
@@ -128,17 +121,6 @@
     <fragment
         android:id="@+id/excursionSearchFragment"
         android:name="com.peterlaurence.trekme.features.excursionsearch.presentation.ui.ExcursionSearchFragment"
-        android:label="@string/fragment_excursion_search" /><action android:id="@+id/action_global_excursionSearchFragment" app:destination="@id/excursionSearchFragment"/>
-    <fragment
-        android:id="@+id/mapSettingsFragment2"
-        android:name="com.peterlaurence.trekme.features.maplist.presentation.ui.MapSettingsFragment2"
-        android:label="MapSettingsFragment2" >
-        <action
-            android:id="@+id/action_mapSettingsFragment2_to_calibrationFragment2"
-            app:destination="@id/calibrationFragment2" />
-    </fragment>
-    <fragment
-        android:id="@+id/calibrationFragment2"
-        android:name="com.peterlaurence.trekme.features.maplist.presentation.ui.CalibrationFragment2"
-        android:label="CalibrationFragment2" />
+        android:label="@string/fragment_excursion_search" />
+    <action android:id="@+id/action_global_excursionSearchFragment" app:destination="@id/excursionSearchFragment"/>
 </navigation>

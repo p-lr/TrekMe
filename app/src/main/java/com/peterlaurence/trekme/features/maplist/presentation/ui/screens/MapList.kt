@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.scrollbar.drawVerticalScrollbar
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
@@ -35,8 +36,8 @@ import java.util.*
 
 @Composable
 fun MapListStateful(
-    mapListViewModel: MapListViewModel,
-    mapSettingsViewModel: MapSettingsViewModel,
+    mapListViewModel: MapListViewModel = hiltViewModel(),
+    mapSettingsViewModel: MapSettingsViewModel = hiltViewModel(),
     onNavigateToMapCreate: () -> Unit,
     onNavigateToMapSettings: () -> Unit,
     onNavigateToMap: (UUID) -> Unit,
@@ -44,6 +45,7 @@ fun MapListStateful(
 ) {
     val intents = object : MapListIntents {
         override fun onMapClicked(mapId: UUID) {
+            mapListViewModel.setMap(mapId)
             onNavigateToMap(mapId)
         }
 
