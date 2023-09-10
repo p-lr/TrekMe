@@ -3,7 +3,15 @@ package com.peterlaurence.trekme.features.map.presentation.ui.components
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
@@ -37,6 +45,7 @@ fun GpsDataOverlay(
     location: Location?,
     isElevationModifiable: Boolean,
     elevationFix: Int,
+    lastUpdateInSeconds: Long?,
     onFixElevationClick: () -> Unit = {}
 ) {
     Column(
@@ -56,7 +65,9 @@ fun GpsDataOverlay(
                 color = colorResource(id = R.color.colorPrimaryTextWhite),
                 fontFamily = FontFamily.Monospace
             )
-            InternalGps, null -> { /* Nothing to do */ }
+
+            /* Nothing to do */
+            InternalGps, null -> {}
         }
         KeyValueRow(key = stringResource(id = R.string.latitude_short),
             value = location?.latitude?.let { UnitFormatter.formatLatLon(location.latitude) }
@@ -65,11 +76,13 @@ fun GpsDataOverlay(
             value = location?.longitude?.let { UnitFormatter.formatLatLon(location.longitude) }
                 ?: "")
         Row(
-            Modifier.fillMaxWidth().then(
-                if (isElevationModifiable) {
-                    Modifier.clickable(onClick = onFixElevationClick)
-                } else Modifier
-            ),
+            Modifier
+                .fillMaxWidth()
+                .then(
+                    if (isElevationModifiable) {
+                        Modifier.clickable(onClick = onFixElevationClick)
+                    } else Modifier
+                ),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -89,6 +102,13 @@ fun GpsDataOverlay(
                     contentDescription = null
                 )
             }
+        }
+
+        if (lastUpdateInSeconds != null) {
+            KeyValueRow(
+                key = stringResource(id = R.string.update_short),
+                value = UnitFormatter.formatDuration(lastUpdateInSeconds)
+            )
         }
     }
 }
@@ -114,6 +134,7 @@ private fun GpsDataOverlayPreview() {
                 locationProducerInfo = LocationProducerBtInfo("Garmin", "")
             ),
             isElevationModifiable = true,
+            lastUpdateInSeconds = 4,
             elevationFix = 0
         )
     }

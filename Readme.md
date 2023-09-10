@@ -277,7 +277,7 @@ Sometimes, you want the view to automatically follow your position. To do that, 
 </p>
 
 Then select "Lock on position". Now, everytime the application gets a location update (approximately 
-every 2 seconds), the view centers on this new location.
+every 2 seconds, up to 5 seconds), the view centers on this new location.
 
 ### Visualize a recording in real time
 

@@ -157,7 +157,8 @@
     <string name="wgs84_switch">WGS84 lat/lng</string>
     <string name="latitude_short">Lat</string>
     <string name="longitude_short">Lng</string>
-    <string name="elevation_short">Ele</string>
+    <string name="elevation_short">Ele</string>.
+    <string name="update_short">Δt\ </string>
     <string name="projected_x_short">E</string>
     <string name="projected_y_short">N</string>
     <string name="pseudo_mercator" translatable="false">Pseudo Mercator</string>

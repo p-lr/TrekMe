@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -13,6 +14,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.features.map.presentation.ui.components.DistanceLine
 import com.peterlaurence.trekme.features.map.presentation.ui.components.ElevationFixDialog
@@ -23,7 +27,10 @@ import com.peterlaurence.trekme.features.map.presentation.ui.components.TopOverl
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapUiState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.DistanceLineState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.ScaleIndicatorState
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.ui.MapUI
+import kotlin.time.TimeSource
 
 @Composable
 fun MapScreen(
@@ -86,6 +93,7 @@ fun MapScreen(
                 locationState,
                 hasElevationFix,
                 elevationFix = if (hasElevationFix) elevationFix else 0,
+                isComputingElapsedTime = hasElevationFix,
                 onFixElevationClick = {
                     isShowingElevationFixDialog = true
                 }
@@ -143,7 +151,7 @@ private fun TopOverlay(
 }
 
 /**
- * Defers read of location
+ * Defers read of location, and compute the elapsed time between the last location update.
  */
 @Composable
 private fun GpsDataOverlay(
@@ -151,8 +159,36 @@ private fun GpsDataOverlay(
     locationState: State<Location?>,
     isElevationModifiable: Boolean,
     elevationFix: Int,
+    isComputingElapsedTime: Boolean,
     onFixElevationClick: () -> Unit = {}
 ) {
     val location = locationState.value
-    GpsDataOverlay(modifier, location, isElevationModifiable, elevationFix, onFixElevationClick)
+
+
+    val timeSource = remember { TimeSource.Monotonic }
+    var lastUpdateInSeconds: Long? by remember { mutableStateOf(null) }
+
+    if (isComputingElapsedTime) {
+        val lifecycleOwner = LocalLifecycleOwner.current
+        LaunchedEffect(key1 = location, key2 = lifecycleOwner) {
+            val lastTimeMark = timeSource.markNow()
+            lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                launch {
+                    while (true) {
+                        delay(1000)
+                        lastUpdateInSeconds = (timeSource.markNow() - lastTimeMark).inWholeSeconds
+                    }
+                }
+            }
+        }
+    }
+
+    GpsDataOverlay(
+        modifier,
+        location,
+        isElevationModifiable,
+        elevationFix,
+        lastUpdateInSeconds,
+        onFixElevationClick
+    )
 }
