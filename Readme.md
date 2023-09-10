@@ -238,14 +238,15 @@ static form.
 Tapping a marker displays a popup:
 
 <p align="center">
-<img src="doc/images/marker-popup2.jpg" width="300">
+<img src="doc/images/marker-popup-en.jpg" width="300">
 </p>
 
 From here you can:
 
+* Navigate to the marker using Google Maps (top-right icon),
 * Edit the marker (change its name and set a comment, see below),
-* Delete it,
-* Move it
+* Move it,
+* Delete it
 
 Here is the marker edition view:
 
@@ -275,12 +276,13 @@ Sometimes, you want the view to automatically follow your position. To do that, 
 <img src="doc/images/menu-map-view-highlight.jpg" width="300">
 </p>
 
-Then select "Lock on position". Now, everytime the application gets a location update (approximately every second), the view centers on this new location.
+Then select "Lock on position". Now, everytime the application gets a location update (approximately 
+every 2 seconds), the view centers on this new location.
 
 ### Visualize a recording in real time
 
-When you start a recording from the "GPX Record" option menu, the recording can be seen in real time on any map that covers your current area.
-It appears as an orange route.
+When you start a recording from the "GPX Record" option menu, the recording can be seen in real time 
+on any map that covers your current area. It appears as an orange route.
 
 Even if you close TrekMe, you will find your live route the next time you open it, until you stop the recording.
 

@@ -48,7 +48,7 @@ randonnée. L'application est aussi très fluide de manière générale.
 ## Résumé des fonctionnalités
 
 * Création de cartes depuis l'application:
-    - France IGN (requiert une [souscription](#TOC-IGN-maps))
+    - France IGN (requiert une [souscription](#cartes-ign))
     - Swiss Topo
 	- USA : USGS
  	- Espagne IGN 
@@ -254,15 +254,16 @@ de forme et la zone bleue disparaît. Cela indique que le marqueur est désormai
 Si on appuie sur le marqueur, une bulle comme celle-ci s'affiche :
 
 <p align="center">
-<img src="doc/images/marker-popup2.jpg" width="300">
+<img src="doc/images/marker-popup-fr.jpg" width="300">
 </p>
 
 On peut alors :
 
-* Changer le nom ou le commentaire du marqueur 
-* Supprimer le marqueur
+* Lancer Google Maps pour naviguer vers le marqueur (icône en haut à droite)
+* Changer le nom ou le commentaire du marqueur
 * Déplacer le marqueur (il reprend sa forme avec les flèches qui tournent, indiquant qu'il peut être 
 déplacé)
+* Supprimer le marqueur
 
 <p align="center">
 <img src="doc/images/marker-edit-fr.jpg" width="300">
@@ -453,7 +454,7 @@ Par défaut, TrekMe enregistre tout sur la mémoire interne. Mais si vous avez u
 
 Quelque soit la version d'Android, toutes les cartes stockées sur carte SD seront supprimées si TrekMe est 
 désinstallé (c'est une contrainte du système Android). 
-Reportez-vous à la section [Sauvegardez vos cartes](#TOC-Save-maps) pour voir comment contourner cette
+Reportez-vous à la section [Sauvegardez vos cartes](#sauvegardez-vos-cartes) pour voir comment contourner cette
 contrainte.
 
 Dans la section Dossier racine > "Répertoire sélectionné", vous avez le choix entre deux répertoires
