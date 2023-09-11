@@ -37,6 +37,7 @@ import com.peterlaurence.trekme.core.location.domain.model.LocationProducerBtInf
 import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.md_theme_dark_surface
+import kotlin.time.TimeSource
 
 
 @Composable
@@ -131,6 +132,7 @@ private fun GpsDataOverlayPreview() {
                 2.67,
                 54.78,
                 altitude = 100.2,
+                markedTime = TimeSource.Monotonic.markNow(),
                 locationProducerInfo = LocationProducerBtInfo("Garmin", "")
             ),
             isElevationModifiable = true,

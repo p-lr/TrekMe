@@ -163,20 +163,19 @@ private fun GpsDataOverlay(
     onFixElevationClick: () -> Unit = {}
 ) {
     val location = locationState.value
-
-
-    val timeSource = remember { TimeSource.Monotonic }
     var lastUpdateInSeconds: Long? by remember { mutableStateOf(null) }
 
     if (isComputingElapsedTime) {
         val lifecycleOwner = LocalLifecycleOwner.current
         LaunchedEffect(key1 = location, key2 = lifecycleOwner) {
-            val lastTimeMark = timeSource.markNow()
+            val timeSource = TimeSource.Monotonic
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 launch {
                     while (true) {
+                        if (location != null) {
+                            lastUpdateInSeconds = (timeSource.markNow() - location.markedTime).inWholeSeconds
+                        }
                         delay(1000)
-                        lastUpdateInSeconds = (timeSource.markNow() - lastTimeMark).inWholeSeconds
                     }
                 }
             }

@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.core.location.app.producer
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothSocket
 import com.peterlaurence.trekme.core.location.domain.model.Location
@@ -20,6 +21,7 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.util.*
 import java.util.concurrent.Executors
+import kotlin.time.TimeSource
 
 /**
  * A [LocationProducer] which reads NMEA sentences over bluetooth.
@@ -58,6 +60,7 @@ class NmeaOverBluetoothProducer(
         }
     }
 
+    @SuppressLint("MissingPermission")
     private fun ProducerScope<Location>.connectAndRead(): Pair<BluetoothSocket?, Job> {
         var _socket: BluetoothSocket? = null
 
@@ -89,9 +92,12 @@ class NmeaOverBluetoothProducer(
                             }
                         }
                     }
+                    val timeSource = TimeSource.Monotonic
                     val nmeaAggregator =
                         NmeaAggregator(nmeaDataFlow) { lat, lon, speed, altitude, time ->
-                            trySend(Location(lat, lon, speed, altitude, time, mode))
+                            trySend(
+                                Location(lat, lon, speed, altitude, time, timeSource.markNow(), mode)
+                            )
                         }
                     nmeaAggregator.run()
                 }

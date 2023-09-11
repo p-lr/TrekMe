@@ -3,17 +3,24 @@ package com.peterlaurence.trekme.core.location.domain.model
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.serialization.Serializable
+import kotlin.time.TimeSource
 
 /**
  * [latitude] and [longitude] are in decimal degrees.
  * [altitude] is in meters. Is null when this location doesn't have this information.
  * [speed] is in meters per second. Is null when this location doesn't have this information.
  * [time] is the UTC time in milliseconds since January 1, 1970
+ * [markedTime] the marked time using the monotonic time source
  * [locationProducerInfo] contains producer's metadata
  */
-data class Location(val latitude: Double = 0.0, val longitude: Double = 0.0, val speed: Float? = null,
-                    val altitude: Double? = null, val time: Long = 0L,
-                    val locationProducerInfo: LocationProducerInfo
+data class Location(
+    val latitude: Double = 0.0,
+    val longitude: Double = 0.0,
+    val speed: Float? = null,
+    val altitude: Double? = null,
+    val time: Long = 0L,
+    val markedTime: TimeSource.Monotonic.ValueTimeMark,
+    val locationProducerInfo: LocationProducerInfo
 )
 
 /**
