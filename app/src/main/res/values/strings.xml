@@ -9,7 +9,7 @@
     <string name="select_map_menu_title">My maps</string>
     <string name="create_menu_title">Create</string>
     <string name="excursion_menu_title">My excursions</string>
-    <string name="record_shortcut">Gpx Record</string>
+    <string name="excursion_shortcut">Excursions</string>
     <string name="gps_plus_menu_title">GPS+</string>
     <string name="track_stats_menu_title">Recording stats</string>
     <string name="import_menu_title">Import a map</string>
@@ -272,8 +272,6 @@
     <!-- Record GPX fragment -->
     <string name="fragment_recording" translatable="false">FragmentRecording</string>
     <string name="my_excursions_frgmt_title">My excursions</string>
-    <string name="control_card_title">Control</string>
-    <string name="control_card_subtitle">Start · stop · pause</string>
     <string name="location_disabled_warning">Location is currently disabled. Please enable it on your device.</string>
     <string name="recordings_list_title">GPX recordings</string>
     <string name="recordings_menu_import">Import files</string>

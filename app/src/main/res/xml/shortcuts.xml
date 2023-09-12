@@ -3,8 +3,8 @@
     <shortcut
         android:shortcutId="shortcut_recordings"
         android:enabled="true"
-        android:icon="@drawable/record_circle"
-        android:shortcutShortLabel="@string/record_shortcut"
+        android:icon="@drawable/folder"
+        android:shortcutShortLabel="@string/excursion_shortcut"
         android:shortcutLongLabel="@string/excursion_menu_title">
         <intent
             android:action="android.intent.action.VIEW"

@@ -83,9 +83,7 @@
     <string name="service_gpx_record_name">Service d\'enregistrement Gpx</string>
     <string name="service_gpx_record_action">Enregistrement GPX</string>
     <string name="excursion_menu_title">Mes excursions</string>
-    <string name="record_shortcut">Enr. GPX</string>
-    <string name="control_card_title">Commandes</string>
-    <string name="control_card_subtitle">Démarrer · arrêter · pauser</string>
+    <string name="excursion_shortcut">Excursions</string>
     <string name="recordings_list_title">Enregistrements GPX</string>
     <string name="files_could_not_be_deleted">Certains fichiers n\'ont pu être supprimés</string>
     <string name="recordings_status_title">Statut du service</string>
