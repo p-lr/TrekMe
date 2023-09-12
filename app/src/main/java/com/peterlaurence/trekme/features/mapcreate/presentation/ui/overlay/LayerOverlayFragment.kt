@@ -82,7 +82,6 @@ class LayerOverlayFragment : Fragment() {
             }
         )
         recyclerView.adapter = adapter
-//        viewModel.init(wmtsSource)
 
         viewModel.getLayerPropertiesFlow(wmtsSource).map { properties ->
             if (properties.isEmpty()) {
@@ -102,9 +101,9 @@ class LayerOverlayFragment : Fragment() {
         binding.addLayerFab.setOnClickListener {
             val ids = viewModel.getAvailableLayersId(wmtsSource)
             val values = ids.mapNotNull { id -> translateLayerName(id) }
-            // TODO: fix hard-coded and non-translated string
+
             val layerSelectDialog =
-                    LayerSelectDialog.newInstance("Select a layer", ids, values, "")
+                    LayerSelectDialog.newInstance(getString(R.string.add_layer), ids, values, "")
             layerSelectDialog.show(
                     requireActivity().supportFragmentManager,
                     "LayerOverlaySelectDialog"
