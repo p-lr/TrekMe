@@ -3,7 +3,6 @@ package com.peterlaurence.trekme.events.recording
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
 import com.peterlaurence.trekme.features.record.app.service.event.NewExcursionEvent
 import com.peterlaurence.trekme.core.lib.gpx.model.TrackPoint
-import com.peterlaurence.trekme.features.record.domain.model.GpxRecordState
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 
@@ -26,19 +25,6 @@ class GpxRecordEvents {
     fun resetLiveRoute() {
         _liveRouteFlow.resetReplayCache()
         _liveRouteFlow.tryEmit(LiveRouteStop)
-    }
-
-    /**********************************************************************************************/
-
-    /* Status started / stopped / paused of the service */
-    private val _serviceState = MutableStateFlow(GpxRecordState.STOPPED)
-    val serviceState : StateFlow<GpxRecordState> = _serviceState.asStateFlow()
-
-    /**
-     * Should only by used by the service.
-     */
-    fun setServiceState(state: GpxRecordState) {
-        _serviceState.value = state
     }
 
     /**********************************************************************************************/

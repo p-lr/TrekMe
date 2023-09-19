@@ -10,6 +10,7 @@ import com.peterlaurence.trekme.events.WarningMessage
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.features.record.app.service.GpxRecordService
 import com.peterlaurence.trekme.features.record.domain.model.GpxRecordState
+import com.peterlaurence.trekme.features.record.domain.model.GpxRecordStateOwner
 import com.peterlaurence.trekme.util.android.isBackgroundLocationGranted
 import com.peterlaurence.trekme.util.android.isBatteryOptimized
 import com.peterlaurence.trekme.util.android.isLocationEnabled
@@ -29,10 +30,11 @@ import javax.inject.Inject
 @HiltViewModel
 class GpxRecordServiceViewModel @Inject constructor(
     private val gpxRecordEvents: GpxRecordEvents,
+    gpxRecordStateOwner: GpxRecordStateOwner,
     private val appEventBus: AppEventBus,
     private val app: Application,
 ) : ViewModel() {
-    val status: StateFlow<GpxRecordState> = gpxRecordEvents.serviceState
+    val status: StateFlow<GpxRecordState> = gpxRecordStateOwner.gpxRecordState
 
     val ackBatteryOptSignal = Channel<Unit>(1)
 
@@ -46,7 +48,7 @@ class GpxRecordServiceViewModel @Inject constructor(
 
         viewModelScope.launch {
             isButtonEnabled = false
-            when (gpxRecordEvents.serviceState.value) {
+            when (status.value) {
                 GpxRecordState.STOPPED -> startRecording()
                 GpxRecordState.STARTED, GpxRecordState.PAUSED, GpxRecordState.RESUMED -> {
                     gpxRecordEvents.stopRecording()
@@ -59,7 +61,7 @@ class GpxRecordServiceViewModel @Inject constructor(
 
     fun onPauseResumeClicked() {
         viewModelScope.launch {
-            when (gpxRecordEvents.serviceState.value) {
+            when (status.value) {
                 GpxRecordState.STOPPED -> { /* Nothing to do */
                 }
 

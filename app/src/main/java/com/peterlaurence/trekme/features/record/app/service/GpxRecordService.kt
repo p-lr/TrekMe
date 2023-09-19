@@ -7,42 +7,27 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import android.os.*
+import android.os.Build
+import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.TrekMeContext
-import com.peterlaurence.trekme.core.appName
-import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionType
 import com.peterlaurence.trekme.core.excursion.domain.repository.ExcursionRepository
-import com.peterlaurence.trekme.core.georecord.data.mapper.gpxToDomain
-import com.peterlaurence.trekme.core.georecord.domain.logic.TrackStatCalculator
-import com.peterlaurence.trekme.core.georecord.domain.logic.distanceCalculatorFactory
-import com.peterlaurence.trekme.core.georecord.domain.logic.mergeBounds
-import com.peterlaurence.trekme.core.georecord.domain.logic.mergeStats
-import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
-import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.events.AppEventBus
-import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
-import com.peterlaurence.trekme.events.recording.LiveRoutePause
-import com.peterlaurence.trekme.events.recording.LiveRoutePoint
-import com.peterlaurence.trekme.events.recording.LiveRouteStop
-import com.peterlaurence.trekme.features.record.app.service.event.NewExcursionEvent
-import com.peterlaurence.trekme.util.getBitmapFromDrawable
-import com.peterlaurence.trekme.core.lib.gpx.model.*
-import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
-import com.peterlaurence.trekme.features.record.domain.model.GpxRecordState
+import com.peterlaurence.trekme.features.record.domain.model.GpxRecordStateOwner
+import com.peterlaurence.trekme.features.record.domain.repositories.GpxRecorder
 import com.peterlaurence.trekme.main.MainActivity
+import com.peterlaurence.trekme.util.getBitmapFromDrawable
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
-import java.text.SimpleDateFormat
-import java.util.*
 import javax.inject.Inject
-import kotlin.random.Random.Default.nextInt
 
 
 /**
@@ -57,9 +42,8 @@ import kotlin.random.Random.Default.nextInt
  */
 @AndroidEntryPoint
 class GpxRecordService : Service() {
-
     @Inject
-    lateinit var trekMeContext: TrekMeContext
+    lateinit var gpxRecordStateOwner: GpxRecordStateOwner
 
     @Inject
     lateinit var eventsGpx: GpxRecordEvents
@@ -68,178 +52,30 @@ class GpxRecordService : Service() {
     lateinit var excursionRepository: ExcursionRepository
 
     @Inject
-    lateinit var eventBus: AppEventBus
+    lateinit var appEventBus: AppEventBus
 
     @Inject
     lateinit var locationSource: LocationSource
 
-    private var state: GpxRecordState
-        get() = eventsGpx.serviceState.value
-        set(value) {
-            eventsGpx.setServiceState(value)
-        }
-
-    private var serviceLooper: Looper? = null
-    private var serviceHandler: Handler? = null
-    private var locationCounter: Long = 0
+    private var gpxRecorder: GpxRecorder? = null
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-
-    private val trackStatCalculatorList = mutableListOf<TrackStatCalculator>()
-    private val trackStatCalculator: TrackStatCalculator
-        get() = trackStatCalculatorList.lastOrNull() ?: run {
-            val calculator = makeTrackStatCalculator()
-            trackStatCalculatorList.add(calculator)
-            calculator
-        }
-
-    /**
-     * Prepare the stat calculator.
-     * Since we're getting elevations from the GPS, we're using a distance calculator designed to
-     * deal with non-trusted elevations.
-     */
-    private fun makeTrackStatCalculator() = TrackStatCalculator(distanceCalculatorFactory(false))
 
     override fun onCreate() {
         super.onCreate()
 
-        /* Start up the thread for background execution of tasks withing the service.  Note that we
-         * create a separate thread because the service normally runs in the process's main thread,
-         * which we don't want to block.
-         * We also make it low priority so CPU-intensive work will not disrupt our UI.
-         */
-        val thread = HandlerThread(THREAD_NAME, Thread.MIN_PRIORITY)
-        thread.start()
-
-        /* Get the HandlerThread's Looper and use it for our Handler */
-        val looper = thread.looper
-        serviceLooper = looper
-        serviceHandler = Handler(looper)
-
-        /* Listen to location data */
-        scope.launch {
-            locationSource.locationFlow.collect {
-                onLocationUpdate(it)
-            }
-        }
-
         /* Listen to signals */
-        eventsGpx.stopRecordingSignal.map { createGpx() }.launchIn(scope)
-        eventsGpx.pauseRecordingSignal.map { pause() }.launchIn(scope)
-        eventsGpx.resumeRecordingSignal.map { resume() }.launchIn(scope)
-    }
+        eventsGpx.stopRecordingSignal.map {
+            gpxRecorder?.createGpx()
+            stop()
+        }.launchIn(scope)
 
-    private fun onLocationUpdate(location: Location) {
-        locationCounter++
-
-        /* Drop the first 3 points, so the GPS stabilizes */
-        if (locationCounter <= 3) {
-            return
-        }
-
-        val trackPoint = TrackPoint(
-            location.latitude,
-            location.longitude, location.altitude, location.time, ""
-        )
-        if (state == GpxRecordState.STARTED || state == GpxRecordState.RESUMED) {
-            eventsGpx.addPointToLiveRoute(trackPoint)
-            trackStatCalculator.addTrackPoint(trackPoint.latitude, trackPoint.longitude, trackPoint.elevation, trackPoint.time)
-            eventsGpx.postGeoStatistics(getStatistics())
-        }
-    }
-
-    private fun createNewTrackSegment() {
-        trackStatCalculatorList.add(makeTrackStatCalculator())
-    }
-
-    /**
-     * When we stop recording the location events, create a [Gpx] object for further
-     * serialization.
-     * Whatever the outcome of this process, a [NewExcursionEvent] is emitted in the
-     * [THREAD_NAME] thread.
-     */
-    private fun createGpx() {
-        fun generateTrackId(dateStr: String): String {
-            return dateStr + '-' + nextInt(0, 1000)
-        }
-
-        serviceHandler?.post {
-            eventsGpx.stopLiveRoute()
-
-            val trkSegList = ArrayList<TrackSegment>()
-            var trackPoints = mutableListOf<TrackPoint>()
-            for (event in eventsGpx.liveRouteFlow.replayCache) {
-                when (event) {
-                    LiveRoutePause, LiveRouteStop -> {
-                        if (trackPoints.isNotEmpty()) {
-                            trkSegList.add(TrackSegment(trackPoints, UUID.randomUUID().toString()))
-                        }
-                        trackPoints = mutableListOf()
-                    }
-                    is LiveRoutePoint -> trackPoints.add(event.pt)
-                }
-            }
-
-            /* Name the track using the current date */
-            val date = Date()
-            val dateFormat = SimpleDateFormat("dd-MM-yyyy_HH'h'mm-ss's'", Locale.ENGLISH)
-            val trackName = "track-" + dateFormat.format(date)
-            val id = generateTrackId(trackName)
-
-            val track = Track(trkSegList, trackName, id = id)
-            val bounds = trackStatCalculatorList.mergeBounds()
-
-            /* Make the metadata. We indicate the source of elevation is the GPS, regardless of the
-             * actual source (which might be wifi, etc), with a sampling of 1 since each point has
-             * its own elevation value. Note that GPS elevation isn't considered trustworthy. */
-            val metadata = Metadata(
-                trackName,
-                date.time,
-                bounds, // This isn't mandatory to put this into the metadata, but since we can..
-                elevationSourceInfo = GpxElevationSourceInfo(GpxElevationSource.GPS, 1)
-            )
-
-            val trkList = ArrayList<Track>()
-            trkList.add(track)
-
-            val wayPoints = ArrayList<TrackPoint>()
-
-            val gpx = Gpx(metadata, trkList, wayPoints, appName, GPX_VERSION)
-            try {
-                /* Now that the file is written, send an event to the application */
-                val boundingBox = bounds?.let {
-                    BoundingBox(it.minLat, it.maxLat, it.minLon, it.maxLon)
-                }
-                val geoRecord = gpxToDomain(gpx, name = trackName)
-
-                val excursionId = UUID.randomUUID().toString()
-                val result = runBlocking { // It's ok to block as we're running on a background thread
-                     excursionRepository.putExcursion(
-                        id = excursionId,
-                        title = trackName,
-                        type = ExcursionType.Hike,
-                        description = "",
-                        geoRecord = geoRecord
-                    )
-                }
-
-                if (result == ExcursionRepository.PutExcursionResult.Ok) {
-                    eventsGpx.postNewExcursionEvent(NewExcursionEvent(excursionId, boundingBox))
-                }
-            } catch (e: Exception) {
-                eventBus.postMessage(StandardMessage(getString(R.string.service_gpx_error)))
-            } finally {
-                stop()
-            }
-        }
-    }
-
-    private fun getStatistics(): GeoStatistics {
-        return if (trackStatCalculatorList.size > 1) {
-            trackStatCalculatorList.mergeStats()
-        } else {
-            trackStatCalculator.getStatistics()
-        }
+        eventsGpx.pauseRecordingSignal.map {
+            gpxRecorder?.pause()
+        }.launchIn(scope)
+        eventsGpx.resumeRecordingSignal.map {
+            gpxRecorder?.resume()
+        }.launchIn(scope)
     }
 
     /**
@@ -247,7 +83,8 @@ class GpxRecordService : Service() {
      */
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         val notificationIntent = Intent(this, MainActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
+        val pendingIntent =
+            PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
 
         val iconDrawable = ContextCompat.getDrawable(applicationContext, R.mipmap.ic_launcher)
         val icon = if (iconDrawable != null) getBitmapFromDrawable(iconDrawable) else null
@@ -282,8 +119,15 @@ class GpxRecordService : Service() {
 
         startForeground(SERVICE_ID, notification)
 
-        state = GpxRecordState.STARTED
-
+        gpxRecorder = GpxRecorder(
+            gpxRecordStateOwner = gpxRecordStateOwner,
+            eventsGpx = eventsGpx,
+            excursionRepository = excursionRepository,
+            eventBus = appEventBus,
+            locationSource = locationSource
+        ).also {
+            it.start(scope)
+        }
         return START_NOT_STICKY
     }
 
@@ -292,22 +136,8 @@ class GpxRecordService : Service() {
      */
     private fun stop() {
         stopForeground(STOP_FOREGROUND_REMOVE)
-        eventsGpx.resetLiveRoute()
-        eventsGpx.postGeoStatistics(null)
-        state = GpxRecordState.STOPPED
+        gpxRecorder?.stop()
         stopSelf()
-    }
-
-    private fun pause() {
-        eventsGpx.pauseLiveRoute()
-        state = GpxRecordState.PAUSED
-        createNewTrackSegment()
-    }
-
-    private fun resume() {
-        if (state == GpxRecordState.PAUSED) {
-            state = GpxRecordState.RESUMED
-        }
     }
 
     override fun onBind(intent: Intent): IBinder? {
@@ -316,15 +146,11 @@ class GpxRecordService : Service() {
     }
 
     override fun onDestroy() {
-        serviceLooper?.quitSafely()
         scope.cancel()
     }
 
     companion object {
-        private const val GPX_VERSION = "1.1"
         private const val NOTIFICATION_ID = "peterlaurence.GpxRecordService"
         private const val SERVICE_ID = 126585
     }
 }
-
-private const val THREAD_NAME = "GpxRecordServiceThread"
