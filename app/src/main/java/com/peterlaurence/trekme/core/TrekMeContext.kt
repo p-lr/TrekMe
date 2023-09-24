@@ -30,7 +30,7 @@ import java.io.IOException
  * @author P.Laurence on 07/10/17 -- converted to Kotlin on 20/11/18
  */
 interface TrekMeContext {
-    var defaultAppDir: File?
+    val defaultAppDir: StateFlow<File?>
     val defaultMapsDownloadDir: File?
     val importedDir: File?
     val recordingsDir: File?
@@ -44,25 +44,25 @@ interface TrekMeContext {
 class TrekMeContextAndroid : TrekMeContext {
     private val _rootDirListFlow = MutableStateFlow<List<File>>(emptyList())
 
-    override var defaultAppDir: File? = null
+    override val defaultAppDir = MutableStateFlow<File?>(null)
     override val rootDirListFlow: StateFlow<List<File>>
         get() = _rootDirListFlow
 
     override val defaultMapsDownloadDir: File? by lazy {
-        defaultAppDir?.let {
+        defaultAppDir.value?.let {
             File(it, MAP_FOLDER_NAME)
         }
     }
 
     /* Where zip archives are extracted */
     override val importedDir: File? by lazy {
-        defaultAppDir?.let {
+        defaultAppDir.value?.let {
             File(it, MAP_IMPORTED_FOLDER_NAME)
         }
     }
 
     override val recordingsDir: File? by lazy {
-        defaultAppDir?.let {
+        defaultAppDir.value?.let {
             File(it, RECORDINGS_FOLDER_NAME)
         }
     }
@@ -70,7 +70,7 @@ class TrekMeContextAndroid : TrekMeContext {
     private val TAG = "TrekMeContextAndroid"
 
     override val credentialsDir: File by lazy {
-        File(defaultAppDir, CREDENTIALS_FOLDER_NAME)
+        File(defaultAppDir.value, CREDENTIALS_FOLDER_NAME)
     }
 
     /**
@@ -78,7 +78,7 @@ class TrekMeContextAndroid : TrekMeContext {
      * [checkAppDir] call returned `false`
      */
     override suspend fun isAppDirReadOnly(): Boolean = withContext(Dispatchers.IO) {
-        Environment.getExternalStorageState(defaultAppDir) == Environment.MEDIA_MOUNTED_READ_ONLY
+        Environment.getExternalStorageState(defaultAppDir.value) == Environment.MEDIA_MOUNTED_READ_ONLY
     }
 
     /**
@@ -118,12 +118,12 @@ class TrekMeContextAndroid : TrekMeContext {
         val dirs: List<File> = applicationContext.getExternalFilesDirs(null).filterNotNull()
 
         if (android.os.Build.VERSION.SDK_INT >= Q) {
-            defaultAppDir = dirs.firstOrNull()
+            defaultAppDir.value = dirs.firstOrNull()
             _rootDirListFlow.value = dirs
         } else {
-            defaultAppDir = File(Environment.getExternalStorageDirectory(), appFolderName)
+            defaultAppDir.value = File(Environment.getExternalStorageDirectory(), appFolderName)
             val otherDirs = dirs.drop(1)
-            _rootDirListFlow.value = listOfNotNull(defaultAppDir) + otherDirs
+            _rootDirListFlow.value = listOfNotNull(defaultAppDir.value) + otherDirs
         }
     }
 
@@ -132,14 +132,14 @@ class TrekMeContextAndroid : TrekMeContext {
      * To function properly, the app needs to have read + write access to its root directory
      */
     override suspend fun checkAppDir(): Boolean = withContext(Dispatchers.IO) {
-        Environment.getExternalStorageState(defaultAppDir) == Environment.MEDIA_MOUNTED
+        Environment.getExternalStorageState(defaultAppDir.value) == Environment.MEDIA_MOUNTED
     }
 
     @Throws(SecurityException::class)
     private fun createAppDirs() {
         /* Root: try to import legacy first */
         renameLegacyDir()
-        createDir(defaultAppDir, "application")
+        createDir(defaultAppDir.value, "application")
 
         /* Credentials */
         createDir(credentialsDir, "credentials")
@@ -164,8 +164,8 @@ class TrekMeContextAndroid : TrekMeContext {
                     appFolderNameLegacy)
             if (legacyAppDir.exists()) {
                 val defaultAppDir = defaultAppDir
-                if (defaultAppDir != null) {
-                    legacyAppDir.renameTo(defaultAppDir)
+                defaultAppDir.value?.also {
+                    legacyAppDir.renameTo(it)
                 }
             }
         }

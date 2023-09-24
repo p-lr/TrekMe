@@ -14,10 +14,13 @@ import androidx.core.content.ContextCompat
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.excursion.domain.repository.ExcursionRepository
 import com.peterlaurence.trekme.core.location.domain.model.LocationSource
+import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
+import com.peterlaurence.trekme.features.record.data.datasource.LocationSerializerImpl
+import com.peterlaurence.trekme.features.record.data.datasource.createSinkFile
 import com.peterlaurence.trekme.features.record.domain.model.GpxRecordStateOwner
-import com.peterlaurence.trekme.features.record.domain.repositories.GpxRecorder
+import com.peterlaurence.trekme.features.record.domain.model.GpxRecorder
 import com.peterlaurence.trekme.main.MainActivity
 import com.peterlaurence.trekme.util.getBitmapFromDrawable
 import dagger.hilt.android.AndroidEntryPoint
@@ -27,6 +30,10 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
 import javax.inject.Inject
 
 
@@ -57,7 +64,11 @@ class GpxRecordService : Service() {
     @Inject
     lateinit var locationSource: LocationSource
 
+    @Inject
+    lateinit var settings: Settings
+
     private var gpxRecorder: GpxRecorder? = null
+    private var sinkFile: File? = null
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
@@ -66,12 +77,11 @@ class GpxRecordService : Service() {
 
         /* Listen to signals */
         eventsGpx.stopRecordingSignal.map {
-            gpxRecorder?.createGpx()
             stop()
         }.launchIn(scope)
 
         eventsGpx.pauseRecordingSignal.map {
-            gpxRecorder?.pause()
+            pause()
         }.launchIn(scope)
         eventsGpx.resumeRecordingSignal.map {
             gpxRecorder?.resume()
@@ -119,25 +129,52 @@ class GpxRecordService : Service() {
 
         startForeground(SERVICE_ID, notification)
 
-        gpxRecorder = GpxRecorder(
-            gpxRecordStateOwner = gpxRecordStateOwner,
-            eventsGpx = eventsGpx,
-            excursionRepository = excursionRepository,
-            eventBus = appEventBus,
-            locationSource = locationSource
-        ).also {
-            it.start(scope)
+        scope.launch {
+            /* Create the temp file in which locations will be written. If the application crashes,
+             * the gpx won't be created. In this case, that temp file can be used to create the gpx
+             * on next startup. */
+            sinkFile = createSinkFile(settings)
+            val outputStream = withContext(Dispatchers.IO) {
+                runCatching { FileOutputStream(sinkFile) }.getOrNull()
+            }
+            val locationSerializer = if (outputStream != null) {
+                LocationSerializerImpl(outputStream)
+            } else null
+
+            gpxRecorder = GpxRecorder(
+                gpxRecordStateOwner = gpxRecordStateOwner,
+                eventsGpx = eventsGpx,
+                excursionRepository = excursionRepository,
+                locationSource = locationSource,
+                locationsSerializer = locationSerializer
+            ).also {
+                it.start(scope)
+            }
         }
+
         return START_NOT_STICKY
+    }
+
+    private fun pause() {
+        scope.launch {
+            gpxRecorder?.pause()
+        }
     }
 
     /**
      * Stop the service and send the status.
      */
     private fun stop() {
-        stopForeground(STOP_FOREGROUND_REMOVE)
-        gpxRecorder?.stop()
-        stopSelf()
+        scope.launch {
+            val success = gpxRecorder?.stop()
+            if (success != null && success) {
+                /* Only delete the sink file when the gpx file was successfully created */
+                runCatching { sinkFile?.delete() }
+            }
+        }.invokeOnCompletion {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+            stopSelf()
+        }
     }
 
     override fun onBind(intent: Intent): IBinder? {

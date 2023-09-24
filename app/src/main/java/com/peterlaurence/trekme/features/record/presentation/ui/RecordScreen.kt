@@ -28,6 +28,7 @@ fun RecordScreen(
     val deletionFailedMsg = stringResource(id = R.string.files_could_not_be_deleted)
     val geoRecordAddMsg = stringResource(id = R.string.track_is_being_added)
     val geoRecordAdErrorMsg = stringResource(id = R.string.track_add_error)
+    val geoRecordRecover = stringResource(id = R.string.track_is_being_restored)
 
     LaunchedEffectWithLifecycle(flow = statViewModel.recordingDeletionFailureFlow) {
         snackbarHostState.showSnackbar(message = deletionFailedMsg)
@@ -43,6 +44,11 @@ fun RecordScreen(
                 /* Tell the user that an error occurred */
                 snackbarHostState.showSnackbar(geoRecordAdErrorMsg)
         }
+    }
+
+    LaunchedEffectWithLifecycle(recordViewModel.geoRecordRecoverEventFlow) {
+        /* Tell the user that a track is being recovered */
+        snackbarHostState.showSnackbar(geoRecordRecover)
     }
 
     LaunchedEffectWithLifecycle(recordViewModel.excursionImportEventFlow) { success ->

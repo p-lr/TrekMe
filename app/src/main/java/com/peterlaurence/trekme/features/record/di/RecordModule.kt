@@ -1,11 +1,14 @@
 package com.peterlaurence.trekme.features.record.di
 
+import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.di.IoDispatcher
 import com.peterlaurence.trekme.features.common.data.dao.IgnApiDao
+import com.peterlaurence.trekme.features.record.data.datasource.AppRecordRestorer
 import com.peterlaurence.trekme.features.record.data.datasource.IgnElevationDataSource
 import com.peterlaurence.trekme.features.record.domain.datasource.ElevationDataSource
 import com.peterlaurence.trekme.features.record.domain.model.ElevationStateOwner
 import com.peterlaurence.trekme.features.record.domain.model.GpxRecordStateOwner
+import com.peterlaurence.trekme.features.record.domain.model.RecordRestorer
 import com.peterlaurence.trekme.features.record.domain.repositories.ElevationRepository
 import com.peterlaurence.trekme.features.record.domain.repositories.GpxRecordStateOwnerImpl
 import dagger.Module
@@ -43,4 +46,8 @@ object RecordModule {
     @Singleton
     @Provides
     fun bindGpxRecordStateOwner(): GpxRecordStateOwner = GpxRecordStateOwnerImpl()
+
+    @Singleton
+    @Provides
+    fun bindRecordRestorer(settings: Settings): RecordRestorer = AppRecordRestorer(settings)
 }

@@ -20,3 +20,6 @@ const val RECORDINGS_FOLDER_NAME = "recordings"
 
 /* Credentials */
 const val CREDENTIALS_FOLDER_NAME = "credentials"
+
+/* Temp folder */
+const val TEMP_FOLDER_NAME = "tmp"

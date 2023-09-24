@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.features.record.domain.repositories
+package com.peterlaurence.trekme.features.record.domain.model
 
 import com.peterlaurence.trekme.core.appName
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionType
@@ -9,6 +9,7 @@ import com.peterlaurence.trekme.core.georecord.domain.logic.distanceCalculatorFa
 import com.peterlaurence.trekme.core.georecord.domain.logic.mergeBounds
 import com.peterlaurence.trekme.core.georecord.domain.logic.mergeStats
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
+import com.peterlaurence.trekme.core.lib.gpx.model.GPX_VERSION
 import com.peterlaurence.trekme.core.lib.gpx.model.Gpx
 import com.peterlaurence.trekme.core.lib.gpx.model.GpxElevationSource
 import com.peterlaurence.trekme.core.lib.gpx.model.GpxElevationSourceInfo
@@ -19,18 +20,14 @@ import com.peterlaurence.trekme.core.lib.gpx.model.TrackSegment
 import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
-import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.events.recording.LiveRoutePause
 import com.peterlaurence.trekme.events.recording.LiveRoutePoint
 import com.peterlaurence.trekme.events.recording.LiveRouteStop
 import com.peterlaurence.trekme.features.record.app.service.event.NewExcursionEvent
-import com.peterlaurence.trekme.features.record.domain.model.GpxRecordState
-import com.peterlaurence.trekme.features.record.domain.model.GpxRecordStateOwner
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.ArrayList
@@ -43,8 +40,8 @@ class GpxRecorder(
     private val gpxRecordStateOwner: GpxRecordStateOwner,
     private val eventsGpx: GpxRecordEvents,
     val excursionRepository: ExcursionRepository,
-    val eventBus: AppEventBus,
-    val locationSource: LocationSource
+    val locationSource: LocationSource,
+    private val locationsSerializer: LocationsSerializer?
 ) {
     private var locationCounter: Long = 0
 
@@ -69,14 +66,19 @@ class GpxRecorder(
         scope.launch {
             locationSource.locationFlow.collect {
                 onLocationUpdate(it)
+
+                if (state == GpxRecordState.STARTED || state == GpxRecordState.RESUMED) {
+                    locationsSerializer?.onLocation(it)
+                }
             }
         }
     }
 
-    fun pause() {
+    suspend fun pause() {
         eventsGpx.pauseLiveRoute()
         state = GpxRecordState.PAUSED
         createNewTrackSegment()
+        locationsSerializer?.pause()
     }
 
     fun resume() {
@@ -88,22 +90,25 @@ class GpxRecorder(
     /**
      * Stop the service and send the status.
      */
-    fun stop() {
+    suspend fun stop(): Boolean {
+        val success = createGpx()
         eventsGpx.resetLiveRoute()
         eventsGpx.postGeoStatistics(null)
         state = GpxRecordState.STOPPED
+        return success
     }
 
     /**
      * When we stop recording the location events, create a [Gpx] object for further serialization.
      * Whatever the outcome of this process, a [NewExcursionEvent] is emitted.
+     * TODO: this should be done in data layer
      */
-    suspend fun createGpx() {
+    private suspend fun createGpx(): Boolean {
         fun generateTrackId(dateStr: String): String {
             return dateStr + '-' + Random.nextInt(0, 1000)
         }
 
-        withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.IO) {
             eventsGpx.stopLiveRoute()
 
             val trkSegList = ArrayList<TrackSegment>()
@@ -131,12 +136,12 @@ class GpxRecorder(
             val bounds = trackStatCalculatorList.mergeBounds()
 
             /* Make the metadata. We indicate the source of elevation is the GPS, regardless of the
-         * actual source (which might be wifi, etc), with a sampling of 1 since each point has
-         * its own elevation value. Note that GPS elevation isn't considered trustworthy. */
+             * actual source (which might be wifi, etc), with a sampling of 1 since each point has
+             * its own elevation value. Note that GPS elevation isn't considered trustworthy. */
             val metadata = Metadata(
                 trackName,
                 date.time,
-                bounds, // This isn't mandatory to put this into the metadata, but since we can..
+                bounds, // This isn't mandatory to put this into the metadata
                 elevationSourceInfo = GpxElevationSourceInfo(GpxElevationSource.GPS, 1)
             )
 
@@ -147,28 +152,25 @@ class GpxRecorder(
 
             val gpx = Gpx(metadata, trkList, wayPoints, appName, GPX_VERSION)
             runCatching {
-                /* Now that the file is written, send an event to the application */
                 val boundingBox = bounds?.let {
                     BoundingBox(it.minLat, it.maxLat, it.minLon, it.maxLon)
                 }
                 val geoRecord = gpxToDomain(gpx, name = trackName)
 
                 val excursionId = UUID.randomUUID().toString()
-                val result =
-                    runBlocking { // It's ok to block as we're running on a background thread
-                        excursionRepository.putExcursion(
-                            id = excursionId,
-                            title = trackName,
-                            type = ExcursionType.Hike,
-                            description = "",
-                            geoRecord = geoRecord
-                        )
-                    }
+                val result = excursionRepository.putExcursion(
+                    id = excursionId,
+                    title = trackName,
+                    type = ExcursionType.Hike,
+                    description = "",
+                    geoRecord = geoRecord
+                )
 
                 if (result == ExcursionRepository.PutExcursionResult.Ok) {
                     eventsGpx.postNewExcursionEvent(NewExcursionEvent(excursionId, boundingBox))
-                }
-            }
+                    true
+                } else false
+            }.getOrElse { false }
         }
     }
 
@@ -210,5 +212,3 @@ class GpxRecorder(
         trackStatCalculatorList.add(makeTrackStatCalculator())
     }
 }
-
-private const val GPX_VERSION = "1.1"

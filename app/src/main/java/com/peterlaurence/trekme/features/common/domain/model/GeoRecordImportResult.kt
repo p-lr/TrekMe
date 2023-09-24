@@ -10,5 +10,5 @@ sealed class GeoRecordImportResult {
         val newRouteCount: Int, val newMarkersCount: Int
     ) : GeoRecordImportResult()
 
-    object GeoRecordImportError : GeoRecordImportResult()
+    data object GeoRecordImportError : GeoRecordImportResult()
 }

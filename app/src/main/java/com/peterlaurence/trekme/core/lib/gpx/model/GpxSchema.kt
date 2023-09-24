@@ -43,3 +43,5 @@ const val ATTR_LON = "lon"
 const val TAG_ELEVATION = "ele"
 
 const val TAG_TRK_ID = "trekmeId"
+
+const val GPX_VERSION = "1.1"

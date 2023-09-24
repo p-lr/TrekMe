@@ -9,6 +9,7 @@ import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.features.common.domain.interactors.ImportGeoRecordInteractor
 import com.peterlaurence.trekme.features.common.domain.interactors.MapExcursionInteractor
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
+import com.peterlaurence.trekme.features.record.domain.interactors.RestoreRecordInteractor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -23,6 +24,7 @@ class RecordViewModel @Inject constructor(
     private val importGeoRecordInteractor: ImportGeoRecordInteractor,
     private val getMapInteractor: GetMapInteractor,
     private val mapExcursionInteractor: MapExcursionInteractor,
+    private val restoreRecordInteractor: RestoreRecordInteractor,
     private val app: Application,
     private val appEventBus: AppEventBus,
 ) : ViewModel() {
@@ -33,6 +35,17 @@ class RecordViewModel @Inject constructor(
     private val _excursionImportEvent = Channel<Boolean>(1)
     val excursionImportEventFlow = _excursionImportEvent.receiveAsFlow()
 
+    private val _geoRecordRecoverChannel = Channel<Unit>(1)
+    val geoRecordRecoverEventFlow = _geoRecordRecoverChannel.receiveAsFlow()
+
+    init {
+        viewModelScope.launch {
+            if (restoreRecordInteractor.hasRecordToRestore()) {
+                _geoRecordRecoverChannel.send(Unit)
+                restoreRecordInteractor.recoverRecord()
+            }
+        }
+    }
 
     fun importRecordInMap(mapId: UUID, recordId: UUID) = viewModelScope.launch {
         val map = getMapInteractor.getMap(mapId) ?: return@launch

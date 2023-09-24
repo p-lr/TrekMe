@@ -13,6 +13,7 @@ import com.peterlaurence.trekme.core.location.domain.model.LocationProducerInfo
 import com.peterlaurence.trekme.core.units.DistanceUnit
 import com.peterlaurence.trekme.core.units.MeasurementSystem
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -75,7 +76,7 @@ class Settings @Inject constructor(
     fun getAppDir(): Flow<File?> {
         return dataStore.data.map { pref ->
             pref[appDirKey]?.let { if (checkAppPath(it)) File(it) else null }
-                ?: trekMeContext.defaultAppDir
+                ?: trekMeContext.defaultAppDir.firstOrNull()
         }
     }
 

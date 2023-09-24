@@ -21,7 +21,7 @@ class ExcursionDaoFileBasedTest {
     private val dao = ExcursionDaoFileBased(
         rootFolders = MutableStateFlow(listOfNotNull(excursionDir)),
         appDirFlow = flowOf(),
-        uriReader = { _, _ -> },
+        uriReader = { _, _ -> null },
         nameReaderUri = { null },
         ioDispatcher = testDispatcher
     )
