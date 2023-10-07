@@ -21,3 +21,16 @@ fun <T> LaunchedEffectWithLifecycle(
         }
     }
 }
+
+@Composable
+fun <T> LaunchedEffectWithLifecycle(
+    lifecycle: Lifecycle = LocalLifecycleOwner.current.lifecycle,
+    minActiveState: Lifecycle.State = Lifecycle.State.STARTED,
+    block: suspend () -> T
+) {
+    LaunchedEffect(key1 = lifecycle, key2 = block) {
+        lifecycle.repeatOnLifecycle(minActiveState) {
+            block()
+        }
+    }
+}

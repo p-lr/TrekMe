@@ -11,28 +11,24 @@ import com.peterlaurence.trekme.events.recording.LiveRouteStop
 import com.peterlaurence.trekme.features.map.domain.interactors.RouteInteractor
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
 import com.peterlaurence.trekme.util.parseColor
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.paths.PathData
 import ovh.plrapps.mapcompose.ui.state.MapState
 
 class LiveRouteLayer(
-    scope: CoroutineScope,
     private val dataStateFlow: Flow<DataState>,
     private val routeInteractor: RouteInteractor,
     private val gpxRecordEvents: GpxRecordEvents
 ) {
     private val colorLiveRoute = "#FF9800"
+    private val liveRouteId = "live-route-trekme"
 
-    init {
-        scope.launch {
-            dataStateFlow.collectLatest { (map, mapState) ->
-                drawLiveRoute(mapState, map)
-            }
+    suspend fun drawLiveRoute() {
+        return dataStateFlow.collect { (map, mapState) ->
+            drawLiveRoute(mapState, map)
         }
     }
 
@@ -40,7 +36,7 @@ class LiveRouteLayer(
         val routeList = mutableListOf<Route>()
 
         fun newRoute(): Route {
-            val route = Route(initialColor = colorLiveRoute)
+            val route = Route(id = liveRouteId, initialColor = colorLiveRoute)
             routeList.add(route)
 
             launch {

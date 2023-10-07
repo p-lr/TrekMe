@@ -204,6 +204,8 @@ class MapViewModel @Inject constructor(
         mapExcursionInteractor
     )
 
+    val liveRouteLayer = LiveRouteLayer(dataStateFlow, routeInteractor, gpxRecordEvents)
+
     init {
         mapRepository.currentMapFlow.map {
             if (it != null) {
@@ -225,8 +227,6 @@ class MapViewModel @Inject constructor(
         settings.getMaxScale().combine(dataStateFlow) { maxScale, dataState ->
             dataState.mapState.maxScale = maxScale
         }.launchIn(viewModelScope)
-
-        LiveRouteLayer(viewModelScope, dataStateFlow, routeInteractor, gpxRecordEvents)
     }
 
     /* region events */

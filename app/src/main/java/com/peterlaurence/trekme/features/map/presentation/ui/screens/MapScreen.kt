@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.features.map.presentation.ui.components.DistanceLine
@@ -28,6 +29,7 @@ import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapUiState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.DistanceLineState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.ScaleIndicatorState
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.ui.MapUI
 import kotlin.time.TimeSource
@@ -40,13 +42,17 @@ fun MapScreen(
     isShowingSpeed: Boolean,
     isShowingGpsData: Boolean,
     isShowingScaleIndicator: Boolean,
-    locationState: State<Location?>,
+    locationFlow: Flow<Location>,
     elevationFix: Int,
     hasElevationFix: Boolean,
     onElevationFixUpdate: (Int) -> Unit,
     recordingButtons: @Composable () -> Unit
 ) {
     var isShowingElevationFixDialog by remember { mutableStateOf(false) }
+    val location: Location? by locationFlow.collectAsStateWithLifecycle(
+        initialValue = null,
+        minActiveState = Lifecycle.State.RESUMED
+    )
 
     Box(modifier) {
         MapUI(state = mapUiState.mapState) {
@@ -73,7 +79,7 @@ fun MapScreen(
             if (isShowingDistance || isShowingSpeed) {
                 TopOverlay(
                     distanceLineStateProvider = { mapUiState.distanceLineState },
-                    locationState = locationState,
+                    speed = location?.speed,
                     isShowingSpeed = isShowingSpeed,
                     isShowingDistance = isShowingDistance
                 )
@@ -90,7 +96,7 @@ fun MapScreen(
         if (isShowingGpsData) {
             GpsDataOverlay(
                 Modifier.align(Alignment.BottomStart),
-                locationState,
+                location,
                 hasElevationFix,
                 elevationFix = if (hasElevationFix) elevationFix else 0,
                 isComputingElapsedTime = hasElevationFix,
@@ -136,14 +142,14 @@ private fun ScaleIndicator(
 @Composable
 private fun TopOverlay(
     distanceLineStateProvider: () -> DistanceLineState,
-    locationState: State<Location?>,
+    speed: Float?,
     isShowingDistance: Boolean,
     isShowingSpeed: Boolean,
 ) {
     val state = distanceLineStateProvider()
     val distance by state.distanceFlow.collectAsState(initial = 0f)
     TopOverlay(
-        speed = locationState.value?.speed,
+        speed = speed,
         distance = distance,
         speedVisibility = isShowingSpeed,
         distanceVisibility = isShowingDistance
@@ -156,13 +162,12 @@ private fun TopOverlay(
 @Composable
 private fun GpsDataOverlay(
     modifier: Modifier = Modifier,
-    locationState: State<Location?>,
+    location: Location?,
     isElevationModifiable: Boolean,
     elevationFix: Int,
     isComputingElapsedTime: Boolean,
     onFixElevationClick: () -> Unit = {}
 ) {
-    val location = locationState.value
     var lastUpdateInSeconds: Long? by remember { mutableStateOf(null) }
 
     if (isComputingElapsedTime) {

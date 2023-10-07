@@ -51,6 +51,7 @@ import com.peterlaurence.trekme.util.android.requestBackgroundLocationPermission
 import com.peterlaurence.trekme.util.android.shouldShowBackgroundLocPermRationale
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.rotation
 import java.util.*
@@ -84,10 +85,9 @@ fun MapStateful(
     val locationFlow = viewModel.locationFlow
     val elevationFix by viewModel.elevationFixFlow.collectAsState()
 
-    val locationState: State<Location?> = locationFlow.collectAsStateWithLifecycle(
-        initialValue = null,
-        minActiveState = Lifecycle.State.RESUMED
-    )
+    LaunchedEffectWithLifecycle {
+        viewModel.liveRouteLayer.drawLiveRoute()
+    }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -210,7 +210,7 @@ fun MapStateful(
                         isShowingGpsData,
                         isShowingScaleIndicator,
                         rotationMode,
-                        locationState,
+                        locationFlow,
                         elevationFix,
                         hasElevationFix = purchased,
                         hasBeacons = purchased,
@@ -363,7 +363,7 @@ private fun MapScaffold(
     isShowingGpsData: Boolean,
     isShowingScaleIndicator: Boolean,
     rotationMode: RotationMode,
-    locationState: State<Location?>,
+    locationFlow: Flow<Location>,
     elevationFix: Int,
     hasElevationFix: Boolean,
     hasBeacons: Boolean,
@@ -447,7 +447,7 @@ private fun MapScaffold(
             isShowingSpeed,
             isShowingGpsData,
             isShowingScaleIndicator,
-            locationState,
+            locationFlow,
             elevationFix,
             hasElevationFix,
             onElevationFixUpdate,
