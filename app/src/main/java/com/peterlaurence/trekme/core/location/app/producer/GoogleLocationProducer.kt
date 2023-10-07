@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TimeSource
 
 /**
@@ -45,14 +46,22 @@ class GoogleLocationProducer(private val applicationContext: Context) : Location
         return callbackFlow {
             val callback = object : LocationCallback() {
                 val timeSource = TimeSource.Monotonic
+                var lastSend: TimeSource.Monotonic.ValueTimeMark? = null
 
                 override fun onLocationResult(locationResult: LocationResult) {
                     for (loc in locationResult.locations) {
                         val speed = if (loc.speed != 0f) loc.speed else null
                         val altitude = if (loc.altitude != 0.0) loc.altitude else null
-                        trySend(
-                            Location(loc.latitude, loc.longitude, speed, altitude, loc.time, timeSource.markNow(), InternalGps)
-                        )
+                        val now= timeSource.markNow()
+                        val last = lastSend
+                        /* Since after the flush, some locations are only a few milliseconds distant,
+                         * we need to filter-out those locations. */
+                        if (last == null || (now - last > 1.9.seconds)) {
+                            lastSend = now
+                            trySend(
+                                Location(loc.latitude, loc.longitude, speed, altitude, loc.time, now, InternalGps)
+                            )
+                        }
                     }
                 }
             }
