@@ -9,10 +9,10 @@ import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
 import java.io.InputStream
 import java.text.ParseException
-import java.text.SimpleDateFormat
-import java.util.*
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import kotlin.collections.ArrayList
-import kotlin.concurrent.getOrSet
 
 
 /**
@@ -20,7 +20,6 @@ import kotlin.concurrent.getOrSet
  *
  * @author P.Laurence on 12/02/17.
  */
-@Suppress("BlockingMethodInNonBlockingContext")
 @Throws(XmlPullParserException::class, IOException::class, ParseException::class)
 suspend fun parseGpx(`in`: InputStream): Gpx = withContext(Dispatchers.IO) {
     `in`.use {
@@ -240,9 +239,9 @@ private fun readElevation(parser: XmlPullParser): Double? {
 private fun readTime(parser: XmlPullParser): Long? {
     return try {
         parser.require(XmlPullParser.START_TAG, null, TAG_TIME)
-        val time = DATE_PARSER.parse(readText(parser))
+        val time = parseIsoDate(readText(parser))
         parser.require(XmlPullParser.END_TAG, null, TAG_TIME)
-        time?.time
+        time
     } catch (e: Exception) {
         null
     }
@@ -272,25 +271,8 @@ private fun skip(parser: XmlPullParser) {
     }
 }
 
-/**
- * For unit test purposes
- */
-fun getGpxDateParser(): SimpleDateFormat {
-    return DATE_PARSER
+private fun parseIsoDate(dateStr: String): Long {
+    return LocalDateTime.parse(dateStr, DateTimeFormatter.ISO_DATE_TIME).toInstant(ZoneOffset.UTC).toEpochMilli()
 }
-
-private val DATE_PARSER_tl = ThreadLocal<SimpleDateFormat>()
-
-/**
- * We use a [ThreadLocal] because [SimpleDateFormat] isn't thread-safe, and the gpx parser might be
- * invoked from multiple threads. Therefore, we cannot use a unique instance of [SimpleDateFormat].
- *
- * We don't add the trailing 'Z', because sometimes it's missing and we don't care about a
- * better precision than the second.
- **/
-private val DATE_PARSER: SimpleDateFormat
-    get() = DATE_PARSER_tl.getOrSet {
-        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH)
-    }
 
 private data class TrackExtensions(val id: String?)

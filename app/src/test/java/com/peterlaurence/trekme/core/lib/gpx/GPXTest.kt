@@ -12,6 +12,9 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.text.ParseException
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -77,8 +80,8 @@ class GPXTest {
                     assertEquals(8.89241667, lon)
                     assertEquals(2376.0, elevation)
                     assertEquals(
-                        getGpxDateParser().parse("2007-10-14T10:09:57Z")!!.time.toDouble(),
-                        time!!.toDouble()
+                        parseIsoDate("2007-10-14T10:09:57Z"),
+                        time!!
                     )
 
                     assertEquals(4, wayPoints.size)
@@ -159,8 +162,8 @@ class GPXTest {
             assertEquals(8.89241667, lon)
             assertEquals(2376.0, elevation)
             assertEquals(
-                getGpxDateParser().parse("2007-10-14T10:09:57Z")!!.time.toDouble(),
-                time!!.toDouble()
+                parseIsoDate("2007-10-14T10:09:57Z"),
+                time!!
             )
         } catch (t: Throwable) {
             t.printStackTrace()
@@ -186,10 +189,10 @@ class GPXTest {
     fun dateParse() {
         val aDate = "2017-09-26T08:38:12+02:00"
         try {
-            val date = getGpxDateParser().parse(aDate)
+            val date = parseIsoDate(aDate)
             assertNotNull(date)
             val cal = Calendar.getInstance()
-            cal.time = date
+            cal.time = Date(date)
             val year = cal[Calendar.YEAR]
             val month = cal[Calendar.MONTH]
             val day = cal[Calendar.DAY_OF_MONTH]
@@ -208,5 +211,9 @@ class GPXTest {
         val cal = Calendar.getInstance()
         cal.time = date
         return cal
+    }
+
+    private fun parseIsoDate(dateStr: String): Long {
+        return LocalDateTime.parse(dateStr, DateTimeFormatter.ISO_DATE_TIME).toInstant(ZoneOffset.UTC).toEpochMilli()
     }
 }

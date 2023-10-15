@@ -4,8 +4,9 @@ import com.peterlaurence.trekme.core.lib.gpx.model.*
 import org.w3c.dom.Document
 import org.w3c.dom.Node
 import java.io.OutputStream
-import java.text.SimpleDateFormat
-import java.util.*
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.parsers.ParserConfigurationException
 import javax.xml.transform.OutputKeys
@@ -71,7 +72,11 @@ private fun Node.addMetadata(metadata: Metadata, doc: Document) {
 
     if (metadata.time != null) {
         val node = doc.createElement(TAG_TIME)
-        node.appendChild(doc.createTextNode(DATE_FORMATTER.format(metadata.time)))
+        node.appendChild(
+            doc.createTextNode(
+                formatEpoch(metadata.time / 1000)
+            )
+        )
         metadataNode.appendChild(node)
     }
 
@@ -160,10 +165,18 @@ private fun addWaypointToNode(tag: String, trkPt: TrackPoint, n: Node, doc: Docu
     }
     if (trkPt.time != null) {
         val node = doc.createElement(TAG_TIME)
-        node.appendChild(doc.createTextNode(DATE_FORMATTER.format(trkPt.time)))
+        node.appendChild(
+            doc.createTextNode(
+                formatEpoch(trkPt.time!! / 1000)
+            )
+        )
         wptNode.appendChild(node)
     }
     n.appendChild(wptNode)
 }
 
-private val DATE_FORMATTER = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH)
+private fun formatEpoch(timeInSeconds: Long): String {
+    return LocalDateTime.ofEpochSecond(
+        timeInSeconds, 0, ZoneOffset.UTC
+    ).format(DateTimeFormatter.ISO_DATE_TIME)
+}

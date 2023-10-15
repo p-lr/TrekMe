@@ -36,6 +36,7 @@ android {
     }
 
     compileOptions {
+        coreLibraryDesugaringEnabled true
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
@@ -57,9 +58,10 @@ android {
 
 dependencies {
     def lifecycle_version = '2.6.2'
-    def coroutines_version = '1.7.2'
+    def coroutines_version = '1.7.3'
 
     implementation fileTree(include: ['*.jar'], dir: 'libs')
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3'
 //    implementation project(":mapcompose-local")  // for dev purposes
     implementation 'ovh.plrapps:mapcompose:2.9.3'
     implementation 'com.android.billingclient:billing:6.0.1'
