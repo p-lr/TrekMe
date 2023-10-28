@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.features.map.presentation.viewmodel.layers
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -23,15 +24,27 @@ import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapViewModel
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.positionCallout
 import com.peterlaurence.trekme.util.dpToPx
+import com.peterlaurence.trekme.util.map
+import com.peterlaurence.trekme.util.parseColor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import ovh.plrapps.mapcompose.api.*
+import ovh.plrapps.mapcompose.api.addCallout
+import ovh.plrapps.mapcompose.api.addMarker
+import ovh.plrapps.mapcompose.api.enableMarkerDrag
+import ovh.plrapps.mapcompose.api.getMarkerInfo
+import ovh.plrapps.mapcompose.api.moveMarker
+import ovh.plrapps.mapcompose.api.removeCallout
+import ovh.plrapps.mapcompose.api.removeMarker
+import ovh.plrapps.mapcompose.api.updateMarkerClickable
 import ovh.plrapps.mapcompose.ui.state.MapState
 import java.math.RoundingMode
 import java.text.DecimalFormat
-import java.util.*
+import java.util.UUID
 
 class ExcursionWaypointLayer(
     private val scope: CoroutineScope,
@@ -58,13 +71,25 @@ class ExcursionWaypointLayer(
         map.excursionRefs.collectLatest { refs ->
             coroutineScope {
                 for (ref in refs) {
-                    if (ref !in excursionWptListState.keys) {
-                        excursionWptListState[ref] = ExcursionWaypointsState(ref)
-                    }
-                    val state = excursionWptListState[ref] ?: continue
-                    launch {
-                        excursionInteractor.getWaypointsFlow(ref, map).collect { wpts ->
-                            onExcursionMarkersChange(wpts, mapState, state)
+                    ref.visible.collectLatest l@{ visible ->
+                        if (ref !in excursionWptListState.keys) {
+                            excursionWptListState[ref] = ExcursionWaypointsState(ref)
+                        }
+                        val state = excursionWptListState[ref] ?: return@l
+                        if (visible) {
+                            launch {
+                                excursionInteractor.getWaypointsFlow(ref, map).collect { wpts ->
+                                    val colorFlow = ref.color.map {
+                                        Color(parseColor(it))
+                                    }
+                                    onExcursionMarkersChange(wpts, mapState, state, colorFlow)
+                                }
+                            }
+                        } else {
+                            state.waypointsState.forEach { (_, u) ->
+                                mapState.removeMarker(u.idOnMap)
+                            }
+                            excursionWptListState.remove(ref)
                         }
                     }
                 }
@@ -86,7 +111,8 @@ class ExcursionWaypointLayer(
     private fun onExcursionMarkersChange(
         wpts: List<ExcursionWaypointWithNormalizedPos>,
         mapState: MapState,
-        excursionWptState: ExcursionWaypointsState
+        excursionWptState: ExcursionWaypointsState,
+        colorFlow: StateFlow<Color>
     ) {
         for (wptWithNormalizedPos in wpts) {
             val existing = excursionWptState.waypointsState[wptWithNormalizedPos.waypoint.id]
@@ -103,6 +129,7 @@ class ExcursionWaypointLayer(
                 val state = addExcursionWaypointOnMap(
                     waypoint = wptWithNormalizedPos.waypoint,
                     excursionId = excursionWptState.excursionRef.id,
+                    colorFlow = colorFlow,
                     mapState = mapState,
                     x = wptWithNormalizedPos.x,
                     y = wptWithNormalizedPos.y
@@ -123,9 +150,11 @@ class ExcursionWaypointLayer(
                 onExcursionWaypointGrabTap(id, mapState)
                 true
             }
+
             id.startsWith(excursionWaypointPrefix) -> {
                 onExcursionWaypointTap(mapState, id, x, y)
             }
+
             else -> false
         }
     }
@@ -260,6 +289,7 @@ class ExcursionWaypointLayer(
     private fun addExcursionWaypointOnMap(
         waypoint: ExcursionWaypoint,
         excursionId: String,
+        colorFlow: StateFlow<Color>,
         mapState: MapState,
         x: Double,
         y: Double
@@ -276,11 +306,17 @@ class ExcursionWaypointLayer(
             clickableAreaCenterOffset = Offset(0f, -0.22f),
             clickableAreaScale = Offset(0.7f, 0.5f)
         ) {
+            val color by colorFlow.collectAsState()
+
             Marker(
                 modifier = Modifier.padding(5.dp),
                 isStatic = state.isStatic,
-                backgroundColor =  Color(0xFF78909C),
-                strokeColor = Color(0xFF607C8C),
+                backgroundColor = color,
+                strokeColor = Color(
+                    red = color.red * 0.8f,
+                    green = color.green * 0.8f,
+                    blue = color.blue * 0.8f
+                ),
             )
         }
         return state
