@@ -235,7 +235,7 @@ class ExcursionDaoFileBased(
                     } else {
                         attempt
                     }
-                    destFolder.mkdir()
+                    destFolder.mkdirs()
 
                     val destFile = File(destFolder, name)
                     FileOutputStream(destFile).use { out ->
