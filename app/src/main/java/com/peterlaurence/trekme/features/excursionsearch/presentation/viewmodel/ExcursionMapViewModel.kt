@@ -18,6 +18,7 @@ import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.core.map.domain.interactors.GetMapInteractor
 import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToMercatorInteractor
 import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
+import com.peterlaurence.trekme.core.map.domain.models.BoundingBoxNormalized
 import com.peterlaurence.trekme.core.map.domain.models.DownloadMapRequest
 import com.peterlaurence.trekme.core.map.domain.models.TileResult
 import com.peterlaurence.trekme.core.map.domain.models.TileStream
@@ -54,6 +55,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.usgsC
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.PositionMarker
 import com.peterlaurence.trekme.features.excursionsearch.domain.repository.GeoRecordForSearchItemRepository
 import com.peterlaurence.trekme.features.excursionsearch.domain.repository.PendingSearchRepository
+import com.peterlaurence.trekme.features.excursionsearch.domain.repository.TrailRepository
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.layer.MarkerLayer
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.layer.RouteLayer
 import com.peterlaurence.trekme.features.map.domain.models.NormalizedPos
@@ -93,11 +95,13 @@ import ovh.plrapps.mapcompose.api.centroidX
 import ovh.plrapps.mapcompose.api.centroidY
 import ovh.plrapps.mapcompose.api.disableFlingZoom
 import ovh.plrapps.mapcompose.api.hasMarker
+import ovh.plrapps.mapcompose.api.idleStateFlow
 import ovh.plrapps.mapcompose.api.moveMarker
 import ovh.plrapps.mapcompose.api.removeAllLayers
 import ovh.plrapps.mapcompose.api.scale
 import ovh.plrapps.mapcompose.api.scrollTo
 import ovh.plrapps.mapcompose.api.setMapBackground
+import ovh.plrapps.mapcompose.api.visibleBoundingBox
 import ovh.plrapps.mapcompose.ui.layout.Fit
 import ovh.plrapps.mapcompose.ui.layout.Forced
 import ovh.plrapps.mapcompose.ui.state.MapState
@@ -115,6 +119,7 @@ class ExcursionMapViewModel @Inject constructor(
     private val mapExcursionInteractor: MapExcursionInteractor,
     private val excursionRepository: ExcursionRepository,
     private val downloadRepository: DownloadRepository,
+    private val trailRepository: TrailRepository,
     @IGN
     extendedOfferWithIgnStateOwner: ExtendedOfferStateOwner,
     private val app: Application
@@ -173,6 +178,22 @@ class ExcursionMapViewModel @Inject constructor(
         viewModelScope.launch {
             mapSourceDataFlow.collect {
                 changeMapSource(it)
+            }
+        }
+
+        viewModelScope.launch {
+            mapStateFlow.collectLatest { mapState ->
+                mapState.idleStateFlow().collect { idle ->
+                    if (idle) {
+                        val bb = mapState.visibleBoundingBox()
+
+                        val res = trailRepository.search(bb.toDomain())
+                        println("xxxxxx res size ${res.size}")
+                        res.forEach {
+                            println("xxxxxx $it")
+                        }
+                    }
+                }
             }
         }
 
@@ -624,6 +645,10 @@ class ExcursionMapViewModel @Inject constructor(
         }
 
         return hasMapContainingBoundingBox
+    }
+
+    private fun NormalizedBoundingBox.toDomain(): BoundingBoxNormalized {
+        return BoundingBoxNormalized(xLeft, yBottom, xRight, yTop)
     }
 
     private data class WmtsConfig(val wmtsLevelMax: Int, val tileSize: Int, val mapSize: Int)

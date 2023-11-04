@@ -2,7 +2,9 @@ package com.peterlaurence.trekme.features.excursionsearch.di
 
 import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordParser
 import com.peterlaurence.trekme.features.excursionsearch.data.api.ExcursionApiImpl
+import com.peterlaurence.trekme.features.excursionsearch.data.api.TrailApiImpl
 import com.peterlaurence.trekme.features.excursionsearch.domain.model.ExcursionApi
+import com.peterlaurence.trekme.features.excursionsearch.domain.model.TrailApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -20,5 +22,11 @@ class ExcursionModule {
     @ActivityRetainedScoped
     fun provideExcursionApi(geoRecordParser: GeoRecordParser): ExcursionApi {
         return ExcursionApiImpl(httpClient, geoRecordParser)
+    }
+
+    @Provides
+    @ActivityRetainedScoped
+    fun provideTrailApi(): TrailApi {
+        return TrailApiImpl(httpClient)
     }
 }

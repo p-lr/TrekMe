@@ -8,6 +8,8 @@ import kotlinx.coroutines.withContext
  */
 data class BoundingBox(val minLat: Double, val maxLat: Double, val minLon: Double, val maxLon: Double)
 
+data class BoundingBoxNormalized(val xLeft: Double, val yBottom: Double, val xRight: Double, val yTop: Double)
+
 fun BoundingBox.intersects(box: BoundingBox): Boolean {
     val inclusionLat = (box.minLat in minLat..maxLat && box.maxLat in minLat..maxLat) ||
             (minLat in box.minLat..box.maxLat && maxLat in box.minLat..box.maxLat)
