@@ -58,6 +58,7 @@ import com.peterlaurence.trekme.features.excursionsearch.domain.repository.Pendi
 import com.peterlaurence.trekme.features.excursionsearch.domain.repository.TrailRepository
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.layer.MarkerLayer
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.layer.RouteLayer
+import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.layer.TrailLayer
 import com.peterlaurence.trekme.features.map.domain.models.NormalizedPos
 import com.peterlaurence.trekme.features.mapcreate.app.service.download.DownloadService
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
@@ -88,25 +89,23 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import ovh.plrapps.mapcompose.api.BoundingBox as NormalizedBoundingBox
 import ovh.plrapps.mapcompose.api.addLayer
 import ovh.plrapps.mapcompose.api.addMarker
 import ovh.plrapps.mapcompose.api.centroidX
 import ovh.plrapps.mapcompose.api.centroidY
 import ovh.plrapps.mapcompose.api.disableFlingZoom
 import ovh.plrapps.mapcompose.api.hasMarker
-import ovh.plrapps.mapcompose.api.idleStateFlow
 import ovh.plrapps.mapcompose.api.moveMarker
 import ovh.plrapps.mapcompose.api.removeAllLayers
 import ovh.plrapps.mapcompose.api.scale
 import ovh.plrapps.mapcompose.api.scrollTo
 import ovh.plrapps.mapcompose.api.setMapBackground
-import ovh.plrapps.mapcompose.api.visibleBoundingBox
 import ovh.plrapps.mapcompose.ui.layout.Fit
 import ovh.plrapps.mapcompose.ui.layout.Forced
 import ovh.plrapps.mapcompose.ui.state.MapState
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
+import ovh.plrapps.mapcompose.api.BoundingBox as NormalizedBoundingBox
 
 @HiltViewModel
 class ExcursionMapViewModel @Inject constructor(
@@ -170,6 +169,12 @@ class ExcursionMapViewModel @Inject constructor(
         wgs84ToMercatorInteractor = wgs84ToMercatorInteractor,
     )
 
+    val trailLayer = TrailLayer(
+        scope = viewModelScope,
+        mapStateFlow = mapStateFlow,
+        trailRepository = trailRepository
+    )
+
     private val minLevel = 12
     private val maxLevel = 16
     private val tileNumberLimit = 5900  // approx. 100 Mo
@@ -178,22 +183,6 @@ class ExcursionMapViewModel @Inject constructor(
         viewModelScope.launch {
             mapSourceDataFlow.collect {
                 changeMapSource(it)
-            }
-        }
-
-        viewModelScope.launch {
-            mapStateFlow.collectLatest { mapState ->
-                mapState.idleStateFlow().collect { idle ->
-                    if (idle) {
-                        val bb = mapState.visibleBoundingBox()
-
-                        val res = trailRepository.search(bb.toDomain())
-                        println("xxxxxx res size ${res.size}")
-                        res.forEach {
-                            println("xxxxxx $it")
-                        }
-                    }
-                }
             }
         }
 
@@ -645,10 +634,6 @@ class ExcursionMapViewModel @Inject constructor(
         }
 
         return hasMapContainingBoundingBox
-    }
-
-    private fun NormalizedBoundingBox.toDomain(): BoundingBoxNormalized {
-        return BoundingBoxNormalized(xLeft, yBottom, xRight, yTop)
     }
 
     private data class WmtsConfig(val wmtsLevelMax: Int, val tileSize: Int, val mapSize: Int)
