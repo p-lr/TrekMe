@@ -125,7 +125,7 @@ class ExcursionMapViewModel @Inject constructor(
 ) : ViewModel() {
     val locationFlow: Flow<Location> = locationSource.locationFlow
 
-    private val _uiStateFlow = MutableStateFlow<UiState>(AwaitingSearch)
+    private val _uiStateFlow = MutableStateFlow<UiState>(LoadingLayer)
     val uiStateFlow: StateFlow<UiState> = _uiStateFlow.asStateFlow()
     private val mapStateFlow = _uiStateFlow.filterIsInstance<MapReady>().map { it.mapState }
 
@@ -390,30 +390,26 @@ class ExcursionMapViewModel @Inject constructor(
                 scroll = NormalizedPos(previousMapState.centroidX, previousMapState.centroidY)
             )
         } else {
-            _uiStateFlow.value = AwaitingSearch
-            val excursionSearchData = _excursionSearchFlow.first {
-                it.fold(
-                    onSuccess = { true },
-                    onLoading = { false },
-                    onFailure = { true }
-                )
-            }.getOrNull()
+            _uiStateFlow.value = AwaitingLocation
 
-            if (excursionSearchData == null) {
-                InitConfigError
-            } else {
-                val latLon = excursionSearchData.location
-                val bb = computeBoundingBox(excursionSearchData.items, latLon)
-                if (bb != null) {
-                    BoundingBoxConfig(bb)
+            // TODO: what if this suspends indefinitely? -> should add a timeout
+            val location = locationFlow.firstOrNull()
+
+            if (location != null) {
+                val normalized = wgs84ToMercatorInteractor.getNormalized(location.latitude, location.longitude)
+                if (normalized != null) {
+                    ScaleAndScrollConfig(
+                        scale = 1f,
+                        scroll = NormalizedPos(normalized.x, normalized.y)
+                    )
                 } else InitConfigError
+            } else {
+                // Default location: TODO define a better one
+                ScaleAndScrollConfig(
+                    scale = 0.1f,
+                    scroll = NormalizedPos(0.5, 0.5)
+                )
             }
-        }
-
-        /* If no excursions could be found, no need to display the map. */
-        if (initScaleAndScroll is InitConfigError) {
-            _uiStateFlow.value = Error.NO_EXCURSIONS
-            return
         }
 
         initMapState(mapSourceData, initScaleAndScroll, wmtsConfig)
@@ -655,7 +651,7 @@ data class BoundingBoxConfig(val bb: NormalizedBoundingBox): InitScaleAndScrollC
 object InitConfigError : InitScaleAndScrollConfig
 
 sealed interface UiState
-object AwaitingSearch : UiState
+object AwaitingLocation : UiState
 object LoadingLayer : UiState
 data class MapReady(val mapState: MapState, val isSearchPending: Boolean) : UiState
 enum class Error : UiState {

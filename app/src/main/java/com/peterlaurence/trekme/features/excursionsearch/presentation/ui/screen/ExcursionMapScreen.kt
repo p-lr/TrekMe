@@ -58,6 +58,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.georecord.domain.logic.getGeoStatistics
@@ -86,7 +87,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeThem
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.component.ElevationGraph
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.component.ElevationGraphPoint
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.dialog.MapSourceDataSelect
-import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.AwaitingSearch
+import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.AwaitingLocation
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.DownloadNotAllowed
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.DownloadNotAllowedReason
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.Error
@@ -114,7 +115,7 @@ import kotlin.math.roundToInt
 
 @Composable
 fun ExcursionMapStateful(
-    viewModel: ExcursionMapViewModel,
+    viewModel: ExcursionMapViewModel = hiltViewModel(),
     onBack: () -> Unit,
     onGoToMapList: () -> Unit,
     onGoToShop: () -> Unit,
@@ -340,8 +341,8 @@ private fun ExcursionMapScreen(
                 EscapeHatchScreen(modifier, onGoToMapCreation)
             }
 
-            AwaitingSearch -> {
-                LoadingScreen(stringResource(id = R.string.awaiting_excursion_search))
+            AwaitingLocation -> {
+                LoadingScreen(stringResource(id = R.string.awaiting_location))
             }
 
             is MapReady -> {
@@ -480,7 +481,9 @@ private fun LazyListScope.downloadSection(
                     )
                 }
                 Loading -> CircularProgressIndicator(
-                    Modifier.padding(start = 16.dp, bottom = 16.dp).size(18.dp),
+                    Modifier
+                        .padding(start = 16.dp, bottom = 16.dp)
+                        .size(18.dp),
                     strokeWidth = 2.dp
                 )
             }
@@ -530,7 +533,8 @@ private fun ExcursionMap(
                     strokeWidth = 2.dp
                 )
                 Spacer(modifier = Modifier.width(12.dp))
-                Text(text = stringResource(id = R.string.awaiting_excursion_search))
+                // TODO: adapt
+                Text(text = stringResource(id = R.string.awaiting_location))
             }
         }
 
