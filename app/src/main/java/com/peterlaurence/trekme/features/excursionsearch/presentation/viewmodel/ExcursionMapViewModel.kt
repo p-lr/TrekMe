@@ -129,6 +129,9 @@ class ExcursionMapViewModel @Inject constructor(
     val uiStateFlow: StateFlow<UiState> = _uiStateFlow.asStateFlow()
     private val mapStateFlow = _uiStateFlow.filterIsInstance<MapReady>().map { it.mapState }
 
+    private val _isTrailUpdatePending = MutableStateFlow(false)
+    val isTrailUpdatePending = _isTrailUpdatePending.asStateFlow()
+
     val mapSourceDataFlow = MutableStateFlow<MapSourceData>(OsmSourceData(WorldStreetMap))
 
     private val _excursionSearchFlow = pendingSearchRepository.getSearchResultFlow().stateIn(
@@ -172,7 +175,10 @@ class ExcursionMapViewModel @Inject constructor(
     val trailLayer = TrailLayer(
         scope = viewModelScope,
         mapStateFlow = mapStateFlow,
-        trailRepository = trailRepository
+        trailRepository = trailRepository,
+        onLoadingChanged = { loading ->
+            _isTrailUpdatePending.value = loading
+        }
     )
 
     private val minLevel = 12
@@ -192,63 +198,63 @@ class ExcursionMapViewModel @Inject constructor(
             }
         }
 
-        viewModelScope.launch {
-            /**
-             * This defines the behavior when a new search is done while the map is already displayed.
-             * In this case, we want to first show that a search is pending, then automatically
-             * scroll to the search location. In case of error, we also inform the user.
-             */
-            _excursionSearchFlow.collectLatest { searchResult ->
-                val previousMapState = _uiStateFlow.value.getMapState()
-                if (previousMapState != null) {
-                    searchResult.onLoading {
-                        setSearchPending(true)
-                    }.onFailure {
-                        _events.send(Event.SearchError)
-                        setSearchPending(false)
-                    }.onSuccess { searchData ->
-                        val latLon = searchData.location
-                        val bb = computeBoundingBox(searchData.items, latLon)
-                        if (bb != null) {
-                            launch {
-                                previousMapState.scrollToBoundingBox(bb)
-                            }
-                        }
-                        setSearchPending(false)
-                    }
-                }
-            }
-        }
+//        viewModelScope.launch {
+//            /**
+//             * This defines the behavior when a new search is done while the map is already displayed.
+//             * In this case, we want to first show that a search is pending, then automatically
+//             * scroll to the search location. In case of error, we also inform the user.
+//             */
+//            _excursionSearchFlow.collectLatest { searchResult ->
+//                val previousMapState = _uiStateFlow.value.getMapState()
+//                if (previousMapState != null) {
+//                    searchResult.onLoading {
+//                        setSearchPending(true)
+//                    }.onFailure {
+//                        _events.send(Event.SearchError)
+//                        setSearchPending(false)
+//                    }.onSuccess { searchData ->
+//                        val latLon = searchData.location
+//                        val bb = computeBoundingBox(searchData.items, latLon)
+//                        if (bb != null) {
+//                            launch {
+//                                previousMapState.scrollToBoundingBox(bb)
+//                            }
+//                        }
+//                        setSearchPending(false)
+//                    }
+//                }
+//            }
+//        }
 
         /**
          * Any time a new excursion is loaded, there's a new [BoundingBox].
          */
-        viewModelScope.launch {
-            routeLayer.boundingBoxFlow.collect { bb ->
-                mapDownloadStateFlow.value = if (bb != null) {
-                    val mapSourceData = mapSourceDataFlow.value
-
-                    /* We'll require account creation for Osm map download */
-                    if (mapSourceData is OsmSourceData) {
-                        DownloadNotAllowed(reason = DownloadNotAllowedReason.Restricted)
-                    } else {
-                        getPoints(bb)?.let { (p1, p2) ->
-                            val tileCount = getNumberOfTiles(minLevel, maxLevel, p1, p2)
-                            if (tileCount > tileNumberLimit) {
-                                DownloadNotAllowed(reason = DownloadNotAllowedReason.TooBigMap)
-                            } else {
-                                MapDownloadData(
-                                    hasContainingMap = hasContainingMap(bb),
-                                    tileCount = tileCount
-                                )
-                            }
-                        } ?: Loading
-                    }
-                } else {
-                    Loading
-                }
-            }
-        }
+//        viewModelScope.launch {
+//            routeLayer.boundingBoxFlow.collect { bb ->
+//                mapDownloadStateFlow.value = if (bb != null) {
+//                    val mapSourceData = mapSourceDataFlow.value
+//
+//                    /* We'll require account creation for Osm map download */
+//                    if (mapSourceData is OsmSourceData) {
+//                        DownloadNotAllowed(reason = DownloadNotAllowedReason.Restricted)
+//                    } else {
+//                        getPoints(bb)?.let { (p1, p2) ->
+//                            val tileCount = getNumberOfTiles(minLevel, maxLevel, p1, p2)
+//                            if (tileCount > tileNumberLimit) {
+//                                DownloadNotAllowed(reason = DownloadNotAllowedReason.TooBigMap)
+//                            } else {
+//                                MapDownloadData(
+//                                    hasContainingMap = hasContainingMap(bb),
+//                                    tileCount = tileCount
+//                                )
+//                            }
+//                        } ?: Loading
+//                    }
+//                } else {
+//                    Loading
+//                }
+//            }
+//        }
     }
 
     fun onMapSourceDataChange(source: MapSourceData) {
@@ -473,7 +479,7 @@ class ExcursionMapViewModel @Inject constructor(
         _uiStateFlow.value = if (tileStreamProvider != null) {
             mapState.removeAllLayers()
             mapState.addLayer(tileStreamProvider.toMapComposeTileStreamProvider())
-            MapReady(mapState, isSearchPending = false)
+            MapReady(mapState)
         } else {
             Error.PROVIDER_OUTAGE
         }
@@ -599,14 +605,6 @@ class ExcursionMapViewModel @Inject constructor(
         return makeConfig(maxLevel = lvlMax ?: 18, tileSize)
     }
 
-    private fun setSearchPending(pending: Boolean) {
-        _uiStateFlow.update { uiState ->
-            if (uiState is MapReady) {
-                uiState.copy(isSearchPending = pending)
-            } else uiState
-        }
-    }
-
     /**
      * If the user has a map which contains the bounding box of the selected excursion, then
      * by default we de-select the option to download the corresponding map (since upon excursion
@@ -653,7 +651,7 @@ object InitConfigError : InitScaleAndScrollConfig
 sealed interface UiState
 object AwaitingLocation : UiState
 object LoadingLayer : UiState
-data class MapReady(val mapState: MapState, val isSearchPending: Boolean) : UiState
+data class MapReady(val mapState: MapState) : UiState
 enum class Error : UiState {
     PROVIDER_OUTAGE, NO_EXCURSIONS
 }

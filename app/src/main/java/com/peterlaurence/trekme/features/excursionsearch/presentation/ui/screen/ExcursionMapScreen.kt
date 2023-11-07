@@ -37,6 +37,7 @@ import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -122,6 +123,7 @@ fun ExcursionMapStateful(
     onGoToMapCreation: () -> Unit
 ) {
     val uiState by viewModel.uiStateFlow.collectAsStateWithLifecycle()
+    val isTrailUpdatePending by viewModel.isTrailUpdatePending.collectAsStateWithLifecycle()
     val mapSourceData by viewModel.mapSourceDataFlow.collectAsStateWithLifecycle()
     val hasExtendedOffer by viewModel.extendedOfferFlow.collectAsState(initial = false)
     val swipeableState = rememberSwipeableState(initialValue = States.COLLAPSED)
@@ -222,6 +224,7 @@ fun ExcursionMapStateful(
 
     ExcursionMapScreen(
         uiState = uiState,
+        isTrailUpdatePending = isTrailUpdatePending,
         swipeableState = swipeableState,
         bottomSheetDataState = bottomSheetDataState,
         snackbarHostState = snackbarHostState,
@@ -289,6 +292,7 @@ fun ExcursionMapStateful(
 @Composable
 private fun ExcursionMapScreen(
     uiState: UiState,
+    isTrailUpdatePending: Boolean,
     swipeableState: SwipeableState<States>,
     bottomSheetDataState: ResultL<BottomSheetData?>,
     snackbarHostState: SnackbarHostState,
@@ -300,11 +304,6 @@ private fun ExcursionMapScreen(
     onGoToMapCreation: () -> Unit = {}
 ) {
     Scaffold(
-        topBar = {
-            ExcursionMapTopAppBar(
-                onBack = onBack,
-            )
-        },
         bottomBar = {
             val bottomSheetDataSuccess = bottomSheetDataState.getOrNull()
             if (
@@ -337,6 +336,7 @@ private fun ExcursionMapScreen(
                 ErrorScreen(message = stringResource(id = R.string.provider_issue))
             }
 
+            // TODO: remove?
             Error.NO_EXCURSIONS -> {
                 EscapeHatchScreen(modifier, onGoToMapCreation)
             }
@@ -349,7 +349,7 @@ private fun ExcursionMapScreen(
                 Box(modifier) {
                     ExcursionMap(
                         mapState = uiState.mapState,
-                        isSearchPending = uiState.isSearchPending,
+                        isSearchPending = isTrailUpdatePending,
                         onLayerSelection = onLayerSelection
                     )
                     BottomSheet(
@@ -518,24 +518,33 @@ private fun ExcursionMap(
     Box {
         MapUI(modifier = modifier, state = mapState)
 
-        if (isSearchPending) {
+        Surface(
+            Modifier
+                .padding(start = 16.dp, end = 72.dp)
+                .fillMaxWidth()
+                .padding(top = 16.dp)
+                .height(40.dp)
+                .align(Alignment.TopCenter),
+            shape = RoundedCornerShape(50),
+            shadowElevation = 4.dp
+        ) {
             Row(
-                modifier = Modifier
-                    .padding(top = 16.dp)
-                    .height(40.dp)
-                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(50))
-                    .align(Alignment.TopCenter)
-                    .padding(horizontal = 12.dp),
+                Modifier.padding(horizontal = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                CircularProgressIndicator(
-                    Modifier.size(18.dp),
-                    strokeWidth = 2.dp
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                // TODO: adapt
-                Text(text = stringResource(id = R.string.awaiting_location))
+                Text("Search")
             }
+        }
+        if (isSearchPending) {
+            CircularProgressIndicator(
+                Modifier
+                    .padding(top = 64.dp)
+                    .size(25.dp)
+                    .align(Alignment.TopCenter)
+                    .background(MaterialTheme.colorScheme.surface, shape = CircleShape)
+                    .padding(4.dp),
+                strokeWidth = 2.dp
+            )
         }
 
         SmallFloatingActionButton(
@@ -801,7 +810,8 @@ private fun ExcursionMapScreenPreview() {
 
     TrekMeTheme {
         ExcursionMapScreen(
-            uiState = MapReady(mapState, isSearchPending = true),
+            uiState = MapReady(mapState),
+            isTrailUpdatePending = true,
             swipeableState = swipeableState,
             bottomSheetDataState = bottomSheetData,
             snackbarHostState = snackbarHostState,

@@ -26,6 +26,7 @@ class TrailLayer(
     scope: CoroutineScope,
     private val mapStateFlow: Flow<MapState>,
     private val trailRepository: TrailRepository,
+    onLoadingChanged: (Boolean) -> Unit
 ) {
     init {
         scope.launch {
@@ -34,9 +35,11 @@ class TrailLayer(
                     if (idle) {
                         val bb = mapState.visibleBoundingBox().toDomain()
 
+                        onLoadingChanged(true)
                         val searchItems = trailRepository.search(bb)
 
                         val details = trailRepository.getDetails(bb, searchItems.map { it.id })
+                        onLoadingChanged(false)
                         updatePaths(mapState, details, searchItems)
                     }
                 }
