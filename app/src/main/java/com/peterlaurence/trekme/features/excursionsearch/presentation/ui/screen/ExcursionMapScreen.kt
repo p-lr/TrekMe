@@ -133,6 +133,7 @@ fun ExcursionMapStateful(
 ) {
     val uiState by viewModel.uiStateFlow.collectAsStateWithLifecycle()
     val geoplaceList by viewModel.geoPlaceFlow.collectAsStateWithLifecycle()
+    val isGeoPlaceLoading by viewModel.isGeoPlaceLoading.collectAsStateWithLifecycle()
     val isTrailUpdatePending by viewModel.isTrailUpdatePending.collectAsStateWithLifecycle()
     val mapSourceData by viewModel.mapSourceDataFlow.collectAsStateWithLifecycle()
     val hasExtendedOffer by viewModel.extendedOfferFlow.collectAsState(initial = false)
@@ -235,6 +236,7 @@ fun ExcursionMapStateful(
     ExcursionMapScreen(
         uiState = uiState,
         geoplaceList = geoplaceList,
+        isGeoPlaceLoading = isGeoPlaceLoading,
         isTrailUpdatePending = isTrailUpdatePending,
         swipeableState = swipeableState,
         bottomSheetDataState = bottomSheetDataState,
@@ -304,6 +306,7 @@ fun ExcursionMapStateful(
 private fun ExcursionMapScreen(
     uiState: UiState,
     geoplaceList: List<GeoPlace>,
+    isGeoPlaceLoading: Boolean,
     isTrailUpdatePending: Boolean,
     swipeableState: SwipeableState<States>,
     bottomSheetDataState: ResultL<BottomSheetData?>,
@@ -439,6 +442,7 @@ private fun ExcursionMapScreen(
                         }
                         GeoPlaceListComponent(
                             geoPlaceList = geoplaceList,
+                            isLoading = isGeoPlaceLoading,
                             onGeoPlaceSelection = { /* TODO */ }
                         )
                     }
@@ -925,6 +929,7 @@ private fun ExcursionMapScreenPreview() {
         ExcursionMapScreen(
             uiState = MapReady(mapState),
             geoplaceList = emptyList(),
+            isGeoPlaceLoading = false,
             isTrailUpdatePending = true,
             swipeableState = swipeableState,
             bottomSheetDataState = bottomSheetData,
