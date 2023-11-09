@@ -11,6 +11,8 @@ import com.peterlaurence.trekme.core.billing.domain.model.ExtendedOfferStateOwne
 import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionSearchItem
 import com.peterlaurence.trekme.core.excursion.domain.repository.ExcursionRepository
+import com.peterlaurence.trekme.core.geocoding.domain.engine.GeoPlace
+import com.peterlaurence.trekme.core.geocoding.domain.repository.GeocodingRepository
 import com.peterlaurence.trekme.core.geotools.distanceApprox
 import com.peterlaurence.trekme.core.location.domain.model.LatLon
 import com.peterlaurence.trekme.core.location.domain.model.Location
@@ -119,6 +121,7 @@ class ExcursionMapViewModel @Inject constructor(
     private val excursionRepository: ExcursionRepository,
     private val downloadRepository: DownloadRepository,
     private val trailRepository: TrailRepository,
+    private val geocodingRepository: GeocodingRepository,
     @IGN
     extendedOfferWithIgnStateOwner: ExtendedOfferStateOwner,
     private val app: Application
@@ -131,6 +134,13 @@ class ExcursionMapViewModel @Inject constructor(
 
     private val _isTrailUpdatePending = MutableStateFlow(false)
     val isTrailUpdatePending = _isTrailUpdatePending.asStateFlow()
+
+    val geoPlaceFlow: StateFlow<List<GeoPlace>> = geocodingRepository.geoPlaceFlow.stateIn(
+        viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = emptyList()
+    )
+    val isGeoPlaceLoading = geocodingRepository.isLoadingFlow
 
     val mapSourceDataFlow = MutableStateFlow<MapSourceData>(OsmSourceData(WorldStreetMap))
 
@@ -259,6 +269,12 @@ class ExcursionMapViewModel @Inject constructor(
 
     fun onMapSourceDataChange(source: MapSourceData) {
         mapSourceDataFlow.value = source
+    }
+
+    fun onLocationSearch(query: String) {
+        if (query.isNotEmpty()) {
+            geocodingRepository.search(query)
+        }
     }
 
     fun onLocationReceived(location: Location) = viewModelScope.launch {

@@ -26,8 +26,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.SwipeableState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.rememberSwipeableState
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -71,6 +69,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.geocoding.domain.engine.GeoPlace
 import com.peterlaurence.trekme.core.georecord.domain.logic.getGeoStatistics
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
@@ -96,6 +95,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingS
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.component.ElevationGraph
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.component.ElevationGraphPoint
+import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.component.GeoPlaceListComponent
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.dialog.MapSourceDataSelect
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.AwaitingLocation
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.DownloadNotAllowed
@@ -132,13 +132,14 @@ fun ExcursionMapStateful(
     onGoToMapCreation: () -> Unit
 ) {
     val uiState by viewModel.uiStateFlow.collectAsStateWithLifecycle()
+    val geoplaceList by viewModel.geoPlaceFlow.collectAsStateWithLifecycle()
     val isTrailUpdatePending by viewModel.isTrailUpdatePending.collectAsStateWithLifecycle()
     val mapSourceData by viewModel.mapSourceDataFlow.collectAsStateWithLifecycle()
     val hasExtendedOffer by viewModel.extendedOfferFlow.collectAsState(initial = false)
     val swipeableState = rememberSwipeableState(initialValue = States.COLLAPSED)
     val geoRecordForSearchState by viewModel.geoRecordForSearchFlow.collectAsStateWithLifecycle()
     val mapDownloadState by viewModel.mapDownloadStateFlow.collectAsStateWithLifecycle()
-    var isDownloadOptionChecked by remember(mapDownloadState) { 
+    var isDownloadOptionChecked by remember(mapDownloadState) {
         mutableStateOf(!((mapDownloadState as? MapDownloadData)?.hasContainingMap ?: true))
     }
 
@@ -233,10 +234,12 @@ fun ExcursionMapStateful(
 
     ExcursionMapScreen(
         uiState = uiState,
+        geoplaceList = geoplaceList,
         isTrailUpdatePending = isTrailUpdatePending,
         swipeableState = swipeableState,
         bottomSheetDataState = bottomSheetDataState,
         snackbarHostState = snackbarHostState,
+        onLocationSearch = viewModel::onLocationSearch,
         onCursorMove = { latLon, d, ele ->
             viewModel.routeLayer.setCursor(latLon, distance = d, ele = ele)
         },
@@ -247,7 +250,6 @@ fun ExcursionMapStateful(
             }
             viewModel.onDownload(isDownloadOptionChecked)
         },
-        onBack = onBack,
         onLayerSelection = { isShowingLayerSelectionDialog = true },
         onGoToMapCreation = onGoToMapCreation
     )
@@ -301,14 +303,15 @@ fun ExcursionMapStateful(
 @Composable
 private fun ExcursionMapScreen(
     uiState: UiState,
+    geoplaceList: List<GeoPlace>,
     isTrailUpdatePending: Boolean,
     swipeableState: SwipeableState<States>,
     bottomSheetDataState: ResultL<BottomSheetData?>,
     snackbarHostState: SnackbarHostState,
+    onLocationSearch: (String) -> Unit,
     onCursorMove: (latLon: LatLon, d: Double, ele: Double) -> Unit = { _, _, _ -> },
     onToggleDownloadMapOption: () -> Unit = {},
     onDownload: () -> Unit = {},
-    onBack: () -> Unit = {},
     onLayerSelection: () -> Unit = {},
     onGoToMapCreation: () -> Unit = {}
 ) {
@@ -384,7 +387,10 @@ private fun ExcursionMapScreen(
                             BasicTextField(
                                 modifier = Modifier.focusRequester(focusRequester),
                                 value = searchText,
-                                onValueChange = { searchText = it },
+                                onValueChange = {
+                                    searchText = it
+                                    onLocationSearch(it)
+                                },
                                 singleLine = true,
                                 cursorBrush = SolidColor(MaterialTheme.colorScheme.primary)
                             ) { innerTextField ->
@@ -401,7 +407,10 @@ private fun ExcursionMapScreen(
                                         )
                                     }
 
-                                    Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
+                                    Box(
+                                        Modifier.weight(1f),
+                                        contentAlignment = Alignment.CenterStart
+                                    ) {
                                         if (searchText.isEmpty()) {
                                             Text(
                                                 stringResource(id = R.string.excursion_search_button),
@@ -428,6 +437,10 @@ private fun ExcursionMapScreen(
                                 onDispose { }
                             }
                         }
+                        GeoPlaceListComponent(
+                            geoPlaceList = geoplaceList,
+                            onGeoPlaceSelection = { /* TODO */ }
+                        )
                     }
                 } else {
                     Box(modifier) {
@@ -482,7 +495,11 @@ private fun BottomSheet(
                     if (data != null) {
                         statisticsSection(data)
                         elevationGraphSection(data, onCursorMove)
-                        downloadSection(data.mapDownloadState, data.isDownloadOptionChecked, onToggleDownloadMapOption)
+                        downloadSection(
+                            data.mapDownloadState,
+                            data.isDownloadOptionChecked,
+                            onToggleDownloadMapOption
+                        )
                     }
                 },
                 onFailure = {
@@ -553,6 +570,7 @@ private fun LazyListScope.downloadSection(
                         modifier = Modifier.padding(end = 16.dp),
                     )
                 }
+
                 is MapDownloadData -> {
                     Checkbox(
                         checked = isChecked,
@@ -566,6 +584,7 @@ private fun LazyListScope.downloadSection(
                         modifier = Modifier.padding(end = 16.dp, top = 12.dp)
                     )
                 }
+
                 Loading -> CircularProgressIndicator(
                     Modifier
                         .padding(start = 16.dp, bottom = 16.dp)
@@ -815,7 +834,13 @@ private suspend fun makeBottomSheetData(
     }
     val elevationGraphPoints = points.ifEmpty { null }
 
-    return BottomSheetData(geoRecord.id, stats, elevationGraphPoints, mapDownloadState, isDownloadOptionChecked)
+    return BottomSheetData(
+        geoRecord.id,
+        stats,
+        elevationGraphPoints,
+        mapDownloadState,
+        isDownloadOptionChecked
+    )
 }
 
 private data class BottomSheetData(
@@ -899,10 +924,12 @@ private fun ExcursionMapScreenPreview() {
     TrekMeTheme {
         ExcursionMapScreen(
             uiState = MapReady(mapState),
+            geoplaceList = emptyList(),
             isTrailUpdatePending = true,
             swipeableState = swipeableState,
             bottomSheetDataState = bottomSheetData,
             snackbarHostState = snackbarHostState,
+            onLocationSearch = {}
         )
     }
 }
