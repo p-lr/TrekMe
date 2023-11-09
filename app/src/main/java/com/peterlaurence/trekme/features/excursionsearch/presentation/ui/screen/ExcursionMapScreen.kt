@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.SwipeableState
 import androidx.compose.material.rememberSwipeableState
 import androidx.compose.material3.Button
@@ -93,6 +94,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.ConfirmD
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.ErrorScreen
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingScreen
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.excursionsearch.presentation.model.GeoPlaceAndDistance
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.component.ElevationGraph
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.component.ElevationGraphPoint
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.component.GeoPlaceListComponent
@@ -305,7 +307,7 @@ fun ExcursionMapStateful(
 @Composable
 private fun ExcursionMapScreen(
     uiState: UiState,
-    geoplaceList: List<GeoPlace>,
+    geoplaceList: List<GeoPlaceAndDistance>,
     isGeoPlaceLoading: Boolean,
     isTrailUpdatePending: Boolean,
     swipeableState: SwipeableState<States>,
@@ -395,6 +397,7 @@ private fun ExcursionMapScreen(
                                     onLocationSearch(it)
                                 },
                                 singleLine = true,
+                                textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp),
                                 cursorBrush = SolidColor(MaterialTheme.colorScheme.primary)
                             ) { innerTextField ->
                                 Row(
@@ -440,6 +443,7 @@ private fun ExcursionMapScreen(
                                 onDispose { }
                             }
                         }
+                        Spacer(modifier = Modifier.height(8.dp))
                         GeoPlaceListComponent(
                             geoPlaceList = geoplaceList,
                             isLoading = isGeoPlaceLoading,

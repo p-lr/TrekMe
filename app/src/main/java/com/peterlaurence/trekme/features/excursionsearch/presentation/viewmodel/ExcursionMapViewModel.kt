@@ -58,6 +58,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.widgets.Position
 import com.peterlaurence.trekme.features.excursionsearch.domain.repository.GeoRecordForSearchItemRepository
 import com.peterlaurence.trekme.features.excursionsearch.domain.repository.PendingSearchRepository
 import com.peterlaurence.trekme.features.excursionsearch.domain.repository.TrailRepository
+import com.peterlaurence.trekme.features.excursionsearch.presentation.model.GeoPlaceAndDistance
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.layer.MarkerLayer
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.layer.RouteLayer
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.layer.TrailLayer
@@ -127,6 +128,7 @@ class ExcursionMapViewModel @Inject constructor(
     private val app: Application
 ) : ViewModel() {
     val locationFlow: Flow<Location> = locationSource.locationFlow
+    private var lastKnownLocation: Location? = null
 
     private val _uiStateFlow = MutableStateFlow<UiState>(LoadingLayer)
     val uiStateFlow: StateFlow<UiState> = _uiStateFlow.asStateFlow()
@@ -135,7 +137,9 @@ class ExcursionMapViewModel @Inject constructor(
     private val _isTrailUpdatePending = MutableStateFlow(false)
     val isTrailUpdatePending = _isTrailUpdatePending.asStateFlow()
 
-    val geoPlaceFlow: StateFlow<List<GeoPlace>> = geocodingRepository.geoPlaceFlow.stateIn(
+    val geoPlaceFlow: StateFlow<List<GeoPlaceAndDistance>> = geocodingRepository.geoPlaceFlow.map {
+        computeGeoPlaceDistances(it)
+    }.stateIn(
         viewModelScope,
         started = SharingStarted.Eagerly,
         initialValue = emptyList()
@@ -278,6 +282,7 @@ class ExcursionMapViewModel @Inject constructor(
     }
 
     fun onLocationReceived(location: Location) = viewModelScope.launch {
+        lastKnownLocation = location
         /* If there is no MapState, no need to go further */
         val mapState = mapStateFlow.firstOrNull() ?: return@launch
 
@@ -647,6 +652,22 @@ class ExcursionMapViewModel @Inject constructor(
     }
 
     private data class WmtsConfig(val wmtsLevelMax: Int, val tileSize: Int, val mapSize: Int)
+
+    private suspend fun computeGeoPlaceDistances(geoPlaceList: List<GeoPlace>): List<GeoPlaceAndDistance> {
+        val lastPosition = lastKnownLocation
+        return if (lastPosition != null) {
+            withContext(Dispatchers.Default) {
+                geoPlaceList.map { geoPlace ->
+                    val distance = distanceApprox(geoPlace.lat, geoPlace.lon, lastPosition.latitude, lastPosition.longitude)
+                    GeoPlaceAndDistance(geoPlace, distance)
+                }.sortedBy { it.distance }
+            }
+        } else {
+            geoPlaceList.map { geoPlace ->
+                GeoPlaceAndDistance(geoPlace, null)
+            }
+        }
+    }
 
     sealed interface Event {
         object OnMarkerClick : Event
