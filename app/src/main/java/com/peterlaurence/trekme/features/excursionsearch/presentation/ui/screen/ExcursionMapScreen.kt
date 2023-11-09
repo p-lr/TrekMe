@@ -1,8 +1,10 @@
 package com.peterlaurence.trekme.features.excursionsearch.presentation.ui.screen
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,8 +23,11 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.SwipeableState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.rememberSwipeableState
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -41,6 +46,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -51,8 +57,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -328,6 +337,10 @@ private fun ExcursionMapScreen(
             SnackbarHost(hostState = snackbarHostState)
         }
     ) { paddingValues ->
+        var isInSearchMode by rememberSaveable {
+            mutableStateOf(false)
+        }
+
         val modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
@@ -346,18 +359,91 @@ private fun ExcursionMapScreen(
             }
 
             is MapReady -> {
-                Box(modifier) {
-                    ExcursionMap(
-                        mapState = uiState.mapState,
-                        isSearchPending = isTrailUpdatePending,
-                        onLayerSelection = onLayerSelection
-                    )
-                    BottomSheet(
-                        swipeableState,
-                        bottomSheetDataState,
-                        onCursorMove,
-                        onToggleDownloadMapOption
-                    )
+                if (isInSearchMode) {
+                    BackHandler {
+                        isInSearchMode = false
+                    }
+                    Column(modifier) {
+                        var searchText by rememberSaveable {
+                            mutableStateOf("")
+                        }
+                        Surface(
+                            Modifier
+                                .padding(start = 12.dp, end = 12.dp)
+                                .fillMaxWidth()
+                                .padding(top = 12.dp)
+                                .height(40.dp)
+                                .border(
+                                    1.dp,
+                                    MaterialTheme.colorScheme.outlineVariant,
+                                    RoundedCornerShape(50)
+                                ),
+                            shape = RoundedCornerShape(50),
+                        ) {
+                            val focusRequester = remember { FocusRequester() }
+                            BasicTextField(
+                                modifier = Modifier.focusRequester(focusRequester),
+                                value = searchText,
+                                onValueChange = { searchText = it },
+                                singleLine = true,
+                                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary)
+                            ) { innerTextField ->
+                                Row(
+                                    modifier,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    // Leading icon
+                                    IconButton(onClick = { isInSearchMode = false }) {
+                                        Image(
+                                            painter = painterResource(id = R.drawable.baseline_arrow_back_24),
+                                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
+                                            contentDescription = null
+                                        )
+                                    }
+
+                                    Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
+                                        if (searchText.isEmpty()) {
+                                            Text(
+                                                stringResource(id = R.string.excursion_search_button),
+                                                color = MaterialTheme.colorScheme.onSurface,
+                                                fontSize = 16.sp
+                                            )
+                                        }
+                                        innerTextField()
+                                    }
+
+                                    // Trailing icon
+                                    IconButton(onClick = { searchText = "" }) {
+                                        Image(
+                                            painter = painterResource(id = R.drawable.close_circle_outline),
+                                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
+                                            contentDescription = null
+                                        )
+                                    }
+                                }
+                            }
+
+                            DisposableEffect(Unit) {
+                                focusRequester.requestFocus()
+                                onDispose { }
+                            }
+                        }
+                    }
+                } else {
+                    Box(modifier) {
+                        ExcursionMap(
+                            mapState = uiState.mapState,
+                            isSearchPending = isTrailUpdatePending,
+                            onSearchClick = { isInSearchMode = true },
+                            onLayerSelection = onLayerSelection
+                        )
+                        BottomSheet(
+                            swipeableState,
+                            bottomSheetDataState,
+                            onCursorMove,
+                            onToggleDownloadMapOption
+                        )
+                    }
                 }
             }
 
@@ -513,23 +599,25 @@ private fun ExcursionMap(
     modifier: Modifier = Modifier,
     mapState: MapState,
     isSearchPending: Boolean,
-    onLayerSelection: () -> Unit
+    onSearchClick: () -> Unit,
+    onLayerSelection: () -> Unit,
 ) {
     Box {
         MapUI(modifier = modifier, state = mapState)
 
         Surface(
             Modifier
-                .padding(start = 16.dp, end = 72.dp)
+                .padding(start = 12.dp, end = 64.dp)
                 .fillMaxWidth()
-                .padding(top = 16.dp)
+                .padding(top = 12.dp)
                 .height(40.dp)
-                .align(Alignment.TopCenter),
+                .align(Alignment.TopCenter)
+                .clickable(onClick = onSearchClick),
             shape = RoundedCornerShape(50),
             shadowElevation = 4.dp
         ) {
             Row(
-                Modifier.padding(horizontal = 12.dp),
+                Modifier.padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text("Search")
@@ -551,7 +639,7 @@ private fun ExcursionMap(
             onClick = onLayerSelection,
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .padding(12.dp),
+                .padding(8.dp),
             shape = CircleShape
         ) {
             Icon(
