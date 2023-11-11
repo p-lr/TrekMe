@@ -21,6 +21,7 @@
     <color name="colorStrokeAreaView">#FF448AFF</color>
     <color name="colorMarker">#F16157</color>
     <color name="colorMarkerStroke">#B6392F</color>
+    <color name="colorPlaceMarker">#EB4235</color>
     <color name="colorLandmark">#9C27B0</color>
     <color name="colorLandmarkStroke">#4A148C</color>
     <color name="colorIndicatorOverlay">#885D4037</color>

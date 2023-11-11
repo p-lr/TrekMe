@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components
+package com.peterlaurence.trekme.features.common.presentation.ui.component
 
 import androidx.compose.foundation.Image
 import androidx.compose.runtime.Composable
@@ -11,7 +11,6 @@ import com.peterlaurence.trekme.R
 fun PlaceMarker() {
     Image(
         painter = painterResource(id = R.drawable.ic_baseline_location_on_48),
-        colorFilter = ColorFilter.tint(colorResource(id = R.color.colorMarkerStroke)),
-        alpha = 0.85f,
+        colorFilter = ColorFilter.tint(colorResource(id = R.color.colorPlaceMarker)),
         contentDescription = null)
 }

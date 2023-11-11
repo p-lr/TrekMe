@@ -20,7 +20,6 @@ import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.core.map.domain.interactors.GetMapInteractor
 import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToMercatorInteractor
 import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
-import com.peterlaurence.trekme.core.map.domain.models.BoundingBoxNormalized
 import com.peterlaurence.trekme.core.map.domain.models.DownloadMapRequest
 import com.peterlaurence.trekme.core.map.domain.models.TileResult
 import com.peterlaurence.trekme.core.map.domain.models.TileStream
@@ -65,12 +64,11 @@ import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.
 import com.peterlaurence.trekme.features.map.domain.models.NormalizedPos
 import com.peterlaurence.trekme.features.mapcreate.app.service.download.DownloadService
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
+import com.peterlaurence.trekme.features.common.presentation.ui.component.PlaceMarker
+import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.BoundariesConfig
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.contains
 import com.peterlaurence.trekme.util.ResultL
 import com.peterlaurence.trekme.util.checkInternet
-import com.peterlaurence.trekme.util.fold
-import com.peterlaurence.trekme.util.onFailure
-import com.peterlaurence.trekme.util.onLoading
-import com.peterlaurence.trekme.util.onSuccess
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -81,9 +79,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
@@ -94,6 +90,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ovh.plrapps.mapcompose.api.addLayer
 import ovh.plrapps.mapcompose.api.addMarker
+import ovh.plrapps.mapcompose.api.centerOnMarker
 import ovh.plrapps.mapcompose.api.centroidX
 import ovh.plrapps.mapcompose.api.centroidY
 import ovh.plrapps.mapcompose.api.disableFlingZoom
@@ -312,6 +309,46 @@ class ExcursionMapViewModel @Inject constructor(
         } else {
             mapState.addMarker(positionMarkerId, x, y, relativeOffset = Offset(-0.5f, -0.5f)) {
                 PositionMarker()
+            }
+        }
+    }
+
+    fun centerOnPlace(place: GeoPlace) {
+        val mapState = _uiStateFlow.value.getMapState() ?: return
+
+        val mapSourceData = mapSourceDataFlow.value
+        val mapConfiguration = getScaleAndScrollConfig(mapSourceData)
+        val boundaryConf = mapConfiguration.filterIsInstance<BoundariesConfig>().firstOrNull()
+        boundaryConf?.boundingBoxList?.also { boxes ->
+            if (!boxes.contains(place.lat, place.lon)) {
+                viewModelScope.launch {
+                    _events.send(Event.PlaceOutOfBounds)
+                }
+                return
+            }
+        }
+
+        /* If it's in the bounds, add a marker */
+        val normalized = wgs84ToMercatorInteractor.getNormalized(place.lat, place.lon) ?: return
+        updatePlacePosition(mapState, normalized.x, normalized.y)
+
+        viewModelScope.launch {
+            mapState.centerOnMarker(placeMarkerId, 0.25f)
+        }
+    }
+
+    /**
+     * Update the position of the place marker on the map. This method expects normalized coordinates.
+     *
+     * @param x the normalized x coordinate
+     * @param y the normalized y coordinate
+     */
+    private fun updatePlacePosition(mapState: MapState, x: Double, y: Double) {
+        if (mapState.hasMarker(placeMarkerId)) {
+            mapState.moveMarker(placeMarkerId, x, y)
+        } else {
+            mapState.addMarker(placeMarkerId, x, y, relativeOffset = Offset(-0.5f, -1f)) {
+                PlaceMarker()
             }
         }
     }
@@ -675,10 +712,12 @@ class ExcursionMapViewModel @Inject constructor(
         object ExcursionOnlyDownloadStart : Event
         object ExcursionDownloadError : Event
         object SearchError : Event
+        data object PlaceOutOfBounds : Event
     }
 }
 
 private const val positionMarkerId = "position"
+private const val placeMarkerId = "place"
 
 private sealed interface InitScaleAndScrollConfig
 data class ScaleAndScrollConfig(val scale: Float, val scroll: NormalizedPos): InitScaleAndScrollConfig

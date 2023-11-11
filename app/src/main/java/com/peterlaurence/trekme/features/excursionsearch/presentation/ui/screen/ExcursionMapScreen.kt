@@ -171,7 +171,9 @@ fun ExcursionMapStateful(
     val excursionDownloadStart = stringResource(id = R.string.excursion_download_start)
     val excursionDownloadError = stringResource(id = R.string.excursion_download_error)
     val excursionSearchError = stringResource(id = R.string.excursion_download_error)
+    val outSideOfCoveredArea = stringResource(id = R.string.place_outside_of_covered_area)
     var isShowingMapDownloadDialog by remember { mutableStateOf(false) }
+
     LaunchedEffectWithLifecycle(flow = viewModel.event) { event ->
         when (event) {
             ExcursionMapViewModel.Event.OnMarkerClick -> {
@@ -179,35 +181,23 @@ fun ExcursionMapStateful(
             }
 
             ExcursionMapViewModel.Event.NoInternet -> {
-                snackbarHostState.showSnackbar(
-                    message = noInternetWarning,
-                    withDismissAction = true,
-                    duration = SnackbarDuration.Indefinite
-                )
+                showSnackbar(snackbarHostState, noInternetWarning)
             }
 
             ExcursionMapViewModel.Event.ExcursionOnlyDownloadStart -> {
-                snackbarHostState.showSnackbar(
-                    message = excursionDownloadStart,
-                    withDismissAction = true,
-                    duration = SnackbarDuration.Long
-                )
+                showSnackbar(snackbarHostState, excursionDownloadStart)
             }
 
             ExcursionMapViewModel.Event.ExcursionDownloadError -> {
-                snackbarHostState.showSnackbar(
-                    message = excursionDownloadError,
-                    withDismissAction = true,
-                    duration = SnackbarDuration.Long
-                )
+                showSnackbar(snackbarHostState, excursionDownloadError)
             }
 
             ExcursionMapViewModel.Event.SearchError -> {
-                snackbarHostState.showSnackbar(
-                    message = excursionSearchError,
-                    withDismissAction = true,
-                    duration = SnackbarDuration.Long
-                )
+                showSnackbar(snackbarHostState, excursionSearchError)
+            }
+
+            ExcursionMapViewModel.Event.PlaceOutOfBounds -> {
+                showSnackbar(snackbarHostState, outSideOfCoveredArea)
             }
         }
     }
@@ -244,6 +234,7 @@ fun ExcursionMapStateful(
         bottomSheetDataState = bottomSheetDataState,
         snackbarHostState = snackbarHostState,
         onLocationSearch = viewModel::onLocationSearch,
+        onGeoPlaceSelection = viewModel::centerOnPlace,
         onCursorMove = { latLon, d, ele ->
             viewModel.routeLayer.setCursor(latLon, distance = d, ele = ele)
         },
@@ -314,6 +305,7 @@ private fun ExcursionMapScreen(
     bottomSheetDataState: ResultL<BottomSheetData?>,
     snackbarHostState: SnackbarHostState,
     onLocationSearch: (String) -> Unit,
+    onGeoPlaceSelection: (GeoPlace) -> Unit,
     onCursorMove: (latLon: LatLon, d: Double, ele: Double) -> Unit = { _, _, _ -> },
     onToggleDownloadMapOption: () -> Unit = {},
     onDownload: () -> Unit = {},
@@ -447,7 +439,10 @@ private fun ExcursionMapScreen(
                         GeoPlaceListComponent(
                             geoPlaceList = geoplaceList,
                             isLoading = isGeoPlaceLoading,
-                            onGeoPlaceSelection = { /* TODO */ }
+                            onGeoPlaceSelection = {
+                                isInSearchMode = false
+                                onGeoPlaceSelection(it)
+                            }
                         )
                     }
                 } else {
@@ -894,6 +889,14 @@ private fun EscapeHatchScreen(
     }
 }
 
+private suspend fun showSnackbar(snackbarHostState: SnackbarHostState, message: String) {
+    snackbarHostState.showSnackbar(
+        message = message,
+        withDismissAction = true,
+        duration = SnackbarDuration.Indefinite
+    )
+}
+
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 @Preview(showBackground = true)
 @Composable
@@ -938,7 +941,8 @@ private fun ExcursionMapScreenPreview() {
             swipeableState = swipeableState,
             bottomSheetDataState = bottomSheetData,
             snackbarHostState = snackbarHostState,
-            onLocationSearch = {}
+            onLocationSearch = {},
+            onGeoPlaceSelection = {}
         )
     }
 }
