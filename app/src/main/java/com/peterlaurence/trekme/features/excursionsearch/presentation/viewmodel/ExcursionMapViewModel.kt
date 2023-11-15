@@ -10,6 +10,7 @@ import com.peterlaurence.trekme.core.billing.di.IGN
 import com.peterlaurence.trekme.core.billing.domain.model.ExtendedOfferStateOwner
 import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionSearchItem
+import com.peterlaurence.trekme.core.excursion.domain.model.TrailSearchItem
 import com.peterlaurence.trekme.core.excursion.domain.repository.ExcursionRepository
 import com.peterlaurence.trekme.core.geocoding.domain.engine.GeoPlace
 import com.peterlaurence.trekme.core.geocoding.domain.repository.GeocodingRepository
@@ -189,6 +190,16 @@ class ExcursionMapViewModel @Inject constructor(
         trailRepository = trailRepository,
         onLoadingChanged = { loading ->
             _isTrailUpdatePending.value = loading
+        },
+        onPathsClicked = l@{
+            if (it.size > 1) {
+                viewModelScope.launch {
+                    _events.send(Event.MultipleTrailClicked(it))
+                }
+            } else {
+                val trailItem = it.firstOrNull()?.first ?: return@l
+                selectTrail(trailItem.id)
+            }
         }
     )
 
@@ -266,6 +277,10 @@ class ExcursionMapViewModel @Inject constructor(
 //                }
 //            }
 //        }
+    }
+
+    fun selectTrail(id: String)  = viewModelScope.launch {
+        println("xxxxx trail selected: $id")
     }
 
     fun onMapSourceDataChange(source: MapSourceData) {
@@ -707,12 +722,13 @@ class ExcursionMapViewModel @Inject constructor(
     }
 
     sealed interface Event {
-        object OnMarkerClick : Event
-        object NoInternet : Event
-        object ExcursionOnlyDownloadStart : Event
-        object ExcursionDownloadError : Event
-        object SearchError : Event
+        data object OnMarkerClick : Event
+        data object NoInternet : Event
+        data object ExcursionOnlyDownloadStart : Event
+        data object ExcursionDownloadError : Event
+        data object SearchError : Event
         data object PlaceOutOfBounds : Event
+        data class MultipleTrailClicked(val tracks: List<Pair<TrailSearchItem, Color>>) : Event
     }
 }
 

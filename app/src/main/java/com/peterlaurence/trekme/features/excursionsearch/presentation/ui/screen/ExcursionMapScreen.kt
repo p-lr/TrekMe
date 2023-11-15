@@ -28,6 +28,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.SwipeableState
 import androidx.compose.material.rememberSwipeableState
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
@@ -56,6 +57,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -70,6 +72,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.excursion.domain.model.TrailSearchItem
 import com.peterlaurence.trekme.core.geocoding.domain.engine.GeoPlace
 import com.peterlaurence.trekme.core.georecord.domain.logic.getGeoStatistics
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
@@ -173,31 +176,38 @@ fun ExcursionMapStateful(
     val excursionSearchError = stringResource(id = R.string.excursion_download_error)
     val outSideOfCoveredArea = stringResource(id = R.string.place_outside_of_covered_area)
     var isShowingMapDownloadDialog by remember { mutableStateOf(false) }
+    var isShowingTrailSelectionDialog by rememberSaveable {
+        mutableStateOf<List<Pair<TrailSearchItem, Color>>?>(null)
+    }
 
     LaunchedEffectWithLifecycle(flow = viewModel.event) { event ->
         when (event) {
-            ExcursionMapViewModel.Event.OnMarkerClick -> {
+            is ExcursionMapViewModel.Event.OnMarkerClick -> {
                 swipeableState.snapTo(States.EXPANDED)
             }
 
-            ExcursionMapViewModel.Event.NoInternet -> {
+            is ExcursionMapViewModel.Event.NoInternet -> {
                 showSnackbar(snackbarHostState, noInternetWarning)
             }
 
-            ExcursionMapViewModel.Event.ExcursionOnlyDownloadStart -> {
+            is ExcursionMapViewModel.Event.ExcursionOnlyDownloadStart -> {
                 showSnackbar(snackbarHostState, excursionDownloadStart)
             }
 
-            ExcursionMapViewModel.Event.ExcursionDownloadError -> {
+            is ExcursionMapViewModel.Event.ExcursionDownloadError -> {
                 showSnackbar(snackbarHostState, excursionDownloadError)
             }
 
-            ExcursionMapViewModel.Event.SearchError -> {
+            is ExcursionMapViewModel.Event.SearchError -> {
                 showSnackbar(snackbarHostState, excursionSearchError)
             }
 
-            ExcursionMapViewModel.Event.PlaceOutOfBounds -> {
+            is ExcursionMapViewModel.Event.PlaceOutOfBounds -> {
                 showSnackbar(snackbarHostState, outSideOfCoveredArea)
+            }
+
+            is ExcursionMapViewModel.Event.MultipleTrailClicked -> {
+                isShowingTrailSelectionDialog = event.tracks
             }
         }
     }
@@ -248,6 +258,44 @@ fun ExcursionMapStateful(
         onLayerSelection = { isShowingLayerSelectionDialog = true },
         onGoToMapCreation = onGoToMapCreation
     )
+
+    isShowingTrailSelectionDialog?.also { data ->
+        AlertDialog(
+            onDismissRequest = { isShowingTrailSelectionDialog = null },
+            confirmButton = {},
+            title = {
+                Text(text = stringResource(id = R.string.trail_select_disalog_title))
+            },
+            text = {
+                Column {
+                    data.forEachIndexed { index, it ->
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    viewModel.selectTrail(it.first.id)
+                                    isShowingTrailSelectionDialog = null
+                                },
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(modifier = Modifier
+                                .size(24.dp)
+                                .clip(RoundedCornerShape(5.dp))
+                                .background(it.second)
+                            )
+
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(text = it.first.name ?: "")
+                        }
+
+                        if (index < data.size - 1 ) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
+                    }
+                }
+            }
+        )
+    }
 
     if (isShowingMapDownloadDialog) {
         ConfirmDialog(

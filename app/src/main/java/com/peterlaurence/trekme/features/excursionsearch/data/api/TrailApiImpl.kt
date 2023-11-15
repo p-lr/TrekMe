@@ -39,7 +39,7 @@ class TrailApiImpl(private val httpClient: OkHttpClient, ): TrailApi {
         val bbStr = makeBoundingBox(boundingBox)
 
         val request = Request.Builder()
-            .url("$baseUrl/list/segments?bbox=$bbStr&relations=${ids.joinToString(separator = ",")}".also { println("xxxxx request $it") })
+            .url("$baseUrl/list/segments?bbox=$bbStr&relations=${ids.joinToString(separator = ",")}")
             .addHeader("Referer", waymarkedTrails)
             .addHeader("User-Agent", userAgent)
             .get()

@@ -444,7 +444,7 @@
     <string name="multi_selection_desc">Mode sélection multiple</string>
     <string name="manage_subscription_btn">GÉRER L\'ABONNEMENT</string>
 
-    <!-- Excursion search -->
+    <!-- Trail search -->
     <string name="excursion_feature_menu">Chercher une excursion</string>
     <string name="excursion_search_placeholder">Recherche</string>
     <string name="excursions">Excursions</string>
@@ -489,6 +489,7 @@
     <string name="excursion_map_download">Une carte va être téléchargée pour cette excursion.\nVoulez-vous suivre la progression du téléchargement ?</string>
     <string name="offer_suggestion_short">Avec TrekMe Extended + IGN</string>
     <string name="see_offer">Voir l\'offre</string>
+    <string name="trail_select_disalog_title">Sélectionnez une piste</string>
 
     <!-- General -->
     <string name="meters">mètres</string>

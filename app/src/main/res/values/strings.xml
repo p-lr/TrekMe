@@ -419,7 +419,7 @@
     <string name="distance">Distance</string>
     <string name="current_recording">Current recording</string>
 
-    <!-- Excursion search -->
+    <!-- Trail search -->
     <string name="fragment_excursion_search" translatable="false">ExcursionSearchFragment</string>
     <string name="excursion_feature_menu">Look for an excursion</string>
     <string name="excursion_search_placeholder">Search</string>
@@ -464,6 +464,7 @@
     <string name="excursion_map_download">A map will be downloaded for this excursion.\nWould you like to see the download progress?</string>
     <string name="offer_suggestion_short">With TrekMe Extended + IGN</string>
     <string name="see_offer">See offer</string>
+    <string name="trail_select_disalog_title">Select a trail</string>
 
     <!-- SettingsFragment -->
     <string name="settings_frgmt_title">Settings</string>
