@@ -325,8 +325,6 @@ class MapViewModel @Inject constructor(
         }
 
         /* region Configuration */
-        mapState.shouldLoopScale = true
-
         mapState.onMarkerClick { id, x, y ->
             val landmarkHandled = landmarkLayer.onMarkerTap(mapState, map.id, id, x, y)
             if (landmarkHandled) return@onMarkerClick

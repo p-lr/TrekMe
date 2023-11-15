@@ -117,7 +117,7 @@ fun MapStateful(
             }
         }
         launch {
-            lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            lifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
                 viewModel.checkMapLicense()
             }
         }
