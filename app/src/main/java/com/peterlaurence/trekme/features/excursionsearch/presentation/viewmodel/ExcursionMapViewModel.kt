@@ -281,6 +281,11 @@ class ExcursionMapViewModel @Inject constructor(
 
     fun selectTrail(id: String)  = viewModelScope.launch {
         println("xxxxx trail selected: $id")
+        trailRepository.getDetailsWithElevation(id)?.also {
+            it.iteratePoints { index, x, y, elevation ->
+                // TODO
+            }
+        }
     }
 
     fun onMapSourceDataChange(source: MapSourceData) {

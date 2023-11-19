@@ -2,6 +2,7 @@ package com.peterlaurence.trekme.features.excursionsearch.data.api
 
 import com.peterlaurence.trekme.core.excursion.domain.model.OsmTrailGroup
 import com.peterlaurence.trekme.core.excursion.domain.model.TrailDetail
+import com.peterlaurence.trekme.core.excursion.domain.model.TrailDetailWithElevation
 import com.peterlaurence.trekme.core.excursion.domain.model.TrailSearchItem
 import com.peterlaurence.trekme.core.map.domain.models.BoundingBoxNormalized
 import com.peterlaurence.trekme.core.wmts.domain.model.X0
@@ -52,6 +53,21 @@ class TrailApiImpl(private val httpClient: OkHttpClient, ): TrailApi {
         } ?: emptyList()
     }
 
+    override suspend fun getDetailsWithElevation(id: String): TrailDetailWithElevation? {
+        val request = Request.Builder()
+            .url("$baseUrl/details/relation/$id/elevation")
+            .addHeader("Referer", waymarkedTrails)
+            .addHeader("User-Agent", userAgent)
+            .get()
+            .build()
+
+        val response = httpClient.performRequest<ElevationResponse>(request, json)
+
+        return response?.let {
+            TrailDetailWithElevationImpl(it)
+        }
+    }
+
     private fun makeBoundingBox(boundingBox: BoundingBoxNormalized): String {
         fun deNormalize(t: Double, min: Double, max: Double): Double {
             return min + t * (max - min)
@@ -100,6 +116,15 @@ private data class SingleSegmentGeom(
 
 private typealias Segment = List<List<Double>>
 
+@Serializable
+private data class ElevationResponse(val id: String, val segments: List<ElevationSegment>)
+
+@Serializable
+private data class ElevationSegment(val elevation: List<ElevationPoint>)
+
+@Serializable
+private data class ElevationPoint(val x: Double, val y: Double, val ele: Double)
+
 private fun SearchItem.toDomain(): TrailSearchItem {
     return TrailSearchItem(
         id = id, ref = ref, name = name,
@@ -143,10 +168,25 @@ private class TrailDetailImpl(
             }
         }
     }
+}
 
-    private fun normalize(t: Double, min: Double, max: Double): Double {
-        return (t - min) / (max - min)
+private class TrailDetailWithElevationImpl(
+    private val elevationResponse: ElevationResponse
+): TrailDetailWithElevation {
+    override val id: String
+        get() = elevationResponse.id
+
+    override fun iteratePoints(block: (index: Int, x: Double, y: Double, elevation: Double) -> Unit) {
+        elevationResponse.segments.forEachIndexed { index, elevationSegment ->
+            elevationSegment.elevation.forEach {
+                block(index, normalize(it.x, X0, X1), normalize(it.y, Y0, Y1), it.ele)
+            }
+        }
     }
+}
+
+private fun normalize(t: Double, min: Double, max: Double): Double {
+    return (t - min) / (max - min)
 }
 
 private const val waymarkedTrails = "https://hiking.waymarkedtrails.org"

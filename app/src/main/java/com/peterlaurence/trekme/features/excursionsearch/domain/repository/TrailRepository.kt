@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.features.excursionsearch.domain.repository
 
 import com.peterlaurence.trekme.core.excursion.domain.model.TrailDetail
+import com.peterlaurence.trekme.core.excursion.domain.model.TrailDetailWithElevation
 import com.peterlaurence.trekme.core.excursion.domain.model.TrailSearchItem
 import com.peterlaurence.trekme.core.map.domain.models.BoundingBoxNormalized
 import com.peterlaurence.trekme.features.excursionsearch.domain.model.TrailApi
@@ -15,5 +16,9 @@ class TrailRepository @Inject constructor(
 
     suspend fun getDetails(boundingBox: BoundingBoxNormalized, ids: List<String>): List<TrailDetail> {
         return trailApi.getDetails(boundingBox, ids)
+    }
+
+    suspend fun getDetailsWithElevation(id: String): TrailDetailWithElevation? {
+        return trailApi.getDetailsWithElevation(id)
     }
 }
