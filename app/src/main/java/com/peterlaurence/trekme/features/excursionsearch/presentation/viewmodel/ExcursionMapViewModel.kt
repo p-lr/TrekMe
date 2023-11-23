@@ -10,10 +10,14 @@ import com.peterlaurence.trekme.core.billing.di.IGN
 import com.peterlaurence.trekme.core.billing.domain.model.ExtendedOfferStateOwner
 import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionSearchItem
+import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionType
+import com.peterlaurence.trekme.core.excursion.domain.model.TrailDetailWithElevation
 import com.peterlaurence.trekme.core.excursion.domain.model.TrailSearchItem
 import com.peterlaurence.trekme.core.excursion.domain.repository.ExcursionRepository
 import com.peterlaurence.trekme.core.geocoding.domain.engine.GeoPlace
 import com.peterlaurence.trekme.core.geocoding.domain.repository.GeocodingRepository
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
+import com.peterlaurence.trekme.core.georecord.domain.model.RouteGroup
 import com.peterlaurence.trekme.core.geotools.distanceApprox
 import com.peterlaurence.trekme.core.location.domain.model.LatLon
 import com.peterlaurence.trekme.core.location.domain.model.Location
@@ -22,6 +26,8 @@ import com.peterlaurence.trekme.core.map.domain.interactors.GetMapInteractor
 import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToMercatorInteractor
 import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
 import com.peterlaurence.trekme.core.map.domain.models.DownloadMapRequest
+import com.peterlaurence.trekme.core.map.domain.models.Marker
+import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.core.map.domain.models.TileResult
 import com.peterlaurence.trekme.core.map.domain.models.TileStream
 import com.peterlaurence.trekme.core.map.domain.models.contains
@@ -44,6 +50,8 @@ import com.peterlaurence.trekme.core.wmts.domain.model.mapSizeAtLevel
 import com.peterlaurence.trekme.core.wmts.domain.tools.getMapSpec
 import com.peterlaurence.trekme.core.wmts.domain.tools.getNumberOfTiles
 import com.peterlaurence.trekme.features.common.domain.interactors.MapExcursionInteractor
+import com.peterlaurence.trekme.features.common.domain.model.ElevationSource
+import com.peterlaurence.trekme.features.common.domain.model.ElevationSourceInfo
 import com.peterlaurence.trekme.features.common.domain.util.toMapComposeTileStreamProvider
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.Config
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.LevelLimitsConfig
@@ -104,8 +112,11 @@ import ovh.plrapps.mapcompose.api.setMapBackground
 import ovh.plrapps.mapcompose.ui.layout.Fit
 import ovh.plrapps.mapcompose.ui.layout.Forced
 import ovh.plrapps.mapcompose.ui.state.MapState
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
+import kotlin.math.max
+import kotlin.math.min
 import ovh.plrapps.mapcompose.api.BoundingBox as NormalizedBoundingBox
 
 @HiltViewModel
@@ -155,6 +166,8 @@ class ExcursionMapViewModel @Inject constructor(
             viewModelScope, started = SharingStarted.Eagerly, initialValue = ResultL.success(null)
         )
 
+    val geoRecordForBottomSheet = MutableStateFlow<ResultL<GeoRecordForBottomsheet?>>(ResultL.success(null))
+
     val extendedOfferFlow = extendedOfferWithIgnStateOwner.purchaseFlow.map {
         it == PurchaseState.PURCHASED
     }
@@ -198,12 +211,12 @@ class ExcursionMapViewModel @Inject constructor(
                 }
             } else {
                 val trailItem = it.firstOrNull()?.first ?: return@l
-                selectTrail(trailItem.id)
+                selectTrail(trailItem.id, trailItem.name)
             }
         }
     )
 
-    private val minLevel = 12
+    private val minLevel = 14
     private val maxLevel = 16
     private val tileNumberLimit = 5900  // approx. 100 Mo
 
@@ -279,13 +292,97 @@ class ExcursionMapViewModel @Inject constructor(
 //        }
     }
 
-    fun selectTrail(id: String)  = viewModelScope.launch {
-        println("xxxxx trail selected: $id")
-        trailRepository.getDetailsWithElevation(id)?.also {
-            it.iteratePoints { index, x, y, elevation ->
-                // TODO
+    fun selectTrail(id: String, name: String?)  = viewModelScope.launch {
+        geoRecordForBottomSheet.value = ResultL.loading()
+        mapDownloadStateFlow.value = Loading
+        _events.send(Event.OnTrailClick)
+
+        val trailDetailWithElevation = trailRepository.getDetailsWithElevation(id)
+        if (trailDetailWithElevation != null) {
+            val (geoRecord, bbNormalized, bb) = trailDetailWithElevation.toGeoRecord(name) ?: run {
+                // TODO: display error?
+                geoRecordForBottomSheet.value = ResultL.success(null)
+                return@launch
             }
+            geoRecordForBottomSheet.value = ResultL.success(GeoRecordForBottomsheet(geoRecord, bb))
+            updateMapDownloadState(bb)
+        } else {
+            geoRecordForBottomSheet.value = ResultL.success(null)
         }
+    }
+
+    private suspend fun TrailDetailWithElevation.toGeoRecord(name: String?): Triple<GeoRecord, NormalizedBoundingBox, BoundingBox>? {
+        return runCatching {
+            withContext(Dispatchers.Default) {
+                var lastIndex: Int? = null
+                val routes = mutableListOf<Route>()
+                var currentMarkers = mutableListOf<Marker>()
+                var xMin = Double.MAX_VALUE
+                var xMax = Double.MIN_VALUE
+                var yMin = Double.MAX_VALUE
+                var yMax = Double.MIN_VALUE
+                var hasPoints = false
+
+                iteratePoints { index, x, y, elevation ->
+                    if (lastIndex != index && currentMarkers.isNotEmpty()) {
+                        val newRoute = Route(initialMarkers = currentMarkers)
+                        routes.add(newRoute)
+                        currentMarkers = mutableListOf()
+                        lastIndex = index
+                    } else {
+                        hasPoints = true
+                        xMin = min(xMin, x)
+                        xMax = max(xMax, x)
+                        yMin = min(yMin, y)
+                        yMax = max(yMax, y)
+                        val lonLat = wgs84ToMercatorInteractor.getLatLonFromNormalized(x, y)
+                            ?: throw ArithmeticException()
+                        currentMarkers.add(
+                            Marker(lat = lonLat[1], lon = lonLat[0], elevation = elevation)
+                        )
+                    }
+                }
+                if (currentMarkers.isNotEmpty()) {
+                    val newRoute = Route(initialMarkers = currentMarkers)
+                    routes.add(newRoute)
+                }
+
+                val routeGroup = RouteGroup(id = UUID.randomUUID().toString(), routes = routes)
+                val topLeft = wgs84ToMercatorInteractor.getLatLonFromNormalized(xMin, yMin)
+                val bottomRight = wgs84ToMercatorInteractor.getLatLonFromNormalized(xMax, yMax)
+
+                if (hasPoints && topLeft != null && bottomRight != null) {
+                    val bbNormalized = NormalizedBoundingBox(xMin, yMin, xMax, yMax)
+                    val bb = BoundingBox(minLat = bottomRight[1], maxLat = topLeft[1], minLon = topLeft[0], maxLon = bottomRight[0])
+                    val geoRecord = GeoRecord(
+                        id = UUID.randomUUID(),
+                        routeGroups = listOf(routeGroup),
+                        markers = emptyList(),
+                        time = null,
+                        elevationSourceInfo = ElevationSourceInfo(
+                            elevationSource = ElevationSource.UNKNOWN,
+                            1
+                        ),
+                        name = name ?: "trail"
+                    )
+                    Triple(geoRecord, bbNormalized, bb)
+                } else null
+            }
+        }.getOrNull()
+    }
+
+    private suspend fun updateMapDownloadState(bb: BoundingBox) {
+        mapDownloadStateFlow.value = getPoints(bb)?.let { (p1, p2) ->
+            val tileCount = getNumberOfTiles(minLevel, maxLevel, p1, p2)
+            if (tileCount > tileNumberLimit) {
+                DownloadNotAllowed(reason = DownloadNotAllowedReason.TooBigMap)
+            } else {
+                MapDownloadData(
+                    hasContainingMap = hasContainingMap(bb),
+                    tileCount = tileCount
+                )
+            }
+        } ?: Loading
     }
 
     fun onMapSourceDataChange(source: MapSourceData) {
@@ -375,21 +472,23 @@ class ExcursionMapViewModel @Inject constructor(
 
     /**
      * The user has selected a pin, and clicked on the download button in the bottomsheet.
+     * No need to protect against multiple calls in rapid succession. Domain is already protected.
      */
     fun onDownload(withMap: Boolean) = viewModelScope.launch {
-        val geoRecordForSearchItem =
-            geoRecordForSearchFlow.firstOrNull()?.getOrNull() ?: return@launch
+        val geoRecordForBottomsheet = geoRecordForBottomSheet.value.getOrNull() ?: return@launch
+        val geoRecord = geoRecordForBottomsheet.geoRecord
 
         if (!withMap) {
             _events.send(Event.ExcursionOnlyDownloadStart)
         }
 
+        val excursionId = geoRecord.id.toString()
         val result = excursionRepository.putExcursion(
-            id = geoRecordForSearchItem.searchItem.id,
-            title = geoRecordForSearchItem.searchItem.title,
-            type = geoRecordForSearchItem.searchItem.type,
-            description = geoRecordForSearchItem.searchItem.description,
-            geoRecord = geoRecordForSearchItem.geoRecord
+            id = excursionId,
+            title = geoRecord.name,
+            type = ExcursionType.Hike,
+            description = "",
+            geoRecord = geoRecord
         )
 
         when (result) {
@@ -404,17 +503,17 @@ class ExcursionMapViewModel @Inject constructor(
         }
 
         /* Now that excursion is downloaded, start map download */
-        val bb = routeLayer.getBoundingBox() ?: return@launch
+        val bb = geoRecordForBottomsheet.boundingBox
         if (withMap) {
             launch {
-                scheduleDownload(bb, excursionId = geoRecordForSearchItem.searchItem.id)
+                scheduleDownload(bb, excursionId = excursionId)
             }
         } else {
             /* Import the excursion in all maps which intersect the corresponding bounding-box */
             getMapInteractor.getMapList().forEach { map ->
                 launch {
                     if (map.intersects(bb)) {
-                        mapExcursionInteractor.createExcursionRef(map, excursionId = geoRecordForSearchItem.searchItem.id)
+                        mapExcursionInteractor.createExcursionRef(map, excursionId = excursionId)
                     }
                 }
             }
@@ -727,7 +826,8 @@ class ExcursionMapViewModel @Inject constructor(
     }
 
     sealed interface Event {
-        data object OnMarkerClick : Event
+        data object OnMarkerClick : Event  // TODO: remove
+        data object OnTrailClick : Event
         data object NoInternet : Event
         data object ExcursionOnlyDownloadStart : Event
         data object ExcursionDownloadError : Event
@@ -757,6 +857,8 @@ sealed interface MapDownloadState
 object Loading : MapDownloadState
 data class DownloadNotAllowed(val reason: DownloadNotAllowedReason) : MapDownloadState
 data class MapDownloadData(val hasContainingMap: Boolean, val tileCount: Long) : MapDownloadState
+
+data class GeoRecordForBottomsheet(val geoRecord: GeoRecord, val boundingBox: BoundingBox)
 
 enum class DownloadNotAllowedReason {
     Restricted, TooBigMap

@@ -59,7 +59,11 @@ class TrailLayer(
 
                         val details = trailRepository.getDetails(bb, searchItems.map { it.id })
                         onLoadingChanged(false)
-                        updatePaths(mapState, details, searchItems)
+
+                        val detailsWithGroup = details.map {
+                            Pair(it, searchItems.firstOrNull { item -> item.id == it.id }?.group)
+                        }
+                        updatePaths(mapState, detailsWithGroup)
                     }
                 }
             }
@@ -69,13 +73,14 @@ class TrailLayer(
     /**
      * Transactionally removes all paths and replaces them with the new ones.
      */
-    private fun updatePaths(mapState: MapState, details: List<TrailDetail>, searchItems: List<TrailSearchItem>) {
+    private fun updatePaths(mapState: MapState, detailsWithGroup: List<Pair<TrailDetail, OsmTrailGroup?>>) {
         Snapshot.withMutableSnapshot {
             mapState.removeAllPaths()
-            details.forEach { detail ->
+            detailsWithGroup.forEach { detailWithGroup ->
+                val detail = detailWithGroup.first
                 var lastIndex: Int? = null
                 var builder: PathDataBuilder? = null
-                val group = searchItems.firstOrNull { it.id == detail.id }?.group
+                val group = detailWithGroup.second
                 val prop = getProperties(group)
                 detail.iteratePoints { index, x, y ->
                     if (index != lastIndex) {

@@ -36,7 +36,20 @@ class Wgs84ToMercatorInteractor @Inject constructor() {
         }
     }
 
+    /**
+     * Shouldn't be invoked repeatedly on ui-thread.
+     */
+    fun getLatLonFromNormalized(x: Double, y: Double): DoubleArray? {
+        val X = deNormalize(x, X0, X1)
+        val Y = deNormalize(y, Y0, Y1)
+        return projection.undoProjection(X, Y)
+    }
+
     private fun normalize(t: Double, min: Double, max: Double): Double {
         return (t - min) / (max - min)
+    }
+
+    private fun deNormalize(t: Double, min: Double, max: Double): Double {
+        return min + t * (max - min)
     }
 }

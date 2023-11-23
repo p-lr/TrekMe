@@ -102,6 +102,7 @@ import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.compone
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.component.ElevationGraphPoint
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.component.GeoPlaceListComponent
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.dialog.MapSourceDataSelect
+import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.ExcursionMapViewModel.Event
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.AwaitingLocation
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.DownloadNotAllowed
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.DownloadNotAllowedReason
@@ -144,6 +145,7 @@ fun ExcursionMapStateful(
     val hasExtendedOffer by viewModel.extendedOfferFlow.collectAsState(initial = false)
     val swipeableState = rememberSwipeableState(initialValue = States.COLLAPSED)
     val geoRecordForSearchState by viewModel.geoRecordForSearchFlow.collectAsStateWithLifecycle()
+    val geoRecordForBottomSheet by viewModel.geoRecordForBottomSheet.collectAsStateWithLifecycle()
     val mapDownloadState by viewModel.mapDownloadStateFlow.collectAsStateWithLifecycle()
     var isDownloadOptionChecked by remember(mapDownloadState) {
         mutableStateOf(!((mapDownloadState as? MapDownloadData)?.hasContainingMap ?: true))
@@ -153,14 +155,14 @@ fun ExcursionMapStateful(
         /* Do not use loading state at init as it triggers an indeterminate progress bar.
          * In this context, null expresses an uninitialized state */
         initialValue = ResultL.success(null),
-        key1 = geoRecordForSearchState,
+        key1 = geoRecordForBottomSheet,
         key2 = mapDownloadState,
         key3 = isDownloadOptionChecked
     ) {
-        value = geoRecordForSearchState.map { geoRecordForSearchItem ->
-            if (geoRecordForSearchItem != null) {
+        value = geoRecordForBottomSheet.map { geoRecordForBottomsheet ->
+            if (geoRecordForBottomsheet != null) {
                 makeBottomSheetData(
-                    geoRecordForSearchItem.geoRecord,
+                    geoRecordForBottomsheet.geoRecord,
                     mapDownloadState,
                     isDownloadOptionChecked
                 )
@@ -182,31 +184,35 @@ fun ExcursionMapStateful(
 
     LaunchedEffectWithLifecycle(flow = viewModel.event) { event ->
         when (event) {
-            is ExcursionMapViewModel.Event.OnMarkerClick -> {
+            is Event.OnMarkerClick -> {
                 swipeableState.snapTo(States.EXPANDED)
             }
 
-            is ExcursionMapViewModel.Event.NoInternet -> {
+            is Event.OnTrailClick -> {
+                swipeableState.snapTo(States.EXPANDED)
+            }
+
+            is Event.NoInternet -> {
                 showSnackbar(snackbarHostState, noInternetWarning)
             }
 
-            is ExcursionMapViewModel.Event.ExcursionOnlyDownloadStart -> {
+            is Event.ExcursionOnlyDownloadStart -> {
                 showSnackbar(snackbarHostState, excursionDownloadStart)
             }
 
-            is ExcursionMapViewModel.Event.ExcursionDownloadError -> {
+            is Event.ExcursionDownloadError -> {
                 showSnackbar(snackbarHostState, excursionDownloadError)
             }
 
-            is ExcursionMapViewModel.Event.SearchError -> {
+            is Event.SearchError -> {
                 showSnackbar(snackbarHostState, excursionSearchError)
             }
 
-            is ExcursionMapViewModel.Event.PlaceOutOfBounds -> {
+            is Event.PlaceOutOfBounds -> {
                 showSnackbar(snackbarHostState, outSideOfCoveredArea)
             }
 
-            is ExcursionMapViewModel.Event.MultipleTrailClicked -> {
+            is Event.MultipleTrailClicked -> {
                 isShowingTrailSelectionDialog = event.tracks
             }
         }
@@ -273,7 +279,7 @@ fun ExcursionMapStateful(
                             Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    viewModel.selectTrail(it.first.id)
+                                    viewModel.selectTrail(it.first.id, it.first.name)
                                     isShowingTrailSelectionDialog = null
                                 },
                             verticalAlignment = Alignment.CenterVertically
