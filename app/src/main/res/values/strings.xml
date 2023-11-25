@@ -421,13 +421,10 @@
 
     <!-- Trail search -->
     <string name="fragment_excursion_search" translatable="false">ExcursionSearchFragment</string>
-    <string name="excursion_feature_menu">Look for an excursion</string>
-    <string name="excursion_search_placeholder">Search</string>
+    <string name="trail_search_feature_menu">Look for an trail</string>
+    <string name="trail_search_placeholder">Search</string>
     <string name="excursions">Excursions</string>
     <string name="use_my_location">Around me</string>
-    <string name="excursion_feature_banner">This feature is brand new, and is still being actively worked on.
-        The excursion database will complete over time.
-    </string>
     <string name="excursion_search_button">Search</string>
     <string name="activity_label">Activity</string>
     <string name="excursion_title">Activities</string>
@@ -447,9 +444,10 @@
     <string name="vertical_descent_stat">Vertical descent</string>
     <string name="distance_cursor">distance:</string>
     <string name="elevation_cursor">elevation:</string>
-    <string name="download_map_option">Download the map for this excursion (~%1$s Mb)</string>
+    <string name="download_map_option">Download the map for this trail (~%1$s Mb)</string>
     <string name="restricted_download">Map download isn\'t available for this layer yet.</string>
-    <string name="area_too_big">This excursion covers a wide area</string>
+    <string name="maybe_unordered">The trail might be unordered</string>
+    <string name="area_too_big">This trail covers a wide area</string>
     <string name="unexpected_error">An unexpected error occurred</string>
     <string name="awaiting_location">Awaiting for GPS location</string>
     <string name="loading_layer">Loading layer</string>

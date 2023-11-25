@@ -60,11 +60,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -121,6 +123,7 @@ import com.peterlaurence.trekme.util.map
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import ovh.plrapps.mapcompose.api.scrollTo
 import ovh.plrapps.mapcompose.api.setMapBackground
 import ovh.plrapps.mapcompose.api.setVisibleAreaPadding
 import ovh.plrapps.mapcompose.ui.MapUI
@@ -223,18 +226,21 @@ fun ExcursionMapStateful(
     }
 
     /* Handle map padding and center on georecord if bottomsheet is expanded. */
-    LaunchedEffect(swipeableState.currentValue, uiState, geoRecordForSearchState) {
+    LaunchedEffect(swipeableState.currentValue, uiState, geoRecordForBottomSheet) {
         val mapState = (uiState as? MapReady)?.mapState ?: return@LaunchedEffect
-        val geoRecord = geoRecordForSearchState.getOrNull()?.geoRecord ?: return@LaunchedEffect
+        val bb = geoRecordForBottomSheet.getOrNull()?.boundingBoxNormalized ?: return@LaunchedEffect
 
         val paddingRatio = when (swipeableState.currentValue) {
             States.EXPANDED, States.PEAKED -> expandedRatio
-            States.COLLAPSED -> 0f
+            States.COLLAPSED -> {
+                viewModel.resetTrail()
+                0f
+            }
         }
         launch {
             mapState.setVisibleAreaPadding(bottomRatio = paddingRatio)
             if (swipeableState.currentValue == States.EXPANDED) {
-                viewModel.routeLayer.centerOnGeoRecord(mapState, geoRecord.id)
+                mapState.scrollTo(bb, Offset(0.2f, 0.2f))
             }
         }
     }
@@ -279,7 +285,11 @@ fun ExcursionMapStateful(
                             Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    viewModel.selectTrail(it.first.id, it.first.name)
+                                    viewModel.selectTrail(
+                                        it.first.id,
+                                        it.first.name,
+                                        it.first.group
+                                    )
                                     isShowingTrailSelectionDialog = null
                                 },
                             verticalAlignment = Alignment.CenterVertically
@@ -366,6 +376,10 @@ private fun ExcursionMapScreen(
     onLayerSelection: () -> Unit = {},
     onGoToMapCreation: () -> Unit = {}
 ) {
+    var isInSearchMode by rememberSaveable {
+        mutableStateOf(false)
+    }
+
     Scaffold(
         bottomBar = {
             val bottomSheetDataSuccess = bottomSheetDataState.getOrNull()
@@ -373,6 +387,7 @@ private fun ExcursionMapScreen(
                 swipeableState.currentValue != States.COLLAPSED
                 && bottomSheetDataSuccess != null
                 && bottomSheetDataSuccess.mapDownloadState != Loading
+                && !isInSearchMode
             ) {
                 Row(
                     modifier = Modifier
@@ -391,10 +406,6 @@ private fun ExcursionMapScreen(
             SnackbarHost(hostState = snackbarHostState)
         }
     ) { paddingValues ->
-        var isInSearchMode by rememberSaveable {
-            mutableStateOf(false)
-        }
-
         val modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
@@ -550,6 +561,7 @@ private fun BottomSheet(
                 },
                 onSuccess = { data ->
                     if (data != null) {
+                        headerSection(data.title)
                         statisticsSection(data)
                         elevationGraphSection(data, onCursorMove)
                         downloadSection(
@@ -569,6 +581,24 @@ private fun BottomSheet(
     )
 }
 
+private fun LazyListScope.headerSection(title: String) {
+    item("header") {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, top = 16.dp, end = 16.dp),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = title,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+    }
+}
+
 private fun LazyListScope.statisticsSection(data: BottomSheetData) {
     item(key = data.geoStatistics) {
         TrackStats(data.geoStatistics)
@@ -581,20 +611,28 @@ private fun LazyListScope.elevationGraphSection(
 ) {
     if (data.elevationGraphPoints != null) {
         item(key = "elevation-graph") {
-            Card(
-                modifier = Modifier
+            Column(
+                Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                ElevationGraph(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(150.dp),
-                    points = data.elevationGraphPoints,
-                    verticalSpacingY = 20.dp,
-                    verticalPadding = 16.dp,
-                    onCursorMove = onCursorMove
+                    .padding(16.dp)) {
+                Text(
+                    stringResource(id = R.string.maybe_unordered),
+                    fontStyle = FontStyle.Italic,
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
+                Spacer(modifier = Modifier.height(8.dp))
+                Card {
+                    ElevationGraph(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(150.dp),
+                        points = data.elevationGraphPoints,
+                        verticalSpacingY = 20.dp,
+                        verticalPadding = 16.dp,
+                        onCursorMove = onCursorMove
+                    )
+                }
             }
         }
     }
@@ -890,20 +928,27 @@ private suspend fun makeBottomSheetData(
         }
     }
     val elevationGraphPoints = points.ifEmpty { null }
+    /* For instance, we only have one source of trail, and they mey be unordered when the number
+     * of section is strictly greater than 1 */
+    val maybeUnordered = elevationGraphPoints != null && elevationGraphPoints.size > 1
 
     return BottomSheetData(
-        geoRecord.id,
-        stats,
-        elevationGraphPoints,
-        mapDownloadState,
-        isDownloadOptionChecked
+        id = geoRecord.id,
+        title = geoRecord.name,
+        geoStatistics = stats,
+        elevationGraphPoints = elevationGraphPoints,
+        maybeUnordered = maybeUnordered,
+        mapDownloadState = mapDownloadState,
+        isDownloadOptionChecked = isDownloadOptionChecked
     )
 }
 
 private data class BottomSheetData(
     val id: UUID,
+    val title: String,
     val geoStatistics: GeoStatistics,
     val elevationGraphPoints: List<ElevationGraphPoint>?,
+    val maybeUnordered: Boolean,
     val mapDownloadState: MapDownloadState,
     val isDownloadOptionChecked: Boolean
 )
@@ -979,7 +1024,15 @@ private fun ExcursionMapScreenPreview() {
     val bottomSheetData by remember {
         mutableStateOf(
             ResultL.success(
-                BottomSheetData(UUID.randomUUID(), geoStats, null, mapDownloadState, true)
+                BottomSheetData(
+                    id = UUID.randomUUID(),
+                    title = "Trail title",
+                    geoStatistics = geoStats,
+                    elevationGraphPoints = null,
+                    maybeUnordered = true,
+                    mapDownloadState = mapDownloadState,
+                    isDownloadOptionChecked = true
+                )
             )
         )
     }

@@ -445,13 +445,10 @@
     <string name="manage_subscription_btn">GÉRER L\'ABONNEMENT</string>
 
     <!-- Trail search -->
-    <string name="excursion_feature_menu">Chercher une excursion</string>
-    <string name="excursion_search_placeholder">Recherche</string>
+    <string name="trail_search_feature_menu">Chercher une trace</string>
+    <string name="trail_search_placeholder">Recherche</string>
     <string name="excursions">Excursions</string>
     <string name="use_my_location">Autour de moi</string>
-    <string name="excursion_feature_banner">Cette fonctionnalité est toute nouvelle.
-        La base de donnée des excursions sera complétée progressivement.
-    </string>
     <string name="excursion_search_button">Rechercher</string>
     <string name="excursion_title">Activités</string>
     <string name="excursion_all">Toutes</string>
@@ -471,9 +468,10 @@
     <string name="vertical_descent_stat">Dénivelé négatif</string>
     <string name="distance_cursor">distance :</string>
     <string name="elevation_cursor">altitude :</string>
-    <string name="download_map_option">Télécharger la carte pour cette excursion (~%1$s Mo)</string>
+    <string name="download_map_option">Télécharger la carte pour cette trace (~%1$s Mo)</string>
     <string name="restricted_download">Le téléchargement de carte sera prochainement disponible pour cette couche.</string>
-    <string name="area_too_big">Cette excursion couvre une vaste zone.</string>
+    <string name="maybe_unordered">La trace est potentiellement non ordonnée.</string>
+    <string name="area_too_big">Cette trace couvre une vaste zone.</string>
     <string name="unexpected_error">Une erreur</string>
     <string name="awaiting_location">En attente d\'une position GPS</string>
     <string name="loading_layer">Chargement de la couche</string>

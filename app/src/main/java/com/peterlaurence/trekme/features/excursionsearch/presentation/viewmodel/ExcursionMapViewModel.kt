@@ -11,6 +11,8 @@ import com.peterlaurence.trekme.core.billing.domain.model.ExtendedOfferStateOwne
 import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionSearchItem
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionType
+import com.peterlaurence.trekme.core.excursion.domain.model.OsmTrailGroup
+import com.peterlaurence.trekme.core.excursion.domain.model.TrailDetail
 import com.peterlaurence.trekme.core.excursion.domain.model.TrailDetailWithElevation
 import com.peterlaurence.trekme.core.excursion.domain.model.TrailSearchItem
 import com.peterlaurence.trekme.core.excursion.domain.repository.ExcursionRepository
@@ -201,6 +203,7 @@ class ExcursionMapViewModel @Inject constructor(
         scope = viewModelScope,
         mapStateFlow = mapStateFlow,
         trailRepository = trailRepository,
+        geoRecordForBottomSheet = geoRecordForBottomSheet,
         onLoadingChanged = { loading ->
             _isTrailUpdatePending.value = loading
         },
@@ -211,7 +214,7 @@ class ExcursionMapViewModel @Inject constructor(
                 }
             } else {
                 val trailItem = it.firstOrNull()?.first ?: return@l
-                selectTrail(trailItem.id, trailItem.name)
+                selectTrail(trailItem.id, trailItem.name, trailItem.group)
             }
         }
     )
@@ -292,7 +295,7 @@ class ExcursionMapViewModel @Inject constructor(
 //        }
     }
 
-    fun selectTrail(id: String, name: String?)  = viewModelScope.launch {
+    fun selectTrail(id: String, name: String?, group: OsmTrailGroup?)  = viewModelScope.launch {
         geoRecordForBottomSheet.value = ResultL.loading()
         mapDownloadStateFlow.value = Loading
         _events.send(Event.OnTrailClick)
@@ -304,11 +307,15 @@ class ExcursionMapViewModel @Inject constructor(
                 geoRecordForBottomSheet.value = ResultL.success(null)
                 return@launch
             }
-            geoRecordForBottomSheet.value = ResultL.success(GeoRecordForBottomsheet(geoRecord, bb, id))
+            geoRecordForBottomSheet.value = ResultL.success(GeoRecordForBottomsheet(geoRecord, bb, bbNormalized, id, trailDetailWithElevation, group))
             updateMapDownloadState(bb)
         } else {
             geoRecordForBottomSheet.value = ResultL.success(null)
         }
+    }
+
+    fun resetTrail() {
+        geoRecordForBottomSheet.value = ResultL.success(null)
     }
 
     private suspend fun TrailDetailWithElevation.toGeoRecord(name: String?): Triple<GeoRecord, NormalizedBoundingBox, BoundingBox>? {
@@ -858,7 +865,14 @@ object Loading : MapDownloadState
 data class DownloadNotAllowed(val reason: DownloadNotAllowedReason) : MapDownloadState
 data class MapDownloadData(val hasContainingMap: Boolean, val tileCount: Long) : MapDownloadState
 
-data class GeoRecordForBottomsheet(val geoRecord: GeoRecord, val boundingBox: BoundingBox, val searchItemId: String)
+data class GeoRecordForBottomsheet(
+    val geoRecord: GeoRecord,
+    val boundingBox: BoundingBox,
+    val boundingBoxNormalized: NormalizedBoundingBox,
+    val searchItemId: String,
+    val trailDetail: TrailDetail,
+    val group: OsmTrailGroup?
+)
 
 enum class DownloadNotAllowedReason {
     Restricted, TooBigMap

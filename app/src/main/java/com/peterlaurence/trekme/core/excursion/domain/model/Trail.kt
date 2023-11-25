@@ -23,8 +23,7 @@ interface TrailDetail {
     fun iteratePoints(block: (index: Int, x: Double, y: Double) -> Unit)
 }
 
-interface TrailDetailWithElevation {
-    val id: String
+interface TrailDetailWithElevation : TrailDetail {
     /**
      * For each segment, calls [block] with the index of the segment and the relative coordinates
      * and elevation of the point.

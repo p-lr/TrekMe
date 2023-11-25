@@ -158,7 +158,7 @@ private fun HikeSearchScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(id = R.string.excursion_feature_menu)) },
+                title = { Text(stringResource(id = R.string.trail_search_feature_menu)) },
                 navigationIcon = {
                     IconButton(onClick = onMenuClick) {
                         Icon(Icons.Filled.Menu, contentDescription = "")
@@ -263,12 +263,12 @@ private fun ColumnScope.ExcursionSearchUi(
             } else {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_baseline_search_24),
-                    contentDescription = stringResource(id = R.string.excursion_search_placeholder)
+                    contentDescription = stringResource(id = R.string.trail_search_placeholder)
                 )
             }
         },
         placeholder = {
-            Text(stringResource(id = R.string.excursion_search_placeholder))
+            Text(stringResource(id = R.string.trail_search_placeholder))
         },
         interactionSource = remember { MutableInteractionSource() }
             .also { interactionSource ->
@@ -399,29 +399,9 @@ private fun ColumnScope.ExcursionSearchUi(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        NewFeatureBanner()
+//        NewFeatureBanner()
 
         Spacer(modifier = Modifier.weight(1f))
-    }
-}
-
-@OptIn(ExperimentalTextApi::class)
-@Composable
-private fun NewFeatureBanner() {
-    ElevatedCard(
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.tertiaryContainer
-        )
-    ) {
-        Text(
-            text = stringResource(id = R.string.excursion_feature_banner),
-            modifier = Modifier.padding(16.dp),
-            style = LocalTextStyle.current.copy(
-                hyphens = Hyphens.Auto,
-                lineBreak = LineBreak.Simple.copy(strategy = LineBreak.Strategy.HighQuality)
-            ),
-            softWrap = true
-        )
     }
 }
 

@@ -183,6 +183,14 @@ private class TrailDetailWithElevationImpl(
             }
         }
     }
+
+    override fun iteratePoints(block: (index: Int, x: Double, y: Double) -> Unit) {
+        elevationResponse.segments.forEachIndexed { index, elevationSegment ->
+            elevationSegment.elevation.forEach {
+                block(index, normalize(it.x, X0, X1), normalize(it.y, Y0, Y1))
+            }
+        }
+    }
 }
 
 private fun normalize(t: Double, min: Double, max: Double): Double {
