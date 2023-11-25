@@ -304,7 +304,7 @@ class ExcursionMapViewModel @Inject constructor(
                 geoRecordForBottomSheet.value = ResultL.success(null)
                 return@launch
             }
-            geoRecordForBottomSheet.value = ResultL.success(GeoRecordForBottomsheet(geoRecord, bb))
+            geoRecordForBottomSheet.value = ResultL.success(GeoRecordForBottomsheet(geoRecord, bb, id))
             updateMapDownloadState(bb)
         } else {
             geoRecordForBottomSheet.value = ResultL.success(null)
@@ -482,7 +482,7 @@ class ExcursionMapViewModel @Inject constructor(
             _events.send(Event.ExcursionOnlyDownloadStart)
         }
 
-        val excursionId = geoRecord.id.toString()
+        val excursionId = "waymarkedtrail-" + geoRecordForBottomsheet.searchItemId
         val result = excursionRepository.putExcursion(
             id = excursionId,
             title = geoRecord.name,
@@ -858,7 +858,7 @@ object Loading : MapDownloadState
 data class DownloadNotAllowed(val reason: DownloadNotAllowedReason) : MapDownloadState
 data class MapDownloadData(val hasContainingMap: Boolean, val tileCount: Long) : MapDownloadState
 
-data class GeoRecordForBottomsheet(val geoRecord: GeoRecord, val boundingBox: BoundingBox)
+data class GeoRecordForBottomsheet(val geoRecord: GeoRecord, val boundingBox: BoundingBox, val searchItemId: String)
 
 enum class DownloadNotAllowedReason {
     Restricted, TooBigMap

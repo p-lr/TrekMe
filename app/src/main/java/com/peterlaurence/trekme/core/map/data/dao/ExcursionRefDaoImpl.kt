@@ -27,7 +27,7 @@ class ExcursionRefDaoImpl(
         runCatching {
             if (!refsDir.exists()) return@withContext
             val refFiles = refsDir.listFiles { it: File ->
-                it.isFile && it.nameWithoutExtension.toIntOrNull() != null && it.name.endsWith(".json")
+                it.isFile && it.name.endsWith(".json")
             } ?: emptyArray()
 
             val refs = refFiles.map {
@@ -56,13 +56,7 @@ class ExcursionRefDaoImpl(
         }
 
         runCatching {
-            val refFiles = refsDir.listFiles { it: File ->
-                it.isFile && it.nameWithoutExtension.toIntOrNull() != null && it.name.endsWith(".json")
-            } ?: emptyArray()
-
-            val count = refFiles.size
-
-            val newRefFile = File(refsDir, "$count.json")
+            val newRefFile = File(refsDir, "${excursion.id}.json")
             val data = ExcursionRefKtx(id = excursion.id, name = excursion.title, visible = true)
             val st = json.encodeToString(data)
             FileUtils.writeToFile(st, newRefFile)
