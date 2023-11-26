@@ -22,6 +22,7 @@ fun RecordScreen(
     statViewModel: RecordingStatisticsViewModel,
     recordViewModel: RecordViewModel,
     onElevationGraphClick: (RecordingData) -> Unit,
+    onGoToTrailSearchClick: () -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -74,7 +75,8 @@ fun RecordScreen(
                 modifier = Modifier.padding(8.dp),
                 statViewModel = statViewModel,
                 recordViewModel = recordViewModel,
-                onElevationGraphClick = onElevationGraphClick
+                onElevationGraphClick = onElevationGraphClick,
+                onGoToTrailSearchClick = onGoToTrailSearchClick
             )
         }
     }

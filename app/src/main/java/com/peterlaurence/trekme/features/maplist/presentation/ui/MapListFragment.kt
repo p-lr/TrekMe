@@ -53,7 +53,7 @@ class MapListFragment : Fragment() {
                             }
                         },
                         onNavigateToExcursionSearch = {
-                            appEventBus.navigateTo(AppEventBus.NavDestination.ExcursionSearch)
+                            appEventBus.navigateTo(AppEventBus.NavDestination.TrailSearch)
                         }
                     )
                 }

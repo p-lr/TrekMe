@@ -5,6 +5,7 @@ import android.os.Parcelable
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -17,9 +18,12 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -29,6 +33,7 @@ import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.features.common.domain.model.Loading
 import com.peterlaurence.trekme.features.common.domain.model.RecordingsAvailable
 import com.peterlaurence.trekme.features.common.presentation.ui.scrollbar.drawVerticalScrollbar
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.record.domain.model.RecordingData
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.MapSelectionDialogStateful
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.RecordingRenameDialog
@@ -44,6 +49,7 @@ fun GpxRecordListStateful(
     statViewModel: RecordingStatisticsViewModel,
     recordViewModel: RecordViewModel,
     onElevationGraphClick: (RecordingData) -> Unit,
+    onGoToTrailSearchClick: () -> Unit
 ) {
     val state by statViewModel.recordingDataFlow.collectAsState()
 
@@ -114,7 +120,7 @@ fun GpxRecordListStateful(
     val context = LocalContext.current
     val actioner: Actioner = { action ->
         when (action) {
-            Action.OnMultiSelectionClick -> {
+            is Action.OnMultiSelectionClick -> {
                 isMultiSelectionMode = !isMultiSelectionMode
                 if (!isMultiSelectionMode) {
                     itemById = itemById.mapValues {
@@ -122,23 +128,23 @@ fun GpxRecordListStateful(
                     }
                 }
             }
-            Action.OnImportMenuCLick -> {
+            is Action.OnImportMenuClick -> {
                 /* Search for all documents available via installed storage providers */
                 launcher.launch("*/*")
             }
-            Action.OnEditClick -> {
+            is Action.OnEditClick -> {
                 val selected = getSelected(dataById, items)
                 if (selected != null) {
                     recordingRenameDialogData = RecordingRenameData(selected.id, selected.name)
                 }
             }
-            Action.OnChooseMapClick -> {
+            is Action.OnChooseMapClick -> {
                 val selected = getSelected(dataById, items)
                 if (selected != null) {
                     recordingForMapImport = ParcelUuid(selected.id)
                 }
             }
-            Action.OnShareClick -> {
+            is  Action.OnShareClick -> {
                 val selectedList = getSelectedList(dataById, items)
                 val intentBuilder = ShareCompat.IntentBuilder(context)
                     .setType("text/plain")
@@ -154,27 +160,34 @@ fun GpxRecordListStateful(
                 }
                 intentBuilder.startChooser()
             }
-            Action.OnElevationGraphClick -> {
+            is Action.OnElevationGraphClick -> {
                 val selected = getSelected(dataById, items)
                 if (selected != null) {
                     onElevationGraphClick(selected)
                 }
             }
-            Action.OnRemoveClick -> {
+            is Action.OnRemoveClick -> {
                 val selectedList = getSelectedList(dataById, items)
                 statViewModel.onRequestDeleteRecordings(selectedList)
             }
         }
     }
 
-    GpxRecordList(
-        modifier = modifier,
-        items = items,
-        isMultiSelectionMode = isMultiSelectionMode,
-        lazyListState = lazyListState,
-        onItemClick,
-        actioner
-    )
+    if (items.isNotEmpty()) {
+        GpxRecordList(
+            modifier = modifier,
+            items = items,
+            isMultiSelectionMode = isMultiSelectionMode,
+            lazyListState = lazyListState,
+            onItemClick,
+            actioner
+        )
+    } else {
+        NoTrails(
+            onImport = { actioner(Action.OnImportMenuClick) },
+            onSearch = onGoToTrailSearchClick
+        )
+    }
 
     recordingRenameDialogData?.also {
         RecordingRenameDialog(
@@ -293,7 +306,7 @@ private fun RecordingActionBar(
                     offset = DpOffset(0.dp, 0.dp)
                 ) {
                     DropdownMenuItem(
-                        onClick = { actioner(Action.OnImportMenuCLick) },
+                        onClick = { actioner(Action.OnImportMenuClick) },
                         text = {
                             Text(stringResource(id = R.string.recordings_menu_import))
                             Spacer(Modifier.weight(1f))
@@ -432,13 +445,13 @@ private fun getSelectedList(
 private typealias Actioner = (Action) -> Unit
 
 private sealed interface Action {
-    object OnMultiSelectionClick : Action
-    object OnImportMenuCLick : Action
-    object OnEditClick : Action
-    object OnChooseMapClick : Action
-    object OnShareClick : Action
-    object OnElevationGraphClick : Action
-    object OnRemoveClick : Action
+    data object OnMultiSelectionClick : Action
+    data object OnImportMenuClick : Action
+    data object OnEditClick : Action
+    data object OnChooseMapClick : Action
+    data object OnShareClick : Action
+    data object OnElevationGraphClick : Action
+    data object OnRemoveClick : Action
 }
 
 @Stable
@@ -452,3 +465,66 @@ data class SelectableRecordingItem(
 @Stable
 @Parcelize
 data class RecordingRenameData(val id: UUID, val name: String) : Parcelable
+
+@Composable
+private fun NoTrails(
+    onImport: () -> Unit = {},
+    onSearch: () -> Unit = {}
+) {
+    Column(Modifier.padding(horizontal = 16.dp)) {
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(text = stringResource(id = R.string.no_recording_tutorial))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 24.dp),
+            horizontalArrangement = Arrangement.spacedBy(32.dp)
+        ) {
+            Spacer(modifier = Modifier.weight(1f))
+            ClickableCard(
+                iconId = R.drawable.ic_gpx_file,
+                textId = R.string.no_recording_import_trails,
+                onClick = onImport
+            )
+            ClickableCard(
+                iconId = R.drawable.ic_earth,
+                textId = R.string.no_recording_search_trail,
+                onClick = onSearch
+            )
+            Spacer(modifier = Modifier.weight(1f))
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ClickableCard(
+    iconId: Int,
+    textId: Int,
+    onClick: () -> Unit
+) {
+    Card(onClick = onClick) {
+        Column(
+            Modifier
+                .width(120.dp)
+                .padding(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                painter = painterResource(id = iconId),
+                modifier = Modifier.padding(bottom = 8.dp),
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)),
+                contentDescription = null
+            )
+            Text(text = stringResource(id = textId), textAlign = TextAlign.Center)
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun NoTrailsPreview() {
+    TrekMeTheme {
+        NoTrails()
+    }
+}

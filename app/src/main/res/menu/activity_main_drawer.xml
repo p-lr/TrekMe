@@ -13,7 +13,7 @@
         <item
             android:id="@+id/nav_record"
             android:icon="@drawable/folder"
-            android:title="@string/excursion_menu_title" />
+            android:title="@string/trails_menu_title" />
         <item
             android:id="@+id/nav_hike_search"
             android:icon="@drawable/ic_baseline_search_24"

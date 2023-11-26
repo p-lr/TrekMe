@@ -5,7 +5,7 @@
         android:enabled="true"
         android:icon="@drawable/folder"
         android:shortcutShortLabel="@string/excursion_shortcut"
-        android:shortcutLongLabel="@string/excursion_menu_title">
+        android:shortcutLongLabel="@string/trails_menu_title">
         <intent
             android:action="android.intent.action.VIEW"
             android:targetPackage="com.peterlaurence.trekme"

@@ -13,7 +13,7 @@ fun RecordTopAppbar(
     onMainMenuClick: () -> Unit
 ) {
     TopAppBar(
-        title = { Text(text = stringResource(id = R.string.my_excursions_frgmt_title)) },
+        title = { Text(text = stringResource(id = R.string.my_trails_title)) },
         navigationIcon = {
             IconButton(onClick = onMainMenuClick) {
                 Icon(Icons.Filled.Menu, contentDescription = "")

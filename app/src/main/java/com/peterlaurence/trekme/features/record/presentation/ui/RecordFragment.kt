@@ -12,10 +12,12 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordViewModel
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordingStatisticsViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
@@ -23,6 +25,9 @@ class RecordFragment : Fragment() {
 
     val viewModel: RecordViewModel by activityViewModels()
     private val statViewModel: RecordingStatisticsViewModel by activityViewModels()
+
+    @Inject
+    lateinit var appEventBus: AppEventBus
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -47,7 +52,8 @@ class RecordFragment : Fragment() {
                                     ParcelUuid(data.id)
                                 )
                             findNavController().navigate(action)
-                        }
+                        },
+                        onGoToTrailSearchClick = { appEventBus.navigateTo(AppEventBus.NavDestination.TrailSearch) }
                     )
                 }
             }

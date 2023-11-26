@@ -8,7 +8,7 @@
     <string name="map_menu_title">Map</string>
     <string name="select_map_menu_title">My maps</string>
     <string name="create_menu_title">Create</string>
-    <string name="excursion_menu_title">My excursions</string>
+    <string name="trails_menu_title">My trails</string>
     <string name="excursion_shortcut">Excursions</string>
     <string name="gps_plus_menu_title">GPS+</string>
     <string name="track_stats_menu_title">Recording stats</string>
@@ -271,7 +271,7 @@
     </string>
     <!-- Record GPX fragment -->
     <string name="fragment_recording" translatable="false">FragmentRecording</string>
-    <string name="my_excursions_frgmt_title">My excursions</string>
+    <string name="my_trails_title">My trails</string>
     <string name="location_disabled_warning">Location is currently disabled. Please enable it on your device.</string>
     <string name="recordings_list_title">GPX recordings</string>
     <string name="recordings_menu_import">Import files</string>
@@ -320,6 +320,9 @@
     <string name="duration_desc">Total duration</string>
     <string name="speed_desc">Average speed</string>
     <string name="multi_selection_desc">Multi selection mode</string>
+    <string name="no_recording_tutorial">You have no trails yet. To get started, you can record yourself from any map, or:</string>
+    <string name="no_recording_import_trails">Import an existing trail</string>
+    <string name="no_recording_search_trail">Look for a trail</string>
 
     <!-- Elevation fragment -->
     <string name="no_elevations">This GPX file contains no elevations. TrekMe can\'t show the elevation profile.</string>
@@ -421,7 +424,7 @@
 
     <!-- Trail search -->
     <string name="fragment_trail_search" translatable="false">TrailSearchFragment</string>
-    <string name="trail_search_feature_menu">Look for an trail</string>
+    <string name="trail_search_feature_menu">Look for a trail</string>
     <string name="trail_search_placeholder">Search</string>
     <string name="excursions">Excursions</string>
     <string name="use_my_location">Around me</string>

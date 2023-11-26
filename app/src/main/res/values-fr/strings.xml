@@ -82,7 +82,7 @@
     <string name="confirm_import">Vous pouvez maintenant importer la carte</string>
     <string name="service_gpx_record_name">Service d\'enregistrement Gpx</string>
     <string name="service_gpx_record_action">Enregistrement GPX</string>
-    <string name="excursion_menu_title">Mes excursions</string>
+    <string name="trails_menu_title">Mes traces</string>
     <string name="excursion_shortcut">Excursions</string>
     <string name="recordings_list_title">Enregistrements GPX</string>
     <string name="files_could_not_be_deleted">Certains fichiers n\'ont pu être supprimés</string>
@@ -335,7 +335,7 @@
     <string name="previously_connected_bt_devices">APPAREILS CONNECTÉS PRÉCÉDEMMENT</string>
     <string name="wifip2p_title">Partage de carte</string>
     <string name="mapcreate_title">Création de carte</string>
-    <string name="my_excursions_frgmt_title">Mes excursions</string>
+    <string name="my_trails_title">Mes traces</string>
     <string name="select_bt_devices_title">Sélection du GPS actif</string>
     <string name="internal_gps">GPS interne</string>
     <string name="connection_bt_lost_msg">Connection au GPS Bluetooth perdue, tentative de re-connection…</string>
@@ -442,6 +442,9 @@
     <string name="duration_desc">Temps total</string>
     <string name="speed_desc">Vitesse moyenne</string>
     <string name="multi_selection_desc">Mode sélection multiple</string>
+    <string name="no_recording_tutorial">Ici apparaîtront vos traces. Pour commencer, vous pouvez vous enregistrer depuis n\'importe qu\'elle carte, ou :</string>
+    <string name="no_recording_import_trails">Importer une trace</string>
+    <string name="no_recording_search_trail">Rechercher une trace</string>
     <string name="manage_subscription_btn">GÉRER L\'ABONNEMENT</string>
 
     <!-- Trail search -->
