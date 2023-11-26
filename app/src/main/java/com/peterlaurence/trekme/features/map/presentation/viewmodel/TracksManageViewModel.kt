@@ -128,5 +128,15 @@ class TracksManageViewModel @Inject constructor(
     fun centerOnRoute(route: Route) {
         mapFeatureEvents.postGoToRoute(route)
     }
+
+    fun setVisibilityForAllTracks(newVisibility: Boolean) {
+        val map = map ?: return
+        viewModelScope.launch {
+            routeInteractor.setAllRouteVisibility(map, newVisibility)
+        }
+        viewModelScope.launch {
+            mapExcursionInteractor.setAllExcursionVisibility(map, newVisibility)
+        }
+    }
 }
 

@@ -5,6 +5,7 @@ import com.peterlaurence.trekme.core.map.domain.dao.ExcursionRefDao
 import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
@@ -57,6 +58,13 @@ class MapExcursionInteractor @Inject constructor(
         val excursion = excursionRepository.getExcursion(excursionId)
         if (excursion != null) {
             excursionRefDao.createExcursionRef(map, excursion)
+        }
+    }
+
+    suspend fun setAllExcursionVisibility(map: Map, newVisibility: Boolean) = coroutineScope {
+        map.excursionRefs.value.forEach {
+            it.visible.update { newVisibility }
+            excursionRefDao.saveExcursionRef(map, it)
         }
     }
 }

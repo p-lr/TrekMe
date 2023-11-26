@@ -6,10 +6,12 @@ import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.core.map.domain.repository.RouteRepository
 import com.peterlaurence.trekme.features.map.domain.core.getNormalizedCoordinates
 import com.peterlaurence.trekme.features.map.domain.models.MarkerWithNormalizedPos
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class RouteInteractor @Inject constructor(
@@ -55,5 +57,14 @@ class RouteInteractor @Inject constructor(
     suspend fun renameRoute(map: Map, route: Route, newName: String) {
         route.name.update { newName }
         routeRepository.saveRouteInfo(map, route)
+    }
+
+    suspend fun setAllRouteVisibility(map: Map, visibility: Boolean) = coroutineScope {
+        map.routes.value.forEach {
+            it.visible.update { visibility }
+            launch {
+                routeRepository.saveRouteInfo(map, it)
+            }
+        }
     }
 }

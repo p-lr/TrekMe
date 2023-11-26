@@ -7,6 +7,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -155,6 +156,7 @@ fun TracksManageStateful(
                 }
             }
         },
+        onAllVisibilityChange = { viewModel.setVisibilityForAllTracks(it) },
         onColorChange = { id, c ->
             val selectable = selectables.firstOrNull { it.id == id }
             if (selectable != null) {
@@ -203,6 +205,7 @@ private fun TracksManageScreen(
     onGoToRoute: () -> Unit,
     onRouteClick: (Selectable) -> Unit,
     onVisibilityToggle: (id: String) -> Unit = {},
+    onAllVisibilityChange: (Boolean) -> Unit = {},
     onColorChange: (id: String, Long) -> Unit,
     onRemove: (Selectable) -> Unit,
     onAddNewRoute: () -> Unit
@@ -245,6 +248,7 @@ private fun TracksManageScreen(
                 selectables = selectables,
                 onRouteClick = onRouteClick,
                 onVisibilityToggle = onVisibilityToggle,
+                onAllVisibilityChange = onAllVisibilityChange,
                 onColorChange = onColorChange,
                 onRemove = onRemove
             )
@@ -362,6 +366,7 @@ private fun TrackList(
     selectables: List<Selectable>,
     onRouteClick: (Selectable) -> Unit,
     onVisibilityToggle: (id: String) -> Unit = {},
+    onAllVisibilityChange: (Boolean) -> Unit = {},
     onColorChange: (id: String, Long) -> Unit,
     onRemove: (Selectable) -> Unit
 ) {
@@ -429,6 +434,7 @@ private fun TrackList(
                     name,
                     index,
                     onVisibilityToggle = onVisibilityToggle,
+                    onAllVisibilityChange = onAllVisibilityChange,
                     onColorChange = onColorChange
                 )
             }
@@ -436,6 +442,7 @@ private fun TrackList(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun TrackItem(
     modifier: Modifier = Modifier,
@@ -446,6 +453,7 @@ private fun TrackItem(
     name: String,
     index: Int,
     onVisibilityToggle: (id: String) -> Unit = {},
+    onAllVisibilityChange: (Boolean) -> Unit = {},
     onColorChange: (id: String, Long) -> Unit
 ) {
     var isShowingColorPicker by remember { mutableStateOf(false) }
@@ -472,21 +480,22 @@ private fun TrackItem(
         Row {
             ColorIndicator(color, onClick = { isShowingColorPicker = true })
             Spacer(modifier = Modifier.width(10.dp))
-            IconButton(
-                onClick = { onVisibilityToggle(id) },
-                modifier = Modifier.size(24.dp)
-            ) {
-                Icon(
-                    painter = if (visible) {
-                        painterResource(id = R.drawable.ic_visibility_black_24dp)
-                    } else {
-                        painterResource(id = R.drawable.ic_visibility_off_black_24dp)
-                    },
-                    contentDescription = stringResource(id = R.string.track_visibility_btn),
-                )
-            }
+            val interactionSource = remember { MutableInteractionSource() }
+            Icon(
+                modifier = Modifier.combinedClickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    onLongClick = { onAllVisibilityChange(!visible) },
+                    onClick = { onVisibilityToggle(id) }
+                ),
+                painter = if (visible) {
+                    painterResource(id = R.drawable.ic_visibility_black_24dp)
+                } else {
+                    painterResource(id = R.drawable.ic_visibility_off_black_24dp)
+                },
+                contentDescription = stringResource(id = R.string.track_visibility_btn),
+            )
         }
-
     }
 
     if (isShowingColorPicker) {
