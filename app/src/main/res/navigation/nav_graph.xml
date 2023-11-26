@@ -119,8 +119,8 @@
         android:label="AboutFragment" />
     <action android:id="@+id/action_global_aboutFragment" app:destination="@id/aboutFragment" />
     <fragment
-        android:id="@+id/excursionSearchFragment"
-        android:name="com.peterlaurence.trekme.features.excursionsearch.presentation.ui.ExcursionSearchFragment"
-        android:label="@string/fragment_excursion_search" />
-    <action android:id="@+id/action_global_excursionSearchFragment" app:destination="@id/excursionSearchFragment"/>
+        android:id="@+id/trailSearchFragment"
+        android:name="com.peterlaurence.trekme.features.trailsearch.presentation.ui.TrailSearchFragment"
+        android:label="@string/fragment_trail_search" />
+    <action android:id="@+id/action_global_trailSearchFragment" app:destination="@id/trailSearchFragment"/>
 </navigation>

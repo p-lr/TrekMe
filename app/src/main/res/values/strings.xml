@@ -420,7 +420,7 @@
     <string name="current_recording">Current recording</string>
 
     <!-- Trail search -->
-    <string name="fragment_excursion_search" translatable="false">ExcursionSearchFragment</string>
+    <string name="fragment_trail_search" translatable="false">TrailSearchFragment</string>
     <string name="trail_search_feature_menu">Look for an trail</string>
     <string name="trail_search_placeholder">Search</string>
     <string name="excursions">Excursions</string>

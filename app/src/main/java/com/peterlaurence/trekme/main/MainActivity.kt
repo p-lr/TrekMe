@@ -50,7 +50,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -217,7 +216,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 AppEventBus.NavDestination.Shop -> showShopFragment()
                 AppEventBus.NavDestination.MapList -> showMapListFragment()
                 AppEventBus.NavDestination.MapCreation -> showMapCreateFragment()
-                AppEventBus.NavDestination.ExcursionSearch -> showExcursionSearchFragment()
+                AppEventBus.NavDestination.ExcursionSearch -> showTrailSearchFragment()
             }
         }.collectWhileStartedIn(this)
 
@@ -296,7 +295,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.nav_select_map -> showMapListFragment()
             R.id.nav_create -> showMapCreateFragment()
             R.id.nav_record -> showRecordFragment()
-            R.id.nav_hike_search -> showExcursionSearchFragment()
+            R.id.nav_hike_search -> showTrailSearchFragment()
             R.id.nav_gps_plus -> showGpsProFragment()
             R.id.nav_import -> showMapImportFragment()
             R.id.nav_share -> showWifiP2pFragment()
@@ -378,14 +377,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    private fun showExcursionSearchFragment() {
-        if (getString(R.string.fragment_excursion_search) != navController.currentDestination?.label) {
+    private fun showTrailSearchFragment() {
+        if (getString(R.string.fragment_trail_search) != navController.currentDestination?.label) {
             val options = navOptions {
-                popUpTo(R.id.excursionSearchFragment) {
+                popUpTo(R.id.trailSearchFragment) {
                     inclusive = true
                 }
             }
-            navController.navigate(NavGraphDirections.actionGlobalExcursionSearchFragment(), options)
+            navController.navigate(NavGraphDirections.actionGlobalTrailSearchFragment(), options)
             warnIfNotInternet(getString(R.string.no_internet_excursions))
         }
     }
