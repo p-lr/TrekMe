@@ -49,7 +49,7 @@ class RouteDaoImpl(
             val directory = (map as? MapFileBased)?.folder ?: return@withContext
             val dir =
                 getOrCreateDirectory(directory, MAP_ROUTES_DIRECTORY) ?: return@withContext
-            routeDirNameForId[route.id] = route.name.value.ifEmpty { route.id }
+            routeDirNameForId[route.id] = route.id
             val routeKtx = route.toRouteKtx()
             val routeInfoKtx = route.toRouteInfoKtx()
             serializeRoute(dir, route.id, routeKtx, routeInfoKtx)
