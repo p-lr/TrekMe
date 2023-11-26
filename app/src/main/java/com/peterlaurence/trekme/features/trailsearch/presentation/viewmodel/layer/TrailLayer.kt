@@ -36,6 +36,7 @@ class TrailLayer(
     private val trailRepository: TrailRepository,
     private val geoRecordForBottomSheet: StateFlow<ResultL<GeoRecordForBottomsheet?>>,
     private val onLoadingChanged: (Boolean) -> Unit,
+    private val onTrailsDisplayed: () -> Unit,
     private val onPathsClicked: (List<Pair<TrailSearchItem, Color>>) -> Unit
 ) {
     private var trailSearchItemById = mapOf<String, TrailSearchItem>()
@@ -89,6 +90,10 @@ class TrailLayer(
                         )
                     }
                     updatePaths(mapState, detailsWithGroup)
+
+                    if (details.isNotEmpty()) {
+                        onTrailsDisplayed()
+                    }
                 }
             }.collect()
         }

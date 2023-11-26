@@ -2,9 +2,7 @@ package com.peterlaurence.trekme.core.settings
 
 import android.app.Application
 import android.content.Context
-import android.content.SharedPreferences
 import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.SharedPreferencesMigration
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import com.peterlaurence.trekme.core.TrekMeContext
@@ -37,13 +35,7 @@ class Settings @Inject constructor(
     private val trekMeContext: TrekMeContext,
     private val app: Application
 ) {
-    private val sharedPref: SharedPreferences =
-        app.applicationContext.getSharedPreferences(oldSettingsFile, Context.MODE_PRIVATE)
-
-    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
-        name = settings,
-        produceMigrations = { listOf(SharedPreferencesMigration({ sharedPref })) }
-    )
+    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = SETTINGS)
 
     private val dataStore: DataStore<Preferences>
         get() = app.applicationContext.dataStore
@@ -345,5 +337,4 @@ enum class RotationMode {
     NONE, FOLLOW_ORIENTATION, FREE
 }
 
-private const val oldSettingsFile = "trekmeSettings"
-private const val settings = "settings"
+private const val SETTINGS = "settings"

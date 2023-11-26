@@ -463,6 +463,7 @@
     <string name="offer_suggestion_short">With TrekMe Extended + IGN</string>
     <string name="see_offer">See offer</string>
     <string name="trail_select_disalog_title">Select a trail</string>
+    <string name="trail_helper_tip">Tap on a trail to see the detail</string>
 
     <!-- SettingsFragment -->
     <string name="settings_frgmt_title">Settings</string>

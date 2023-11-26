@@ -488,6 +488,7 @@
     <string name="offer_suggestion_short">Avec TrekMe Extended + IGN</string>
     <string name="see_offer">Voir l\'offre</string>
     <string name="trail_select_disalog_title">Sélectionnez une piste</string>
+    <string name="trail_helper_tip">Appuyez sur une trace pour voir le détail.</string>
 
     <!-- General -->
     <string name="meters">mètres</string>

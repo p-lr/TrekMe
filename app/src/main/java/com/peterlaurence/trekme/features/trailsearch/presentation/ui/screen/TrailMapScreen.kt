@@ -99,6 +99,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.ConfirmD
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.ErrorScreen
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingScreen
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.common.presentation.ui.widgets.OnBoardingTip
 import com.peterlaurence.trekme.features.trailsearch.presentation.model.GeoPlaceAndDistance
 import com.peterlaurence.trekme.features.trailsearch.presentation.ui.component.ElevationGraph
 import com.peterlaurence.trekme.features.trailsearch.presentation.ui.component.ElevationGraphPoint
@@ -143,6 +144,7 @@ fun TrailMapStateful(
     val geoplaceList by viewModel.geoPlaceFlow.collectAsStateWithLifecycle()
     val isGeoPlaceLoading by viewModel.isGeoPlaceLoading.collectAsStateWithLifecycle()
     val isTrailUpdatePending by viewModel.isTrailUpdatePending.collectAsStateWithLifecycle()
+    val isShowingHelperTip by viewModel.isShowingHelperTip.collectAsStateWithLifecycle()
     val mapSourceData by viewModel.mapSourceDataFlow.collectAsStateWithLifecycle()
     val hasExtendedOffer by viewModel.extendedOfferFlow.collectAsState(initial = false)
     val swipeableState = rememberSwipeableState(initialValue = States.COLLAPSED)
@@ -250,6 +252,7 @@ fun TrailMapStateful(
         geoplaceList = geoplaceList,
         isGeoPlaceLoading = isGeoPlaceLoading,
         isTrailUpdatePending = isTrailUpdatePending,
+        isShowingHelperTip = isShowingHelperTip,
         swipeableState = swipeableState,
         bottomSheetDataState = bottomSheetDataState,
         snackbarHostState = snackbarHostState,
@@ -266,7 +269,8 @@ fun TrailMapStateful(
             viewModel.onDownload(isDownloadOptionChecked)
         },
         onLayerSelection = { isShowingLayerSelectionDialog = true },
-        onGoToMapCreation = onGoToMapCreation
+        onGoToMapCreation = onGoToMapCreation,
+        onTipAck = { viewModel.ackTip() }
     )
 
     isShowingTrailSelectionDialog?.also { data ->
@@ -363,6 +367,7 @@ private fun ExcursionMapScreen(
     geoplaceList: List<GeoPlaceAndDistance>,
     isGeoPlaceLoading: Boolean,
     isTrailUpdatePending: Boolean,
+    isShowingHelperTip: Boolean,
     swipeableState: SwipeableState<States>,
     bottomSheetDataState: ResultL<BottomSheetData?>,
     snackbarHostState: SnackbarHostState,
@@ -372,7 +377,8 @@ private fun ExcursionMapScreen(
     onToggleDownloadMapOption: () -> Unit = {},
     onDownload: () -> Unit = {},
     onLayerSelection: () -> Unit = {},
-    onGoToMapCreation: () -> Unit = {}
+    onGoToMapCreation: () -> Unit = {},
+    onTipAck: () -> Unit = {}
 ) {
     var isInSearchMode by rememberSaveable {
         mutableStateOf(false)
@@ -522,6 +528,16 @@ private fun ExcursionMapScreen(
                             onCursorMove,
                             onToggleDownloadMapOption
                         )
+
+                        if (isShowingHelperTip) {
+                            OnBoardingTip(
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(horizontal = 12.dp, vertical = 64.dp),
+                                text = stringResource(id = R.string.trail_helper_tip),
+                                onAcknowledge = onTipAck
+                            )
+                        }
                     }
                 }
             }
@@ -1045,6 +1061,7 @@ private fun ExcursionMapScreenPreview() {
             geoplaceList = emptyList(),
             isGeoPlaceLoading = false,
             isTrailUpdatePending = true,
+            isShowingHelperTip = true,
             swipeableState = swipeableState,
             bottomSheetDataState = bottomSheetData,
             snackbarHostState = snackbarHostState,

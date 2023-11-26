@@ -34,6 +34,7 @@ import com.peterlaurence.trekme.core.map.domain.models.TileResult
 import com.peterlaurence.trekme.core.map.domain.models.TileStream
 import com.peterlaurence.trekme.core.map.domain.models.contains
 import com.peterlaurence.trekme.core.map.domain.models.intersects
+import com.peterlaurence.trekme.core.settings.FlagSettings
 import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamProviderDao
 import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamReporter
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnClassic
@@ -128,6 +129,7 @@ class TrailMapViewModel @Inject constructor(
     private val downloadRepository: DownloadRepository,
     private val trailRepository: TrailRepository,
     private val geocodingRepository: GeocodingRepository,
+    private val flagSettings: FlagSettings,
     @IGN
     extendedOfferWithIgnStateOwner: ExtendedOfferStateOwner,
     private val app: Application
@@ -149,6 +151,8 @@ class TrailMapViewModel @Inject constructor(
         started = SharingStarted.Eagerly,
         initialValue = emptyList()
     )
+
+    val isShowingHelperTip = MutableStateFlow(false)
     val isGeoPlaceLoading = geocodingRepository.isLoadingFlow
 
     val mapSourceDataFlow = MutableStateFlow<MapSourceData>(OsmSourceData(WorldStreetMap))
@@ -178,6 +182,7 @@ class TrailMapViewModel @Inject constructor(
         onLoadingChanged = { loading ->
             _isTrailUpdatePending.value = loading
         },
+        onTrailsDisplayed = { displayHelperTip() },
         onPathsClicked = l@{
             if (it.size > 1) {
                 viewModelScope.launch {
@@ -209,6 +214,7 @@ class TrailMapViewModel @Inject constructor(
     }
 
     fun selectTrail(id: String, name: String?, group: OsmTrailGroup?)  = viewModelScope.launch {
+        ackTip()
         geoRecordForBottomSheet.value = ResultL.loading()
         mapDownloadStateFlow.value = Loading
         _events.send(Event.OnTrailClick)
@@ -742,6 +748,19 @@ class TrailMapViewModel @Inject constructor(
             geoPlaceList.map { geoPlace ->
                 GeoPlaceAndDistance(geoPlace, null)
             }
+        }
+    }
+
+    private fun displayHelperTip() = viewModelScope.launch {
+        if (flagSettings.getShowTipForTrailSearch()) {
+            isShowingHelperTip.value = true
+        }
+    }
+
+    fun ackTip() = viewModelScope.launch {
+        if (isShowingHelperTip.value) {
+            isShowingHelperTip.value = false
+            flagSettings.setShowTipForTrailSearch(false)
         }
     }
 
