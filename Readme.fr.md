@@ -25,7 +25,7 @@
   * [Importer une trace GPX](#import-dun-fichier-gpx)
   * [S'enregistrer au format GPX](#enregistrement-gpx)
   * [Suivre une trace](#suivre-une-trace)
-  * [Gérer les excursions](#gérer-les-excursions)
+  * [Gérer les traces](#gérer-les-traces)
 5. [Paramètres](#paramètres)
   * [Démarrer sur la dernière carte](#démarrer-sur-la-dernière-carte)
   * [Dossier de téléchargement](#dossier-de-téléchargement)
@@ -331,7 +331,8 @@ Vous pouvez alors :
 
 * Importer un fichier gpx avec le bouton d'import en bas à droite
 * Assigner un couleur pour chaque trace
-* Gérer la visibilité des traces déjà importées
+* Gérer la visibilité des traces déjà importées. Un appui long sur ce bouton change la visibilité de
+toutes les traces.
 * Supprimer des traces en les faisant glisser à droite ou à gauche (cela n'affecte en rien le fichier gpx)
 
 Avec le menu en haut à droite, qui appraît quand vous sélectionnez une trace, vous pouvez :
@@ -386,9 +387,9 @@ si toutes les conditions suivantes sont remplies :
 - L'autorisation de localisation est réglée sur "toujours autoriser"
 - La localisation est activée sur l'appareil
 
-### Gérer les excursions
+### Gérer les traces
 
-La liste des enregistrements effectués est accessible depuis le menu > "Mes excursions".
+La liste des enregistrements effectués est accessible depuis le menu > "Mes traces".
 En sélectionnant un enregistrement, quatre boutons en bas à gauche vous permettent respectivement de :
 
 * Renommer le fichier gpx

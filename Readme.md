@@ -25,7 +25,7 @@
   * [Import a GPX track](#import-a-gpx-track)
   * [GPX recording](#gpx-recording)
   * [Follow a track](#follow-a-track)
-  * [Manage excursions](#manage-excursions)
+  * [Manage trails](#manage-trails)
 5. [Settings](#settings)
   * [Start on the last map](#start-on-the-last-map)
   * [Download folder](#download-folder)
@@ -308,7 +308,8 @@ Here you can:
 
 * Import a new gpx files using the import button at the bottom right corner,
 * Assign a color to a track,
-* Manage track visibility,
+* Manage track visibility using the "eye" button. A long click on this button changes the visibility
+of all tracks.
 * Remove tracks by swiping them left or right
 
 Using the menu at the top right corner (the three vertical dots), which appears when you select a track, you can:
@@ -363,9 +364,9 @@ The track following feature runs as a background service, which only works when 
 - Location authorization is set to "allow all the time"
 - Location is enabled on the device
 
-### Manage excursions
+### Manage trails
 
-From the main menu > My excursions, the list of gpx recordings appear. Four buttons at the bottom-left enable you to:
+From the main menu > My trails, the list of gpx recordings appear. Four buttons at the bottom-left enable you to:
 
 * Rename the track,
 * Import the track into an existing map (press the import button at the bottom of the list, then choose the map),
