@@ -134,14 +134,10 @@ class LandmarkLayer(
                 absoluteOffset = Offset(pos.absoluteAnchorLeft, pos.absoluteAnchorTop),
                 autoDismiss = true, clickable = false, zIndex = 3f
             ) {
-                val subTitle = landmarkListState[landmarkId]?.landmark?.let {
-                    "${stringResource(id = R.string.latitude_short)} : ${df.format(it.lat)}  " +
-                            "${stringResource(id = R.string.longitude_short)} : ${df.format(it.lon)}"
-                } ?: ""
-
                 LandmarkCallout(
                     DpSize(landmarkCalloutWidthDp.dp, landmarkCalloutHeightDp.dp),
-                    subTitle = subTitle,
+                    lat = landmarkState.landmark.lat,
+                    lon = landmarkState.landmark.lon,
                     shouldAnimate,
                     onAnimationDone = { shouldAnimate = false },
                     onDeleteAction = {
@@ -277,9 +273,6 @@ private class LandmarkState(val idOnMap: String, initLandmark: Landmark) {
     var isStatic by mutableStateOf(true)
 }
 
-private val df = DecimalFormat("#.####").apply {
-    roundingMode = RoundingMode.CEILING
-}
 
 private const val landmarkCalloutWidthDp = 140
 private const val landmarkCalloutHeightDp = 100

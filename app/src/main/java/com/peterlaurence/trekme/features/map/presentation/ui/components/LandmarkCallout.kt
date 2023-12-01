@@ -15,11 +15,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.Callout
+import java.math.RoundingMode
+import java.text.DecimalFormat
 
 @Composable
 fun LandmarkCallout(
     size: DpSize,
-    subTitle: String,
+    lat: Double,
+    lon: Double,
     shouldAnimate: Boolean,
     onAnimationDone: () -> Unit,
     onMoveAction: () -> Unit,
@@ -40,10 +43,12 @@ fun LandmarkCallout(
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp
             )
+            val txt = "${df.format(lat)} ; ${df.format(lon)}"
             Text(
-                text = subTitle,
+                text = txt,
                 modifier = Modifier.padding(vertical = 4.dp),
-                fontSize = 10.sp
+                fontSize = 12.sp,
+                maxLines = 1
             )
             Spacer(modifier = Modifier.weight(1f))
             Divider(thickness = 0.5.dp)
@@ -81,4 +86,8 @@ fun LandmarkCallout(
             }
         }
     }
+}
+
+private val df = DecimalFormat("#.####").apply {
+    roundingMode = RoundingMode.CEILING
 }
