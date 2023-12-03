@@ -42,10 +42,10 @@ fun LevelsDialogStateful(
     val step = 1f / range
 
     var min by rememberSaveable {
-        mutableStateOf(normalizedValue(startMinLevel, minLevel, range))
+        mutableFloatStateOf(normalizedValue(startMinLevel, minLevel, range))
     }
     var max by rememberSaveable {
-        mutableStateOf(normalizedValue(startMaxLevel, minLevel, range))
+        mutableFloatStateOf(normalizedValue(startMaxLevel, minLevel, range))
     }
 
     val minDenormalized = remember(min) {
@@ -191,9 +191,8 @@ private fun SlideAndControls(
         Text(
             text = valueDeNormalized.toString(),
             modifier = Modifier
-                .width(30.dp)
                 .padding(start = 12.dp),
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
         )
     }
 }

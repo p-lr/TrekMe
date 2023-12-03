@@ -60,16 +60,15 @@ private fun MapSourceListUi(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SourceRow(source: WmtsSource, onSourceClick: (WmtsSource) -> Unit) {
     Surface(
         onClick = { onSourceClick(source) },
-        Modifier
-            .fillMaxWidth()
-            .height(106.dp)
+        Modifier.fillMaxWidth()
     ) {
-        Row {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Column(
                 Modifier
                     .padding(start = 16.dp, top = 24.dp, end = 8.dp)
