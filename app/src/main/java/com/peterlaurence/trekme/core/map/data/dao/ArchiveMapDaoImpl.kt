@@ -25,34 +25,32 @@ class ArchiveMapDaoImpl(
     private val app: Application,
     private val defaultDispatcher: CoroutineDispatcher
 ) : ArchiveMapDao {
+
     override suspend fun archiveMap(map: Map, listener: ZipProgressionListener, uri: Uri) {
         val docFile = DocumentFile.fromTreeUri(app.applicationContext, uri)
-        if (docFile != null && docFile.isDirectory) {
-            val newFileName: String = map.generateNewNameWithDate() + ".zip"
-            val newFile = docFile.createFile("application/zip", newFileName)
-            if (newFile != null) {
-                val uriZip = newFile.uri
-                runCatching {
-                    val out: OutputStream = app.contentResolver.openOutputStream(uriZip)
-                        ?: return
-                    /* The underlying task which writes into the stream is responsible for closing this stream. */
-                    withContext(defaultDispatcher) {
-                        when(map) {
-                            is MapFileBased -> {
-                                zipTask(map.folder, out, listener)
-                            }
-                        }
+        docFile?.isDirectory ?: return
+
+        val newFileName: String = map.generateNewNameWithDate() + ".zip"
+        val uriZip = docFile.createFile("application/zip", newFileName)?.uri ?: return
+
+        runCatching {
+            val out: OutputStream = app.contentResolver.openOutputStream(uriZip) ?: return
+            /* The underlying task which writes into the stream is responsible for closing this stream. */
+            withContext(defaultDispatcher) {
+                when (map) {
+                    is MapFileBased -> {
+                        zipTask(map.folder, out, listener)
                     }
-                }.onFailure {
-                    Log.e(this.javaClass.name, it.stackTraceAsString())
-                }.getOrNull()
+                }
             }
+        }.onFailure {
+            Log.e(this.javaClass.name, it.stackTraceAsString())
         }
     }
 
     private fun Map.generateNewNameWithDate(): String {
-        val date = Date()
         val dateFormat: DateFormat = SimpleDateFormat("dd\\MM\\yyyy-HH:mm:ss", Locale.ENGLISH)
-        return name + "-" + dateFormat.format(date)
+        return name + "-" + dateFormat.format(Date())
     }
+
 }
