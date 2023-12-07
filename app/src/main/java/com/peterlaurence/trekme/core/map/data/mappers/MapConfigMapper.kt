@@ -8,10 +8,11 @@ import java.util.UUID
 
 
 fun MapGson.toDomain(elevationFix: Int, thumbnailImage: Bitmap?): MapConfig? {
-    val origin = getMapOrigin(provider.generated_by)
-    val imageExtension = provider?.image_extension ?: return null
+
+    calibration ?: return null
+    provider ?: return null
     val calibrationMethod = runCatching {
-        CalibrationMethod.valueOf(calibration!!.calibration_method.uppercase())
+        CalibrationMethod.valueOf(calibration.calibration_method.uppercase())
     }.getOrNull() ?: return null
 
     return MapConfig(
@@ -26,18 +27,16 @@ fun MapGson.toDomain(elevationFix: Int, thumbnailImage: Bitmap?): MapConfig? {
                 }
             )
         },
-        origin = origin,
+        origin = getMapOrigin(provider.generated_by),
         size = Size(size.x, size.y),
-        imageExtension = imageExtension,
-        calibration = calibration?.let {
-            Calibration(
-                projection = it.projection,
-                calibrationMethod = calibrationMethod,
-                calibrationPoints = it.calibrationPoints.map { pt ->
-                    CalibrationPoint(pt.x, pt.y, pt.proj_x, pt.proj_y)
-                }
-            )
-        },
+        imageExtension = provider.image_extension,
+        calibration = Calibration(
+            projection = calibration.projection,
+            calibrationMethod = calibrationMethod,
+            calibrationPoints = calibration.calibrationPoints.map { pt ->
+                CalibrationPoint(pt.x, pt.y, pt.proj_x, pt.proj_y)
+            }
+        ),
         elevationFix = elevationFix
     )
 }
@@ -49,12 +48,12 @@ private fun getOrCreateUUID(mapGson: MapGson): UUID {
 }
 
 private fun getMapOrigin(source: MapSource): MapOrigin {
-    return when(source) {
+    return when (source) {
         MapSource.IGN_LICENSED -> Ign(licensed = true)
         MapSource.IGN_FREE -> Ign(licensed = false)
         MapSource.WMTS_LICENSED -> Wmts(licensed = true)
         MapSource.WMTS -> Wmts(licensed = false)
-        MapSource.VIPS  -> Vips
+        MapSource.VIPS -> Vips
     }
 }
 
@@ -75,7 +74,7 @@ fun MapConfig.toMapGson(): MapGson {
         }
     }
     mapGson.provider = MapGson.Provider().apply {
-        generated_by = when(val origin = this@toMapGson.origin) {
+        generated_by = when (val origin = this@toMapGson.origin) {
             Vips -> MapSource.VIPS
             is Ign -> if (origin.licensed) MapSource.IGN_LICENSED else MapSource.IGN_FREE
             is Wmts -> if (origin.licensed) MapSource.WMTS_LICENSED else MapSource.WMTS
