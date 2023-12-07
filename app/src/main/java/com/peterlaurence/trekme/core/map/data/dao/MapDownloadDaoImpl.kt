@@ -74,9 +74,8 @@ class MapDownloadDaoImpl(
             try {
                 val out = FileOutputStream(tileFile)
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
-                val tag = makeTag(request.source)
-                if (tag != null) {
-                    out.write(tag)
+                makeTag(request.source)?.let {
+                    out.write(it)
                 }
                 out.flush()
                 out.close()
@@ -103,7 +102,7 @@ class MapDownloadDaoImpl(
         val mapOrigin = when (source) {
             is IgnSourceData -> Ign(licensed = source.layer == IgnClassic)
             IgnSpainData, OrdnanceSurveyData, SwissTopoData, UsgsData -> Wmts(licensed = false)
-            is OsmSourceData -> when(source.layer) {
+            is OsmSourceData -> when (source.layer) {
                 OpenTopoMap, WorldStreetMap, WorldTopoMap -> Wmts(licensed = false)
                 OsmAndHd, Outdoors -> Wmts(licensed = true)
             }
@@ -143,9 +142,9 @@ class MapDownloadDaoImpl(
 
         while (isActive) {
             val tile = tileIterator.next() ?: break
-            bitmapProvider.getBitmap(row = tile.row, col = tile.col, zoomLvl = tile.level).also {
+            bitmapProvider.getBitmap(row = tile.row, col = tile.col, zoomLvl = tile.level)?.also {
                 /* Only write if there was no error */
-                if (it != null && isActive) {
+                if (isActive) {
                     tileWriter.write(tile, bitmap)
                 }
             }
@@ -154,9 +153,8 @@ class MapDownloadDaoImpl(
 
     private suspend fun createDestDir(): File? {
         /* Create a new folder */
-        val date = Date()
         val dateFormat = SimpleDateFormat("dd-MM-yyyy_HH-mm-ss", Locale.ENGLISH)
-        val folderName = "map-" + dateFormat.format(date)
+        val folderName = "map-" + dateFormat.format(Date())
 
         val appDir = settings.getAppDir().firstOrNull() ?: error("App dir should be defined")
         val mapFolder = File(appDir, MAP_FOLDER_NAME)
