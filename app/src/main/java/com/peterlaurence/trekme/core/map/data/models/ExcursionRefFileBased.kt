@@ -11,6 +11,7 @@ class ExcursionRefFileBased(
     initialVisibility: Boolean = true,
     initialColor: String? = null, // In the format "#AARRGGBB"
 ) : ExcursionRef {
+
     override val name: MutableStateFlow<String> = MutableStateFlow(initialName)
     override val visible: MutableStateFlow<Boolean> = MutableStateFlow(initialVisibility)
     override val color: MutableStateFlow<String> = MutableStateFlow(
@@ -23,9 +24,7 @@ class ExcursionRefFileBased(
 
         other as ExcursionRefFileBased
 
-        if (id != other.id) return false
-
-        return true
+        return (id == other.id)
     }
 
     override fun hashCode(): Int {
