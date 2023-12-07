@@ -36,11 +36,12 @@ class MapFileBased(
     override var mapBounds =
         MapBounds(0.0, 0.0, config.size.width.toDouble(), config.size.height.toDouble())
         private set
+
     override val markers: MutableStateFlow<List<Marker>> = MutableStateFlow(emptyList())
     override val landmarks: MutableStateFlow<List<Landmark>> = MutableStateFlow(emptyList())
     override val beacons: MutableStateFlow<List<Beacon>> = MutableStateFlow(emptyList())
-    override val routes = MutableStateFlow<List<Route>>(listOf())
-    override val excursionRefs = MutableStateFlow<List<ExcursionRef>>(emptyList())
+    override val routes: MutableStateFlow<List<Route>> = MutableStateFlow(emptyList())
+    override val excursionRefs: MutableStateFlow<List<ExcursionRef>> = MutableStateFlow(emptyList())
     override val elevationFix = MutableStateFlow(config.elevationFix)
     override val sizeInBytes: MutableStateFlow<Long?> = MutableStateFlow(null)
 
@@ -54,14 +55,7 @@ class MapFileBased(
         private set
 
     override val projectionName: String?
-        get() {
-            val cal = config.calibration
-            if (cal != null) {
-                val proj = cal.projection
-                if (proj != null) return proj.name
-            }
-            return null
-        }
+        get() = config.calibration?.projection?.name
 
     override val projection: Projection? = config.calibration?.projection
 
@@ -81,12 +75,14 @@ class MapFileBased(
                     calibrationPoints[1]
                 )
             } else null
+
             CalibrationMethod.CALIBRATION_3_POINTS -> if (calibrationPoints.size >= 3) {
                 CalibrationMethods.calibrate3Points(
                     calibrationPoints[0],
                     calibrationPoints[1], calibrationPoints[2]
                 )
             } else null
+
             CalibrationMethod.CALIBRATION_4_POINTS -> if (calibrationPoints.size == 4) {
                 CalibrationMethods.calibrate4Points(
                     calibrationPoints[0],
@@ -96,7 +92,7 @@ class MapFileBased(
             } else null
         }
 
-        if (newBounds != null) mapBounds = newBounds
+        newBounds?.let { mapBounds = it }
 
         /* Update the calibration status */
         setCalibrationStatus()
@@ -104,22 +100,20 @@ class MapFileBased(
 
     private fun setCalibrationStatus() {
         // TODO : implement the detection of an erroneous calibration
-        val cal = config.calibration
-        calibrationStatus = if (cal != null && cal.calibrationPoints.size >= 2) {
-            CalibrationStatus.OK
-        } else {
-            CalibrationStatus.NONE
-        }
+
+        val enoughCalibrationPoints = config.calibration?.calibrationPoints?.size?.let { size ->
+            size >= 2
+        } ?: false
+
+        calibrationStatus =
+            if (enoughCalibrationPoints) CalibrationStatus.OK else CalibrationStatus.NONE
     }
 
     override val levelList: List<Level>
         get() = config.levels
 
     override val calibrationMethod: CalibrationMethod
-        get() {
-            val cal = config.calibration
-            return cal?.calibrationMethod ?: CalibrationMethod.SIMPLE_2_POINTS
-        }
+        get() = config.calibration?.calibrationMethod ?: CalibrationMethod.SIMPLE_2_POINTS
 
     override val origin: MapOrigin
         get() = config.origin
@@ -137,15 +131,14 @@ class MapFileBased(
         }
 
     override val calibrationPoints: List<CalibrationPoint>
-        get() {
-            val cal = config.calibration
-            return cal?.calibrationPoints ?: emptyList()
-        }
+        get() = config.calibration?.calibrationPoints ?: emptyList()
 
     override val imageExtension: String
         get() = config.imageExtension
+
     override val widthPx: Int
         get() = config.size.width
+
     override val heightPx: Int
         get() = config.size.height
 
@@ -167,9 +160,7 @@ class MapFileBased(
         other as MapFileBased
 
         /* By design, only MapConfig participates in equals policy */
-        if (config != other.config) return false
-
-        return true
+        return (config == other.config)
     }
 
     override fun hashCode(): Int {
