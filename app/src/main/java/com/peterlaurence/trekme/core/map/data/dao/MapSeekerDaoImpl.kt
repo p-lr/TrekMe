@@ -5,15 +5,21 @@ import android.graphics.BitmapFactory
 import android.util.Log
 import com.peterlaurence.trekme.core.map.data.MAP_FILENAME
 import com.peterlaurence.trekme.core.map.data.models.MapFileBased
-import com.peterlaurence.trekme.core.map.domain.models.Map
-import com.peterlaurence.trekme.core.map.domain.utils.createNomediaFile
 import com.peterlaurence.trekme.core.map.domain.dao.MapLoaderDao
 import com.peterlaurence.trekme.core.map.domain.dao.MapSaverDao
 import com.peterlaurence.trekme.core.map.domain.dao.MapSeekerDao
-import com.peterlaurence.trekme.core.map.domain.models.*
+import com.peterlaurence.trekme.core.map.domain.models.Level
+import com.peterlaurence.trekme.core.map.domain.models.Map
+import com.peterlaurence.trekme.core.map.domain.models.MapConfig
+import com.peterlaurence.trekme.core.map.domain.models.MapParseStatus
+import com.peterlaurence.trekme.core.map.domain.models.Size
+import com.peterlaurence.trekme.core.map.domain.models.Vips
+import com.peterlaurence.trekme.core.map.domain.utils.createNomediaFile
 import java.io.File
 import java.io.FilenameFilter
-import java.util.*
+import java.util.Locale
+import java.util.UUID
+import kotlin.math.max
 
 /**
  * This [MapSeekerDao] expects a folder structure corresponding to libvips's `dzsave` output.
@@ -22,7 +28,9 @@ class MapSeekerDaoImpl(
     private val mapLoaderDao: MapLoaderDao,
     private val mapSaver: MapSaverDao,
 ) : MapSeekerDao {
+
     private val thumbnailAcceptSize = 256
+
     private val IMAGE_EXTENSIONS = arrayOf("jpg", "gif", "png", "bmp", "webp")
 
     private val THUMBNAIL_FILTER = FilenameFilter { _, filename ->
@@ -56,6 +64,7 @@ class MapSeekerDaoImpl(
     private val DIR_FILTER = FilenameFilter { dir, filename -> File(dir, filename).isDirectory }
 
     private val options = BitmapFactory.Options()
+
     override var status = MapParseStatus.NO_MAP
         private set
 
@@ -69,8 +78,8 @@ class MapSeekerDaoImpl(
         }
 
         /* Find the first image */
-        val imageFile = findFirstImage(file, 0, 5) ?: throw
-        FileBasedMapParseException(Issue.NO_IMAGES)
+        val imageFile =
+            findFirstImage(file, 0, 5) ?: throw FileBasedMapParseException(Issue.NO_IMAGES)
 
         /* .. use it to deduce the parent folder */
         val parentFolder = findParentFolder(imageFile)
@@ -81,11 +90,11 @@ class MapSeekerDaoImpl(
         if (existingJsonFile.exists()) {
             val mapList = mapLoaderDao.loadMaps(listOf(parentFolder))
             status = MapParseStatus.EXISTING_MAP
-            val map = mapList.firstOrNull()
-            if (map != null) {
+
+            mapList.firstOrNull()?.let {
                 /* The nomedia file might already exist, but we do it just in case */
                 createNomediaFile(parentFolder)
-                return@runCatching map
+                return@runCatching it
             }
         }
 
@@ -105,9 +114,7 @@ class MapSeekerDaoImpl(
             }
         }
 
-        if (levelDir == null) {
-            throw FileBasedMapParseException(Issue.NO_LEVEL_FOUND)
-        }
+        levelDir ?: throw FileBasedMapParseException(Issue.NO_LEVEL_FOUND)
 
         /* Create provider */
         val mapOrigin = Vips
@@ -116,9 +123,7 @@ class MapSeekerDaoImpl(
         )
 
         /* Map size */
-        if (lastLevelTileSize == null) {
-            throw FileBasedMapParseException(Issue.NO_LEVEL_FOUND)
-        }
+        lastLevelTileSize ?: throw FileBasedMapParseException(Issue.NO_LEVEL_FOUND)
         val size = computeMapSize(levelDir, lastLevelTileSize) ?: throw FileBasedMapParseException(
             Issue.MAP_SIZE_INCORRECT
         )
@@ -150,58 +155,43 @@ class MapSeekerDaoImpl(
      * @param imageFile an image in the file structure.
      */
     private fun findParentFolder(imageFile: File?): File? {
-        if (imageFile != null) {
-            try {
-                val parentFolder = imageFile.parentFile?.parentFile?.parentFile
-                if (parentFolder != null && parentFolder.isDirectory) {
-                    return parentFolder
-                }
-            } catch (e: NullPointerException) {
-                // don't care, will return null
+        return runCatching {
+            /* In case of NullPointerException - don't care, will return null */
+            val parentFolder = imageFile?.parentFile?.parentFile?.parentFile
+            parentFolder?.let {
+                if (it.isDirectory) it else null
             }
-        }
-        return null
+        }.getOrNull()
     }
 
     /**
      * Find the first image which is named with an integer (so this excludes the thumbnail).
      */
     private fun findFirstImage(dir: File, depth: Int, maxDepth: Int): File? {
-        var d = depth
         if (depth > maxDepth) return null
+        var currentDepth = depth
 
-        val listFile = dir.listFiles()
-        if (listFile != null) {
-            for (aListFile in listFile) {
-                if (aListFile.isDirectory) {
-                    val found = findFirstImage(aListFile, d++, maxDepth)
-                    if (found != null) {
-                        return found
-                    }
+        return dir.listFiles()?.let { files ->
+            for (file in files) {
+                if (file.isDirectory) {
+                    findFirstImage(file, currentDepth++, maxDepth)?.also { return@let it }
                 } else {
-                    val listImage = dir.listFiles(IMAGE_FILTER)
-                    if (!listImage.isNullOrEmpty()) {
-                        return listImage[0]
-                    }
+                    dir.listFiles(IMAGE_FILTER)?.elementAtOrNull(0)?.also { return@let it }
                 }
             }
+            null
         }
-        return null
     }
 
     /* Get the maximum zoom level */
     private fun getMaxLevel(mapDir: File): Int {
         var maxLevel = 0
-        var level: Int
-        for (f in mapDir.listFiles() ?: arrayOf()) {
-            if (f.isDirectory) {
-                try {
-                    level = Integer.parseInt(f.name)
-                    maxLevel = if (level > maxLevel) level else maxLevel
-                } catch (e: NumberFormatException) {
-                    // an unknown folder, ignore it.
+        mapDir.listFiles()?.forEach { file ->
+            if (file.isDirectory) {
+                runCatching {
+                    /* In case of NumberFormatException - an unknown folder, ignore it. */
+                    maxLevel = max(Integer.parseInt(file.name), maxLevel)
                 }
-
             }
         }
         return maxLevel
@@ -209,21 +199,13 @@ class MapSeekerDaoImpl(
 
     /* We assume that the tile size is constant at a given zoom level */
     private fun getTileSize(levelDir: File): Size? {
-        val lineDirList = levelDir.listFiles(DIR_FILTER)
-        if (lineDirList.isNullOrEmpty()) {
-            return null
-        }
 
         /* take the first line */
-        val lineDir = lineDirList[0]
-        val imageFiles = lineDir.listFiles(IMAGE_FILTER)
-        if (imageFiles != null && imageFiles.isNotEmpty()) {
-            val anImage = imageFiles[0]
-            BitmapFactory.decodeFile(anImage.path, options)
-            return Size(options.outWidth, options.outHeight)
-        }
+        val lineDir = levelDir.listFiles(DIR_FILTER)?.elementAtOrNull(0) ?: return null
+        val anImage = lineDir.listFiles(IMAGE_FILTER)?.elementAtOrNull(0) ?: return null
 
-        return null
+        BitmapFactory.decodeFile(anImage.path, options)
+        return Size(options.outWidth, options.outHeight)
     }
 
     /**
@@ -232,14 +214,12 @@ class MapSeekerDaoImpl(
     private fun getImageExtension(imageFile: File): String? {
         val imagePath = imageFile.path
         val ext = imagePath.substring(imagePath.lastIndexOf("."))
-        return if (ext.isNotEmpty()) {
-            ext
-        } else null
-
+        return ext.ifEmpty { null }
     }
 
     private fun getThumbnail(mapDir: File): Pair<Bitmap?, String?> {
-        for (imageFile in mapDir.listFiles(THUMBNAIL_FILTER) ?: arrayOf()) {
+
+        mapDir.listFiles(THUMBNAIL_FILTER)?.forEach { imageFile ->
             val bitmap = BitmapFactory.decodeFile(imageFile.path, options)
             if (options.outWidth == thumbnailAcceptSize && options.outHeight == thumbnailAcceptSize) {
                 val locale = Locale.getDefault()
@@ -250,18 +230,19 @@ class MapSeekerDaoImpl(
                 }
             }
         }
+
         return Pair(null, null)
     }
 
     private fun computeMapSize(lastLevel: File, lastLevelTileSize: Size): Size? {
-        val lineDirList = lastLevel.listFiles(DIR_FILTER)
-        if (lineDirList == null || lineDirList.isEmpty()) {
-            return null
-        }
-        /* Only look into the first line */
+
+        val lineDirList = lastLevel.listFiles(DIR_FILTER) ?: return null
         val rowCount = lineDirList.size
-        val imageFiles = lineDirList[0].listFiles(IMAGE_FILTER)
-        val columnCount = imageFiles?.size ?: return null
+
+        /* Only look into the first line */
+        val columnCount =
+            lineDirList.elementAtOrNull(0)?.listFiles(IMAGE_FILTER)?.size
+                ?: return null
 
         return Size(
             width = columnCount * lastLevelTileSize.width,
