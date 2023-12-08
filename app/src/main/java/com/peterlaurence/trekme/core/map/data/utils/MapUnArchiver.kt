@@ -16,8 +16,10 @@ import java.io.InputStream
  *
  * @author P.Laurence on 28/02/20
  */
-suspend fun unarchive(inputStream: InputStream, outputDirectory: File, name: String, size: Long,
-                      listener: UnzipProgressionListener) = withContext(Dispatchers.IO) {
+suspend fun unarchive(
+    inputStream: InputStream, outputDirectory: File, name: String, size: Long,
+    listener: UnzipProgressionListener
+) = withContext(Dispatchers.IO) {
     /* Generate an output directory  */
     val parentFolderName = name.removeSuffix(".zip")
     val intermediateDirectory = uniqueFile(File(outputDirectory, parentFolderName))
@@ -36,12 +38,11 @@ private tailrec fun uniqueFile(file: File): File {
     } else {
         val indexStr = file.name.substringAfterLast('-', "")
         val index = if (indexStr.isNotEmpty()) {
-            try {
+            runCatching {
                 indexStr.toInt()
-            } catch (e: Exception) {
-                1
-            }
+            }.getOrDefault(1)
         } else 1
+
         val baseName = file.name.substringBeforeLast('-')
 
         val newFile = File(file.parent, "$baseName-${index + 1}")
