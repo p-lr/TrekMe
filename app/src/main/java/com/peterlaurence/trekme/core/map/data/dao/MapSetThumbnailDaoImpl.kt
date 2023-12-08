@@ -20,19 +20,20 @@ class MapSetThumbnailDaoImpl(
 ) : MapSetThumbnailDao {
 
     override suspend fun setThumbnail(map: Map, uri: Uri): Result<Map> {
-        val directory = (map as? MapFileBased)?.folder ?: return Result.failure(Exception("No map for this id"))
+
+        val directory =
+            (map as? MapFileBased)?.folder ?: return Result.failure(Exception("No map for this id"))
+
         val targetFile = File(directory, THUMBNAIL_NAME)
-        val imageOutputStream: OutputStream = runCatching {
-                FileOutputStream(targetFile)
-            }.getOrElse {
-            return Result.failure(it)
-        }
+
+        val imageOutputStream: OutputStream = runCatching { FileOutputStream(targetFile) }
+            .getOrElse { return Result.failure(it) }
 
         val thumbnailImage = withContext(defaultDispatcher) {
             makeThumbnail(uri, contentResolver, map.thumbnailSize, imageOutputStream)
         }
 
-        return if (thumbnailImage != null) {
+        return thumbnailImage?.let {
             val newMap = map.copy(
                 config = map.configSnapshot.copy(
                     thumbnail = THUMBNAIL_NAME,
@@ -41,7 +42,7 @@ class MapSetThumbnailDaoImpl(
             )
             mapSaverDao.save(newMap)
             Result.success(newMap)
-        } else {
+        } ?: let {
             Result.failure(Exception("Could not make a thumbnail with $uri"))
         }
     }
