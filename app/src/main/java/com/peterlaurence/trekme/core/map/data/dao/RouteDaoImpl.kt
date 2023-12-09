@@ -4,20 +4,19 @@ import android.util.Log
 import com.peterlaurence.trekme.core.map.data.MAP_ROUTES_DIRECTORY
 import com.peterlaurence.trekme.core.map.data.MAP_ROUTE_INFO_FILENAME
 import com.peterlaurence.trekme.core.map.data.MAP_ROUTE_MARKERS_FILENAME
-import com.peterlaurence.trekme.core.map.domain.models.Map
-import com.peterlaurence.trekme.core.map.data.models.RouteInfoKtx
-import com.peterlaurence.trekme.core.map.data.models.RouteKtx
-import com.peterlaurence.trekme.core.map.domain.dao.RouteDao
-import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.core.map.data.mappers.toDomain
 import com.peterlaurence.trekme.core.map.data.mappers.toRouteInfoKtx
 import com.peterlaurence.trekme.core.map.data.mappers.toRouteKtx
 import com.peterlaurence.trekme.core.map.data.models.MapFileBased
+import com.peterlaurence.trekme.core.map.data.models.RouteInfoKtx
+import com.peterlaurence.trekme.core.map.data.models.RouteKtx
+import com.peterlaurence.trekme.core.map.domain.dao.RouteDao
+import com.peterlaurence.trekme.core.map.domain.models.Map
+import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.util.FileUtils
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -105,19 +104,18 @@ class RouteDaoImpl(
         }
     }
 
-    private suspend fun deleteRouteUsingDirName(map: Map, route: Route) = withContext(ioDispatcher) {
-        val directory = (map as? MapFileBased)?.folder ?: return@withContext
-        val root = File(directory, MAP_ROUTES_DIRECTORY)
-        runCatching {
-            val routeDirName = routeDirNameForId[route.id]
-            if (routeDirName != null) {
-                val mapDir = File(root, routeDirName)
-                if (mapDir.exists()) {
-                    mapDir.deleteRecursively()
+    private suspend fun deleteRouteUsingDirName(map: Map, route: Route) =
+        withContext(ioDispatcher) {
+            val directory = (map as? MapFileBased)?.folder ?: return@withContext
+            val root = File(directory, MAP_ROUTES_DIRECTORY)
+            runCatching {
+                routeDirNameForId[route.id]?.also { routeDirName ->
+                    with(File(root, routeDirName)) {
+                        if (exists()) deleteRecursively()
+                    }
                 }
             }
         }
-    }
 
     /**
      * Get the routes. A "routes" folder is expected at the root directory of the map. This "routes"

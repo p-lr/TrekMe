@@ -6,21 +6,20 @@ import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.peterlaurence.trekme.core.map.data.MAP_FILENAME
-import com.peterlaurence.trekme.core.map.domain.models.Map
+import com.peterlaurence.trekme.core.map.data.mappers.toDomain
+import com.peterlaurence.trekme.core.map.data.models.MapFileBased
 import com.peterlaurence.trekme.core.map.data.models.MapGson
 import com.peterlaurence.trekme.core.map.data.models.MapPropertiesKtx
 import com.peterlaurence.trekme.core.map.domain.dao.MapLoaderDao
 import com.peterlaurence.trekme.core.map.domain.dao.MapSaverDao
-import com.peterlaurence.trekme.core.map.data.mappers.toDomain
-import com.peterlaurence.trekme.core.map.data.models.MapFileBased
+import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.util.FileUtils
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.io.File
 
-class MapLoaderDaoFileBased constructor(
+class MapLoaderDaoFileBased(
     private val mapSaverDao: MapSaverDao,
     private val gson: Gson,
     private val json: Json,
@@ -33,9 +32,7 @@ class MapLoaderDaoFileBased constructor(
      * @param dirs The directories in which to search for maps.
      */
     override suspend fun loadMaps(dirs: List<File>): List<Map> {
-        if (dirs.isEmpty()) return emptyList()
-
-        return findMaps(dirs)
+        return if (dirs.isEmpty()) emptyList() else findMaps(dirs)
     }
 
     /**
@@ -111,9 +108,9 @@ class MapLoaderDaoFileBased constructor(
                  * properly). */
                 val shouldSaveUUID = mapGson.uuid == null
 
-                val thumbnailImage = if (mapGson.thumbnail != null) {
-                    getThumbnail(File(rootDir, mapGson.thumbnail))
-                } else null
+                val thumbnailImage = mapGson.thumbnail?.let {
+                    getThumbnail(File(rootDir, it))
+                }
 
                 /* Convert to domain type */
                 val mapConfig = mapGson.toDomain(elevationFix, thumbnailImage) ?: continue
