@@ -74,7 +74,7 @@ class MapDownloadDaoImpl(
             try {
                 val out = FileOutputStream(tileFile)
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
-                makeTag(request.source)?.let {
+                makeTag(request.source)?.also {
                     out.write(it)
                 }
                 out.flush()
