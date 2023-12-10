@@ -108,9 +108,9 @@ class MapLoaderDaoFileBased(
                  * properly). */
                 val shouldSaveUUID = mapGson.uuid == null
 
-                val thumbnailImage = mapGson.thumbnail?.let {
-                    getThumbnail(File(rootDir, it))
-                }
+                val thumbnailImage = if (mapGson.thumbnail != null) {
+                    getThumbnail(File(rootDir, mapGson.thumbnail))
+                } else null
 
                 /* Convert to domain type */
                 val mapConfig = mapGson.toDomain(elevationFix, thumbnailImage) ?: continue

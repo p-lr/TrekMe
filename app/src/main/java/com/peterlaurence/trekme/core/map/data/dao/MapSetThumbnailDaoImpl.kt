@@ -32,7 +32,7 @@ class MapSetThumbnailDaoImpl(
             makeThumbnail(uri, contentResolver, map.thumbnailSize, imageOutputStream)
         }
 
-        return thumbnailImage?.let {
+        return if (thumbnailImage != null) {
             val newMap = map.copy(
                 config = map.configSnapshot.copy(
                     thumbnail = THUMBNAIL_NAME,
@@ -41,7 +41,7 @@ class MapSetThumbnailDaoImpl(
             )
             mapSaverDao.save(newMap)
             Result.success(newMap)
-        } ?: let {
+        } else {
             Result.failure(Exception("Could not make a thumbnail with $uri"))
         }
     }
