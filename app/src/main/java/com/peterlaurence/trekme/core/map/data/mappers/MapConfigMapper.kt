@@ -10,12 +10,11 @@ import java.util.UUID
 fun MapGson.toDomain(elevationFix: Int, thumbnailImage: Bitmap?): MapConfig? {
 
     calibration ?: return null
-    provider ?: return null
+    val imageExtension = provider?.image_extension ?: return null
+    val origin = getMapOrigin(provider.generated_by)
     val calibrationMethod = runCatching {
         CalibrationMethod.valueOf(calibration.calibration_method.uppercase())
     }.getOrNull() ?: return null
-
-    val origin = getMapOrigin(provider.generated_by)
 
     return MapConfig(
         uuid = getOrCreateUUID(this),
@@ -31,7 +30,7 @@ fun MapGson.toDomain(elevationFix: Int, thumbnailImage: Bitmap?): MapConfig? {
         },
         origin = origin,
         size = Size(size.x, size.y),
-        imageExtension = provider.image_extension,
+        imageExtension = imageExtension,
         calibration = Calibration(
             projection = calibration.projection,
             calibrationMethod = calibrationMethod,
