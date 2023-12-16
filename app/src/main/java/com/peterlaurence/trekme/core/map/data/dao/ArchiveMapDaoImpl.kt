@@ -22,8 +22,8 @@ import java.util.*
  * parent folder of the [Map].
  */
 class ArchiveMapDaoImpl(
+    private val defaultDispatcher: CoroutineDispatcher,
     private val app: Application,
-    private val defaultDispatcher: CoroutineDispatcher
 ) : ArchiveMapDao {
 
     override suspend fun archiveMap(map: Map, listener: ZipProgressionListener, uri: Uri) {

@@ -35,6 +35,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class MapDownloadDaoImpl(
+    private val ioDispatcher: CoroutineDispatcher,
     private val settings: Settings
 ) : MapDownloadDao {
     private val workerCount = 8
@@ -133,7 +134,7 @@ class MapDownloadDaoImpl(
         bitmapProvider: BitmapProvider,
         tileWriter: TileWriter,
         tileSize: Int
-    ) = launch(Dispatchers.IO) {
+    ) = launch(ioDispatcher) {
         val bitmap: Bitmap = Bitmap.createBitmap(tileSize, tileSize, Bitmap.Config.ARGB_8888)
         val options = BitmapFactory.Options()
         options.inBitmap = bitmap

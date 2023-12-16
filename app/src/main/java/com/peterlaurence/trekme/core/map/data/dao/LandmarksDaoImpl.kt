@@ -11,7 +11,6 @@ import com.peterlaurence.trekme.core.map.domain.dao.LandmarksDao
 import com.peterlaurence.trekme.util.FileUtils
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File

@@ -2,14 +2,14 @@ package com.peterlaurence.trekme.core.map.data.dao
 
 import android.os.StatFs
 import com.peterlaurence.trekme.core.map.data.models.MapFileBased
-import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.dao.MapSizeComputeDao
+import com.peterlaurence.trekme.core.map.domain.models.Map
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class MapSizeComputeDaoImpl(
-    private val defaultDispatcher: CoroutineDispatcher
+    private val defaultDispatcher: CoroutineDispatcher,
+    private val mainDispatcher: CoroutineDispatcher,
 ) : MapSizeComputeDao {
 
     /**
@@ -29,7 +29,6 @@ class MapSizeComputeDaoImpl(
             var physicalSize = 0L
 
             directory.walkTopDown().forEach {
-
                 if (it.isFile) {
                     val l = it.length()
                     logicalSize += l
@@ -39,7 +38,7 @@ class MapSizeComputeDaoImpl(
 
             // TODO: maybe do something with the physical size
 
-            withContext(Dispatchers.Main) {
+            withContext(mainDispatcher) {
                 map.sizeInBytes.value = logicalSize
             }
             logicalSize

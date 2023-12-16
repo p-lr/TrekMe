@@ -12,6 +12,7 @@ import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.projection.UniversalTransverseMercator
 import com.peterlaurence.trekme.core.settings.Settings
+import com.peterlaurence.trekme.di.DefaultDispatcher
 import com.peterlaurence.trekme.di.IoDispatcher
 import com.peterlaurence.trekme.di.MainDispatcher
 import dagger.Module
@@ -19,15 +20,14 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.json.Json
-import java.util.HashMap
 import javax.inject.Qualifier
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object MapModule {
+
     @Singleton
     @Provides
     fun provideGson(): Gson {
@@ -43,7 +43,8 @@ object MapModule {
         for ((key, value) in projectionHashMap) {
             factory.registerSubtype(value, key)
         }
-        return GsonBuilder().serializeNulls().setPrettyPrinting().registerTypeAdapterFactory(factory)
+        return GsonBuilder().serializeNulls().setPrettyPrinting()
+            .registerTypeAdapterFactory(factory)
             .create()
     }
 
@@ -94,25 +95,26 @@ object MapModule {
         @MainDispatcher mainDispatcher: CoroutineDispatcher,
         @IoDispatcher ioDispatcher: CoroutineDispatcher,
         @MapJson json: Json
-    ) : BeaconDao {
+    ): BeaconDao {
         return BeaconsDaoImpl(mainDispatcher, ioDispatcher, json)
     }
 
     @Singleton
     @Provides
     fun provideMapLoaderDao(
+        @IoDispatcher ioDispatcher: CoroutineDispatcher,
         mapSaverDao: MapSaverDao,
         gson: Gson,
         @MapJson json: Json
     ): MapLoaderDao {
-        return MapLoaderDaoFileBased(mapSaverDao, gson, json, Dispatchers.IO)
+        return MapLoaderDaoFileBased(ioDispatcher, mapSaverDao, gson, json)
     }
 
     @Singleton
     @Provides
     fun provideMapDeleteDao(
         @IoDispatcher ioDispatcher: CoroutineDispatcher
-    ) : MapDeleteDao = MapDeleteDaoImpl(ioDispatcher)
+    ): MapDeleteDao = MapDeleteDaoImpl(ioDispatcher)
 
     @Singleton
     @Provides
@@ -120,30 +122,34 @@ object MapModule {
         @MainDispatcher mainDispatcher: CoroutineDispatcher,
         @IoDispatcher ioDispatcher: CoroutineDispatcher,
         mapSaverDao: MapSaverDao
-    ) : MapRenameDao {
+    ): MapRenameDao {
         return MapRenameDaoImpl(mainDispatcher, ioDispatcher, mapSaverDao)
     }
 
     @Singleton
     @Provides
     fun provideMapSetThumbnailDao(
+        @DefaultDispatcher defaultDispatcher: CoroutineDispatcher,
         mapSaverDao: MapSaverDao,
         app: Application
     ): MapSetThumbnailDao {
-        return MapSetThumbnailDaoImpl(Dispatchers.Default, mapSaverDao, app.contentResolver)
+        return MapSetThumbnailDaoImpl(defaultDispatcher, mapSaverDao, app.contentResolver)
     }
 
     @Singleton
     @Provides
     fun provideMapSizeComputeDao(
-    ): MapSizeComputeDao = MapSizeComputeDaoImpl(Dispatchers.Default)
+        @DefaultDispatcher defaultDispatcher: CoroutineDispatcher,
+        @MainDispatcher mainDispatcher: CoroutineDispatcher,
+    ): MapSizeComputeDao = MapSizeComputeDaoImpl(defaultDispatcher, mainDispatcher)
 
     @Singleton
     @Provides
     fun provideArchiveMapDao(
+        @DefaultDispatcher defaultDispatcher: CoroutineDispatcher,
         app: Application
     ): ArchiveMapDao {
-        return ArchiveMapDaoImpl(app, Dispatchers.Default)
+        return ArchiveMapDaoImpl(defaultDispatcher, app)
     }
 
     @Singleton
@@ -183,9 +189,10 @@ object MapModule {
     @Singleton
     @Provides
     fun provideMapDownloadDao(
+        @IoDispatcher ioDispatcher: CoroutineDispatcher,
         settings: Settings,
     ): MapDownloadDao {
-        return MapDownloadDaoImpl(settings)
+        return MapDownloadDaoImpl(ioDispatcher, settings)
     }
 
     @Singleton

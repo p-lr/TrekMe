@@ -26,7 +26,7 @@ class MapParserTest {
     private val json = MapModule.provideJson()
     private val mapSaverDao = MapSaverDaoImpl(Dispatchers.Unconfined, Dispatchers.IO, gson)
     private val mapLoaderDao = MapLoaderDaoFileBased(
-        mapSaverDao, gson, json, Dispatchers.IO
+        Dispatchers.IO, mapSaverDao, gson, json
     )
 
     private val routeDao = RouteDaoImpl(Dispatchers.IO, Dispatchers.Unconfined, json)
@@ -34,7 +34,8 @@ class MapParserTest {
 
     @Test
     fun mapRoutesParse() = runBlocking {
-        val mapDirURL = MapImportInteractorTest::class.java.classLoader!!.getResource("map-with-routes")
+        val mapDirURL =
+            MapImportInteractorTest::class.java.classLoader!!.getResource("map-with-routes")
         val mapDir = File(mapDirURL.toURI())
 
         assertTrue(mapDir.exists())

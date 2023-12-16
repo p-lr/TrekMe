@@ -20,10 +20,10 @@ import kotlinx.serialization.json.Json
 import java.io.File
 
 class MapLoaderDaoFileBased(
+    private val ioDispatcher: CoroutineDispatcher,
     private val mapSaverDao: MapSaverDao,
     private val gson: Gson,
     private val json: Json,
-    private val ioDispatcher: CoroutineDispatcher
 ) : MapLoaderDao {
 
     /**
