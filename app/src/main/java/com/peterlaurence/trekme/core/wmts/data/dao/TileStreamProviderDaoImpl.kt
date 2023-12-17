@@ -15,6 +15,7 @@ import com.peterlaurence.trekme.core.wmts.data.urltilebuilder.UrlTileBuilderOSM
 import com.peterlaurence.trekme.core.wmts.data.urltilebuilder.UrlTileBuilderOrdnanceSurvey
 import com.peterlaurence.trekme.core.wmts.data.urltilebuilder.UrlTileBuilderSwiss
 import com.peterlaurence.trekme.core.wmts.data.urltilebuilder.UrlTileBuilderUSGS
+import com.peterlaurence.trekme.core.wmts.domain.dao.ApiDao
 import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamProviderDao
 import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamReporter
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnSourceData
@@ -24,12 +25,9 @@ import com.peterlaurence.trekme.core.wmts.domain.model.OrdnanceSurveyData
 import com.peterlaurence.trekme.core.wmts.domain.model.OsmSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.SwissTopoData
 import com.peterlaurence.trekme.core.wmts.domain.model.UsgsData
-import com.peterlaurence.trekme.features.common.data.dao.IgnApiDao
-import com.peterlaurence.trekme.features.common.data.dao.OrdnanceSurveyApiDao
 
-class TileStreamProviderDaoImpl constructor(
-    private val ignApiDao: IgnApiDao,
-    private val ordnanceSurveyApiDao: OrdnanceSurveyApiDao,
+class TileStreamProviderDaoImpl(
+    private val apiDao: ApiDao
 ): TileStreamProviderDao {
     override suspend fun newTileStreamProvider(
         data: MapSourceData,
@@ -37,8 +35,7 @@ class TileStreamProviderDaoImpl constructor(
     ): Result<TileStreamProvider> {
         val tileStreamProvider = when (data) {
             is IgnSourceData -> {
-                val ignApi =
-                    ignApiDao.getApi() ?: return Result.failure(Exception("IGN Api fetch error"))
+                val ignApi = apiDao.getIgnApi() ?: return Result.failure(Exception("IGN Api fetch error"))
                 val urlTileBuilder = UrlTileBuilderIgn(ignApi, data.layer)
                 val primaryTileStreamProvider = TileStreamProviderIgn(urlTileBuilder, data.layer)
                 if (data.overlays.isEmpty()) {
@@ -74,8 +71,7 @@ class TileStreamProviderDaoImpl constructor(
             }
 
             is OrdnanceSurveyData -> {
-                val api = ordnanceSurveyApiDao.getApi()
-                    ?: return Result.failure(Exception("Ordnance survey Api fetch error"))
+                val api = apiDao.getOrdnanceSurveyApi() ?: return Result.failure(Exception("Ordnance survey Api fetch error"))
                 val urlTileBuilder = UrlTileBuilderOrdnanceSurvey(api)
                 TileStreamProviderOrdnanceSurvey(urlTileBuilder)
             }

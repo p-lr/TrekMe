@@ -25,8 +25,8 @@ import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamProviderDao
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.gpspro.GpsProEvents
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
-import com.peterlaurence.trekme.features.common.data.dao.IgnApiDao
-import com.peterlaurence.trekme.features.common.data.dao.OrdnanceSurveyApiDao
+import com.peterlaurence.trekme.core.wmts.data.dao.ApiDaoImpl
+import com.peterlaurence.trekme.core.wmts.domain.dao.ApiDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -91,19 +91,16 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun bindIgnApiRepository(): IgnApiDao = IgnApiDao()
-
-    @Singleton
-    @Provides
-    fun bindOrdnanceSurveyApiRepository(): OrdnanceSurveyApiDao = OrdnanceSurveyApiDao()
+    fun provideApiDao(@ApplicationContext context: Context): ApiDao {
+        return ApiDaoImpl(context)
+    }
 
     @Singleton
     @Provides
     fun provideTileStreamProviderDao(
-        ignApiDao: IgnApiDao,
-        ordnanceSurveyApiDao: OrdnanceSurveyApiDao
+        apiDao: ApiDao,
     ): TileStreamProviderDao {
-        return TileStreamProviderDaoImpl(ignApiDao, ordnanceSurveyApiDao)
+        return TileStreamProviderDaoImpl(apiDao)
     }
 
     @Singleton

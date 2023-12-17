@@ -28,6 +28,10 @@ class UrlTileBuilderIgn(private val api: String, private val layer: IgnLayer) : 
             Road -> "TRANSPORTNETWORKS.ROADS"
             Slopes -> "GEOGRAPHICALGRIDSYSTEMS.SLOPES.MOUNTAIN"
         }
-        return "https://wxs.ign.fr/$api/geoportail/wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&STYLE=$style&LAYER=${layerName}&EXCEPTIONS=text/xml&Format=image/$imgFormat&tilematrixset=PM&TileMatrix=$level&TileRow=$row&TileCol=$col&"
+        return if (layer == IgnClassic) {
+            "https://data.geopf.fr/private/wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&STYLE=$style&LAYER=${layerName}&EXCEPTIONS=text/xml&Format=image/$imgFormat&tilematrixset=PM&TileMatrix=$level&TileRow=$row&TileCol=$col&apikey=$api"
+        } else {
+            "https://data.geopf.fr/wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&STYLE=$style&LAYER=${layerName}&EXCEPTIONS=text/xml&Format=image/$imgFormat&tilematrixset=PM&TileMatrix=$level&TileRow=$row&TileCol=$col"
+        }
     }
 }
