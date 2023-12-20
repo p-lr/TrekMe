@@ -155,6 +155,8 @@ class ElevationRepository(
                                             apiStatus.restApiOk
                                         )
                                     )
+                                } else {
+                                    _events.emit(ElevationCorrectionErrorEvent)
                                 }
                                 /* Stop the flow */
                                 throw CancellationException()
