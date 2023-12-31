@@ -210,10 +210,10 @@ class LandmarkLayer(
             y,
             relativeOffset = Offset(-0.5f, -0.5f),
             zIndex = 1f,
-            clickableAreaCenterOffset = Offset(0f, -0.22f),
-            clickableAreaScale = Offset(0.7f, 0.5f)
+            clickableAreaCenterOffset = Offset(0f, -0.25f),
+            clickableAreaScale = Offset(2f, 1f)  // 48dp wide and height
         ) {
-            LandMark(Modifier.padding(5.dp), state.isStatic)
+            LandMark(isStatic = state.isStatic)
         }
         return state
     }

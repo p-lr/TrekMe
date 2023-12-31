@@ -303,13 +303,12 @@ class ExcursionWaypointLayer(
             y,
             relativeOffset = Offset(-0.5f, -0.5f),
             zIndex = 1f,
-            clickableAreaCenterOffset = Offset(0f, -0.22f),
-            clickableAreaScale = Offset(0.7f, 0.5f)
+            clickableAreaCenterOffset = Offset(0f, -0.25f),
+            clickableAreaScale = Offset(2f, 1f)  // 48dp wide and height
         ) {
             val color by colorFlow.collectAsState()
 
             Marker(
-                modifier = Modifier.padding(5.dp),
                 isStatic = state.isStatic,
                 backgroundColor = color,
                 strokeColor = Color(
