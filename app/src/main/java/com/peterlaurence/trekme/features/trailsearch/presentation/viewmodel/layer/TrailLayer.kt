@@ -23,7 +23,7 @@ import ovh.plrapps.mapcompose.api.BoundingBox
 import ovh.plrapps.mapcompose.api.addPath
 import ovh.plrapps.mapcompose.api.idleStateFlow
 import ovh.plrapps.mapcompose.api.makePathDataBuilder
-import ovh.plrapps.mapcompose.api.onPathClickTraversal
+import ovh.plrapps.mapcompose.api.onPathHitTraversal
 import ovh.plrapps.mapcompose.api.removeAllPaths
 import ovh.plrapps.mapcompose.api.visibleBoundingBox
 import ovh.plrapps.mapcompose.ui.paths.PathData
@@ -53,7 +53,7 @@ class TrailLayer(
 
     private fun CoroutineScope.onNewMapState(mapState: MapState) {
         /* Configure behavior when paths are clicked */
-        mapState.onPathClickTraversal { ids, x, y ->
+        mapState.onPathHitTraversal { ids, x, y, _ ->
             onPathsClicked(
                 ids.mapNotNull {
                     val id = getTrailDetailIdFromPathId(it)

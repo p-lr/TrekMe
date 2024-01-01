@@ -72,9 +72,9 @@ import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.addLayer
 import ovh.plrapps.mapcompose.api.maxScale
 import ovh.plrapps.mapcompose.api.onMarkerClick
+import ovh.plrapps.mapcompose.api.onMarkerLongPress
 import ovh.plrapps.mapcompose.api.rotateTo
 import ovh.plrapps.mapcompose.api.scale
-import ovh.plrapps.mapcompose.api.shouldLoopScale
 import ovh.plrapps.mapcompose.ui.state.MapState
 import java.util.UUID
 import javax.inject.Inject
@@ -325,17 +325,26 @@ class MapViewModel @Inject constructor(
         }
 
         /* region Configuration */
-        mapState.onMarkerClick { id, x, y ->
+        val markerHitHandler = l@{ id: String, x: Double, y: Double ->
             val landmarkHandled = landmarkLayer.onMarkerTap(mapState, map.id, id, x, y)
-            if (landmarkHandled) return@onMarkerClick
+            if (landmarkHandled) return@l
 
             val markerHandled = markerLayer.onMarkerTap(mapState, map.id, id, x, y)
-            if (markerHandled) return@onMarkerClick
+            if (markerHandled) return@l
 
             val excursionWptHandled = excursionWaypointLayer.onMarkerTap(mapState, map.id, id, x, y)
-            if (excursionWptHandled) return@onMarkerClick
+            if (excursionWptHandled) return@l
 
             beaconLayer.onMarkerTap(mapState, map.id, id, x, y)
+        }
+
+        mapState.onMarkerClick { id, x, y ->
+            markerHitHandler(id, x, y)
+        }
+
+        // Do the same thing as click for long-press
+        mapState.onMarkerLongPress { id, x, y ->
+            markerHitHandler(id, x, y)
         }
         /* endregion */
 
