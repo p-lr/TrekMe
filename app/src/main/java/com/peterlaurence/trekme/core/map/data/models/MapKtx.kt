@@ -61,9 +61,10 @@ data class Calibration(
 
 @Serializable
 data class ProjectionKtx(
-    @SerialName("projection_name")
-    val name: String? = null,   // this attribute is left for compatibility reasons
-    val srid: Int = 0   // expects epsg.io id
+    // expects epsg.io id. Defaults to Web Mercator. This default is important since previous versions
+    // of TrekMe (3.x.x and below) used a projection name to identify the projection, and web mercator
+    // was the only projection used.
+    val srid: Int = 3857
 )
 
 /**

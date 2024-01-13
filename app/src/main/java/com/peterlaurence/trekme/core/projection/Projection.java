@@ -30,4 +30,6 @@ public interface Projection {
     double[] undoProjection(double X, double Y);
 
     String getName();
+
+    int getSrid();
 }

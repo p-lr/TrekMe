@@ -141,6 +141,12 @@ public class UniversalTransverseMercator implements Projection {
         return NAME;
     }
 
+    @Override
+    public int getSrid() {
+        // TODO: take into account the parameters of the projection to get the correct srid.
+        return 0;
+    }
+
     /**
      * Set the UTM zone number 1-60. This is a very important parameter as it determines the
      * reference meridian.

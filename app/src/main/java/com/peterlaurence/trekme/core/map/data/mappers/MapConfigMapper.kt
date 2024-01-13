@@ -52,12 +52,14 @@ fun MapKtx.toDomain(elevationFix: Int, thumbnailImage: Bitmap?): MapConfig? {
 }
 
 /**
- * For instance, only support EPSG:3857
+ * For instance, only support EPSG:3857.
+ * SRID was introduced on 2024-01.
  */
 private fun ProjectionKtx.toDomain(): Projection? {
-    return if (name == MercatorProjection.NAME) {
-        MercatorProjection()
-    } else null
+    return when(srid) {
+        3857 -> MercatorProjection()
+        else -> null
+    }
 }
 
 private fun getOrCreateUUID(mapKtx: MapKtx): UUID {
@@ -121,11 +123,7 @@ fun MapConfig.toMapKtx(): MapKtx {
     )
 }
 
-/**
- * For instance, only support 3857 SRID.
- */
 private fun Projection.toData(): ProjectionKtx {
-    val srid = if (this is MercatorProjection) 3857 else 0
-    return ProjectionKtx(name = name, srid = srid)
+    return ProjectionKtx(srid = srid)
 }
 

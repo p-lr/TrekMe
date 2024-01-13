@@ -59,4 +59,9 @@ public class MercatorProjection implements Projection {
     public String getName() {
         return NAME;
     }
+
+    @Override
+    public int getSrid() {
+        return 3857;
+    }
 }
