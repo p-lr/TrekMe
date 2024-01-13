@@ -8,7 +8,7 @@ package com.peterlaurence.trekme.core.projection;
  * @author P.Laurence
  */
 public class MercatorProjection implements Projection {
-    public static final transient String NAME = "Pseudo Mercator";
+    public static final String NAME = "Pseudo Mercator";
 
     @Override
     public void init() {

@@ -22,11 +22,10 @@ import kotlin.test.assertNotNull
  */
 @RunWith(RobolectricTestRunner::class)
 class MapParserTest {
-    private val gson = MapModule.provideGson()
     private val json = MapModule.provideJson()
-    private val mapSaverDao = MapSaverDaoImpl(Dispatchers.Unconfined, Dispatchers.IO, gson)
+    private val mapSaverDao = MapSaverDaoImpl(Dispatchers.Unconfined, Dispatchers.IO, json)
     private val mapLoaderDao = MapLoaderDaoFileBased(
-        mapSaverDao, gson, json, Dispatchers.IO
+        mapSaverDao, json, Dispatchers.IO
     )
 
     private val routeDao = RouteDaoImpl(Dispatchers.IO, Dispatchers.Unconfined, json)

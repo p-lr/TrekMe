@@ -1,6 +1,5 @@
 package com.peterlaurence.trekme.core.projection;
 
-import com.google.gson.annotations.SerializedName;
 
 /**
  * The universal transverse Mercator projection is a variant of the Mercator projection.
@@ -29,33 +28,25 @@ import com.google.gson.annotations.SerializedName;
  * UniversalTransverseMercator utm = new UniversalTransverseMercator();
  * utm.setZone(31);
  * utm.setHemisphere("N");
- * </code></pre>
- * Note that in TrekAdvisor the zone and hemisphere are set automatically by Gson during
- * deserialization.
- *
- * TODO: this class make assumptions about how it's serialized. This is a violation of separation
- * of concern between the domain layer (which this class belongs to) and the data layer. Also, this
- * class should take required arguments in its constructor, eliminating the need for an init method.
- *
- * </pre>
+ * </code>
  */
 public class UniversalTransverseMercator implements Projection {
-    public static final transient String NAME = "Universal Transverse Mercator";
+    public static final String NAME = "Universal Transverse Mercator";
 
     /* The earth radius in meters */
-    private static final transient double a = 6378137;
+    private static final double a = 6378137;
 
     /* The earth eccentricity */
-    private static final transient double e = 0.081819190842621;
+    private static final double e = 0.081819190842621;
 
-    private static final transient double k0 = 0.9996;
+    private static final double k0 = 0.9996;
 
-    private static final transient double a1 = 1 - Math.pow(e, 2) / 4 - 3 * Math.pow(e, 4) / 64 - 5 * Math.pow(e, 6) / 256;
-    private static final transient double a2 = -3 * Math.pow(e, 2) / 8 - 3 * Math.pow(e, 4) / 32 - 45 * Math.pow(e, 6) / 1024;
-    private static final transient double a3 = 15 * Math.pow(e, 4) / 256 + 45 * Math.pow(e, 6) / 1024;
-    private static final transient double a4 = -35 * Math.pow(e, 6) / 3072;
-    private static final transient double toRad = Math.PI / 180;
-    private static final transient double toDecimalDegrees = 180 / Math.PI;
+    private static final double a1 = 1 - Math.pow(e, 2) / 4 - 3 * Math.pow(e, 4) / 64 - 5 * Math.pow(e, 6) / 256;
+    private static final double a2 = -3 * Math.pow(e, 2) / 8 - 3 * Math.pow(e, 4) / 32 - 45 * Math.pow(e, 6) / 1024;
+    private static final double a3 = 15 * Math.pow(e, 4) / 256 + 45 * Math.pow(e, 6) / 1024;
+    private static final double a4 = -35 * Math.pow(e, 6) / 3072;
+    private static final double toRad = Math.PI / 180;
+    private static final double toDecimalDegrees = 180 / Math.PI;
 
     private transient int FN = 0;
     private transient int FE = 500000; // (meters) by definition in UTM
@@ -64,7 +55,6 @@ public class UniversalTransverseMercator implements Projection {
      * The zone number is used in {@link #init()} method right after deserialization to determinate
      * the reference meridian.
      */
-    @SerializedName("zone")
     private int mZone;
 
     private transient double mReferenceMeridian;
@@ -72,7 +62,6 @@ public class UniversalTransverseMercator implements Projection {
     /**
      * The hemisphere ("N" or "S") determines the value for the False Northing (FN).
      */
-    @SerializedName("hemisphere")
     private String mHemisphere;
 
 

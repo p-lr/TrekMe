@@ -26,10 +26,10 @@ import kotlin.test.fail
  */
 @RunWith(RobolectricTestRunner::class)
 class MapImportInteractorTest {
-    private val gson = MapModule.provideGson()
-    private val mapSaverDao = MapSaverDaoImpl(Dispatchers.Unconfined, Dispatchers.IO, gson)
+    private val json = MapModule.provideJson()
+    private val mapSaverDao = MapSaverDaoImpl(Dispatchers.Unconfined, Dispatchers.IO, json)
     private val mapLoaderDao = MapLoaderDaoFileBased(
-        mapSaverDao, gson, MapModule.provideJson(), Dispatchers.IO
+        mapSaverDao, json, Dispatchers.IO
     )
     private val mapRepository = MapRepository()
     private val mapSeekerDao = MapSeekerDaoImpl(mapLoaderDao, mapSaverDao)

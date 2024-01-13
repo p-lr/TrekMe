@@ -1,27 +1,27 @@
 package com.peterlaurence.trekme.core.map.data.dao
 
 import android.util.Log
-import com.google.gson.Gson
 import com.peterlaurence.trekme.core.map.data.MAP_FILENAME
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.dao.MapSaverDao
-import com.peterlaurence.trekme.core.map.data.mappers.toMapGson
+import com.peterlaurence.trekme.core.map.data.mappers.toMapKtx
 import com.peterlaurence.trekme.core.map.data.models.MapFileBased
 import com.peterlaurence.trekme.util.writeToFile
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
 import java.io.File
 
 class MapSaverDaoImpl (
     private val mainDispatcher: CoroutineDispatcher,
     private val ioDispatcher: CoroutineDispatcher,
-    private val gson: Gson
+    private val json: Json
 ): MapSaverDao {
     override suspend fun save(map: Map) {
         val jsonString = withContext(mainDispatcher) {
-            val mapGson = map.configSnapshot.toMapGson()
-            mapGson.sizeInBytes = map.sizeInBytes.value
-            gson.toJson(mapGson)
+            val mapKtx = map.configSnapshot.toMapKtx().copy(sizeInBytes = map.sizeInBytes.value)
+            json.encodeToString(mapKtx)
         }
 
         val rootFolder = (map as? MapFileBased)?.folder ?: return
