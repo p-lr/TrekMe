@@ -38,7 +38,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class DownloadService : Service() {
     private val notificationChannelId = "peterlaurence.DownloadService"
-    private val downloadServiceNofificationId = 128565
+    private val downloadServiceNotificationId = 128565
 
     companion object {
         const val stopAction = "stop"
@@ -148,7 +148,7 @@ class DownloadService : Service() {
             notificationBuilder.setChannelId(notificationChannelId)
         }
 
-        startForeground(downloadServiceNofificationId, notificationBuilder.build())
+        startForeground(downloadServiceNotificationId, notificationBuilder.build())
 
         /* Get ready for download and request download spec */
         scope.launch {
@@ -185,7 +185,7 @@ class DownloadService : Service() {
         notificationBuilder.setProgress(100, progress, false)
         runCatching {
             // SecurityException thrown when missing permission
-            notificationManager.notify(downloadServiceNofificationId, notificationBuilder.build())
+            notificationManager.notify(downloadServiceNotificationId, notificationBuilder.build())
         }
     }
 

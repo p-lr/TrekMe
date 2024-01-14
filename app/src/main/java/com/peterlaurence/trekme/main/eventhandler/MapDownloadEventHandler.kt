@@ -39,6 +39,11 @@ class MapDownloadEventHandler(
                 getString(R.string.warning_title),
                 null
             )
+            is MissingApiError -> showWarningDialog(
+                getString(R.string.service_download_missing_api),
+                getString(R.string.warning_title),
+                null
+            )
             is MapDownloadPending -> {
                 // Nothing particular to do, the service which fire those events already sends
                 // notifications with the progression.

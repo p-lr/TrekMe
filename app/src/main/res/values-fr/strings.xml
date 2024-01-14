@@ -269,6 +269,7 @@
     <string name="privacy_policy">politique de confidentialité</string>
     <string name="solution_title">Solution</string>
     <string name="service_download_already_running">Un téléchargement est déjà en cours. Veuillez attendre la fin du téléchargement avant d\'en lancer un autre.</string>
+    <string name="service_download_missing_api">Une erreur inattendue d\'api est survenur. Veuiillez mettre à jour TrekMe.</string>
     <string name="module_check_pending">Vérification du module…</string>
     <string name="track_visibility_btn">Visibilité de la trace</string>
     <string name="track_color_btn">Coleur de la trace</string>

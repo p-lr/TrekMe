@@ -5,6 +5,7 @@ import android.net.Uri
 import com.peterlaurence.trekme.core.map.domain.dao.MapDownloadDao
 import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.core.map.domain.models.Map
+import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamProviderDao
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
 import com.peterlaurence.trekme.features.common.domain.interactors.ImportGeoRecordInteractor
 import com.peterlaurence.trekme.features.common.domain.interactors.MapExcursionInteractor
@@ -15,6 +16,7 @@ import javax.inject.Inject
  */
 class MapDownloadInteractor @Inject constructor(
     private val mapDownloadDao: MapDownloadDao,
+    private val tileStreamProviderDao: TileStreamProviderDao,
     private val saveMapInteractor: SaveMapInteractor,
     private val repository: DownloadRepository,
     private val importGeoRecordInteractor: ImportGeoRecordInteractor,
@@ -27,9 +29,13 @@ class MapDownloadInteractor @Inject constructor(
         onProgress: (Int) -> Unit
     ): MapDownloadResult {
         val progressEvent = MapDownloadPending(0)
+        val tileStreamProvider = tileStreamProviderDao.newTileStreamProvider(
+            request.source
+        ).getOrNull() ?: return MapDownloadResult.Error(MissingApiError)
 
         val result = mapDownloadDao.processRequest(
             request,
+            tileStreamProvider,
             onProgress = {
                 /* Publish an application-wide event */
                 progressEvent.progress = it

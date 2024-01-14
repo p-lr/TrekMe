@@ -9,7 +9,6 @@ class DownloadMapRequest(
     val source: MapSourceData,
     val mapSpec: MapSpec,
     val numberOfTiles: Long,
-    val tileStreamProvider: TileStreamProvider,
     val geoRecordUris: Set<Uri> = emptySet(),
     val excursionIds: Set<String> = emptySet()
 )
@@ -17,5 +16,6 @@ class DownloadMapRequest(
 sealed class MapDownloadEvent
 data class MapDownloadPending(var progress: Int = 100): MapDownloadEvent()
 data class MapDownloadFinished(val mapId: UUID): MapDownloadEvent()
-object MapDownloadStorageError: MapDownloadEvent()
-object MapDownloadAlreadyRunning: MapDownloadEvent()
+data object MapDownloadStorageError: MapDownloadEvent()
+data object MapDownloadAlreadyRunning: MapDownloadEvent()
+data object MissingApiError: MapDownloadEvent()

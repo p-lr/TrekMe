@@ -454,15 +454,10 @@ class TrailMapViewModel @Inject constructor(
         val tileCount = getNumberOfTiles(minLevel, maxLevel, p1, p2)
         val mapSourceData = mapSourceDataFlow.value
 
-        val tileStreamProvider = getTileStreamProviderDao.newTileStreamProvider(
-            mapSourceData
-        ).getOrNull() ?: return
-
         val request = DownloadMapRequest(
             mapSourceData,
             mapSpec,
             tileCount,
-            tileStreamProvider,
             excursionIds = setOf(excursionId)
         )
 

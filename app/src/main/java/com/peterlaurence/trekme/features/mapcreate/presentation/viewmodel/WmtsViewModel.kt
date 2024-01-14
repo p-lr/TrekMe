@@ -397,7 +397,21 @@ class WmtsViewModel @Inject constructor(
     }
 
     private suspend fun createTileStreamProvider(wmtsSource: WmtsSource): Flow<Pair<MapSourceData, Result<TileStreamProvider>>> {
-        val mapSourceData: Flow<MapSourceData> = when (wmtsSource) {
+        val mapSourceDataFlow: Flow<MapSourceData> = getMapSourceDataFlow(wmtsSource)
+
+        return mapSourceDataFlow.map {
+            Pair(it, getTileStreamProviderDao.newTileStreamProvider(it)).also { (_, result) ->
+                /* Don't test the stream provider if it has overlays */
+                val provider = result.getOrNull()
+                if (provider != null && provider !is TileStreamProviderOverlay) {
+                    checkTileAccessibility(wmtsSource, provider)
+                }
+            }
+        }
+    }
+
+    private suspend fun getMapSourceDataFlow(wmtsSource: WmtsSource): Flow<MapSourceData> {
+        return when (wmtsSource) {
             WmtsSource.IGN -> {
                 val layer = getActivePrimaryIgnLayer()
                 getOverlayLayersForSource(wmtsSource).map { overlays ->
@@ -415,16 +429,6 @@ class WmtsViewModel @Inject constructor(
             WmtsSource.SWISS_TOPO -> flow { emit(SwissTopoData) }
             WmtsSource.USGS -> flow { emit(UsgsData) }
             WmtsSource.IGN_SPAIN -> flow { emit(IgnSpainData) }
-        }
-
-        return mapSourceData.map {
-            Pair(it, getTileStreamProviderDao.newTileStreamProvider(it)).also { (_, result) ->
-                /* Don't test the stream provider if it has overlays */
-                val provider = result.getOrNull()
-                if (provider != null && provider !is TileStreamProviderOverlay) {
-                    checkTileAccessibility(wmtsSource, provider)
-                }
-            }
         }
     }
 
@@ -498,11 +502,13 @@ class WmtsViewModel @Inject constructor(
         val mapSpec = getMapSpec(minLevel, maxLevel, p1.toDomain(), p2.toDomain(), tileSize = tileSize)
         val tileCount = getNumberOfTiles(minLevel, maxLevel, p1.toDomain(), p2.toDomain())
         viewModelScope.launch {
-            val tileStreamAndMapSource = createTileStreamProvider(
-                wmtsSource
-            ).firstOrNull()
-            val tileStreamProvider = tileStreamAndMapSource?.second?.getOrNull() ?: return@launch
-            val request = DownloadMapRequest(tileStreamAndMapSource.first, mapSpec, tileCount, tileStreamProvider, geoRecordUrls)
+            val mapSourceData = getMapSourceDataFlow(wmtsSource).firstOrNull() ?: return@launch
+            val request = DownloadMapRequest(
+                source = mapSourceData,
+                mapSpec = mapSpec,
+                numberOfTiles = tileCount,
+                geoRecordUris = geoRecordUrls
+            )
             downloadRepository.postDownloadMapRequest(request)
             val intent = Intent(app, DownloadService::class.java)
             app.startService(intent)

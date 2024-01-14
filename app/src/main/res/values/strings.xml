@@ -55,6 +55,7 @@
     <string name="service_download_stop">Stop</string>
     <string name="service_download_bad_storage">TrekMe can\'t write to your internal storage or your SD card. It can be a permission issue. Please check that all permissions of TrekMe are granted, and reboot your phone, if necessary.</string>
     <string name="service_download_already_running">A download is already pending. Please wait for the current download to complete before starting a new one.</string>
+    <string name="service_download_missing_api">An unexpected api missing error occurred. Please update TrekMe.</string>
 
     <!-- WifiP2pService -->
     <string name="service_wifip2p_name">Map sharing service</string>

@@ -41,11 +41,11 @@ class MapDownloadDaoImpl(
 
     override suspend fun processRequest(
         request: DownloadMapRequest,
+        tileStreamProvider: TileStreamProvider,
         onProgress: (Int) -> Unit
     ): MapDownloadResult = coroutineScope {
         val source = request.source
         val tileSequence = request.mapSpec.tileSequence
-        val tileStreamProvider = request.tileStreamProvider
 
         val threadSafeTileIterator =
             ThreadSafeTileIterator(tileSequence.iterator(), request.numberOfTiles) { p ->
