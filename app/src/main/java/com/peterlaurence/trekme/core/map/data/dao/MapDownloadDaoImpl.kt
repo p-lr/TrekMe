@@ -17,7 +17,6 @@ import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnClassic
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnSpainData
-import com.peterlaurence.trekme.core.wmts.domain.model.MapSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.OpenTopoMap
 import com.peterlaurence.trekme.core.wmts.domain.model.OrdnanceSurveyData
 import com.peterlaurence.trekme.core.wmts.domain.model.OsmAndHd
@@ -40,15 +39,15 @@ class MapDownloadDaoImpl(
     private val workerCount = 8
 
     override suspend fun processDownloadSpec(
-        request: MapDownloadSpec,
+        spec: MapDownloadSpec,
         tileStreamProvider: TileStreamProvider,
         onProgress: (Int) -> Unit
     ): MapDownloadResult = coroutineScope {
-        val source = request.source
-        val tileSequence = request.mapSpec.tileSequence
+        val source = spec.source
+        val tileSequence = spec.mapSpec.tileSequence
 
         val threadSafeTileIterator =
-            ThreadSafeTileIterator(tileSequence.iterator(), request.numberOfTiles) { p ->
+            ThreadSafeTileIterator(tileSequence.iterator(), spec.numberOfTiles) { p ->
                 if (isActive) {
                     onProgress(p.toInt())
                 }
@@ -74,7 +73,7 @@ class MapDownloadDaoImpl(
             try {
                 val out = FileOutputStream(tileFile)
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
-                makeTag(request.source)?.also {
+                makeTag(spec.source)?.also {
                     out.write(it)
                 }
                 out.flush()
@@ -91,24 +90,24 @@ class MapDownloadDaoImpl(
             threadSafeTileIterator,
             tileWriter,
             tileStreamProvider,
-            tileSize = request.mapSpec.tileSize
+            tileSize = spec.mapSpec.tileSize
         )
-        val map = postProcess(request.mapSpec, source, destDir)
+        val map = postProcess(spec, destDir)
 
         MapDownloadResult.Success(map)
     }
 
-    private suspend fun postProcess(mapSpec: MapSpec, source: MapSourceData, destDir: File): Map {
-        val mapOrigin = when (source) {
-            is IgnSourceData -> Ign(licensed = source.layer == IgnClassic)
+    private suspend fun postProcess(spec: MapDownloadSpec, destDir: File): Map {
+        val mapOrigin = when (spec.source) {
+            is IgnSourceData -> Ign(licensed = spec.source.layer == IgnClassic)
             IgnSpainData, OrdnanceSurveyData, SwissTopoData, UsgsData -> Wmts(licensed = false)
-            is OsmSourceData -> when (source.layer) {
+            is OsmSourceData -> when (spec.source.layer) {
                 OpenTopoMap, WorldStreetMap, WorldTopoMap -> Wmts(licensed = false)
                 OsmAndHd, Outdoors -> Wmts(licensed = true)
             }
         }
 
-        val map = buildMap(mapSpec, mapOrigin, destDir)
+        val map = buildMap(spec.mapSpec, mapOrigin, destDir)
 
         createNomediaFile(destDir)
 

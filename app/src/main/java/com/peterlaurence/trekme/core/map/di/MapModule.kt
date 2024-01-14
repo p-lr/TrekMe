@@ -29,6 +29,7 @@ object MapModule {
             prettyPrint = true
             isLenient = true
             ignoreUnknownKeys = true
+            encodeDefaults = true
         }
     }
 

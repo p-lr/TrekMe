@@ -153,11 +153,14 @@ class MapFileBased(
         get() = config.copy()
 
     override fun copy(config: MapConfig): Map {
-        return MapFileBased(config = config, folder = folder)
+        return copyAndMove(config = config, folder = folder)
     }
 
     fun copyAndMove(config: MapConfig, folder: File): Map {
-        return MapFileBased(config = config, folder = folder)
+        return MapFileBased(config = config, folder = folder).apply {
+            /* Some properties must be dynamically set right after */
+            sizeInBytes.value = this@MapFileBased.sizeInBytes.value
+        }
     }
 
     override fun equals(other: Any?): Boolean {

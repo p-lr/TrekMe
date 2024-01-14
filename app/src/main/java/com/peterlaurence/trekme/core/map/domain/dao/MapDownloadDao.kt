@@ -6,7 +6,7 @@ import com.peterlaurence.trekme.core.map.domain.models.TileStreamProvider
 
 interface MapDownloadDao {
     suspend fun processDownloadSpec(
-        request: MapDownloadSpec,
+        spec: MapDownloadSpec,
         tileStreamProvider: TileStreamProvider,
         onProgress: (Int) -> Unit
     ): MapDownloadResult
