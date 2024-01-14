@@ -39,8 +39,8 @@ class MapDownloadDaoImpl(
 ) : MapDownloadDao {
     private val workerCount = 8
 
-    override suspend fun processRequest(
-        request: DownloadMapRequest,
+    override suspend fun processDownloadSpec(
+        request: MapDownloadSpec,
         tileStreamProvider: TileStreamProvider,
         onProgress: (Int) -> Unit
     ): MapDownloadResult = coroutineScope {

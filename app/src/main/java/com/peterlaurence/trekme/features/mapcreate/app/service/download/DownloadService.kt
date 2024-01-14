@@ -153,9 +153,9 @@ class DownloadService : Service() {
         /* Get ready for download and request download spec */
         scope.launch {
             /* Only process the first event */
-            val request = repository.getDownloadMapRequest()
-            if (request != null) {
-                processDownloadRequest(request)
+            val spec = repository.getMapDownloadSpec()
+            if (spec != null) {
+                processDownloadSpec(spec)
             }
         }
 
@@ -165,13 +165,13 @@ class DownloadService : Service() {
         return START_NOT_STICKY
     }
 
-    private suspend fun processDownloadRequest(request: DownloadMapRequest) {
+    private suspend fun processDownloadSpec(spec: MapDownloadSpec) {
         val throttledTask = scope.throttle(1000) { p: Int ->
             onDownloadProgress(p)
         }
 
-        mapDownloadInteractor.processDownloadRequest(
-            request, onProgress = { p -> throttledTask.trySend(p) }
+        mapDownloadInteractor.processDownloadSpec(
+            spec, onProgress = { p -> throttledTask.trySend(p) }
         )
         onDownloadFinished()
 

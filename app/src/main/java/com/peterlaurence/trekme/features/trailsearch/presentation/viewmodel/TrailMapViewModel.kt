@@ -27,7 +27,7 @@ import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.core.map.domain.interactors.GetMapInteractor
 import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToMercatorInteractor
 import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
-import com.peterlaurence.trekme.core.map.domain.models.DownloadMapRequest
+import com.peterlaurence.trekme.core.map.domain.models.MapDownloadSpec
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.core.map.domain.models.TileResult
@@ -454,7 +454,7 @@ class TrailMapViewModel @Inject constructor(
         val tileCount = getNumberOfTiles(minLevel, maxLevel, p1, p2)
         val mapSourceData = mapSourceDataFlow.value
 
-        val request = DownloadMapRequest(
+        val downloadSpec = MapDownloadSpec(
             mapSourceData,
             mapSpec,
             tileCount,
@@ -462,7 +462,7 @@ class TrailMapViewModel @Inject constructor(
         )
 
         withContext(Dispatchers.Main) {
-            downloadRepository.postDownloadMapRequest(request)
+            downloadRepository.postMapDownloadSpec(downloadSpec)
             val intent = Intent(app, DownloadService::class.java)
             app.startService(intent)
         }

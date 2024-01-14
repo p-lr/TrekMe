@@ -24,17 +24,17 @@ class MapDownloadInteractor @Inject constructor(
     private val app: Application
 ) {
 
-    suspend fun processDownloadRequest(
-        request: DownloadMapRequest,
+    suspend fun processDownloadSpec(
+        spec: MapDownloadSpec,
         onProgress: (Int) -> Unit
     ): MapDownloadResult {
         val progressEvent = MapDownloadPending(0)
         val tileStreamProvider = tileStreamProviderDao.newTileStreamProvider(
-            request.source
+            spec.source
         ).getOrNull() ?: return MapDownloadResult.Error(MissingApiError)
 
-        val result = mapDownloadDao.processRequest(
-            request,
+        val result = mapDownloadDao.processDownloadSpec(
+            spec,
             tileStreamProvider,
             onProgress = {
                 /* Publish an application-wide event */
@@ -51,7 +51,7 @@ class MapDownloadInteractor @Inject constructor(
                 repository.postDownloadEvent(MapDownloadStorageError)
             }
             is MapDownloadResult.Success -> {
-                postProcess(result.map, request.geoRecordUris, request.excursionIds)
+                postProcess(result.map, spec.geoRecordUris, spec.excursionIds)
             }
         }
 

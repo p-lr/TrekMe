@@ -5,7 +5,7 @@ import com.peterlaurence.trekme.core.wmts.domain.model.MapSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.MapSpec
 import java.util.*
 
-class DownloadMapRequest(
+class MapDownloadSpec(
     val source: MapSourceData,
     val mapSpec: MapSpec,
     val numberOfTiles: Long,
