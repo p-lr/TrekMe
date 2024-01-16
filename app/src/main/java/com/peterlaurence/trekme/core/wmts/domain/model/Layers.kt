@@ -2,13 +2,16 @@ package com.peterlaurence.trekme.core.wmts.domain.model
 
 sealed class Layer(open val id: String)
 
-sealed class IgnLayer(override val id: String) : Layer(id)
-object IgnClassic : IgnLayer(ignClassic)
-object PlanIgnV2 : IgnLayer(ignPlanv2)
-object Satellite : IgnLayer(ignSatellite)
-object Road : IgnLayer(ignRoad)
-object Slopes : IgnLayer(ignSlopes)
-object Cadastre : IgnLayer(ignCadastre)
+sealed interface IgnLayer
+sealed class IgnPrimaryLayer(override val id: String) : Layer(id), IgnLayer
+data object IgnClassic : IgnPrimaryLayer(ignClassic)
+data object PlanIgnV2 : IgnPrimaryLayer(ignPlanv2)
+data object Satellite : IgnPrimaryLayer(ignSatellite)
+
+sealed class IgnOverlayLayer(override val id: String) : Layer(id), IgnLayer
+data object Road : IgnOverlayLayer(ignRoad)
+data object Slopes : IgnOverlayLayer(ignSlopes)
+data object Cadastre : IgnOverlayLayer(ignCadastre)
 
 const val ignPlanv2 = "Plan IGN V2"
 const val ignClassic = "Cartes IGN"
@@ -18,17 +21,18 @@ const val ignSlopes = "Carte des pentes"
 const val ignCadastre = "Parcelles cadastrales"
 
 /* Primary IGN layers are layers which are rendered below overlay layers */
-val ignLayersPrimary: List<IgnLayer> = listOf(IgnClassic, PlanIgnV2, Satellite)
+val ignLayersPrimary: List<IgnPrimaryLayer> = listOf(IgnClassic, PlanIgnV2, Satellite)
 
 /* Overlay layers can be drawn above primary layers (e.g routes, slopes, ..) */
-val ignLayersOverlay: List<IgnLayer> = listOf(Slopes, Cadastre, Road)
+val ignLayersOverlay: List<IgnOverlayLayer> = listOf(Slopes, Cadastre, Road)
 
-sealed class OsmLayer(override val id: String) : Layer(id)
-object WorldTopoMap : OsmLayer(osmTopo)
-object WorldStreetMap : OsmLayer(osmStreet)
-object OpenTopoMap : OsmLayer(openTopoMap)
-object Outdoors : OsmLayer(osmOutdoors)
-object OsmAndHd : OsmLayer(osmAndHd)
+sealed interface OsmLayer
+sealed class OsmPrimaryLayer(override val id: String) : Layer(id), OsmLayer
+data object WorldTopoMap : OsmPrimaryLayer(osmTopo)
+data object WorldStreetMap : OsmPrimaryLayer(osmStreet)
+data object OpenTopoMap : OsmPrimaryLayer(openTopoMap)
+data object Outdoors : OsmPrimaryLayer(osmOutdoors)
+data object OsmAndHd : OsmPrimaryLayer(osmAndHd)
 
 const val osmTopo = "osmTopo"
 const val osmStreet = "osmStreet"
@@ -37,4 +41,4 @@ const val osmOutdoors = "osmOutdoors"
 const val osmAndHd = "osmAndHd"
 
 /* All supported OSM layers */
-val osmLayersPrimary: List<OsmLayer> = listOf(WorldStreetMap, OsmAndHd, WorldTopoMap, OpenTopoMap)
+val osmLayersPrimary: List<OsmPrimaryLayer> = listOf(WorldStreetMap, OsmAndHd, WorldTopoMap, OpenTopoMap)

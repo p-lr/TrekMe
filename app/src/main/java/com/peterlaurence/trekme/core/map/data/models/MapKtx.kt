@@ -12,7 +12,9 @@ data class MapKtx(
     val provider: MapProvider? = null,
     val size: MapSize,
     val calibration: Calibration? = null,
-    val sizeInBytes: Long? = null
+    val sizeInBytes: Long? = null,
+    @SerialName("creation-data")
+    val creationData: CreationDataKtx? = null
 )
 
 @Serializable
@@ -86,3 +88,147 @@ data class CalibrationPointKtx(
     val projY: Double
 )
 
+@Serializable
+data class CreationDataKtx(
+    @SerialName("min-level")
+    val minLevel: Int,
+    @SerialName("max-level")
+    val maxLevel: Int,
+    val boundary: BoundaryKtx,
+    @SerialName("layer-data")
+    val layerData: LayerDataKtx
+)
+
+@Serializable
+data class BoundaryKtx(
+    val srid: Int,
+    val corner1: ProjectedCoordinatesKtx,
+    val corner2: ProjectedCoordinatesKtx
+)
+
+@Serializable
+data class ProjectedCoordinatesKtx(
+    val x: Double,
+    val y: Double
+)
+
+@Serializable
+sealed interface LayerDataKtx
+
+@SerialName("ign-layer-data")
+@Serializable
+data class IgnLayerDataKtx(
+    @SerialName("primary-layer-id")
+    val primaryLayerId: IgnPrimaryLayerIdKtx,
+    val overlays: List<OverlayKtx<IgnOverlayLayerIdKtx>> = emptyList()
+) : LayerDataKtx
+
+@SerialName("osm-layer-data")
+@Serializable
+data class OsmLayerDataKtx(
+    @SerialName("primary-layer-id")
+    val primaryLayerId: OsmPrimaryLayerIdKtx,
+) : LayerDataKtx
+
+@SerialName("ign-spain-layer-data")
+@Serializable
+data class IgnSpainLayerDataKtx(
+    @SerialName("primary-layer-id")
+    val primaryLayerId: IgnSpainPrimaryLayerIdKtx,
+) : LayerDataKtx
+
+@SerialName("ordnance-survey-layer-data")
+@Serializable
+data class OrdnanceSurveyLayerDataKtx(
+    @SerialName("primary-layer-id")
+    val primaryLayerId: OrdnanceSurveyPrimaryLayerIdKtx,
+) : LayerDataKtx
+
+@SerialName("swiss-layer-data")
+@Serializable
+data class SwissLayerDataKtx(
+    @SerialName("primary-layer-id")
+    val primaryLayerId: SwissPrimaryLayerIdKtx,
+) : LayerDataKtx
+
+@SerialName("usgs-layer-data")
+@Serializable
+data class UsgsLayerDataKtx(
+    @SerialName("primary-layer-id")
+    val primaryLayerId: UsgsPrimaryLayerIdKtx,
+) : LayerDataKtx
+
+@Serializable
+class OverlayKtx<T>(
+    val id: T,
+    val opacity: Float = 1f
+)
+
+/* region Ids */
+@Serializable
+enum class IgnPrimaryLayerIdKtx {
+    @SerialName("ign-classic")
+    IgnClassic,
+
+    @SerialName("ign-plan-v2")
+    IgnPlanV2,
+
+    @SerialName("ign-satellite")
+    IgnSatellite,
+}
+
+@Serializable
+enum class IgnOverlayLayerIdKtx {
+    @SerialName("ign-cadastre")
+    IgnCadastre,
+
+    @SerialName("ign-road")
+    IgnRoad,
+
+    @SerialName("ign-slopes")
+    IgnSlopes,
+}
+
+
+@Serializable
+enum class OsmPrimaryLayerIdKtx {
+    @SerialName("opentopomap")
+    OpenTopoMap,
+
+    @SerialName("osmand-hd")
+    OsmandHd,
+
+    @SerialName("custom-outdoors")
+    CustomOutdoors,
+
+    @SerialName("openstreetmap")
+    OpenStreetMap,
+
+    @SerialName("arcgis-world-topo-map")
+    ArcgisWorldTopoMap,
+}
+
+@Serializable
+enum class IgnSpainPrimaryLayerIdKtx {
+    @SerialName("ign-spain")
+    IgnSpain,
+}
+
+@Serializable
+enum class OrdnanceSurveyPrimaryLayerIdKtx {
+    @SerialName("ordnance-survey")
+    OrdnanceSurvey,
+}
+
+@Serializable
+enum class SwissPrimaryLayerIdKtx {
+    @SerialName("swiss-topo")
+    SwissTopo,
+}
+
+@Serializable
+enum class UsgsPrimaryLayerIdKtx {
+    @SerialName("usgs-topo")
+    UsgsTopo
+}
+/* endregion */

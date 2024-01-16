@@ -105,8 +105,8 @@ class WmtsViewModel @Inject constructor(
     private val _eventsChannel = Channel<WmtsEvent>(1)
     val events = _eventsChannel.receiveAsFlow()
 
-    private val defaultIgnLayer: IgnLayer = IgnClassic
-    private val defaultOsmLayer: OsmLayer = WorldStreetMap
+    private val defaultIgnLayer = IgnClassic
+    private val defaultOsmLayer = WorldStreetMap
 
     private val areaController = AreaUiController()
     private var downloadFormData: DownloadFormData? = null
@@ -339,12 +339,12 @@ class WmtsViewModel @Inject constructor(
         }
     }
 
-    private fun getActivePrimaryIgnLayer(): IgnLayer {
-        return activePrimaryLayerForSource[WmtsSource.IGN] as? IgnLayer ?: defaultIgnLayer
+    private fun getActivePrimaryIgnLayer(): IgnPrimaryLayer {
+        return activePrimaryLayerForSource[WmtsSource.IGN] as? IgnPrimaryLayer ?: defaultIgnLayer
     }
 
-    private fun getActivePrimaryOsmLayer(): OsmLayer {
-        return activePrimaryLayerForSource[WmtsSource.OPEN_STREET_MAP] as? OsmLayer ?: run {
+    private fun getActivePrimaryOsmLayer(): OsmPrimaryLayer {
+        return activePrimaryLayerForSource[WmtsSource.OPEN_STREET_MAP] as? OsmPrimaryLayer ?: run {
             if (hasExtendedOffer.value) OsmAndHd else defaultOsmLayer
         }
     }

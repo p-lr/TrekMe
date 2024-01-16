@@ -8,7 +8,6 @@ import com.peterlaurence.trekme.core.map.domain.dao.MapDownloadDao
 import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.utils.createNomediaFile
-import com.peterlaurence.trekme.core.wmts.domain.model.MapSpec
 import com.peterlaurence.trekme.core.wmts.domain.model.Tile
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.map.data.models.BitmapProvider
@@ -107,7 +106,7 @@ class MapDownloadDaoImpl(
             }
         }
 
-        val map = buildMap(spec.mapSpec, mapOrigin, destDir)
+        val map = buildMap(spec, mapOrigin, destDir)
 
         createNomediaFile(destDir)
 
@@ -167,11 +166,12 @@ class MapDownloadDaoImpl(
     }
 
     private fun buildMap(
-        mapSpec: MapSpec,
+        spec: MapDownloadSpec,
         mapOrigin: MapOrigin,
         folder: File,
         imageExtension: String = ".jpg"
     ): Map {
+        val mapSpec = spec.mapSpec
 
         val levels = (mapSpec.levelMin..mapSpec.levelMax).map {
             Level(it - mapSpec.levelMin, tileSize = Size(mapSpec.tileSize, mapSpec.tileSize))
@@ -179,17 +179,34 @@ class MapDownloadDaoImpl(
 
         val size = Size(mapSpec.mapWidthPx, mapSpec.mapHeightPx)
 
+        val projection = MercatorProjection()
         val calibration = Calibration(
-            MercatorProjection(),
+            projection,
             CalibrationMethod.SIMPLE_2_POINTS,
             mapSpec.calibrationPoints.toList()
         )
 
+        val creationData = CreationData(
+            minLevel = mapSpec.levelMin, maxLevel = mapSpec.levelMax,
+            boundary = Boundary(
+                srid = projection.srid,
+                corner1 = ProjectedCoordinates(
+                    x = mapSpec.calibrationPoints.first.absoluteX,
+                    y = mapSpec.calibrationPoints.first.absoluteY
+                ),
+                corner2 = ProjectedCoordinates(
+                    x = mapSpec.calibrationPoints.second.absoluteX,
+                    y = mapSpec.calibrationPoints.second.absoluteY
+                )
+            ),
+            mapSourceData = spec.source
+        )
+
         val mapConfig = MapConfig(
-            uuid = UUID.randomUUID(),
-            name = folder.name, thumbnail = null, thumbnailImage = null,
-            levels, mapOrigin, size, imageExtension,
-            calibration
+            uuid = UUID.randomUUID(), name = folder.name, thumbnail = null, thumbnailImage = null,
+            levels = levels, origin = mapOrigin, size = size, imageExtension = imageExtension,
+            calibration = calibration,
+            creationData = creationData
         )
 
         return MapFileBased(mapConfig, folder)
