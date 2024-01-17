@@ -3,6 +3,7 @@ package com.peterlaurence.trekme.features.maplist.presentation.ui.screens
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
@@ -39,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,15 +50,19 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.projection.UniversalTransverseMercator
+import com.peterlaurence.trekme.features.common.domain.util.makeMapForComposePreview
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.ErrorScreen
 import com.peterlaurence.trekme.features.common.presentation.ui.settings.ButtonSetting
 import com.peterlaurence.trekme.features.common.presentation.ui.settings.EditTextSetting
 import com.peterlaurence.trekme.features.common.presentation.ui.settings.HeaderSetting
 import com.peterlaurence.trekme.features.common.presentation.ui.settings.ListSetting
 import com.peterlaurence.trekme.features.common.presentation.ui.settings.SettingDivider
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapSettingsViewModel
+import com.peterlaurence.trekme.util.ResultL
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 import com.peterlaurence.trekme.util.isFrench
+import kotlinx.coroutines.flow.MutableStateFlow
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -75,7 +81,6 @@ import java.math.RoundingMode
  *
  * @since 16/04/2016 - Converted to Kotlin on 11/11/2020 - Converted to compose on 08/09/2023
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapSettingsStateful(
     viewModel: MapSettingsViewModel = hiltViewModel(),
@@ -96,17 +101,81 @@ fun MapSettingsStateful(
         }
     }
 
+    if (map != null) {
+        MapSettingsScreen(
+            map = map,
+            snackbarHostState = snackbarHostState,
+            mapSizeState = viewModel.mapSize,
+            onSetImage = { uri ->
+                viewModel.setMapImage(map, uri)
+            },
+            onSetProjection = { projectionName ->
+                viewModel.setProjection(map, projectionName)
+            },
+            onNavigateToCalibration = onNavigateToCalibration,
+            onSetCalibrationPointNumber = { n ->
+                viewModel.setCalibrationPointsNumber(map, n)
+            },
+            onMapRename = {
+                viewModel.renameMap(map, it)
+            },
+            onComputeMapSize = {
+                viewModel.computeMapSize(map)
+            },
+            onArchiveMap = { uri ->
+                viewModel.archiveMap(map, uri)
+            },
+            onBackClick = onBackClick
+        )
+    } else {
+        MapSettingsErrorScreen(onBackClick)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MapSettingsErrorScreen(onBackClick: () -> Unit = {}) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(id = R.string.map_settings_frgmt_title)) },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "")
+                    }
+                }
+            )
+        }
+    ) { padding ->
+        ErrorScreen(
+            Modifier.padding(padding),
+            message = stringResource(id = R.string.map_settings_error)
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MapSettingsScreen(
+    map: Map,
+    snackbarHostState: SnackbarHostState,
+    mapSizeState: MutableStateFlow<ResultL<Long?>>,
+    onSetImage: (Uri) -> Unit,
+    onSetProjection: (String?) -> Unit,
+    onNavigateToCalibration: () -> Unit,
+    onSetCalibrationPointNumber: (Int) -> Unit,
+    onMapRename: (String) -> Unit,
+    onComputeMapSize: () -> Unit,
+    onArchiveMap: (Uri) -> Unit,
+    onBackClick: () -> Unit
+) {
     var isShowingAdvancedSettings by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             var expandedMenu by remember { mutableStateOf(false) }
             TopAppBar(
-                title = {
-                    Text(
-                        text = map?.name ?: stringResource(id = R.string.map_settings_frgmt_title)
-                    )
-                },
+                title = { Text(text = map.name) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "")
@@ -154,29 +223,30 @@ fun MapSettingsStateful(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
-        if (map != null) {
-            val scrollState = rememberScrollState()
-            Column(
-                Modifier
-                    .padding(paddingValues)
-                    .verticalScroll(scrollState)
-            ) {
-                ThumbnailSetting(viewModel, map)
-                if (isShowingAdvancedSettings) {
-                    SettingDivider()
-                    CalibrationSetting(viewModel, map, onNavigateToCalibration)
-                }
+        val scrollState = rememberScrollState()
+        Column(
+            Modifier
+                .padding(paddingValues)
+                .verticalScroll(scrollState)
+        ) {
+            ThumbnailSetting(onSetImage)
+            if (isShowingAdvancedSettings) {
                 SettingDivider()
-                MapSettings(viewModel, map)
+                CalibrationSetting(
+                    map,
+                    onSetProjection,
+                    onSetCalibrationPointNumber,
+                    onNavigateToCalibration
+                )
             }
-        } else {
-            ErrorScreen(message = stringResource(id = R.string.map_settings_error))
+            SettingDivider()
+            MapSettings(map, mapSizeState, onMapRename, onComputeMapSize, onArchiveMap)
         }
     }
 }
 
 @Composable
-private fun ThumbnailSetting(viewModel: MapSettingsViewModel, map: Map) {
+private fun ThumbnailSetting(onSetImage: (Uri) -> Unit) {
     val resultLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -185,7 +255,7 @@ private fun ThumbnailSetting(viewModel: MapSettingsViewModel, map: Map) {
             if (result.data == null) return@rememberLauncherForActivityResult
             val uri = result.data?.data
             if (uri != null) {
-                viewModel.setMapImage(map, uri)
+                onSetImage(uri)
             }
         }
     }
@@ -207,13 +277,14 @@ private fun ThumbnailSetting(viewModel: MapSettingsViewModel, map: Map) {
 
 @Composable
 private fun CalibrationSetting(
-    viewModel: MapSettingsViewModel,
     map: Map,
+    onSetProjection: (String?) -> Unit,
+    onSetCalibrationPointNumber: (Int) -> Unit,
     onNavigateToCalibration: () -> Unit
 ) {
     HeaderSetting(name = stringResource(id = R.string.calibration_preferences_category))
-    ProjectionSetting(viewModel, map)
-    CalibrationPointsSetting(viewModel, map)
+    ProjectionSetting(map, onSetProjection)
+    CalibrationPointsSetting(map, onSetCalibrationPointNumber)
     ButtonSetting(
         name = stringResource(id = R.string.calibration_button_txt),
         enabled = true,
@@ -222,10 +293,9 @@ private fun CalibrationSetting(
 }
 
 @Composable
-private fun ProjectionSetting(viewModel: MapSettingsViewModel, map: Map) {
+private fun ProjectionSetting(map: Map, onSetProjection: (String?) -> Unit) {
     val values = listOf(
         MercatorProjection.NAME to stringResource(id = R.string.pseudo_mercator),
-        UniversalTransverseMercator.NAME to stringResource(id = R.string.utm),
         null to stringResource(id = R.string.projection_none)
     )
     var subTitle: String? by remember { mutableStateOf(values.toMap()[map.projection?.name]) }
@@ -244,13 +314,13 @@ private fun ProjectionSetting(viewModel: MapSettingsViewModel, map: Map) {
         subTitle = subTitle,
         onValueSelected = { _: Int, v: String? ->
             subTitle = values.toMap()[v]
-            viewModel.setProjection(map, v)
+            onSetProjection(v)
         }
     )
 }
 
 @Composable
-private fun CalibrationPointsSetting(viewModel: MapSettingsViewModel, map: Map) {
+private fun CalibrationPointsSetting(map: Map, onSetCalibrationPointNumber: (Int) -> Unit) {
     val values = listOf(
         2 to "2",
         3 to "3",
@@ -267,54 +337,59 @@ private fun CalibrationPointsSetting(viewModel: MapSettingsViewModel, map: Map) 
         subTitle = subTitle,
         onValueSelected = { _, v ->
             subTitle = values.toMap()[v]
-            viewModel.setCalibrationPointsNumber(map, v)
+            onSetCalibrationPointNumber(v)
         }
     )
 }
 
 @Composable
-private fun MapSettings(viewModel: MapSettingsViewModel, map: Map) {
+private fun MapSettings(
+    map: Map,
+    mapSizeState: MutableStateFlow<ResultL<Long?>>,
+    onMapRename: (String) -> Unit,
+    onComputeMapSize: () -> Unit,
+    onArchiveMap: (Uri) -> Unit
+) {
     HeaderSetting(name = stringResource(id = R.string.map_summary_category))
-    ChangeNameSetting(viewModel, map)
-    ComputeSizeSetting(viewModel, map)
-    SaveSetting(viewModel, map)
+    ChangeNameSetting(map, onMapRename)
+    ComputeSizeSetting(mapSizeState, onComputeMapSize)
+    SaveSetting(onArchiveMap)
 }
 
 @Composable
-private fun ChangeNameSetting(viewModel: MapSettingsViewModel, map: Map) {
+private fun ChangeNameSetting(map: Map, onMapRename: (String) -> Unit) {
     EditTextSetting(
         name = stringResource(id = R.string.map_title),
         value = map.name,
-        onValueChanged = {
-            viewModel.renameMap(map, it)
-        }
+        onValueChanged = onMapRename
     )
 }
 
 @Composable
-private fun ComputeSizeSetting(viewModel: MapSettingsViewModel, map: Map) {
-    val mapSizeState by viewModel.mapSize.collectAsStateWithLifecycle()
+private fun ComputeSizeSetting(
+    mapSizeState: MutableStateFlow<ResultL<Long?>>,
+    onComputeMapSize: () -> Unit
+) {
+    val mapSizeResultL by mapSizeState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     ButtonSetting(
-        name = if (mapSizeState.getOrNull() != null) {
+        name = if (mapSizeResultL.getOrNull() != null) {
             stringResource(id = R.string.map_size_string)
         } else {
             stringResource(id = R.string.map_size_compute_string)
         },
-        enabled = mapSizeState.isSuccess && mapSizeState.getOrNull() == null,
-        subTitle = if (mapSizeState.isLoading) {
+        enabled = mapSizeResultL.isSuccess && mapSizeResultL.getOrNull() == null,
+        subTitle = if (mapSizeResultL.isLoading) {
             stringResource(id = R.string.map_size_computing)
         } else {
-            mapSizeState.getOrNull()?.formatSize(context)
+            mapSizeResultL.getOrNull()?.formatSize(context)
         },
-        onClick = {
-            viewModel.computeMapSize(map)
-        }
+        onClick = onComputeMapSize
     )
 }
 
 @Composable
-private fun SaveSetting(viewModel: MapSettingsViewModel, map: Map) {
+private fun SaveSetting(onArchiveMap: (Uri) -> Unit) {
     var isShowingModal by remember { mutableStateOf(false) }
     ButtonSetting(
         name = stringResource(id = R.string.map_save_string),
@@ -329,7 +404,7 @@ private fun SaveSetting(viewModel: MapSettingsViewModel, map: Map) {
                 if (result.data == null) return@rememberLauncherForActivityResult
                 val uri = result.data?.data
                 if (uri != null) {
-                    viewModel.archiveMap(map, uri)
+                    onArchiveMap(uri)
                 }
             }
         }
@@ -373,17 +448,10 @@ private fun SaveSetting(viewModel: MapSettingsViewModel, map: Map) {
  * 12_500 -> "12.5 Ko" (in French), or "12.5 KB" (in English)
  */
 private fun Long.formatSize(context: Context): String {
-    val byteStr = if (isFrench(context)) {
-        "o"
-    } else {
-        "B"
-    }
+    val byteStr = if (isFrench(context)) "o" else "B"
     var divider = 1.0
     val prefix = when {
-        this < 1000 -> {
-            ""
-        }
-
+        this < 1000 -> ""
         this < 500_000 -> {
             divider = 1000.0
             "K"
@@ -401,4 +469,37 @@ private fun Long.formatSize(context: Context): String {
     }
     val number = BigDecimal(this / divider).setScale(2, RoundingMode.HALF_EVEN)
     return "$number $prefix$byteStr"
+}
+
+@Preview
+@Composable
+private fun MapScreenPreview() {
+    TrekMeTheme {
+        val map = makeMapForComposePreview()
+
+        val mapSizeState: MutableStateFlow<ResultL<Long?>> =
+            remember { MutableStateFlow(ResultL.success(125468L)) }
+
+        MapSettingsScreen(
+            map = map,
+            snackbarHostState = remember { SnackbarHostState() },
+            mapSizeState = mapSizeState,
+            onSetImage = {},
+            onSetProjection = {},
+            onNavigateToCalibration = {},
+            onSetCalibrationPointNumber = {},
+            onMapRename = {},
+            onComputeMapSize = {},
+            onArchiveMap = {},
+            onBackClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun MapScreenErrorPreview() {
+    TrekMeTheme {
+        MapSettingsErrorScreen()
+    }
 }
