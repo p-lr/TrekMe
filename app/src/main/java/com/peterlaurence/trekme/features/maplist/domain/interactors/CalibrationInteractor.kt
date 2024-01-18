@@ -58,7 +58,7 @@ class CalibrationInteractor @Inject constructor(
         mapRepository.notifyUpdate(map, newMap)
 
         /* Effectively save the map (and consequently, the calibration) */
-        saveMapInteractor.saveMap(map)
+        saveMapInteractor.saveMap(newMap)
         return true
     }
 }
