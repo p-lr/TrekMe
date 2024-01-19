@@ -241,6 +241,8 @@ private fun MapSettingsScreen(
             }
             SettingDivider()
             MapSettings(map, mapSizeState, onMapRename, onComputeMapSize, onArchiveMap)
+            SettingDivider()
+            MapRepairSetting(map)
         }
     }
 }
@@ -441,6 +443,21 @@ private fun SaveSetting(onArchiveMap: (Uri) -> Unit) {
             }
         )
     }
+}
+
+@Composable
+private fun MapRepairSetting(map: Map) {
+    HeaderSetting(name = stringResource(id = R.string.map_repair_category))
+    AnalyseAndRepairButton(map)
+}
+
+@Composable
+private fun AnalyseAndRepairButton(map: Map) {
+    ButtonSetting(
+        name = stringResource(id = R.string.map_analyze_and_repair),
+        enabled = true,
+        onClick = {  }
+    )
 }
 
 /**

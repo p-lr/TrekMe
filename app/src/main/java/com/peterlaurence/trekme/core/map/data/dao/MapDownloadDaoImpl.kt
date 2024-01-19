@@ -31,6 +31,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.atomic.AtomicLong
 
 class MapDownloadDaoImpl(
     private val settings: Settings
@@ -84,19 +85,23 @@ class MapDownloadDaoImpl(
 
         /* Specific to WorldStreetMap, don't use more than 2 workers */
         val effectiveWorkerCount = if (source == OsmSourceData(WorldStreetMap)) 2 else workerCount
+
+        val missingTilesCount = AtomicLong()
+
         launchDownloadTask(
+            missingTilesCount,
             effectiveWorkerCount,
             threadSafeTileIterator,
             tileWriter,
             tileStreamProvider,
             tileSize = spec.mapSpec.tileSize
         )
-        val map = postProcess(spec, destDir)
+        val map = postProcess(spec, destDir, missingTilesCount.get())
 
         MapDownloadResult.Success(map)
     }
 
-    private suspend fun postProcess(spec: MapDownloadSpec, destDir: File): Map {
+    private suspend fun postProcess(spec: MapDownloadSpec, destDir: File, missingTilesCount: Long): Map {
         val mapOrigin = when (spec.source) {
             is IgnSourceData -> Ign(licensed = spec.source.layer == IgnClassic)
             IgnSpainData, OrdnanceSurveyData, SwissTopoData, UsgsData -> Wmts(licensed = false)
@@ -106,7 +111,7 @@ class MapDownloadDaoImpl(
             }
         }
 
-        val map = buildMap(spec, mapOrigin, destDir)
+        val map = buildMap(spec, mapOrigin, destDir, missingTilesCount)
 
         createNomediaFile(destDir)
 
@@ -114,6 +119,7 @@ class MapDownloadDaoImpl(
     }
 
     private suspend fun launchDownloadTask(
+        missingTilesCount: AtomicLong,
         workerCount: Int,
         tileIterator: ThreadSafeTileIterator,
         tileWriter: TileWriter,
@@ -122,11 +128,12 @@ class MapDownloadDaoImpl(
     ) = coroutineScope {
         for (i in 0 until workerCount) {
             val bitmapProvider = BitmapProvider(tileStreamProvider)
-            launchTileDownload(tileIterator, bitmapProvider, tileWriter, tileSize)
+            launchTileDownload(missingTilesCount, tileIterator, bitmapProvider, tileWriter, tileSize)
         }
     }
 
     private fun CoroutineScope.launchTileDownload(
+        missingTilesCount: AtomicLong,
         tileIterator: ThreadSafeTileIterator,
         bitmapProvider: BitmapProvider,
         tileWriter: TileWriter,
@@ -140,11 +147,14 @@ class MapDownloadDaoImpl(
 
         while (isActive) {
             val tile = tileIterator.next() ?: break
-            bitmapProvider.getBitmap(row = tile.row, col = tile.col, zoomLvl = tile.level)?.also {
+            val b = bitmapProvider.getBitmap(row = tile.row, col = tile.col, zoomLvl = tile.level)
+            if (b != null) {
                 /* Only write if there was no error */
                 if (isActive) {
                     tileWriter.write(tile, bitmap)
                 }
+            } else {
+                missingTilesCount.incrementAndGet()
             }
         }
     }
@@ -169,6 +179,7 @@ class MapDownloadDaoImpl(
         spec: MapDownloadSpec,
         mapOrigin: MapOrigin,
         folder: File,
+        missingTilesCount: Long,
         imageExtension: String = ".jpg"
     ): Map {
         val mapSpec = spec.mapSpec
@@ -206,7 +217,8 @@ class MapDownloadDaoImpl(
             uuid = UUID.randomUUID(), name = folder.name, thumbnail = null, thumbnailImage = null,
             levels = levels, origin = mapOrigin, size = size, imageExtension = imageExtension,
             calibration = calibration,
-            creationData = creationData
+            creationData = creationData,
+            missingTilesCount = missingTilesCount
         )
 
         return MapFileBased(mapConfig, folder)

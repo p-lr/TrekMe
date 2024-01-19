@@ -85,7 +85,8 @@ fun MapKtx.toDomain(elevationFix: Int, thumbnailImage: Bitmap?): MapConfig? {
             }
         ),
         elevationFix = elevationFix,
-        creationData = creationData?.toDomain()
+        creationData = creationData?.toDomain(),
+        missingTilesCount = missingTilesCount
     )
 }
 
@@ -223,7 +224,8 @@ fun MapConfig.toMapKtx(): MapKtx {
                 ),
                 layerData = it.mapSourceData.toData()
             )
-        }
+        },
+        missingTilesCount = missingTilesCount
     )
 }
 
