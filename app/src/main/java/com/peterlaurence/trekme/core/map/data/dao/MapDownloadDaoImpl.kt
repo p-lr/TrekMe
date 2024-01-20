@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
+import java.time.Instant
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 
@@ -210,7 +211,8 @@ class MapDownloadDaoImpl(
                     y = mapSpec.calibrationPoints.second.absoluteY
                 )
             ),
-            mapSourceData = spec.source
+            mapSourceData = spec.source,
+            lastCreationDate = Instant.now().epochSecond
         )
 
         val mapConfig = MapConfig(

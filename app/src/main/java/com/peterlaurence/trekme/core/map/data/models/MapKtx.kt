@@ -98,7 +98,9 @@ data class CreationDataKtx(
     val maxLevel: Int,
     val boundary: BoundaryKtx,
     @SerialName("layer-data")
-    val layerData: LayerDataKtx
+    val layerData: LayerDataKtx,
+    @SerialName("last_creation_date")
+    val lastCreationDate: Long   // epoch seconds
 )
 
 @Serializable
