@@ -5,13 +5,19 @@ import com.peterlaurence.trekme.core.wmts.domain.model.MapSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.MapSpec
 import java.util.*
 
-class MapDownloadSpec(
+sealed interface MapDownloadSpec
+
+class NewDownloadSpec(
     val source: MapSourceData,
     val mapSpec: MapSpec,
     val numberOfTiles: Long,
     val geoRecordUris: Set<Uri> = emptySet(),
     val excursionIds: Set<String> = emptySet()
-)
+) : MapDownloadSpec
+
+class RepairSpec(
+    val map: Map
+) : MapDownloadSpec
 
 sealed class MapDownloadEvent
 data class MapDownloadPending(var progress: Int = 100): MapDownloadEvent()

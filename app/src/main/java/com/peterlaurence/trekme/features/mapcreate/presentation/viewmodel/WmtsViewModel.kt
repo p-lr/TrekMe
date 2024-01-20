@@ -503,7 +503,7 @@ class WmtsViewModel @Inject constructor(
         val tileCount = getNumberOfTiles(minLevel, maxLevel, p1.toDomain(), p2.toDomain())
         viewModelScope.launch {
             val mapSourceData = getMapSourceDataFlow(wmtsSource).firstOrNull() ?: return@launch
-            val downloadSpec = MapDownloadSpec(
+            val downloadSpec = NewDownloadSpec(
                 source = mapSourceData,
                 mapSpec = mapSpec,
                 numberOfTiles = tileCount,

@@ -29,6 +29,7 @@ import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToMercatorInter
 import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
 import com.peterlaurence.trekme.core.map.domain.models.MapDownloadSpec
 import com.peterlaurence.trekme.core.map.domain.models.Marker
+import com.peterlaurence.trekme.core.map.domain.models.NewDownloadSpec
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.core.map.domain.models.TileResult
 import com.peterlaurence.trekme.core.map.domain.models.TileStream
@@ -454,7 +455,7 @@ class TrailMapViewModel @Inject constructor(
         val tileCount = getNumberOfTiles(minLevel, maxLevel, p1, p2)
         val mapSourceData = mapSourceDataFlow.value
 
-        val downloadSpec = MapDownloadSpec(
+        val downloadSpec = NewDownloadSpec(
             mapSourceData,
             mapSpec,
             tileCount,

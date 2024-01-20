@@ -39,8 +39,12 @@ class MapDownloadDaoImpl(
 ) : MapDownloadDao {
     private val workerCount = 8
 
-    override suspend fun processDownloadSpec(
-        spec: MapDownloadSpec,
+    override suspend fun processRepairSpec(spec: RepairSpec) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun processNewDownloadSpec(
+        spec: NewDownloadSpec,
         tileStreamProvider: TileStreamProvider,
         onProgress: (Int) -> Unit
     ): MapDownloadResult = coroutineScope {
@@ -102,7 +106,7 @@ class MapDownloadDaoImpl(
         MapDownloadResult.Success(map)
     }
 
-    private suspend fun postProcess(spec: MapDownloadSpec, destDir: File, missingTilesCount: Long): Map {
+    private suspend fun postProcess(spec: NewDownloadSpec, destDir: File, missingTilesCount: Long): Map {
         val mapOrigin = when (spec.source) {
             is IgnSourceData -> Ign(licensed = spec.source.layer == IgnClassic)
             IgnSpainData, OrdnanceSurveyData, SwissTopoData, UsgsData -> Wmts(licensed = false)
@@ -177,7 +181,7 @@ class MapDownloadDaoImpl(
     }
 
     private fun buildMap(
-        spec: MapDownloadSpec,
+        spec: NewDownloadSpec,
         mapOrigin: MapOrigin,
         folder: File,
         missingTilesCount: Long,

@@ -27,13 +27,26 @@ class MapDownloadInteractor @Inject constructor(
     suspend fun processDownloadSpec(
         spec: MapDownloadSpec,
         onProgress: (Int) -> Unit
-    ): MapDownloadResult {
+    ) {
+        return when (spec) {
+            is NewDownloadSpec -> processNewDownloadSpec(spec, onProgress)
+            is RepairSpec -> TODO()
+        }
+    }
+
+    private suspend fun processNewDownloadSpec(
+        spec: NewDownloadSpec,
+        onProgress: (Int) -> Unit
+    ) {
         val progressEvent = MapDownloadPending(0)
         val tileStreamProvider = tileStreamProviderDao.newTileStreamProvider(
             spec.source
-        ).getOrNull() ?: return MapDownloadResult.Error(MissingApiError)
+        ).getOrNull() ?: run {
+            repository.postDownloadEvent(MissingApiError)
+            return
+        }
 
-        val result = mapDownloadDao.processDownloadSpec(
+        val result = mapDownloadDao.processNewDownloadSpec(
             spec,
             tileStreamProvider,
             onProgress = {
@@ -54,8 +67,6 @@ class MapDownloadInteractor @Inject constructor(
                 postProcess(result.map, spec.geoRecordUris, spec.excursionIds)
             }
         }
-
-        return result
     }
 
     private suspend fun postProcess(map: Map, geoRecordUris: Set<Uri>, excursionIds: Set<String>) {
