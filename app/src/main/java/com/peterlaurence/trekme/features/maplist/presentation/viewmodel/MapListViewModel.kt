@@ -77,8 +77,8 @@ class MapListViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            downloadRepository.started.collect {
-                _mapListState.value = _mapListState.value.copy(isDownloadPending = it)
+            downloadRepository.status.collect { status ->
+                _mapListState.value = _mapListState.value.copy(isDownloadPending = status is DownloadRepository.Started)
             }
         }
     }

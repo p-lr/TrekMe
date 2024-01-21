@@ -105,7 +105,7 @@ class DownloadService : Service() {
         }
 
         /* Notify that a download is already running */
-        if (repository.started.value) {
+        if (repository.isStarted()) {
             repository.postDownloadEvent(MapDownloadAlreadyRunning)
             return START_NOT_STICKY
         }
@@ -150,17 +150,15 @@ class DownloadService : Service() {
 
         startForeground(downloadServiceNotificationId, notificationBuilder.build())
 
-        /* Get ready for download and request download spec */
-        scope.launch {
-            /* Only process the first event */
-            val spec = repository.getMapDownloadSpec()
-            if (spec != null) {
+        val spec = repository.getMapDownloadSpec()
+        if (spec != null) {
+            scope.launch {
                 processDownloadSpec(spec)
             }
-        }
 
-        repository.setDownloadInProgress(true)
-        appEventBus.postMessage(StandardMessage(getString(R.string.download_confirm)))
+            repository.setStatus(DownloadRepository.Started(spec))
+            appEventBus.postMessage(StandardMessage(getString(R.string.download_confirm)))
+        }
 
         return START_NOT_STICKY
     }
@@ -198,7 +196,7 @@ class DownloadService : Service() {
     }
 
     private fun stopService() {
-        repository.setDownloadInProgress(false)
+        repository.setStatus(DownloadRepository.Stopped)
         scope.cancel()
         stopSelf()
     }
