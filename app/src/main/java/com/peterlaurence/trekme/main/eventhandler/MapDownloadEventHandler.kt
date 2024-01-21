@@ -53,6 +53,13 @@ class MapDownloadEventHandler(
                 getString(R.string.warning_title),
                 null
             )
+
+            MapNotRepairable -> {
+                // TODO
+            }
+            is MapRepairPending -> {
+                // TODO
+            }
         }
     }
 }

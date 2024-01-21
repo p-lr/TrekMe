@@ -99,8 +99,8 @@ data class CreationDataKtx(
     val boundary: BoundaryKtx,
     @SerialName("layer-data")
     val layerData: LayerDataKtx,
-    @SerialName("last_creation_date")
-    val lastCreationDate: Long   // epoch seconds
+    @SerialName("creation_date")
+    val creationDate: Long   // epoch seconds
 )
 
 @Serializable

@@ -30,15 +30,42 @@ class MapDownloadInteractor @Inject constructor(
     ) {
         return when (spec) {
             is NewDownloadSpec -> processNewDownloadSpec(spec, onProgress)
-            is RepairSpec -> TODO()
+            is RepairSpec -> processRepairSpec(spec, onProgress)
         }
+    }
+
+    private suspend fun processRepairSpec(
+        spec: RepairSpec,
+        onProgress: (Int) -> Unit
+    ) {
+        val tileStreamProvider = tileStreamProviderDao.newTileStreamProvider(
+            spec.creationData.mapSourceData
+        ).getOrNull() ?: run {
+            repository.postDownloadEvent(MissingApiError)
+            return
+        }
+
+        val progressEvent = MapDownloadPending(0)
+        val result = mapDownloadDao.processRepairSpec(
+            spec,
+            tileStreamProvider,
+            onProgress = {
+                /* Publish an application-wide event */
+                progressEvent.progress = it
+                repository.postDownloadEvent(progressEvent)
+
+                /* Report back the progression to the caller */
+                onProgress(it)
+            }
+        )
+
+        // TODO: post-process
     }
 
     private suspend fun processNewDownloadSpec(
         spec: NewDownloadSpec,
         onProgress: (Int) -> Unit
     ) {
-        val progressEvent = MapDownloadPending(0)
         val tileStreamProvider = tileStreamProviderDao.newTileStreamProvider(
             spec.source
         ).getOrNull() ?: run {
@@ -46,6 +73,7 @@ class MapDownloadInteractor @Inject constructor(
             return
         }
 
+        val progressEvent = MapDownloadPending(0)
         val result = mapDownloadDao.processNewDownloadSpec(
             spec,
             tileStreamProvider,

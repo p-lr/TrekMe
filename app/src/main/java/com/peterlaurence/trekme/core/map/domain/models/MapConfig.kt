@@ -34,7 +34,7 @@ data class CreationData(
     val maxLevel: Int,
     val boundary: Boundary,
     val mapSourceData: MapSourceData,
-    val lastCreationDate: Long  // epoch seconds
+    val creationDate: Long  // epoch seconds
 )
 
 data class Boundary(

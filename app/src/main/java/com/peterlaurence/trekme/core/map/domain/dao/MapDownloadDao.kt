@@ -13,6 +13,8 @@ interface MapDownloadDao {
     ): MapDownloadResult
 
     suspend fun processRepairSpec(
-        spec: RepairSpec
-    )
+        spec: RepairSpec,
+        tileStreamProvider: TileStreamProvider,
+        onProgress: (Int) -> Unit
+    ): MapDownloadResult
 }

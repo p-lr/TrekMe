@@ -16,12 +16,15 @@ class NewDownloadSpec(
 ) : MapDownloadSpec
 
 class RepairSpec(
-    val map: Map
+    val map: Map,
+    val creationData: CreationData,
 ) : MapDownloadSpec
 
-sealed class MapDownloadEvent
-data class MapDownloadPending(var progress: Int = 100): MapDownloadEvent()
-data class MapDownloadFinished(val mapId: UUID): MapDownloadEvent()
-data object MapDownloadStorageError: MapDownloadEvent()
-data object MapDownloadAlreadyRunning: MapDownloadEvent()
-data object MissingApiError: MapDownloadEvent()
+sealed interface MapDownloadEvent
+data class MapDownloadPending(var progress: Int = 100): MapDownloadEvent
+data class MapRepairPending(var progress: Int = 100): MapDownloadEvent
+data class MapDownloadFinished(val mapId: UUID): MapDownloadEvent
+data object MapDownloadStorageError: MapDownloadEvent
+data object MapDownloadAlreadyRunning: MapDownloadEvent
+data object MissingApiError: MapDownloadEvent
+data object MapNotRepairable: MapDownloadEvent

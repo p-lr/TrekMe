@@ -16,15 +16,19 @@ import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnClassic
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnSpainData
+import com.peterlaurence.trekme.core.wmts.domain.model.MapSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.OpenTopoMap
 import com.peterlaurence.trekme.core.wmts.domain.model.OrdnanceSurveyData
 import com.peterlaurence.trekme.core.wmts.domain.model.OsmAndHd
 import com.peterlaurence.trekme.core.wmts.domain.model.OsmSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.Outdoors
+import com.peterlaurence.trekme.core.wmts.domain.model.Point
 import com.peterlaurence.trekme.core.wmts.domain.model.SwissTopoData
 import com.peterlaurence.trekme.core.wmts.domain.model.UsgsData
 import com.peterlaurence.trekme.core.wmts.domain.model.WorldStreetMap
 import com.peterlaurence.trekme.core.wmts.domain.model.WorldTopoMap
+import com.peterlaurence.trekme.core.wmts.domain.tools.getMapSpec
+import com.peterlaurence.trekme.core.wmts.domain.tools.getNumberOfTiles
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.firstOrNull
 import java.io.File
@@ -39,7 +43,55 @@ class MapDownloadDaoImpl(
 ) : MapDownloadDao {
     private val workerCount = 8
 
-    override suspend fun processRepairSpec(spec: RepairSpec) {
+    override suspend fun processRepairSpec(
+        spec: RepairSpec,
+        tileStreamProvider: TileStreamProvider,
+        onProgress: (Int) -> Unit
+    ): MapDownloadResult = coroutineScope {
+        val source = spec.creationData.mapSourceData
+        val creationData = spec.creationData
+        val tileSize = spec.map.levelList.firstOrNull()?.tileSize?.width ?: return@coroutineScope MapDownloadResult.Error(MapNotRepairable)
+        val p1 = creationData.boundary.corner1.toPoint()
+        val p2 = creationData.boundary.corner2.toPoint()
+        val mapSpec = getMapSpec(
+            levelMin = creationData.minLevel,
+            levelMax = creationData.maxLevel,
+            point1 = p1,
+            point2 = p2,
+            tileSize = tileSize
+        )
+        val numberOfTiles = getNumberOfTiles(creationData.minLevel, creationData.maxLevel, p1, p2)
+        val tileSequence = mapSpec.tileSequence
+
+        val threadSafeTileIterator =
+            ThreadSafeTileIterator(tileSequence.iterator(), numberOfTiles) { p ->
+                if (isActive) {
+                    onProgress(p.toInt())
+                }
+            }
+
+        /* Init the progress bar */
+        onProgress(0)
+
+        /* For instance file-based maps are the only Map implementation */
+        val mapRootDir = (spec.map as? MapFileBased)?.folder ?: return@coroutineScope MapDownloadResult.Error(MapNotRepairable)
+
+        val tileWriter = makeTileWriter(mapRootDir, source)
+
+        val effectiveWorkerCount = getEffectiveWorkerCount(source)
+
+        val missingTilesCount = AtomicLong()
+
+        launchRepairTask(
+            mapRootDir,
+            missingTilesCount,
+            effectiveWorkerCount,
+            threadSafeTileIterator,
+            tileWriter,
+            tileStreamProvider,
+            tileSize = tileSize
+        )
+
         TODO("Not yet implemented")
     }
 
@@ -65,31 +117,9 @@ class MapDownloadDaoImpl(
         val destDir = createDestDir()
             ?: return@coroutineScope MapDownloadResult.Error(MapDownloadStorageError)
 
-        /* A writer which has a folder for each level, and a folder for each row. It does that with
-         * using indexes instead of real level, row and col numbers. This greatly simplifies how a
-         * tile is later retrieved from a bitmap provider. */
-        val tileWriter = TileWriter { tile, bitmap ->
-            val tileDir = File(
-                destDir,
-                tile.indexLevel.toString() + File.separator + tile.indexRow.toString()
-            )
-            tileDir.mkdirs()
-            val tileFile = File(tileDir, tile.indexCol.toString() + ".jpg")
-            try {
-                val out = FileOutputStream(tileFile)
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
-                makeTag(spec.source)?.also {
-                    out.write(it)
-                }
-                out.flush()
-                out.close()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
+        val tileWriter = makeTileWriter(destDir, spec.source)
 
-        /* Specific to WorldStreetMap, don't use more than 2 workers */
-        val effectiveWorkerCount = if (source == OsmSourceData(WorldStreetMap)) 2 else workerCount
+        val effectiveWorkerCount = getEffectiveWorkerCount(source)
 
         val missingTilesCount = AtomicLong()
 
@@ -216,7 +246,7 @@ class MapDownloadDaoImpl(
                 )
             ),
             mapSourceData = spec.source,
-            lastCreationDate = Instant.now().epochSecond
+            creationDate = Instant.now().epochSecond
         )
 
         val mapConfig = MapConfig(
@@ -229,6 +259,95 @@ class MapDownloadDaoImpl(
 
         return MapFileBased(mapConfig, folder)
     }
+
+    private suspend fun launchRepairTask(
+        mapRootDir: File,
+        missingTilesCount: AtomicLong,
+        workerCount: Int,
+        tileIterator: ThreadSafeTileIterator,
+        tileWriter: TileWriter,
+        tileStreamProvider: TileStreamProvider,
+        tileSize: Int
+    ) = coroutineScope {
+        for (i in 0 until workerCount) {
+            val bitmapProvider = BitmapProvider(tileStreamProvider)
+            launchRepairActor(mapRootDir, missingTilesCount, tileIterator, bitmapProvider, tileWriter, tileSize)
+        }
+    }
+
+    private fun CoroutineScope.launchRepairActor(
+        mapRootDir: File,
+        missingTilesCount: AtomicLong,
+        tileIterator: ThreadSafeTileIterator,
+        bitmapProvider: BitmapProvider,
+        tileWriter: TileWriter,
+        tileSize: Int
+    ) = launch(Dispatchers.IO) {
+        val bitmap: Bitmap = Bitmap.createBitmap(tileSize, tileSize, Bitmap.Config.ARGB_8888)
+        val options = BitmapFactory.Options()
+        options.inBitmap = bitmap
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888
+        bitmapProvider.setBitmapOptions(options)
+
+        while (isActive) {
+            val tile = tileIterator.next() ?: break
+            if (isTileMissing(mapRootDir, tile)) {
+                val b = bitmapProvider.getBitmap(row = tile.row, col = tile.col, zoomLvl = tile.level)
+                if (b != null) {
+                    /* Only write if there was no error */
+                    if (isActive) {
+                        tileWriter.write(tile, bitmap)
+                    }
+                } else {
+                    missingTilesCount.incrementAndGet()
+                }
+            }
+        }
+    }
+
+    private fun getEffectiveWorkerCount(mapSourceData: MapSourceData): Int {
+        /* Specific to WorldStreetMap, don't use more than 2 workers */
+        return if (mapSourceData == OsmSourceData(WorldStreetMap)) 2 else workerCount
+    }
+
+    private fun isTileMissing(mapRootDir: File, tile: Tile): Boolean {
+        return runCatching {
+            makeTileFile(makeTileParentDir(mapRootDir, tile), tile).exists().not()
+        }.getOrElse { false }
+    }
+
+    private fun makeTileWriter(mapRootDir: File, mapSourceData: MapSourceData): TileWriter {
+        /* A writer which has a folder for each level, and a folder for each row. It does that with
+         * using indexes instead of real level, row and col numbers. This greatly simplifies how a
+         * tile is later retrieved from a bitmap provider. */
+        return TileWriter { tile, bitmap ->
+            val tileDir = makeTileParentDir(mapRootDir, tile)
+            tileDir.mkdirs()
+            val tileFile = makeTileFile(tileDir, tile)
+            runCatching {
+                val out = FileOutputStream(tileFile)
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+                makeTag(mapSourceData)?.also {
+                    out.write(it)
+                }
+                out.flush()
+                out.close()
+            }
+        }
+    }
+
+    private fun makeTileParentDir(mapRootDir: File, tile: Tile): File {
+        return File(
+            mapRootDir,
+            tile.indexLevel.toString() + File.separator + tile.indexRow.toString()
+        )
+    }
+
+    private fun makeTileFile(tileParentDir: File, tile: Tile): File {
+        return File(tileParentDir, tile.indexCol.toString() + ".jpg")
+    }
+
+    private fun ProjectedCoordinates.toPoint() = Point(x, y)
 }
 
 private class ThreadSafeTileIterator(

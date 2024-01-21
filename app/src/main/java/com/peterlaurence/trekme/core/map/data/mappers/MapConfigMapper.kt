@@ -127,7 +127,7 @@ private fun CreationDataKtx.toDomain(): CreationData {
             corner2 = boundary.corner2.toDomain()
         ),
         mapSourceData = layerData.toDomain(),
-        lastCreationDate = lastCreationDate
+        creationDate = creationDate
     )
 }
 
@@ -224,7 +224,7 @@ fun MapConfig.toMapKtx(): MapKtx {
                     corner2 = it.boundary.corner2.toData()
                 ),
                 layerData = it.mapSourceData.toData(),
-                lastCreationDate = it.lastCreationDate
+                creationDate = it.creationDate
             )
         },
         missingTilesCount = missingTilesCount
