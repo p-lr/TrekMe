@@ -12,6 +12,15 @@ import java.util.UUID
  * * the [Map] list
  * * the [Map] that should be used when navigating to the feature showing the map.
  * * the [Map] that should be displayed when navigating to the map settings
+ *
+ * Invariants:
+ * - As of v4.x.x, all mutable properties of a [Map] is backed by a MutableStatFlow. Consequently,
+ *   a [Map] instance lives for the life duration of the application. No new [Map] is created from
+ *   a copy of a previous instance (which would then become stale).
+ *   There is an exception though: because the [Map]'s calibration data is stored using immutable
+ *   properties, changing map calibration requires creating a new [Map] instance.
+ *   However, this feature has been disabled. In the future, if this features is re-enabled, it
+ *   should be done while preserving this invariant.
  */
 class MapRepository {
     private val _mapListFlow = MutableStateFlow<MapListState>(Loading)
