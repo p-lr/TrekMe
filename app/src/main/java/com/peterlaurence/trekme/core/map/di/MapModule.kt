@@ -128,11 +128,20 @@ object MapModule {
 
     @Singleton
     @Provides
-    fun provideMapSource(
+    fun provideUpdateElevationFixDao(
         @IoDispatcher dispatcher: CoroutineDispatcher,
         @MapJson json: Json
     ): UpdateElevationFixDao {
         return UpdateElevationFixDaoImpl(dispatcher, json)
+    }
+
+    @Singleton
+    @Provides
+    fun provideMissingTilesCountDao(
+        @IoDispatcher dispatcher: CoroutineDispatcher,
+        @MapJson json: Json
+    ): MissingTilesCountDao {
+        return MissingTilesCountDaoImpl(dispatcher, json)
     }
 
     @Singleton

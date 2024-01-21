@@ -131,12 +131,12 @@ class MapDownloadDaoImpl(
             tileStreamProvider,
             tileSize = spec.mapSpec.tileSize
         )
-        val map = postProcess(spec, destDir, missingTilesCount.get())
+        val map = postProcess(spec, destDir)
 
-        MapDownloadResult.Success(map)
+        MapDownloadResult.Success(map, missingTilesCount.get())
     }
 
-    private suspend fun postProcess(spec: NewDownloadSpec, destDir: File, missingTilesCount: Long): Map {
+    private suspend fun postProcess(spec: NewDownloadSpec, destDir: File): Map {
         val mapOrigin = when (spec.source) {
             is IgnSourceData -> Ign(licensed = spec.source.layer == IgnClassic)
             IgnSpainData, OrdnanceSurveyData, SwissTopoData, UsgsData -> Wmts(licensed = false)
@@ -146,7 +146,7 @@ class MapDownloadDaoImpl(
             }
         }
 
-        val map = buildMap(spec, mapOrigin, destDir, missingTilesCount)
+        val map = buildMap(spec, mapOrigin, destDir)
 
         createNomediaFile(destDir)
 
@@ -214,7 +214,6 @@ class MapDownloadDaoImpl(
         spec: NewDownloadSpec,
         mapOrigin: MapOrigin,
         folder: File,
-        missingTilesCount: Long,
         imageExtension: String = ".jpg"
     ): Map {
         val mapSpec = spec.mapSpec
@@ -253,8 +252,7 @@ class MapDownloadDaoImpl(
             uuid = UUID.randomUUID(), name = folder.name, thumbnail = null, thumbnailImage = null,
             levels = levels, origin = mapOrigin, size = size, imageExtension = imageExtension,
             calibration = calibration,
-            creationData = creationData,
-            missingTilesCount = missingTilesCount
+            creationData = creationData
         )
 
         return MapFileBased(mapConfig, folder)

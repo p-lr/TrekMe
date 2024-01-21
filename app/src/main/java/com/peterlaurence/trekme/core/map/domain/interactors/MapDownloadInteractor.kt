@@ -3,6 +3,7 @@ package com.peterlaurence.trekme.core.map.domain.interactors
 import android.app.Application
 import android.net.Uri
 import com.peterlaurence.trekme.core.map.domain.dao.MapDownloadDao
+import com.peterlaurence.trekme.core.map.domain.dao.MissingTilesCountDao
 import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamProviderDao
@@ -21,6 +22,7 @@ class MapDownloadInteractor @Inject constructor(
     private val repository: DownloadRepository,
     private val importGeoRecordInteractor: ImportGeoRecordInteractor,
     private val mapExcursionInteractor: MapExcursionInteractor,
+    private val missingTilesCountDao: MissingTilesCountDao,
     private val app: Application
 ) {
 
@@ -28,21 +30,25 @@ class MapDownloadInteractor @Inject constructor(
         spec: MapDownloadSpec,
         onProgress: (Int) -> Unit
     ) {
-        return when (spec) {
+        val result = when (spec) {
             is NewDownloadSpec -> processNewDownloadSpec(spec, onProgress)
             is RepairSpec -> processRepairSpec(spec, onProgress)
+        }
+
+        if (result is MapDownloadResult.Success) {
+            missingTilesCountDao.setMissingTilesCount(result.map, result.missingTilesCount)
         }
     }
 
     private suspend fun processRepairSpec(
         spec: RepairSpec,
         onProgress: (Int) -> Unit
-    ) {
+    ): MapDownloadResult {
         val tileStreamProvider = tileStreamProviderDao.newTileStreamProvider(
             spec.creationData.mapSourceData
         ).getOrNull() ?: run {
             repository.postDownloadEvent(MissingApiError)
-            return
+            return MapDownloadResult.Error(MissingApiError)
         }
 
         val progressEvent = MapDownloadPending(0)
@@ -60,17 +66,18 @@ class MapDownloadInteractor @Inject constructor(
         )
 
         // TODO: post-process
+        return result
     }
 
     private suspend fun processNewDownloadSpec(
         spec: NewDownloadSpec,
         onProgress: (Int) -> Unit
-    ) {
+    ): MapDownloadResult {
         val tileStreamProvider = tileStreamProviderDao.newTileStreamProvider(
             spec.source
         ).getOrNull() ?: run {
             repository.postDownloadEvent(MissingApiError)
-            return
+            return MapDownloadResult.Error(MissingApiError)
         }
 
         val progressEvent = MapDownloadPending(0)
@@ -95,6 +102,8 @@ class MapDownloadInteractor @Inject constructor(
                 postProcess(result.map, spec.geoRecordUris, spec.excursionIds)
             }
         }
+
+        return result
     }
 
     private suspend fun postProcess(map: Map, geoRecordUris: Set<Uri>, excursionIds: Set<String>) {

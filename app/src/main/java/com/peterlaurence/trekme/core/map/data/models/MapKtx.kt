@@ -14,9 +14,7 @@ data class MapKtx(
     val calibration: Calibration? = null,
     val sizeInBytes: Long? = null,
     @SerialName("creation-data")
-    val creationData: CreationDataKtx? = null,
-    @SerialName("missing_tiles_count")
-    val missingTilesCount: Long = 0L
+    val creationData: CreationDataKtx? = null
 )
 
 @Serializable
