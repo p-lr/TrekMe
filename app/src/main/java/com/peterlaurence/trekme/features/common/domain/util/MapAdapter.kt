@@ -27,12 +27,8 @@ fun makeMapForComposePreview(name: String = "Example map"): Map {
     return object : Map {
         override val id: UUID
             get() = UUID.fromString("someid")
-        override val name: String
-            get() = name
-        override val thumbnailImage: Bitmap?
-            get() = null
-        override val thumbnailSize: Int
-            get() = TODO()
+        override val name: MutableStateFlow<String> = MutableStateFlow(name)
+        override val thumbnail: MutableStateFlow<Bitmap?> = MutableStateFlow(null)
         override val mapBounds: MapBounds
             get() = TODO()
         override val markers: MutableStateFlow<List<Marker>>

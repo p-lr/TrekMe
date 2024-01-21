@@ -20,8 +20,7 @@ import java.util.UUID
 interface Map {
     val id: UUID
     val name: MutableStateFlow<String>
-    val thumbnailImage: Bitmap?
-    val thumbnailSize: Int
+    val thumbnail: MutableStateFlow<Bitmap?>
     val mapBounds: MapBounds
     val markers: MutableStateFlow<List<Marker>>
     val landmarks: MutableStateFlow<List<Landmark>>

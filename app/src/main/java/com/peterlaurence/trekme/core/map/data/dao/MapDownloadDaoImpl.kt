@@ -259,7 +259,7 @@ class MapDownloadDaoImpl(
         )
 
         val mapConfig = MapConfig(
-            uuid = UUID.randomUUID(), name = folder.name, thumbnail = null, thumbnailImage = null,
+            uuid = UUID.randomUUID(), name = folder.name, thumbnailImage = null,
             levels = levels, origin = mapOrigin, size = size, imageExtension = imageExtension,
             calibration = calibration,
             creationData = creationData

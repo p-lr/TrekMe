@@ -152,7 +152,7 @@ class MapListViewModel @Inject constructor(
     }
 
     private fun Map.toMapItem(isFavorite: Boolean): MapItem {
-        return MapItem(id, titleFlow = name, isFavorite = isFavorite, image = thumbnailImage)
+        return MapItem(id, titleFlow = name, isFavorite = isFavorite, image = thumbnail)
     }
 
     fun onMainMenuClick() {

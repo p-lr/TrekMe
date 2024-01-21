@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.core.map.data.mappers
 
 import android.graphics.Bitmap
+import com.peterlaurence.trekme.core.map.data.THUMBNAIL_NAME
 import com.peterlaurence.trekme.core.map.data.models.BoundaryKtx
 import com.peterlaurence.trekme.core.map.data.models.CalibrationPointKtx
 import com.peterlaurence.trekme.core.map.data.models.CreationDataKtx
@@ -65,7 +66,6 @@ fun MapKtx.toDomain(elevationFix: Int, thumbnailImage: Bitmap?): MapConfig? {
     return MapConfig(
         uuid = getOrCreateUUID(this),
         name = name,
-        thumbnail = thumbnail,
         thumbnailImage = thumbnailImage,
         levels = levels.map {
             Level(
@@ -175,7 +175,7 @@ fun MapConfig.toMapKtx(): MapKtx {
     return MapKtx(
         uuid = uuid.toString(),
         name = name,
-        thumbnail = thumbnail,
+        thumbnail = THUMBNAIL_NAME,
         levels = levels.map { lvl ->
             LevelKtx(
                 level = lvl.level,

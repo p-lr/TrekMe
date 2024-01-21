@@ -4,6 +4,8 @@ package com.peterlaurence.trekme.core.map.data
 const val MAP_FOLDER_NAME = "maps"
 const val MAP_IMPORTED_FOLDER_NAME = "imported"
 const val MAP_FILENAME = "map.json"
+const val THUMBNAIL_SIZE = 256
+const val THUMBNAIL_NAME = "image.jpg"
 
 /* Routes */
 const val MAP_ROUTES_DIRECTORY = "routes"

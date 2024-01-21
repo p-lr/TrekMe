@@ -166,10 +166,10 @@ interface MapListIntents {
 @Composable
 private fun MapListPreview() {
     val mapList = listOf(
-        MapItem(UUID.randomUUID(), titleFlow = MutableStateFlow("A map 1")),
-        MapItem(UUID.randomUUID(), titleFlow = MutableStateFlow("A map 2")),
-        MapItem(UUID.randomUUID(), titleFlow = MutableStateFlow("A map 3")),
-        MapItem(UUID.randomUUID(), titleFlow = MutableStateFlow("A map 4"))
+        MapItem(UUID.randomUUID(), titleFlow = MutableStateFlow("A map 1"), image = MutableStateFlow(null)),
+        MapItem(UUID.randomUUID(), titleFlow = MutableStateFlow("A map 2"), image = MutableStateFlow(null)),
+        MapItem(UUID.randomUUID(), titleFlow = MutableStateFlow("A map 3"), image = MutableStateFlow(null)),
+        MapItem(UUID.randomUUID(), titleFlow = MutableStateFlow("A map 4"), image = MutableStateFlow(null))
     )
 
     var mapListState by remember {

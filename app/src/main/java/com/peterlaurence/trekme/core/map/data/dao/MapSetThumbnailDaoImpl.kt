@@ -2,6 +2,8 @@ package com.peterlaurence.trekme.core.map.data.dao
 
 import android.content.ContentResolver
 import android.net.Uri
+import com.peterlaurence.trekme.core.map.data.THUMBNAIL_NAME
+import com.peterlaurence.trekme.core.map.data.THUMBNAIL_SIZE
 import com.peterlaurence.trekme.core.map.data.models.MapFileBased
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.dao.MapSaverDao
@@ -19,32 +21,23 @@ class MapSetThumbnailDaoImpl(
     private val contentResolver: ContentResolver
 ) : MapSetThumbnailDao {
 
-    override suspend fun setThumbnail(map: Map, uri: Uri): Result<Map> {
-        val directory = (map as? MapFileBased)?.folder ?: return Result.failure(Exception("No map for this id"))
+    override suspend fun setThumbnail(map: Map, uri: Uri): Boolean {
+        val directory = (map as? MapFileBased)?.folder ?: return false
         val targetFile = File(directory, THUMBNAIL_NAME)
         val imageOutputStream: OutputStream = runCatching {
                 FileOutputStream(targetFile)
             }.getOrElse {
-            return Result.failure(it)
+            return false
         }
 
         val thumbnailImage = withContext(defaultDispatcher) {
-            makeThumbnail(uri, contentResolver, map.thumbnailSize, imageOutputStream)
+            makeThumbnail(uri, contentResolver, THUMBNAIL_SIZE, imageOutputStream)
         }
 
         return if (thumbnailImage != null) {
-            val newMap = map.copy(
-                config = map.configSnapshot.copy(
-                    thumbnail = THUMBNAIL_NAME,
-                    thumbnailImage = thumbnailImage
-                )
-            )
-            mapSaverDao.save(newMap)
-            Result.success(newMap)
-        } else {
-            Result.failure(Exception("Could not make a thumbnail with $uri"))
-        }
+            map.thumbnail.value = thumbnailImage
+            mapSaverDao.save(map)
+            true
+        } else false
     }
 }
-
-private const val THUMBNAIL_NAME = "image.jpg"

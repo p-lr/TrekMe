@@ -24,10 +24,7 @@ class MapFileBased(
 
     override val name: MutableStateFlow<String> = MutableStateFlow(config.name)
 
-    override val thumbnailImage: Bitmap?
-        get() = config.thumbnailImage
-
-    override val thumbnailSize = 256
+    override val thumbnail: MutableStateFlow<Bitmap?> = MutableStateFlow(config.thumbnailImage)
 
     /**
      * Get the bounds the map. See [MapBounds]. By default, the size of the map is used for the
@@ -81,12 +78,14 @@ class MapFileBased(
                     calibrationPoints[1]
                 )
             } else null
+
             CalibrationMethod.CALIBRATION_3_POINTS -> if (calibrationPoints.size >= 3) {
                 CalibrationMethods.calibrate3Points(
                     calibrationPoints[0],
                     calibrationPoints[1], calibrationPoints[2]
                 )
             } else null
+
             CalibrationMethod.CALIBRATION_4_POINTS -> if (calibrationPoints.size == 4) {
                 CalibrationMethods.calibrate4Points(
                     calibrationPoints[0],
@@ -150,7 +149,7 @@ class MapFileBased(
         get() = config.size.height
 
     override val configSnapshot: MapConfig
-        get() = config.copy(name = name.value)
+        get() = config.copy(name = name.value, thumbnailImage = thumbnail.value)
 
     override fun copy(config: MapConfig): Map {
         return MapFileBased(config = config, folder = folder).apply {

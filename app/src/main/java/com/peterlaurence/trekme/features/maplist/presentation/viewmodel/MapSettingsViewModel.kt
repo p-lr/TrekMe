@@ -50,10 +50,8 @@ class MapSettingsViewModel @Inject constructor(
      * Changes the thumbnail of a [Map].
      */
     fun setMapImage(map: Map, uri: Uri) = viewModelScope.launch {
-        setMapThumbnailInteractor.setMapThumbnail(map, uri).onSuccess {
-            _mapImageImportEvent.send(true)
-        }.onFailure {
-            _mapImageImportEvent.send(false)
+        setMapThumbnailInteractor.setMapThumbnail(map, uri).also { success ->
+            _mapImageImportEvent.send(success)
         }
     }
 

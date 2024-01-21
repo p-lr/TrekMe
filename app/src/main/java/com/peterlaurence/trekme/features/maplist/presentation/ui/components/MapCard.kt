@@ -84,7 +84,8 @@ private fun ImagePlaceHolder(mapItem: MapItem, onSetMapImage: (UUID, Uri) -> Uni
     }
 
     Box(modifier = Modifier.padding(top = 16.dp, end = 16.dp)) {
-        val image = mapItem.image
+        val imageState = mapItem.image.collectAsStateWithLifecycle()
+        val image = imageState.value
         if (image != null) {
             Image(
                 modifier = Modifier
@@ -223,7 +224,7 @@ private fun MapCardPreview() {
     TrekMeTheme {
         MapCard(
             Modifier.padding(16.dp),
-            mapItem = MapItem(UUID.randomUUID(), titleFlow = MutableStateFlow("Terra Incognita")),
+            mapItem = MapItem(UUID.randomUUID(), titleFlow = MutableStateFlow("Terra Incognita"), image = MutableStateFlow(null)),
             intents = intents
         )
     }
