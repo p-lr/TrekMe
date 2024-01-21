@@ -12,7 +12,6 @@ data class MapKtx(
     val provider: MapProvider? = null,
     val size: MapSize,
     val calibration: Calibration? = null,
-    val sizeInBytes: Long? = null,
     @SerialName("creation-data")
     val creationData: CreationDataKtx? = null
 )

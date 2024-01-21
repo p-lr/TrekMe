@@ -2,15 +2,22 @@ package com.peterlaurence.trekme.core.map.data.dao
 
 import android.os.StatFs
 import com.peterlaurence.trekme.core.map.data.models.MapFileBased
+import com.peterlaurence.trekme.core.map.data.models.MapPropertiesKtx
 import com.peterlaurence.trekme.core.map.domain.models.Map
-import com.peterlaurence.trekme.core.map.domain.dao.MapSizeComputeDao
+import com.peterlaurence.trekme.core.map.domain.dao.UpdateMapSizeInBytesDao
+import com.peterlaurence.trekme.util.FileUtils
+import com.peterlaurence.trekme.util.writeToFile
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import java.io.File
 
-class MapSizeComputeDaoImpl(
+class UpdateMapSizeInBytesDaoImpl(
+    private val json: Json,
     private val defaultDispatcher: CoroutineDispatcher
-) : MapSizeComputeDao {
+) : UpdateMapSizeInBytesDao {
 
     /**
      * Computes logical and physical sizes. The physical size takes into account the block size.
@@ -19,7 +26,7 @@ class MapSizeComputeDaoImpl(
      * times the size of a block).
      * SD cards, however, can have much bigger blocks...
      */
-    override suspend fun computeMapSize(map: Map): Result<Long> = runCatching {
+    override suspend fun updateMapSize(map: Map): Result<Long> = runCatching {
         val directory = (map as? MapFileBased)?.folder ?: throw Exception("No map for this id")
         withContext(defaultDispatcher) {
             val statFs = StatFs(directory.absolutePath)
@@ -42,6 +49,24 @@ class MapSizeComputeDaoImpl(
             withContext(Dispatchers.Main) {
                 map.sizeInBytes.value = logicalSize
             }
+
+            withContext(Dispatchers.IO) {
+                val propertiesFile = File(directory, propertiesFileName)
+                val existingProperties = if (!propertiesFile.exists()) {
+                    propertiesFile.createNewFile()
+                    null
+                } else {
+                    runCatching<MapPropertiesKtx> {
+                        FileUtils.getStringFromFile(propertiesFile).let {
+                            json.decodeFromString(it)
+                        }
+                    }.getOrNull()
+                } ?: MapPropertiesKtx()
+                val mapProperties = existingProperties.copy(sizeInBytes = logicalSize)
+                val str = json.encodeToString(mapProperties)
+                writeToFile(str, propertiesFile)
+            }
+
             logicalSize
         }
     }

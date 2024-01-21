@@ -117,7 +117,7 @@ class MapLoaderDaoFileBased(
                 val map = MapFileBased(mapConfig, rootDir)
 
                 /* Some properties can be set right after */
-                map.sizeInBytes.value = mapKtx.sizeInBytes
+                map.sizeInBytes.value = getSizeInBytes(rootDir)
 
                 /* See above for explanation */
                 if (shouldSaveUUID) {
@@ -150,6 +150,17 @@ class MapLoaderDaoFileBased(
         val str = propertiesFile.readText()
         val properties = json.decodeFromString<MapPropertiesKtx>(str)
         properties.elevationFix
+    }
+
+    private suspend fun getSizeInBytes(rootDir: File): Long? = withContext(ioDispatcher) {
+        val propertiesFile = File(rootDir, propertiesFileName)
+        if (propertiesFile.exists()) {
+            runCatching<MapPropertiesKtx> {
+                FileUtils.getStringFromFile(propertiesFile).let {
+                    json.decodeFromString(it)
+                }
+            }.map { it.sizeInBytes }.getOrNull()
+        } else null
     }
 }
 

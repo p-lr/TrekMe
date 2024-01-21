@@ -20,7 +20,7 @@ class MapSaverDaoImpl (
 ): MapSaverDao {
     override suspend fun save(map: Map) {
         val jsonString = withContext(mainDispatcher) {
-            val mapKtx = map.configSnapshot.toMapKtx().copy(sizeInBytes = map.sizeInBytes.value)
+            val mapKtx = map.configSnapshot.toMapKtx()
             json.encodeToString(mapKtx)
         }
 

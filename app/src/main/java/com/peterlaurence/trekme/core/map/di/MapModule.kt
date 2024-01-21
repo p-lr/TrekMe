@@ -109,7 +109,8 @@ object MapModule {
     @Singleton
     @Provides
     fun provideMapSizeComputeDao(
-    ): MapSizeComputeDao = MapSizeComputeDaoImpl(Dispatchers.Default)
+        @MapJson json: Json,
+    ): UpdateMapSizeInBytesDao = UpdateMapSizeInBytesDaoImpl(json, Dispatchers.Default)
 
     @Singleton
     @Provides
