@@ -32,7 +32,7 @@ class MapDownloadInteractor @Inject constructor(
     ) {
         val result = when (spec) {
             is NewDownloadSpec -> processNewDownloadSpec(spec, onProgress)
-            is RepairSpec -> processRepairSpec(spec, onProgress)
+            is UpdateSpec -> processUpdateSpec(spec, onProgress)
         }
 
         if (result is MapDownloadResult.Success) {
@@ -40,8 +40,8 @@ class MapDownloadInteractor @Inject constructor(
         }
     }
 
-    private suspend fun processRepairSpec(
-        spec: RepairSpec,
+    private suspend fun processUpdateSpec(
+        spec: UpdateSpec,
         onProgress: (Int) -> Unit
     ): MapDownloadResult {
         val tileStreamProvider = tileStreamProviderDao.newTileStreamProvider(
@@ -52,7 +52,7 @@ class MapDownloadInteractor @Inject constructor(
         }
 
         val progressEvent = MapDownloadPending(0)
-        val result = mapDownloadDao.processRepairSpec(
+        val result = mapDownloadDao.processUpdateSpec(
             spec,
             tileStreamProvider,
             onProgress = {

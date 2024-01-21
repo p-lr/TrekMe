@@ -15,9 +15,10 @@ class NewDownloadSpec(
     val excursionIds: Set<String> = emptySet()
 ) : MapDownloadSpec
 
-class RepairSpec(
+class UpdateSpec(
     val map: Map,
     val creationData: CreationData,
+    val repairOnly: Boolean
 ) : MapDownloadSpec
 
 sealed interface MapDownloadEvent

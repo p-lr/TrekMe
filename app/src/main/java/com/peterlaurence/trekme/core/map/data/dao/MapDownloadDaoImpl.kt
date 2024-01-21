@@ -43,14 +43,14 @@ class MapDownloadDaoImpl(
 ) : MapDownloadDao {
     private val workerCount = 8
 
-    override suspend fun processRepairSpec(
-        spec: RepairSpec,
+    override suspend fun processUpdateSpec(
+        spec: UpdateSpec,
         tileStreamProvider: TileStreamProvider,
         onProgress: (Int) -> Unit
     ): MapDownloadResult = coroutineScope {
-        val source = spec.creationData.mapSourceData
         val creationData = spec.creationData
-        val tileSize = spec.map.levelList.firstOrNull()?.tileSize?.width ?: return@coroutineScope MapDownloadResult.Error(MapNotRepairable)
+        val tileSize = spec.map.levelList.firstOrNull()?.tileSize?.width
+            ?: return@coroutineScope MapDownloadResult.Error(MapNotRepairable)
         val p1 = creationData.boundary.corner1.toPoint()
         val p2 = creationData.boundary.corner2.toPoint()
         val mapSpec = getMapSpec(
@@ -74,21 +74,25 @@ class MapDownloadDaoImpl(
         onProgress(0)
 
         /* For instance file-based maps are the only Map implementation */
-        val mapRootDir = (spec.map as? MapFileBased)?.folder ?: return@coroutineScope MapDownloadResult.Error(MapNotRepairable)
-
+        val mapRootDir =
+            (spec.map as? MapFileBased)?.folder ?: return@coroutineScope MapDownloadResult.Error(
+                MapNotRepairable
+            )
+        val source = creationData.mapSourceData
         val tileWriter = makeTileWriter(mapRootDir, source)
 
         val effectiveWorkerCount = getEffectiveWorkerCount(source)
 
         val missingTilesCount = AtomicLong()
 
-        launchRepairTask(
-            mapRootDir,
-            missingTilesCount,
-            effectiveWorkerCount,
-            threadSafeTileIterator,
-            tileWriter,
-            tileStreamProvider,
+        launchUpdateTask(
+            repairOnly = spec.repairOnly,
+            mapRootDir = mapRootDir,
+            missingTilesCount = missingTilesCount,
+            workerCount = effectiveWorkerCount,
+            tileIterator = threadSafeTileIterator,
+            tileWriter = tileWriter,
+            tileStreamProvider = tileStreamProvider,
             tileSize = tileSize
         )
 
@@ -163,7 +167,13 @@ class MapDownloadDaoImpl(
     ) = coroutineScope {
         for (i in 0 until workerCount) {
             val bitmapProvider = BitmapProvider(tileStreamProvider)
-            launchTileDownload(missingTilesCount, tileIterator, bitmapProvider, tileWriter, tileSize)
+            launchTileDownload(
+                missingTilesCount,
+                tileIterator,
+                bitmapProvider,
+                tileWriter,
+                tileSize
+            )
         }
     }
 
@@ -258,7 +268,8 @@ class MapDownloadDaoImpl(
         return MapFileBased(mapConfig, folder)
     }
 
-    private suspend fun launchRepairTask(
+    private suspend fun launchUpdateTask(
+        repairOnly: Boolean,
         mapRootDir: File,
         missingTilesCount: AtomicLong,
         workerCount: Int,
@@ -269,11 +280,20 @@ class MapDownloadDaoImpl(
     ) = coroutineScope {
         for (i in 0 until workerCount) {
             val bitmapProvider = BitmapProvider(tileStreamProvider)
-            launchRepairActor(mapRootDir, missingTilesCount, tileIterator, bitmapProvider, tileWriter, tileSize)
+            launchUpdateActor(
+                repairOnly,
+                mapRootDir,
+                missingTilesCount,
+                tileIterator,
+                bitmapProvider,
+                tileWriter,
+                tileSize
+            )
         }
     }
 
-    private fun CoroutineScope.launchRepairActor(
+    private fun CoroutineScope.launchUpdateActor(
+        repairOnly: Boolean,
         mapRootDir: File,
         missingTilesCount: AtomicLong,
         tileIterator: ThreadSafeTileIterator,
@@ -289,8 +309,9 @@ class MapDownloadDaoImpl(
 
         while (isActive) {
             val tile = tileIterator.next() ?: break
-            if (isTileMissing(mapRootDir, tile)) {
-                val b = bitmapProvider.getBitmap(row = tile.row, col = tile.col, zoomLvl = tile.level)
+            if (!repairOnly || isTileMissing(mapRootDir, tile)) {
+                val b =
+                    bitmapProvider.getBitmap(row = tile.row, col = tile.col, zoomLvl = tile.level)
                 if (b != null) {
                     /* Only write if there was no error */
                     if (isActive) {
