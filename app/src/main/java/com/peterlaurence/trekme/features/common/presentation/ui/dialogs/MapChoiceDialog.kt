@@ -98,7 +98,7 @@ private class MapChoiceAdapter(private val mapList: List<Map>, val listener: Map
 
     override fun onBindViewHolder(holder: MapChoiceViewHolder, position: Int) {
         val map = mapList[position]
-        holder.textView.text = map.name
+        holder.textView.text = map.name.value
         holder.index = position
 
         holder.setItemClickListener(this)

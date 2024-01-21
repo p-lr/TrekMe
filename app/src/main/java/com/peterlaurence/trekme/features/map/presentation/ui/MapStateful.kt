@@ -194,13 +194,16 @@ fun MapStateful(
         }
 
         is MapUiState -> {
+            val mapUiState = uiState as MapUiState
+            val name by mapUiState.mapNameFlow.collectAsStateWithLifecycle()
             /* Always use the light theme background (dark theme or not). Done this way, it
              * doesn't add a GPU overdraw. */
             TrekMeTheme(darkThemeBackground = md_theme_light_background) {
                 Column {
                     MapScaffold(
                         Modifier.weight(1f, true),
-                        uiState as MapUiState,
+                        mapUiState,
+                        name,
                         snackbarHostState,
                         isShowingOrientation,
                         isShowingDistance,
@@ -354,6 +357,7 @@ fun MapStateful(
 private fun MapScaffold(
     modifier: Modifier = Modifier,
     uiState: MapUiState,
+    name: String,
     snackbarHostState: SnackbarHostState,
     isShowingOrientation: Boolean,
     isShowingDistance: Boolean,
@@ -391,7 +395,7 @@ private fun MapScaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             MapTopAppBar(
-                title = uiState.mapName,
+                title = name,
                 isShowingOrientation = isShowingOrientation,
                 isShowingDistance = isShowingDistance,
                 isShowingDistanceOnTrack = isShowingDistanceOnTrack,

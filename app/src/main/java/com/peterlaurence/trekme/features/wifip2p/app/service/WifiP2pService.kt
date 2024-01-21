@@ -520,8 +520,7 @@ class WifiP2pService : Service() {
                     when (result.status) {
                         MapParseStatus.NEW_MAP,
                         MapParseStatus.EXISTING_MAP -> exitWithReason(
-                            MapSuccessfullyLoaded(result.map?.name
-                                ?: ""), true)
+                            MapSuccessfullyLoaded(result.map?.name?.value ?: ""), true)
                         else -> exitWithReason(WithError(WifiP2pServiceErrors.MAP_IMPORT_ERROR), true)
                     }
                 }
@@ -537,7 +536,7 @@ class WifiP2pService : Service() {
 
     private fun send(map: Map, outputStream: DataOutputStream) {
         /* The name of the map is expected to be the first data */
-        outputStream.writeUTF(map.name)
+        outputStream.writeUTF(map.name.value)
 
         /* The uncompressed size is expected to come second */
         val directory = (map as? MapFileBased)?.folder ?: return
@@ -559,7 +558,7 @@ class WifiP2pService : Service() {
                 scope.launch {
                     /* The sender doesn't reset the WifiP2P connection on normal conditions (the
                      * receiver does) */
-                    exitWithReason(MapSuccessfullyLoaded(map.name), false)
+                    exitWithReason(MapSuccessfullyLoaded(map.name.value), false)
                 }
             }
 

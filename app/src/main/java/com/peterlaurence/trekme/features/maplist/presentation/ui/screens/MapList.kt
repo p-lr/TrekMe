@@ -32,6 +32,7 @@ import com.peterlaurence.trekme.features.maplist.presentation.ui.components.Pend
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapListState
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapListViewModel
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapSettingsViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.*
 
 @Composable
@@ -165,10 +166,10 @@ interface MapListIntents {
 @Composable
 private fun MapListPreview() {
     val mapList = listOf(
-        MapItem(UUID.randomUUID(), title = "A map 1"),
-        MapItem(UUID.randomUUID(), title = "A map 2"),
-        MapItem(UUID.randomUUID(), title = "A map 3"),
-        MapItem(UUID.randomUUID(), title = "A map 4")
+        MapItem(UUID.randomUUID(), titleFlow = MutableStateFlow("A map 1")),
+        MapItem(UUID.randomUUID(), titleFlow = MutableStateFlow("A map 2")),
+        MapItem(UUID.randomUUID(), titleFlow = MutableStateFlow("A map 3")),
+        MapItem(UUID.randomUUID(), titleFlow = MutableStateFlow("A map 4"))
     )
 
     var mapListState by remember {

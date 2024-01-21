@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.MapSelectionDialogViewModel
@@ -95,7 +96,8 @@ private fun MapSelectionDialog(
                     .clickable { onMapSelection(index) },
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = map.name, modifier = Modifier.padding(start = 16.dp))
+                val name by map.name.collectAsStateWithLifecycle()
+                Text(text = name, modifier = Modifier.padding(start = 16.dp))
             }
         }
     }

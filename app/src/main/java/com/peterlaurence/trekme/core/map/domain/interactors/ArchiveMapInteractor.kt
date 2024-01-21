@@ -49,7 +49,7 @@ class ArchiveMapInteractor @Inject constructor(
     private fun makeFlow(map: Map, uri: Uri): Flow<ZipEvent> {
         return callbackFlow {
             val callback = object : ZipProgressionListener {
-                private val mapName = map.name
+                private val mapName = map.name.value
 
                 override fun fileListAcquired() {}
 

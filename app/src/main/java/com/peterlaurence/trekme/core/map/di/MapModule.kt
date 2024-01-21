@@ -92,10 +92,9 @@ object MapModule {
     @Provides
     fun provideMapRenameDao(
         @MainDispatcher mainDispatcher: CoroutineDispatcher,
-        @IoDispatcher ioDispatcher: CoroutineDispatcher,
         mapSaverDao: MapSaverDao
     ) : MapRenameDao {
-        return MapRenameDaoImpl(mainDispatcher, ioDispatcher, mapSaverDao)
+        return MapRenameDaoImpl(mainDispatcher, mapSaverDao)
     }
 
     @Singleton

@@ -141,7 +141,7 @@ class MapListViewModel @Inject constructor(
     private fun updateMapList(mapList: List<Map>, favoriteMapIds: List<UUID>) {
         /* Order map list with favorites first */
         val items = mapList
-            .sortedBy { it.name.lowercase() }
+            .sortedBy { it.name.value.lowercase() }
             .map {
                 val isFavorite = favoriteMapIds.isNotEmpty() && favoriteMapIds.contains(it.id)
                 it.toMapItem(isFavorite)
@@ -152,7 +152,7 @@ class MapListViewModel @Inject constructor(
     }
 
     private fun Map.toMapItem(isFavorite: Boolean): MapItem {
-        return MapItem(id, title = name, isFavorite = isFavorite, image = thumbnailImage)
+        return MapItem(id, titleFlow = name, isFavorite = isFavorite, image = thumbnailImage)
     }
 
     fun onMainMenuClick() {

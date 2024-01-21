@@ -22,7 +22,7 @@ class MapFileBased(
      */
     override val id: UUID = config.uuid
 
-    override val name: String = config.name
+    override val name: MutableStateFlow<String> = MutableStateFlow(config.name)
 
     override val thumbnailImage: Bitmap?
         get() = config.thumbnailImage
@@ -150,13 +150,9 @@ class MapFileBased(
         get() = config.size.height
 
     override val configSnapshot: MapConfig
-        get() = config.copy()
+        get() = config.copy(name = name.value)
 
     override fun copy(config: MapConfig): Map {
-        return copyAndMove(config = config, folder = folder)
-    }
-
-    fun copyAndMove(config: MapConfig, folder: File): Map {
         return MapFileBased(config = config, folder = folder).apply {
             /* Some properties must be dynamically set right after */
             sizeInBytes.value = this@MapFileBased.sizeInBytes.value

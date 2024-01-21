@@ -50,7 +50,7 @@ class ArchiveMapDaoImpl(
 
     private fun Map.generateNewNameWithDate(): String {
         val dateFormat: DateFormat = SimpleDateFormat("dd\\MM\\yyyy-HH:mm:ss", Locale.ENGLISH)
-        return name + "-" + dateFormat.format(Date())
+        return name.value + "-" + dateFormat.format(Date())
     }
 
 }

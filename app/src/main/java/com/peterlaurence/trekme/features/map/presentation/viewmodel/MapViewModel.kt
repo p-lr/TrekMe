@@ -380,7 +380,7 @@ data class MapUiState(
     val landmarkLinesState: LandmarkLinesState,
     val distanceLineState: DistanceLineState,
     val scaleIndicatorState: ScaleIndicatorState,
-    val mapName: String
+    val mapNameFlow: StateFlow<String>
 ) : UiState
 
 object Loading : UiState

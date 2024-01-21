@@ -102,8 +102,10 @@ fun MapSettingsStateful(
     }
 
     if (map != null) {
+        val name by map.name.collectAsStateWithLifecycle()
         MapSettingsScreen(
             map = map,
+            name = name,
             snackbarHostState = snackbarHostState,
             mapSizeState = viewModel.mapSize,
             onSetImage = { uri ->
@@ -158,6 +160,7 @@ private fun MapSettingsErrorScreen(onBackClick: () -> Unit = {}) {
 @Composable
 private fun MapSettingsScreen(
     map: Map,
+    name: String,
     snackbarHostState: SnackbarHostState,
     mapSizeState: MutableStateFlow<ResultL<Long?>>,
     onSetImage: (Uri) -> Unit,
@@ -175,7 +178,7 @@ private fun MapSettingsScreen(
         topBar = {
             var expandedMenu by remember { mutableStateOf(false) }
             TopAppBar(
-                title = { Text(text = map.name) },
+                title = { Text(text = name) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "")
@@ -240,7 +243,7 @@ private fun MapSettingsScreen(
                 )
             }
             SettingDivider()
-            MapSettings(map, mapSizeState, onMapRename, onComputeMapSize, onArchiveMap)
+            MapSettings(name, mapSizeState, onMapRename, onComputeMapSize, onArchiveMap)
             SettingDivider()
             MapRepairSetting(map)
         }
@@ -346,23 +349,23 @@ private fun CalibrationPointsSetting(map: Map, onSetCalibrationPointNumber: (Int
 
 @Composable
 private fun MapSettings(
-    map: Map,
+    name: String,
     mapSizeState: MutableStateFlow<ResultL<Long?>>,
     onMapRename: (String) -> Unit,
     onComputeMapSize: () -> Unit,
     onArchiveMap: (Uri) -> Unit
 ) {
     HeaderSetting(name = stringResource(id = R.string.map_summary_category))
-    ChangeNameSetting(map, onMapRename)
+    ChangeNameSetting(name, onMapRename)
     ComputeSizeSetting(mapSizeState, onComputeMapSize)
     SaveSetting(onArchiveMap)
 }
 
 @Composable
-private fun ChangeNameSetting(map: Map, onMapRename: (String) -> Unit) {
+private fun ChangeNameSetting(name: String, onMapRename: (String) -> Unit) {
     EditTextSetting(
         name = stringResource(id = R.string.map_title),
-        value = map.name,
+        value = name,
         onValueChanged = onMapRename
     )
 }
@@ -456,7 +459,7 @@ private fun AnalyseAndRepairButton(map: Map) {
     ButtonSetting(
         name = stringResource(id = R.string.map_analyze_and_repair),
         enabled = true,
-        onClick = {  }
+        onClick = { }
     )
 }
 
@@ -493,12 +496,14 @@ private fun Long.formatSize(context: Context): String {
 private fun MapScreenPreview() {
     TrekMeTheme {
         val map = makeMapForComposePreview()
+        val name by map.name.collectAsStateWithLifecycle()
 
         val mapSizeState: MutableStateFlow<ResultL<Long?>> =
             remember { MutableStateFlow(ResultL.success(125468L)) }
 
         MapSettingsScreen(
             map = map,
+            name = name,
             snackbarHostState = remember { SnackbarHostState() },
             mapSizeState = mapSizeState,
             onSetImage = {},
