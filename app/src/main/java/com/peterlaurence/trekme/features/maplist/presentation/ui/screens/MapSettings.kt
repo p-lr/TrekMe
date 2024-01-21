@@ -177,6 +177,45 @@ private fun MapSettingsScreen(
     Scaffold(
         topBar = {
             var expandedMenu by remember { mutableStateOf(false) }
+            val dropDownMenu: @Composable () -> Unit = {
+                IconButton(
+                    onClick = { expandedMenu = true },
+                    modifier = Modifier.width(36.dp)
+                ) {
+                    Icon(
+                        Icons.Default.MoreVert,
+                        contentDescription = null,
+                    )
+                    Box(
+                        Modifier
+                            .height(24.dp)
+                            .wrapContentSize(Alignment.BottomEnd, true)
+                    ) {
+                        DropdownMenu(
+                            expanded = expandedMenu,
+                            onDismissRequest = { expandedMenu = false },
+                            offset = DpOffset(0.dp, 0.dp)
+                        ) {
+                            DropdownMenuItem(
+                                onClick = {
+                                    expandedMenu = false
+                                    isShowingAdvancedSettings = !isShowingAdvancedSettings
+                                },
+                                text = {
+                                    Text(
+                                        text = if (isShowingAdvancedSettings) {
+                                            stringResource(id = R.string.map_settings_hide_advanced)
+                                        } else {
+                                            stringResource(id = R.string.map_settings_show_advanced)
+                                        }
+                                    )
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+
             TopAppBar(
                 title = { Text(text = name) },
                 navigationIcon = {
@@ -185,42 +224,8 @@ private fun MapSettingsScreen(
                     }
                 },
                 actions = {
-                    IconButton(
-                        onClick = { expandedMenu = true },
-                        modifier = Modifier.width(36.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.MoreVert,
-                            contentDescription = null,
-                        )
-                        Box(
-                            Modifier
-                                .height(24.dp)
-                                .wrapContentSize(Alignment.BottomEnd, true)
-                        ) {
-                            DropdownMenu(
-                                expanded = expandedMenu,
-                                onDismissRequest = { expandedMenu = false },
-                                offset = DpOffset(0.dp, 0.dp)
-                            ) {
-                                DropdownMenuItem(
-                                    onClick = {
-                                        expandedMenu = false
-                                        isShowingAdvancedSettings = !isShowingAdvancedSettings
-                                    },
-                                    text = {
-                                        Text(
-                                            text = if (isShowingAdvancedSettings) {
-                                                stringResource(id = R.string.map_settings_hide_advanced)
-                                            } else {
-                                                stringResource(id = R.string.map_settings_show_advanced)
-                                            }
-                                        )
-                                    }
-                                )
-                            }
-                        }
-                    }
+                    /* Displaying calibration options is disabled for now */
+                    //dropDownMenu()
                 }
             )
         },
