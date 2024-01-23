@@ -28,8 +28,6 @@ import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamProviderDao
 import com.peterlaurence.trekme.core.wmts.domain.model.*
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.LayerOverlayRepository
 import com.peterlaurence.trekme.core.wmts.domain.model.LayerProperties
-import com.peterlaurence.trekme.core.wmts.domain.tools.getMapSpec
-import com.peterlaurence.trekme.core.wmts.domain.tools.getNumberOfTiles
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.WmtsSourceRepository
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.PositionMarker
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.DownloadFormData
@@ -499,14 +497,15 @@ class WmtsViewModel @Inject constructor(
         val (wmtsSource, p1, p2) = downloadForm
 
         val tileSize = getTileSize(wmtsSource)
-        val mapSpec = getMapSpec(minLevel, maxLevel, p1.toDomain(), p2.toDomain(), tileSize = tileSize)
-        val tileCount = getNumberOfTiles(minLevel, maxLevel, p1.toDomain(), p2.toDomain())
         viewModelScope.launch {
             val mapSourceData = getMapSourceDataFlow(wmtsSource).firstOrNull() ?: return@launch
             val downloadSpec = NewDownloadSpec(
+                corner1 = p1.toDomain(),
+                corner2 = p2.toDomain(),
+                minLevel = minLevel,
+                maxLevel = maxLevel,
+                tileSize = tileSize,
                 source = mapSourceData,
-                mapSpec = mapSpec,
-                numberOfTiles = tileCount,
                 geoRecordUris = geoRecordUrls
             )
             downloadRepository.postMapDownloadSpec(downloadSpec)

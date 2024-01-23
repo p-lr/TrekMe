@@ -17,6 +17,7 @@ import com.peterlaurence.trekme.core.wmts.domain.model.IgnClassic
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnSpainData
 import com.peterlaurence.trekme.core.wmts.domain.model.MapSourceData
+import com.peterlaurence.trekme.core.wmts.domain.model.MapSpec
 import com.peterlaurence.trekme.core.wmts.domain.model.OpenTopoMap
 import com.peterlaurence.trekme.core.wmts.domain.model.OrdnanceSurveyData
 import com.peterlaurence.trekme.core.wmts.domain.model.OsmAndHd
@@ -105,10 +106,12 @@ class MapDownloadDaoImpl(
         onProgress: (Int) -> Unit
     ): MapDownloadResult = coroutineScope {
         val source = spec.source
-        val tileSequence = spec.mapSpec.tileSequence
+        val mapSpec = getMapSpec(spec.minLevel, spec.maxLevel, spec.corner1, spec.corner2, tileSize = spec.tileSize)
+        val tileCount = getNumberOfTiles(spec.minLevel, spec.maxLevel, spec.corner1, spec.corner2)
+        val tileSequence = mapSpec.tileSequence
 
         val threadSafeTileIterator =
-            ThreadSafeTileIterator(tileSequence.iterator(), spec.numberOfTiles) { p ->
+            ThreadSafeTileIterator(tileSequence.iterator(), tileCount) { p ->
                 if (isActive) {
                     onProgress(p.toInt())
                 }
@@ -133,14 +136,14 @@ class MapDownloadDaoImpl(
             threadSafeTileIterator,
             tileWriter,
             tileStreamProvider,
-            tileSize = spec.mapSpec.tileSize
+            tileSize = spec.tileSize
         )
-        val map = postProcess(spec, destDir)
+        val map = postProcess(spec, mapSpec, destDir)
 
         MapDownloadResult.Success(map, missingTilesCount.get())
     }
 
-    private suspend fun postProcess(spec: NewDownloadSpec, destDir: File): Map {
+    private suspend fun postProcess(spec: NewDownloadSpec, mapSpec: MapSpec, destDir: File): Map {
         val mapOrigin = when (spec.source) {
             is IgnSourceData -> Ign(licensed = spec.source.layer == IgnClassic)
             IgnSpainData, OrdnanceSurveyData, SwissTopoData, UsgsData -> Wmts(licensed = false)
@@ -150,7 +153,7 @@ class MapDownloadDaoImpl(
             }
         }
 
-        val map = buildMap(spec, mapOrigin, destDir)
+        val map = buildMap(spec, mapSpec, mapOrigin, destDir)
 
         createNomediaFile(destDir)
 
@@ -222,12 +225,11 @@ class MapDownloadDaoImpl(
 
     private fun buildMap(
         spec: NewDownloadSpec,
+        mapSpec: MapSpec,
         mapOrigin: MapOrigin,
         folder: File,
         imageExtension: String = ".jpg"
     ): Map {
-        val mapSpec = spec.mapSpec
-
         val levels = (mapSpec.levelMin..mapSpec.levelMax).map {
             Level(it - mapSpec.levelMin, tileSize = Size(mapSpec.tileSize, mapSpec.tileSize))
         }
@@ -246,12 +248,12 @@ class MapDownloadDaoImpl(
             boundary = Boundary(
                 srid = projection.srid,
                 corner1 = ProjectedCoordinates(
-                    x = mapSpec.calibrationPoints.first.absoluteX,
-                    y = mapSpec.calibrationPoints.first.absoluteY
+                    x = spec.corner1.X,
+                    y = spec.corner1.Y
                 ),
                 corner2 = ProjectedCoordinates(
-                    x = mapSpec.calibrationPoints.second.absoluteX,
-                    y = mapSpec.calibrationPoints.second.absoluteY
+                    x = spec.corner2.X,
+                    y = spec.corner2.Y
                 )
             ),
             mapSourceData = spec.source,

@@ -2,15 +2,18 @@ package com.peterlaurence.trekme.core.map.domain.models
 
 import android.net.Uri
 import com.peterlaurence.trekme.core.wmts.domain.model.MapSourceData
-import com.peterlaurence.trekme.core.wmts.domain.model.MapSpec
+import com.peterlaurence.trekme.core.wmts.domain.model.Point
 import java.util.*
 
 sealed interface MapDownloadSpec
 
 class NewDownloadSpec(
     val source: MapSourceData,
-    val mapSpec: MapSpec,
-    val numberOfTiles: Long,
+    val corner1: Point,
+    val corner2: Point,
+    val minLevel: Int,
+    val maxLevel: Int,
+    val tileSize: Int,
     val geoRecordUris: Set<Uri> = emptySet(),
     val excursionIds: Set<String> = emptySet()
 ) : MapDownloadSpec

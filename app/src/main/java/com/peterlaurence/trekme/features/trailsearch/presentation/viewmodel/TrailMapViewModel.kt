@@ -27,7 +27,6 @@ import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.core.map.domain.interactors.GetMapInteractor
 import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToMercatorInteractor
 import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
-import com.peterlaurence.trekme.core.map.domain.models.MapDownloadSpec
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.map.domain.models.NewDownloadSpec
 import com.peterlaurence.trekme.core.map.domain.models.Route
@@ -51,7 +50,6 @@ import com.peterlaurence.trekme.core.wmts.domain.model.SwissTopoData
 import com.peterlaurence.trekme.core.wmts.domain.model.UsgsData
 import com.peterlaurence.trekme.core.wmts.domain.model.WorldStreetMap
 import com.peterlaurence.trekme.core.wmts.domain.model.mapSizeAtLevel
-import com.peterlaurence.trekme.core.wmts.domain.tools.getMapSpec
 import com.peterlaurence.trekme.core.wmts.domain.tools.getNumberOfTiles
 import com.peterlaurence.trekme.features.common.domain.interactors.MapExcursionInteractor
 import com.peterlaurence.trekme.features.common.domain.model.ElevationSource
@@ -451,14 +449,15 @@ class TrailMapViewModel @Inject constructor(
         val (p1, p2) = getPoints(bb) ?: return
 
         val wmtsConfig = getWmtsConfig(mapSourceDataFlow.value)
-        val mapSpec = getMapSpec(minLevel, maxLevel, p1, p2, tileSize = wmtsConfig.tileSize)
-        val tileCount = getNumberOfTiles(minLevel, maxLevel, p1, p2)
         val mapSourceData = mapSourceDataFlow.value
 
         val downloadSpec = NewDownloadSpec(
-            mapSourceData,
-            mapSpec,
-            tileCount,
+            corner1 = p1,
+            corner2 = p2,
+            minLevel = minLevel,
+            maxLevel = maxLevel,
+            tileSize =  wmtsConfig.tileSize,
+            source = mapSourceData,
             excursionIds = setOf(excursionId)
         )
 
