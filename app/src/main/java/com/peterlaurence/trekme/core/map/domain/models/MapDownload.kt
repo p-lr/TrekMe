@@ -22,13 +22,10 @@ class UpdateSpec(
 ) : MapDownloadSpec
 
 sealed interface MapDownloadEvent
-sealed interface MapProgressEvent: MapDownloadEvent {
-    var progress: Int
-}
-data class MapDownloadPending(override var progress: Int = 100): MapProgressEvent
-data class MapRepairPending(override var progress: Int = 100): MapProgressEvent
-data class MapUpdatePending(override var progress: Int = 100): MapProgressEvent
+data class MapDownloadPending(var progress: Int = 100): MapDownloadEvent
+data class MapUpdatePending(var progress: Int = 100, val repairOnly: Boolean): MapDownloadEvent
 data class MapDownloadFinished(val mapId: UUID): MapDownloadEvent
+data class MapUpdateFinished(val mapId: UUID, val repairOnly: Boolean): MapDownloadEvent
 data object MapDownloadStorageError: MapDownloadEvent
 data object MapDownloadAlreadyRunning: MapDownloadEvent
 data object MissingApiError: MapDownloadEvent

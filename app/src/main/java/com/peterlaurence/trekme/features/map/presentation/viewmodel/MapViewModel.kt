@@ -13,6 +13,7 @@ import com.peterlaurence.trekme.core.map.domain.models.ErrorIgnLicense
 import com.peterlaurence.trekme.core.map.domain.models.ErrorWmtsLicense
 import com.peterlaurence.trekme.core.map.domain.models.FreeLicense
 import com.peterlaurence.trekme.core.map.domain.models.Map
+import com.peterlaurence.trekme.core.map.domain.models.MapUpdateFinished
 import com.peterlaurence.trekme.core.map.domain.models.ValidIgnLicense
 import com.peterlaurence.trekme.core.map.domain.models.ValidWmtsLicense
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
@@ -50,6 +51,7 @@ import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.Route
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.ScaleIndicatorLayer
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.ScaleIndicatorState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.TrackFollowLayer
+import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
@@ -63,6 +65,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -73,6 +76,7 @@ import ovh.plrapps.mapcompose.api.addLayer
 import ovh.plrapps.mapcompose.api.maxScale
 import ovh.plrapps.mapcompose.api.onMarkerClick
 import ovh.plrapps.mapcompose.api.onMarkerLongPress
+import ovh.plrapps.mapcompose.api.reloadTiles
 import ovh.plrapps.mapcompose.api.rotateTo
 import ovh.plrapps.mapcompose.api.scale
 import ovh.plrapps.mapcompose.ui.state.MapState
@@ -100,6 +104,7 @@ class MapViewModel @Inject constructor(
     private val mapLicenseInteractor: MapLicenseInteractor,
     hasOneExtendedOfferInteractor: HasOneExtendedOfferInteractor,
     private val elevationFixInteractor: ElevationFixInteractor,
+    private val downloadRepository: DownloadRepository,
     app: Application
 ) : ViewModel() {
     private val dataStateFlow = MutableSharedFlow<DataState>(1, 0, BufferOverflow.DROP_OLDEST)
@@ -227,6 +232,18 @@ class MapViewModel @Inject constructor(
         settings.getMaxScale().combine(dataStateFlow) { maxScale, dataState ->
             dataState.mapState.maxScale = maxScale
         }.launchIn(viewModelScope)
+
+        /* */
+        viewModelScope.launch {
+            downloadRepository.downloadEvent.collect { event ->
+                if (event is MapUpdateFinished) {
+                    val (map, mapState) = dataStateFlow.firstOrNull() ?: return@collect
+                    if (map.id == event.mapId) {
+                        mapState.reloadTiles()
+                    }
+                }
+            }
+        }
     }
 
     /* region events */

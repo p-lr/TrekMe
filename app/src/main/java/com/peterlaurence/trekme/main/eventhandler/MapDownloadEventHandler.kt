@@ -44,7 +44,7 @@ class MapDownloadEventHandler(
                 getString(R.string.warning_title),
                 null
             )
-            is MapDownloadPending, is MapRepairPending, is MapUpdatePending -> {
+            is MapDownloadPending, is MapUpdatePending -> {
                 // Nothing particular to do, the service which fire those events already sends
                 // notifications with the progression.
             }
@@ -59,6 +59,10 @@ class MapDownloadEventHandler(
                 getString(R.string.warning_title),
                 null
             )
+
+            is MapUpdateFinished -> {
+                // Nothing to do
+            }
         }
     }
 }

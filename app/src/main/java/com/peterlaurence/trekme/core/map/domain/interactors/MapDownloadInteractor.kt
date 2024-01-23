@@ -51,11 +51,7 @@ class MapDownloadInteractor @Inject constructor(
             return MapDownloadResult.Error(MissingApiError)
         }
 
-        val progressEvent = if (spec.repairOnly) {
-            MapRepairPending(0)
-        } else {
-            MapUpdatePending(0)
-        }
+        val progressEvent = MapUpdatePending(0, spec.repairOnly)
         val result = mapDownloadDao.processUpdateSpec(
             spec,
             tileStreamProvider,
@@ -68,6 +64,9 @@ class MapDownloadInteractor @Inject constructor(
                 onProgress(it)
             }
         )
+
+        /* Notify that the update finished correctly. */
+        repository.postDownloadEvent(MapUpdateFinished(spec.map.id, spec.repairOnly))
 
         return result
     }
@@ -119,7 +118,7 @@ class MapDownloadInteractor @Inject constructor(
             importGeoRecordInteractor.applyGeoRecordUriToMap(uri, app.contentResolver, map)
         }
 
-        /* Notify that the download is finished correctly. */
+        /* Notify that the download finished correctly. */
         repository.postDownloadEvent(MapDownloadFinished(map.id))
     }
 }
