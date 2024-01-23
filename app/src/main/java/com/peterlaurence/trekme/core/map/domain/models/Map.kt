@@ -40,6 +40,7 @@ interface Map {
     val imageExtension: String
     val widthPx: Int
     val heightPx: Int
+    val missingTilesCount: MutableStateFlow<Long?> // lazy loaded
 
     val configSnapshot: MapConfig
     fun copy(config: MapConfig): Map

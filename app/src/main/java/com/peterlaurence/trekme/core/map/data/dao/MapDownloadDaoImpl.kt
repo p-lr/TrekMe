@@ -96,7 +96,7 @@ class MapDownloadDaoImpl(
             tileSize = tileSize
         )
 
-        TODO("Not yet implemented")
+        MapDownloadResult.Success(spec.map, missingTilesCount.get())
     }
 
     override suspend fun processNewDownloadSpec(

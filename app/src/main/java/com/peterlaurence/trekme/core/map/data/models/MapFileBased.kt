@@ -40,6 +40,7 @@ class MapFileBased(
     override val excursionRefs = MutableStateFlow<List<ExcursionRef>>(emptyList())
     override val elevationFix = MutableStateFlow(config.elevationFix)
     override val sizeInBytes: MutableStateFlow<Long?> = MutableStateFlow(null)
+    override val missingTilesCount: MutableStateFlow<Long?> = MutableStateFlow(null)
 
     /**
      * The calibration status is either :

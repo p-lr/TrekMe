@@ -45,6 +45,7 @@ fun makeMapForComposePreview(name: String = "Example map"): Map {
             get() = MutableStateFlow(0)
         override val sizeInBytes: MutableStateFlow<Long?>
             get() = TODO()
+        override val missingTilesCount: MutableStateFlow<Long?> = MutableStateFlow(null)
         override val projectionName: String?
             get() = projection?.name
         override val calibrationStatus: CalibrationStatus

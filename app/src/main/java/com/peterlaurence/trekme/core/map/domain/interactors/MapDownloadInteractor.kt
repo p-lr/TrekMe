@@ -51,7 +51,11 @@ class MapDownloadInteractor @Inject constructor(
             return MapDownloadResult.Error(MissingApiError)
         }
 
-        val progressEvent = MapDownloadPending(0)
+        val progressEvent = if (spec.repairOnly) {
+            MapRepairPending(0)
+        } else {
+            MapUpdatePending(0)
+        }
         val result = mapDownloadDao.processUpdateSpec(
             spec,
             tileStreamProvider,
@@ -65,7 +69,6 @@ class MapDownloadInteractor @Inject constructor(
             }
         )
 
-        // TODO: post-process
         return result
     }
 

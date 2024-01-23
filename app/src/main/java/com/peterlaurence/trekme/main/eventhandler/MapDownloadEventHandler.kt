@@ -44,7 +44,7 @@ class MapDownloadEventHandler(
                 getString(R.string.warning_title),
                 null
             )
-            is MapDownloadPending -> {
+            is MapDownloadPending, is MapRepairPending, is MapUpdatePending -> {
                 // Nothing particular to do, the service which fire those events already sends
                 // notifications with the progression.
             }
@@ -54,12 +54,11 @@ class MapDownloadEventHandler(
                 null
             )
 
-            MapNotRepairable -> {
-                // TODO
-            }
-            is MapRepairPending -> {
-                // TODO
-            }
+            MapNotRepairable -> showWarningDialog(
+                getString(R.string.service_download_repair_error),
+                getString(R.string.warning_title),
+                null
+            )
         }
     }
 }

@@ -1,13 +1,18 @@
 package com.peterlaurence.trekme.features.maplist.presentation.viewmodel
 
 import android.app.Application
+import android.content.Intent
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.peterlaurence.trekme.core.map.domain.dao.MissingTilesCountDao
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.interactors.*
 import com.peterlaurence.trekme.core.map.domain.models.CalibrationMethod
+import com.peterlaurence.trekme.core.map.domain.models.UpdateSpec
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
+import com.peterlaurence.trekme.features.mapcreate.app.service.download.DownloadService
+import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
 import com.peterlaurence.trekme.util.ResultL
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
@@ -19,17 +24,19 @@ import javax.inject.Inject
 /**
  * The view-model for the map settings.
  *
- * @since 14/08/20
+ * @since 2020/08/14
  */
 @HiltViewModel
 class MapSettingsViewModel @Inject constructor(
-    val app: Application,
+    private val app: Application,
     private val mutateMapCalibrationInteractor: MutateMapCalibrationInteractor,
     private val renameMapInteractor: RenameMapInteractor,
     private val updateMapSizeInteractor: UpdateMapSizeInteractor,
     private val setMapThumbnailInteractor: SetMapThumbnailInteractor,
     private val archiveMapInteractor: ArchiveMapInteractor,
-    private val mapRepository: MapRepository
+    private val mapRepository: MapRepository,
+    private val missingTilesCountDao: MissingTilesCountDao,
+    private val downloadRepository: DownloadRepository,
 ) : ViewModel() {
     val mapFlow: StateFlow<Map?> = mapRepository.settingsMapFlow
 
@@ -37,6 +44,17 @@ class MapSettingsViewModel @Inject constructor(
 
     private val _mapImageImportEvent = Channel<Boolean>(1)
     val mapImageImportEvent = _mapImageImportEvent.receiveAsFlow()
+
+    init {
+        /* Lazy-load missing tiles count */
+        viewModelScope.launch {
+            mapFlow.collect {settingsMap ->
+                if (settingsMap != null) {
+                    missingTilesCountDao.loadMissingTilesCount(settingsMap)
+                }
+            }
+        }
+    }
 
     /**
      * Changes the thumbnail of a [Map].
@@ -94,6 +112,16 @@ class MapSettingsViewModel @Inject constructor(
             mapSize.value = ResultL.success(it)
         }.onFailure {
             mapSize.value = ResultL.success(null)
+        }
+    }
+
+    fun repair(map: Map) {
+        val creationData = map.configSnapshot.creationData
+        if (creationData != null) {
+            val repairSpec = UpdateSpec(map, creationData, repairOnly = true)
+            downloadRepository.postMapDownloadSpec(repairSpec)
+            val intent = Intent(app, DownloadService::class.java)
+            app.startService(intent)
         }
     }
 }

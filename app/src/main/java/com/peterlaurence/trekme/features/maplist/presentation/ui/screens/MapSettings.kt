@@ -49,7 +49,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.projection.MercatorProjection
-import com.peterlaurence.trekme.core.projection.UniversalTransverseMercator
 import com.peterlaurence.trekme.features.common.domain.util.makeMapForComposePreview
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.ErrorScreen
 import com.peterlaurence.trekme.features.common.presentation.ui.settings.ButtonSetting
@@ -72,12 +71,12 @@ import java.math.RoundingMode
  *  * Change map thumbnail image
  *  * Map calibration
  *
- *  * Choose the projection
- *  * Define the number of calibration point
- *  * Define the calibration points
- *
  *  * Change the map name
+ *  * Compute map size
  *  * Save the map
+ *
+ *  * Repair the map
+ *  * Update the map
  *
  * @since 16/04/2016 - Converted to Kotlin on 11/11/2020 - Converted to compose on 08/09/2023
  */
@@ -127,6 +126,9 @@ fun MapSettingsStateful(
             onArchiveMap = { uri ->
                 viewModel.archiveMap(map, uri)
             },
+            onStartRepair = {
+                viewModel.repair(map)
+            },
             onBackClick = onBackClick
         )
     } else {
@@ -170,6 +172,7 @@ private fun MapSettingsScreen(
     onMapRename: (String) -> Unit,
     onComputeMapSize: () -> Unit,
     onArchiveMap: (Uri) -> Unit,
+    onStartRepair: () -> Unit,
     onBackClick: () -> Unit
 ) {
     var isShowingAdvancedSettings by remember { mutableStateOf(false) }
@@ -250,7 +253,7 @@ private fun MapSettingsScreen(
             SettingDivider()
             MapSettings(name, mapSizeState, onMapRename, onComputeMapSize, onArchiveMap)
             SettingDivider()
-            MapRepairSetting(map)
+            MapRepairSetting(map, onStartRepair)
         }
     }
 }
@@ -454,17 +457,21 @@ private fun SaveSetting(onArchiveMap: (Uri) -> Unit) {
 }
 
 @Composable
-private fun MapRepairSetting(map: Map) {
-    HeaderSetting(name = stringResource(id = R.string.map_repair_category))
-    AnalyseAndRepairButton(map)
+private fun MapRepairSetting(map: Map, onStartRepair: () -> Unit) {
+    if (map.configSnapshot.creationData != null) {
+        val missingTilesCount by map.missingTilesCount.collectAsStateWithLifecycle()
+        HeaderSetting(name = stringResource(id = R.string.map_repair_category))
+        AnalyseAndRepairButton(map, missingTilesCount, onStartRepair)
+    }
 }
 
 @Composable
-private fun AnalyseAndRepairButton(map: Map) {
+private fun AnalyseAndRepairButton(map: Map, missingTilesCount: Long?, onStartRepair: () -> Unit) {
     ButtonSetting(
         name = stringResource(id = R.string.map_analyze_and_repair),
+        subTitle = "Missing tiles $missingTilesCount",
         enabled = true,
-        onClick = { }
+        onClick = onStartRepair   // TODO: add modal
     )
 }
 
@@ -518,6 +525,7 @@ private fun MapScreenPreview() {
             onMapRename = {},
             onComputeMapSize = {},
             onArchiveMap = {},
+            onStartRepair = {},
             onBackClick = {}
         )
     }
