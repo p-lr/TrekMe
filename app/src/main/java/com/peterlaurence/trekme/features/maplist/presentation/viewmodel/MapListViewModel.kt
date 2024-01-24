@@ -8,6 +8,7 @@ import com.peterlaurence.trekme.core.map.domain.interactors.DeleteMapInteractor
 import com.peterlaurence.trekme.core.map.domain.interactors.SetMapInteractor
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.MapDownloadPending
+import com.peterlaurence.trekme.core.map.domain.models.NewDownloadSpec
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.events.AppEventBus
@@ -62,23 +63,19 @@ class MapListViewModel @Inject constructor(
 
         viewModelScope.launch {
             downloadRepository.downloadEvent.collect { event ->
-                when (event) {
-                    is MapDownloadPending -> {
-                        _mapListState.value = _mapListState.value.copy(
-                            downloadProgress = event.progress,
-                            isDownloadPending = true
-                        )
-                    }
-
-                    else -> { /* Nothing to do */
-                    }
+                if (event is MapDownloadPending) {
+                    _mapListState.value = _mapListState.value.copy(
+                        downloadProgress = event.progress,
+                    )
                 }
             }
         }
 
         viewModelScope.launch {
             downloadRepository.status.collect { status ->
-                _mapListState.value = _mapListState.value.copy(isDownloadPending = status is DownloadRepository.Started)
+                _mapListState.value = _mapListState.value.copy(
+                    isDownloadPending = status is DownloadRepository.Started && status.downloadSpec is NewDownloadSpec
+                )
             }
         }
     }
