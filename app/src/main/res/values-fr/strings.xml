@@ -116,6 +116,8 @@
     <string name="image_preferences_category">Image de présentation</string>
     <string name="image_change_btn_txt">Changer l\'image</string>
     <string name="service_download_finished">Téléchargement de la carte terminé</string>
+    <string name="service_repair_finished">Réparation de la carte terminée</string>
+    <string name="service_update_finished">Mise à jour de la carte terminée</string>
     <string name="map_size">Taille de la carte</string>
     <string name="map_too_big">Carte volumineuse</string>
     <string name="map_too_big_explanation">Il est conseillé de ne télécharger que la zone dont vous avez besoin, ou d\'adapter les niveaux de zoom.</string>

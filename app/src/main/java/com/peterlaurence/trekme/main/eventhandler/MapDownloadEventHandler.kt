@@ -16,7 +16,8 @@ class MapDownloadEventHandler(
     private val activity: MainActivity,
     private val lifecycle: Lifecycle,
     private val downloadRepository: DownloadRepository,
-    private val onDownloadFinished: (mapId: UUID) -> Unit
+    private val onMapDownloadFinished: (mapId: UUID) -> Unit,
+    private val onMapUpdateFinished: (mapId: UUID, isRepair: Boolean) -> Unit
 ) {
 
     init {
@@ -32,7 +33,10 @@ class MapDownloadEventHandler(
     private fun onMapDownloadEvent(event: MapDownloadEvent) = with(activity) {
         when (event) {
             is MapDownloadFinished -> {
-                onDownloadFinished(event.mapId)
+                onMapDownloadFinished(event.mapId)
+            }
+            is MapUpdateFinished -> {
+                onMapUpdateFinished(event.mapId, event.repairOnly)
             }
             is MapDownloadStorageError -> showWarningDialog(
                 getString(R.string.service_download_bad_storage),
@@ -59,10 +63,6 @@ class MapDownloadEventHandler(
                 getString(R.string.warning_title),
                 null
             )
-
-            is MapUpdateFinished -> {
-                // Nothing to do
-            }
         }
     }
 }

@@ -113,13 +113,29 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         /* Handle application wide map download events */
         MapDownloadEventHandler(this, lifecycle, downloadRepository,
-            onDownloadFinished = { uuid ->
+            onMapDownloadFinished = { uuid ->
                 /* Only if the user is still on the WmtsFragment, navigate to the map list */
                 if (getString(R.string.map_wmts_label) == navController.currentDestination?.label) {
                     showMapListFragment()
                 }
                 val snackbar = showSnackbar(
                     getString(R.string.service_download_finished),
+                    isLong = true
+                ) ?: return@MapDownloadEventHandler
+                snackbar.setAction(getString(R.string.show_map_action)) {
+                    lifecycleScope.launch {
+                        setMapInteractor.setMap(uuid)
+                        showMapFragment()
+                    }
+                }
+            },
+            onMapUpdateFinished = { uuid, isRepair ->
+                val snackbar = showSnackbar(
+                    message = if (isRepair) {
+                        getString(R.string.service_repair_finished)
+                    } else {
+                        getString(R.string.service_update_finished)
+                    },
                     isLong = true
                 ) ?: return@MapDownloadEventHandler
                 snackbar.setAction(getString(R.string.show_map_action)) {
