@@ -105,19 +105,28 @@
     <string name="wmts_level_max_decrement">Décrémenter le niveau max</string>
     <string name="wmts_level_max_increment">Incrémenter le niveau max</string>
     <string name="max_zoom">Zoom maximum</string>
+
+    <!-- DownloadService -->
     <string name="service_download_name">Service de téléchargement de carte</string>
     <string name="service_download_action">Téléchargement de carte</string>
-    <string name="download">Télécharger</string>
+    <string name="service_repair_action">Réparation de carte</string>
+    <string name="service_update_action">Mise à jour de carte</string>
+    <string name="service_download_finished">Téléchargement de la carte terminé</string>
+    <string name="service_repair_finished">Réparation de la carte terminée</string>
+    <string name="service_update_finished">Mise à jour de la carte terminée</string>
     <string name="service_download_stop">Arrêter</string>
+    <string name="service_download_bad_storage">TrekMe ne peut rien écrire sur votre stockage interne ou votre carte SD. C\'est probablement un problème de permission. Veuillez vérifier que TrekMe dispose de toutes ses autorisations, puis redémarrer votre téléphone est conseillé dans ce cas.</string>
+    <string name="service_download_already_running">Un téléchargement est déjà en cours. Veuillez attendre la fin du téléchargement avant d\'en lancer un autre.</string>
+    <string name="service_download_missing_api">Une erreur inattendue d\'api est survenur. Veuiillez mettre à jour TrekMe.</string>
+    <string name="service_download_repair_error">Cette carte n\'est pas réparable.</string>
+
+    <string name="download">Télécharger</string>
     <string name="map_download_dialog_title">Téléchargement en cours</string>
     <string name="map_download_dialog_progress">Progression</string>
     <string name="import_error">Une erreur est survenue. Essayez de redémarrer l\'application.</string>
     <string name="mapcreate_settings">Paramètres</string>
     <string name="image_preferences_category">Image de présentation</string>
     <string name="image_change_btn_txt">Changer l\'image</string>
-    <string name="service_download_finished">Téléchargement de la carte terminé</string>
-    <string name="service_repair_finished">Réparation de la carte terminée</string>
-    <string name="service_update_finished">Mise à jour de la carte terminée</string>
     <string name="map_size">Taille de la carte</string>
     <string name="map_too_big">Carte volumineuse</string>
     <string name="map_too_big_explanation">Il est conseillé de ne télécharger que la zone dont vous avez besoin, ou d\'adapter les niveaux de zoom.</string>
@@ -150,7 +159,7 @@
     <string name="bad_storage_status">Votre carte SD présente un problème. TrekMe ne peut télécharger des cartes ou fonctionner normalement dans ces conditions.</string>
     <string name="storage_read_only">Votre carte SD est en lecture seule. TrekMe ne peut télécharger des cartes ou fonctionner normalement dans ces conditions.</string>
     <string name="warning_title">Attention</string>
-    <string name="service_download_bad_storage">TrekMe ne peut rien écrire sur votre stockage interne ou votre carte SD. C\'est probablement un problème de permission. Veuillez vérifier que TrekMe dispose de toutes ses autorisations, puis redémarrer votre téléphone est conseillé dans ce cas.</string>
+
     <string name="mapcreate_warning_ign">Il y a un souci avec les serveurs de l\'IGN. Les indisponibilités ne durent en général que quelques heures.</string>
     <string name="mapcreate_warning_others">Il y a un souci avec les serveurs du fournisseur de cette carte. Les indisponibilités ne durent en général que quelques heures.</string>
     <string name="mapcreate_btn_nav_credentials">Corriger mes identifiants</string>
@@ -273,9 +282,6 @@
     <string name="privacy_policy_link">Consultez la %1$s.</string>
     <string name="privacy_policy">politique de confidentialité</string>
     <string name="solution_title">Solution</string>
-    <string name="service_download_already_running">Un téléchargement est déjà en cours. Veuillez attendre la fin du téléchargement avant d\'en lancer un autre.</string>
-    <string name="service_download_missing_api">Une erreur inattendue d\'api est survenur. Veuiillez mettre à jour TrekMe.</string>
-    <string name="service_download_repair_error">Cette carte n\'est pas réparable.</string>
     <string name="module_check_pending">Vérification du module…</string>
     <string name="track_visibility_btn">Visibilité de la trace</string>
     <string name="track_color_btn">Coleur de la trace</string>

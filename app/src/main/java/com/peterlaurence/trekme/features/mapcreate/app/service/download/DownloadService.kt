@@ -109,13 +109,22 @@ class DownloadService : Service() {
             repository.postDownloadEvent(MapDownloadAlreadyRunning)
             return START_NOT_STICKY
         }
+        val spec = repository.getMapDownloadSpec() ?: return START_NOT_STICKY
 
         val iconDrawable = ContextCompat.getDrawable(applicationContext, R.mipmap.ic_launcher)
         val icon = if (iconDrawable != null) getBitmapFromDrawable(iconDrawable) else null
+        val contentText = when (spec) {
+            is NewDownloadSpec -> getText(R.string.service_download_action)
+            is UpdateSpec -> if (spec.repairOnly) {
+                getText(R.string.service_repair_action)
+            } else {
+                getText(R.string.service_update_action)
+            }
+        }
 
         notificationBuilder = NotificationCompat.Builder(applicationContext, notificationChannelId)
             .setContentTitle(getText(R.string.app_name))
-            .setContentText(getText(R.string.service_download_action))
+            .setContentText(contentText)
             .setSmallIcon(R.drawable.ic_file_download_24dp)
             .setContentIntent(onTapPendingIntent)
             .setColor(getColor(R.color.colorAccent))
@@ -150,15 +159,12 @@ class DownloadService : Service() {
 
         startForeground(downloadServiceNotificationId, notificationBuilder.build())
 
-        val spec = repository.getMapDownloadSpec()
-        if (spec != null) {
-            scope.launch {
-                processDownloadSpec(spec)
-            }
-
-            repository.setStatus(DownloadRepository.Started(spec))
-            appEventBus.postMessage(StandardMessage(getString(R.string.download_confirm)))
+        scope.launch {
+            processDownloadSpec(spec)
         }
+
+        repository.setStatus(DownloadRepository.Started(spec))
+        appEventBus.postMessage(StandardMessage(getString(R.string.download_confirm)))
 
         return START_NOT_STICKY
     }
@@ -171,7 +177,7 @@ class DownloadService : Service() {
         mapDownloadInteractor.processDownloadSpec(
             spec, onProgress = { p -> throttledTask.trySend(p) }
         )
-        onDownloadFinished()
+        onDownloadFinished(spec)
 
         /* Whatever the outcome, stop the service. Don't attempt to send more notifications, they
          * will be dismissed anyway since the service is about to stop. */
@@ -188,10 +194,19 @@ class DownloadService : Service() {
     }
 
     @SuppressLint("RestrictedApi")
-    private fun onDownloadFinished() {
+    private fun onDownloadFinished(spec: MapDownloadSpec) {
         notificationBuilder.setOngoing(false)
         notificationBuilder.setProgress(0, 0, false)
-        notificationBuilder.setContentText(getText(R.string.service_download_finished))
+        notificationBuilder.setContentText(
+            when (spec) {
+                is NewDownloadSpec -> getText(R.string.service_download_finished)
+                is UpdateSpec -> if (spec.repairOnly) {
+                    getText(R.string.service_repair_finished)
+                } else {
+                    getText(R.string.service_update_finished)
+                }
+            }
+        )
         notificationBuilder.mActions.clear()
     }
 

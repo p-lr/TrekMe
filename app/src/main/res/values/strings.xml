@@ -51,6 +51,8 @@
     <!-- DownloadService -->
     <string name="service_download_name">Download service</string>
     <string name="service_download_action">Map download</string>
+    <string name="service_repair_action">Map repair</string>
+    <string name="service_update_action">Map update</string>
     <string name="service_download_finished">Map download finished</string>
     <string name="service_repair_finished">Map repair finished</string>
     <string name="service_update_finished">Map update finished</string>
