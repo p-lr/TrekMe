@@ -8,8 +8,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -31,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
@@ -81,6 +84,90 @@ fun ButtonSetting(name: String, subTitle: String? = null, enabled: Boolean, onCl
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
             )
         }
+    }
+}
+
+@Composable
+fun ButtonSettingWithLock(
+    name: String,
+    subTitle: String? = null,
+    enabled: Boolean,
+    isLocked: Boolean,
+    lockedRationale: String,
+    onNavigateToShop: () -> Unit,
+    onClick: () -> Unit = {}
+) {
+    var isShowingLockedRationale by remember { mutableStateOf(false) }
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background)
+            .height(getSettingHeight(hasSubtitle = subTitle != null))
+            .clickable(
+                onClick = {
+                    if (isLocked) isShowingLockedRationale = true else onClick()
+                },
+                enabled = enabled
+            )
+            .padding(start = paddingStart),
+        verticalArrangement = Arrangement.Center
+    ) {
+        if (isLocked) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = name, fontSize = mainFontSize, color = MaterialTheme.colorScheme.onBackground)
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_lock),
+                    modifier = Modifier.padding(start = 8.dp).size(18.dp),
+                    tint = MaterialTheme.colorScheme.tertiary,
+                    contentDescription = null
+                )
+            }
+        } else {
+            Text(text = name, fontSize = mainFontSize, color = MaterialTheme.colorScheme.onBackground)
+        }
+
+        if (subTitle != null) {
+            Text(
+                text = subTitle,
+                fontSize = subtitleFontSize,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+            )
+        }
+    }
+
+    if (isShowingLockedRationale) {
+        AlertDialog(
+            title = {
+                Text(
+                    stringResource(id = R.string.map_settings_trekme_extended_title),
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            },
+            text = {
+                Text(lockedRationale)
+            },
+            onDismissRequest = { isShowingLockedRationale = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        isShowingLockedRationale = false
+                        onNavigateToShop()
+                    }
+                ) {
+                    Text(stringResource(id = R.string.ok_dialog))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { isShowingLockedRationale = false }) {
+                    Text(text = stringResource(id = R.string.cancel_dialog_string))
+                }
+            }
+        )
     }
 }
 

@@ -52,6 +52,7 @@ import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.features.common.domain.util.makeMapForComposePreview
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.ErrorScreen
 import com.peterlaurence.trekme.features.common.presentation.ui.settings.ButtonSetting
+import com.peterlaurence.trekme.features.common.presentation.ui.settings.ButtonSettingWithLock
 import com.peterlaurence.trekme.features.common.presentation.ui.settings.EditTextSetting
 import com.peterlaurence.trekme.features.common.presentation.ui.settings.HeaderSetting
 import com.peterlaurence.trekme.features.common.presentation.ui.settings.ListSetting
@@ -84,10 +85,13 @@ import java.math.RoundingMode
 fun MapSettingsStateful(
     viewModel: MapSettingsViewModel = hiltViewModel(),
     onNavigateToCalibration: () -> Unit,
+    onNavigateToShop: () -> Unit,
     onBackClick: () -> Unit
 ) {
     val settingMap by viewModel.mapFlow.collectAsStateWithLifecycle()
     val map = settingMap
+
+    val hasExtendedOffer by viewModel.hasExtendedOffer.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
     val successMsg = stringResource(id = R.string.map_image_import_ok)
@@ -105,6 +109,7 @@ fun MapSettingsStateful(
         MapSettingsScreen(
             map = map,
             name = name,
+            hasExtendedOffer = hasExtendedOffer,
             snackbarHostState = snackbarHostState,
             mapSizeState = viewModel.mapSize,
             onSetImage = { uri ->
@@ -129,6 +134,7 @@ fun MapSettingsStateful(
             onStartRepair = {
                 viewModel.repair(map)
             },
+            onNavigateToShop = onNavigateToShop,
             onBackClick = onBackClick
         )
     } else {
@@ -163,6 +169,7 @@ private fun MapSettingsErrorScreen(onBackClick: () -> Unit = {}) {
 private fun MapSettingsScreen(
     map: Map,
     name: String,
+    hasExtendedOffer: Boolean,
     snackbarHostState: SnackbarHostState,
     mapSizeState: MutableStateFlow<ResultL<Long?>>,
     onSetImage: (Uri) -> Unit,
@@ -173,6 +180,7 @@ private fun MapSettingsScreen(
     onComputeMapSize: () -> Unit,
     onArchiveMap: (Uri) -> Unit,
     onStartRepair: () -> Unit,
+    onNavigateToShop: () -> Unit,
     onBackClick: () -> Unit
 ) {
     var isShowingAdvancedSettings by remember { mutableStateOf(false) }
@@ -253,7 +261,7 @@ private fun MapSettingsScreen(
             SettingDivider()
             MapSettings(name, mapSizeState, onMapRename, onComputeMapSize, onArchiveMap)
             SettingDivider()
-            MapRepairSetting(map, onStartRepair)
+            MapRepairSetting(map, hasExtendedOffer, onNavigateToShop, onStartRepair)
         }
     }
 }
@@ -457,22 +465,44 @@ private fun SaveSetting(onArchiveMap: (Uri) -> Unit) {
 }
 
 @Composable
-private fun MapRepairSetting(map: Map, onStartRepair: () -> Unit) {
+private fun MapRepairSetting(
+    map: Map,
+    hasExtendedOffer: Boolean,
+    onNavigateToShop: () -> Unit,
+    onStartRepair: () -> Unit
+) {
     if (map.configSnapshot.creationData != null) {
         val missingTilesCount by map.missingTilesCount.collectAsStateWithLifecycle()
         HeaderSetting(name = stringResource(id = R.string.map_repair_category))
-        AnalyseAndRepairButton(map, missingTilesCount, onStartRepair)
+        AnalyseAndRepairButton(map, missingTilesCount, hasExtendedOffer, onNavigateToShop, onStartRepair)
     }
 }
 
 @Composable
-private fun AnalyseAndRepairButton(map: Map, missingTilesCount: Long?, onStartRepair: () -> Unit) {
-    ButtonSetting(
-        name = stringResource(id = R.string.map_analyze_and_repair),
-        subTitle = "Missing tiles $missingTilesCount",
-        enabled = true,
-        onClick = onStartRepair   // TODO: add modal
-    )
+private fun AnalyseAndRepairButton(
+    map: Map,
+    missingTilesCount: Long?,
+    hasExtendedOffer: Boolean,
+    onNavigateToShop: () -> Unit,
+    onStartRepair: () -> Unit
+) {
+    if (missingTilesCount != null && missingTilesCount > 0) {
+        ButtonSettingWithLock(
+            name = stringResource(id = R.string.map_analyze_and_repair),
+            subTitle = "${stringResource(id = R.string.map_missing_tiles)} $missingTilesCount",
+            enabled = true,
+            isLocked = !hasExtendedOffer,
+            lockedRationale = stringResource(id = R.string.map_repair_rationale),
+            onNavigateToShop = onNavigateToShop,
+            onClick = onStartRepair
+        )
+    } else {
+        ButtonSetting(
+            name = stringResource(id = R.string.map_no_missing_tile),
+            subTitle = "${stringResource(id = R.string.map_missing_tiles)} 0",
+            enabled = false
+        )
+    }
 }
 
 /**
@@ -516,6 +546,7 @@ private fun MapScreenPreview() {
         MapSettingsScreen(
             map = map,
             name = name,
+            hasExtendedOffer = false,
             snackbarHostState = remember { SnackbarHostState() },
             mapSizeState = mapSizeState,
             onSetImage = {},
@@ -526,6 +557,7 @@ private fun MapScreenPreview() {
             onComputeMapSize = {},
             onArchiveMap = {},
             onStartRepair = {},
+            onNavigateToShop = {},
             onBackClick = {}
         )
     }

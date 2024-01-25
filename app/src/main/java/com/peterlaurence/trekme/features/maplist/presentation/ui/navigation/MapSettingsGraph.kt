@@ -11,11 +11,12 @@ const val mapSettingsGraphRoute = "mapSettingsGraphRoute"
 private const val mapSettingsDestination = "mapSettingsDestination"
 private const val mapCalibrationDestination = "mapCalibrationDestination"
 
-fun NavGraphBuilder.mapSettingsGraph(navController: NavController) {
+fun NavGraphBuilder.mapSettingsGraph(navController: NavController, onNavigateToShop: () -> Unit) {
     navigation(route = mapSettingsGraphRoute, startDestination = mapSettingsDestination) {
         composable(route = mapSettingsDestination) {
             MapSettingsStateful(
                 onNavigateToCalibration = { navController.navigate(mapCalibrationDestination) },
+                onNavigateToShop = onNavigateToShop,
                 onBackClick = navController::navigateUp
             )
         }

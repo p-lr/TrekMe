@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.peterlaurence.trekme.core.billing.domain.interactors.HasOneExtendedOfferInteractor
 import com.peterlaurence.trekme.core.map.domain.dao.MissingTilesCountDao
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.interactors.*
@@ -37,6 +38,7 @@ class MapSettingsViewModel @Inject constructor(
     private val mapRepository: MapRepository,
     private val missingTilesCountDao: MissingTilesCountDao,
     private val downloadRepository: DownloadRepository,
+    hasOneExtendedOfferInteractor: HasOneExtendedOfferInteractor,
 ) : ViewModel() {
     val mapFlow: StateFlow<Map?> = mapRepository.settingsMapFlow
 
@@ -44,6 +46,8 @@ class MapSettingsViewModel @Inject constructor(
 
     private val _mapImageImportEvent = Channel<Boolean>(1)
     val mapImageImportEvent = _mapImageImportEvent.receiveAsFlow()
+
+    val hasExtendedOffer = hasOneExtendedOfferInteractor.getPurchaseFlow(viewModelScope)
 
     init {
         /* Lazy-load missing tiles count */

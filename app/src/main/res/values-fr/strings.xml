@@ -32,6 +32,9 @@
     <string name="map_save_string">Sauvegarder</string>
     <string name="map_repair_category">Réparation</string>
     <string name="map_analyze_and_repair">Analyzer &amp; réparer</string>
+    <string name="map_repair_rationale">Cette fonctionnalité vous permet de réparer la carte en téléchargeant les tuiles manquantes. Ceci requiert TrekMe Extended, et n\'est possible que pour les cartes créées à partir de TrekMe v4 et supérieur.</string>
+    <string name="map_no_missing_tile">Carte complète</string>
+    <string name="map_missing_tiles">Tuiles manquantes :</string>
 
     <string name="map_delete_question">Confirmer la suppression de la carte</string>
     <string name="cancel_dialog_string">Annuler</string>
@@ -234,6 +237,7 @@
     <string name="map_image_import_ok">Image changée</string>
     <string name="map_image_import_error">Erreur lors du changement d\'image :(</string>
     <string name="map_settings_error">Désolé, une erreur est survenue</string>
+    <string name="map_settings_trekme_extended_title">TrekMe Extended requis</string>
     <string name="calibration_projection_error">Erreur lors du changement de projection :(</string>
     <string name="battery_warn_message_gpx_recording">L\'enregistrement GPX sera probablement interrompu, car l\'optimisation de la batterie est activée
         pour TrekMe.\nUn enregistrement GPX est lancé sous forme de service Android, qui tourne en tâche de fond.

@@ -109,6 +109,12 @@
     <string name="map_image_import_ok">Image set successfully</string>
     <string name="map_image_import_error">Error while changing the image :(</string>
     <string name="map_settings_error">Sorry, something went wrong</string>
+    <string name="map_settings_trekme_extended_title">TrekMe Extended required</string>
+    <string name="map_repair_category">Repair</string>
+    <string name="map_analyze_and_repair">Analyze &amp; repair</string>
+    <string name="map_repair_rationale">This feature allows you to scan and download missing tiles. This feature is only available with TrekMe Extended and for maps created with TrekMe v4 and onwards.</string>
+    <string name="map_no_missing_tile">Map complete</string>
+    <string name="map_missing_tiles">Missing tiles:</string>
 
     <!-- Save map dialog fragment -->
     <string name="archive_dialog_title">Save map</string>
@@ -140,9 +146,6 @@
     <string name="map_size_compute_string">Compute size</string>
     <string name="map_size_computing">Computing..</string>
     <string name="map_save_string">Save</string>
-
-    <string name="map_repair_category">Repair</string>
-    <string name="map_analyze_and_repair">Analyze &amp; repair</string>
 
     <string name="projection_none">None</string>
     <string name="wgs84_instead_of_projected">You entered WGS84 lat/lon instead of projected values</string>

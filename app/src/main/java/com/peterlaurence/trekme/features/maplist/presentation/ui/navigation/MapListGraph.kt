@@ -11,6 +11,7 @@ fun MapListGraph(
     onNavigateToMapCreate: () -> Unit,
     onNavigateToMap: (UUID) -> Unit,
     onNavigateToExcursionSearch: () -> Unit,
+    onNavigateToShop: () -> Unit,
 ) {
     val navController = rememberNavController()
 
@@ -22,6 +23,6 @@ fun MapListGraph(
             onNavigateToExcursionSearch = onNavigateToExcursionSearch
         )
 
-        mapSettingsGraph(navController)
+        mapSettingsGraph(navController, onNavigateToShop)
     }
 }

@@ -54,6 +54,9 @@ class MapListFragment : Fragment() {
                         },
                         onNavigateToExcursionSearch = {
                             appEventBus.navigateTo(AppEventBus.NavDestination.TrailSearch)
+                        },
+                        onNavigateToShop = {
+                            appEventBus.navigateTo(AppEventBus.NavDestination.Shop)
                         }
                     )
                 }
