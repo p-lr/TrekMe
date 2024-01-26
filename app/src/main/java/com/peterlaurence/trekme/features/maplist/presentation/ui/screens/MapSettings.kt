@@ -473,14 +473,14 @@ private fun MapRepairSetting(
 ) {
     if (map.configSnapshot.creationData != null) {
         val missingTilesCount by map.missingTilesCount.collectAsStateWithLifecycle()
-        HeaderSetting(name = stringResource(id = R.string.map_repair_category))
-        AnalyseAndRepairButton(map, missingTilesCount, hasExtendedOffer, onNavigateToShop, onStartRepair)
+        HeaderSetting(name = stringResource(id = R.string.map_update_category))
+        AnalyseAndRepair(missingTilesCount, hasExtendedOffer, onNavigateToShop, onStartRepair)
+        UpdateButton(hasExtendedOffer, onNavigateToShop, { /* TODO */ })
     }
 }
 
 @Composable
-private fun AnalyseAndRepairButton(
-    map: Map,
+private fun AnalyseAndRepair(
     missingTilesCount: Long?,
     hasExtendedOffer: Boolean,
     onNavigateToShop: () -> Unit,
@@ -501,6 +501,46 @@ private fun AnalyseAndRepairButton(
             name = stringResource(id = R.string.map_no_missing_tile),
             subTitle = "${stringResource(id = R.string.map_missing_tiles)} 0",
             enabled = false
+        )
+    }
+}
+
+@Composable
+private fun UpdateButton(
+    hasExtendedOffer: Boolean,
+    onNavigateToShop: () -> Unit,
+    onStartUpdate: () -> Unit
+) {
+    var isShowingClickRationaleData by remember { mutableStateOf(false) }
+
+    ButtonSettingWithLock(
+        name = stringResource(id = R.string.map_update),
+        enabled = true,
+        isLocked = !hasExtendedOffer,
+        lockedRationale = stringResource(id = R.string.map_repair_rationale),
+        onNavigateToShop = onNavigateToShop,
+        onClick = { isShowingClickRationaleData = true }
+    )
+
+    if (isShowingClickRationaleData) {
+        AlertDialog(
+            text = { Text(stringResource(id = R.string.map_update_rationale)) },
+            onDismissRequest = { isShowingClickRationaleData = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        isShowingClickRationaleData = false
+                        onStartUpdate()
+                    }
+                ) {
+                    Text(stringResource(id = R.string.map_update_action))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { isShowingClickRationaleData = false }) {
+                    Text(text = stringResource(id = R.string.cancel_dialog_string))
+                }
+            }
         )
     }
 }
