@@ -1,7 +1,13 @@
+@file:OptIn(ExperimentalFoundationApi::class)
+
 package com.peterlaurence.trekme.features.shop.presentation.ui
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -26,9 +32,6 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.billing.domain.model.SubscriptionDetails
 import com.peterlaurence.trekme.core.billing.domain.model.TrialAvailable
-import com.peterlaurence.trekme.features.common.presentation.ui.pager.HorizontalPager
-import com.peterlaurence.trekme.features.common.presentation.ui.pager.PagerState
-import com.peterlaurence.trekme.features.common.presentation.ui.pager.rememberPagerState
 import com.peterlaurence.trekme.features.common.presentation.ui.scrollbar.drawVerticalScrollbar
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.shop.presentation.ui.offers.*
@@ -156,7 +159,7 @@ private fun ShopUi(
     ) { paddingValues ->
         ShopCarousel(
             modifier = Modifier.padding(paddingValues),
-            pagerState = rememberPagerState(),
+            pagerState = rememberPagerState { 2 },
             firstOffer = OfferUi(
                 header = {
                     when (uiState) {
@@ -231,7 +234,7 @@ private fun ShopCarousel(
                 }
             }
         }
-        HorizontalPager(count = 2, state = pagerState) { page ->
+        HorizontalPager(state = pagerState) { page ->
             /* The layout to overlay bottom buttons */
             Box(
                 contentAlignment = Alignment.BottomCenter
