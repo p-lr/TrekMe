@@ -13,7 +13,7 @@ import java.util.*
  * **Warning**: This class isn't thread-safe. It's advised to thread-confine the use of this class.
  */
 class MapFileBased(
-    private val config: MapConfig,
+    val config: MapConfig,
     val folder: File
 ) : Map {
     /**
@@ -40,6 +40,7 @@ class MapFileBased(
     override val excursionRefs = MutableStateFlow<List<ExcursionRef>>(emptyList())
     override val elevationFix = MutableStateFlow(config.elevationFix)
     override val sizeInBytes: MutableStateFlow<Long?> = MutableStateFlow(null)
+    override val creationData: CreationData? = config.creationData
     override val missingTilesCount: MutableStateFlow<Long?> = MutableStateFlow(null)
 
     /**
@@ -149,16 +150,6 @@ class MapFileBased(
     override val heightPx: Int
         get() = config.size.height
 
-    override val configSnapshot: MapConfig
-        get() = config.copy(name = name.value, thumbnailImage = thumbnail.value)
-
-    override fun copy(config: MapConfig): Map {
-        return MapFileBased(config = config, folder = folder).apply {
-            /* Some properties must be dynamically set right after */
-            sizeInBytes.value = this@MapFileBased.sizeInBytes.value
-        }
-    }
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -166,9 +157,7 @@ class MapFileBased(
         other as MapFileBased
 
         /* By design, only MapConfig participates in equals policy */
-        if (config != other.config) return false
-
-        return true
+        return config == other.config
     }
 
     override fun hashCode(): Int {

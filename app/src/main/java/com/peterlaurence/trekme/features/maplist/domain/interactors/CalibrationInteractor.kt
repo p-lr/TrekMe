@@ -52,13 +52,15 @@ class CalibrationInteractor @Inject constructor(
             }
         }
 
-        /* Create a new map from the old one and update the map list */
-        val oldConfig = map.configSnapshot
-        val newMap = map.copy(config = oldConfig.copy(calibration = oldConfig.calibration?.copy(calibrationPoints = newCalibrationPoints)))
-        mapRepository.notifyUpdate(map, newMap)
-
-        /* Effectively save the map (and consequently, the calibration) */
-        saveMapInteractor.saveMap(newMap)
+        // TODO: the implementation below was using an older mechanism where copying map instance was
+        // possible. Now, by design, we avoid doing that.
+//        /* Create a new map from the old one and update the map list */
+//        val oldConfig = map.configSnapshot
+//        val newMap = map.copy(config = oldConfig.copy(calibration = oldConfig.calibration?.copy(calibrationPoints = newCalibrationPoints)))
+//        mapRepository.notifyUpdate(map, newMap)
+//
+//        /* Effectively save the map (and consequently, the calibration) */
+//        saveMapInteractor.saveMap(newMap)
         return true
     }
 }

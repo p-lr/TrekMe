@@ -18,24 +18,29 @@ class MutateMapCalibrationInteractor @Inject constructor(
     suspend fun mutateProjection(map: Map, projectionName: String?) = runCatching {
         val projectionType = projectionHashMap[projectionName]
         val projection = projectionType?.getDeclaredConstructor()?.newInstance()
-        val oldConfig = map.configSnapshot
-        val newConfig = oldConfig.copy(calibration = oldConfig.calibration?.copy(projection = projection))
 
-        val newMap = map.copy(config = newConfig)
-        mapRepository.notifyUpdate(map, newMap)
-        saveMapInteractor.saveMap(newMap)
+        // TODO: the implementation below was using an older mechanism where copying map instance was
+        // possible. Now, by design, we avoid doing that.
+//        val oldConfig = map.configSnapshot
+//        val newConfig = oldConfig.copy(calibration = oldConfig.calibration?.copy(projection = projection))
+//
+//        val newMap = map.copy(config = newConfig)
+//        mapRepository.notifyUpdate(map, newMap)
+//        saveMapInteractor.saveMap(newMap)
     }
 
     /**
      * Mutate the [CalibrationMethod] of a given [Map], then saves the [Map].
      */
     suspend fun mutateCalibrationMethod(map: Map, calibrationMethod: CalibrationMethod)= runCatching {
-        val oldConfig = map.configSnapshot
-        val newConfig = oldConfig.copy(calibration = oldConfig.calibration?.copy(calibrationMethod = calibrationMethod))
-
-        val newMap = map.copy(config = newConfig)
-        mapRepository.notifyUpdate(map, newMap)
-        saveMapInteractor.saveMap(newMap)
+        // TODO: the implementation below was using an older mechanism where copying map instance was
+        // possible. Now, by design, we avoid doing that.
+//        val oldConfig = map.configSnapshot
+//        val newConfig = oldConfig.copy(calibration = oldConfig.calibration?.copy(calibrationMethod = calibrationMethod))
+//
+//        val newMap = map.copy(config = newConfig)
+//        mapRepository.notifyUpdate(map, newMap)
+//        saveMapInteractor.saveMap(newMap)
     }
 
     /**

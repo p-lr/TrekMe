@@ -12,6 +12,7 @@ import com.peterlaurence.trekme.core.map.data.models.IgnSpainLayerDataKtx
 import com.peterlaurence.trekme.core.map.data.models.IgnSpainPrimaryLayerIdKtx
 import com.peterlaurence.trekme.core.map.data.models.LayerDataKtx
 import com.peterlaurence.trekme.core.map.data.models.LevelKtx
+import com.peterlaurence.trekme.core.map.data.models.MapFileBased
 import com.peterlaurence.trekme.core.map.data.models.MapKtx
 import com.peterlaurence.trekme.core.map.data.models.MapProvider
 import com.peterlaurence.trekme.core.map.data.models.MapSize
@@ -171,12 +172,12 @@ private fun LayerDataKtx.toDomain(): MapSourceData {
     }
 }
 
-fun MapConfig.toMapKtx(): MapKtx {
+fun MapFileBased.toMapKtx(): MapKtx {
     return MapKtx(
-        uuid = uuid.toString(),
-        name = name,
+        uuid = config.uuid.toString(),
+        name = name.value,
         thumbnail = THUMBNAIL_NAME,
-        levels = levels.map { lvl ->
+        levels = config.levels.map { lvl ->
             LevelKtx(
                 level = lvl.level,
                 tileSize = lvl.tileSize.let { size ->
@@ -196,10 +197,10 @@ fun MapConfig.toMapKtx(): MapKtx {
             imageExtension = this@toMapKtx.imageExtension
         ),
         size = MapSize(
-            x = size.width,
-            y = size.height
+            x = config.size.width,
+            y = config.size.height
         ),
-        calibration = calibration?.let { cal ->
+        calibration = config.calibration?.let { cal ->
             CalibrationKtx(
                 projection = cal.projection?.toData(),
                 calibrationMethod = cal.calibrationMethod.toString(),

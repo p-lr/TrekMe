@@ -471,7 +471,7 @@ private fun MapRepairSetting(
     onNavigateToShop: () -> Unit,
     onStartRepair: () -> Unit
 ) {
-    if (map.configSnapshot.creationData != null) {
+    if (map.creationData != null) {
         val missingTilesCount by map.missingTilesCount.collectAsStateWithLifecycle()
         HeaderSetting(name = stringResource(id = R.string.map_update_category))
         AnalyseAndRepair(missingTilesCount, hasExtendedOffer, onNavigateToShop, onStartRepair)

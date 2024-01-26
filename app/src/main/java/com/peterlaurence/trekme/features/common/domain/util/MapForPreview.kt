@@ -72,21 +72,16 @@ fun makeMapForComposePreview(name: String = "Example map"): Map {
             get() = 1000
         override val heightPx: Int
             get() = 1000
-        override val configSnapshot: MapConfig
-            get() = MapConfig(
-                id, name, thumbnail.value, levelList, origin, Size(widthPx, heightPx),
-                imageExtension, calibration = null,
-                creationData = CreationData(
-                    12,
-                    16,
-                    Boundary(0, ProjectedCoordinates(0.0, 0.0), ProjectedCoordinates(1.0, 1.0)),
-                    SwissTopoData,
-                    0L
-                )
-            )
-
-        override fun copy(config: MapConfig): Map {
-            TODO()
-        }
+        override val creationData = CreationData(
+            minLevel = 12,
+            maxLevel = 16,
+            boundary = Boundary(
+                srid = 0,
+                corner1 = ProjectedCoordinates(0.0, 0.0),
+                corner2 = ProjectedCoordinates(1.0, 1.0)
+            ),
+            mapSourceData = SwissTopoData,
+            creationDate = 0L
+        )
     }
 }

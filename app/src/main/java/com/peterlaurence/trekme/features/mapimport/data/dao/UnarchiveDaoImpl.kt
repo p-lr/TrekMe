@@ -3,10 +3,12 @@ package com.peterlaurence.trekme.features.mapimport.data.dao
 import android.app.Application
 import androidx.documentfile.provider.DocumentFile
 import com.peterlaurence.trekme.core.map.data.MAP_IMPORTED_FOLDER_NAME
+import com.peterlaurence.trekme.core.map.data.models.MapFileBased
 import com.peterlaurence.trekme.core.map.data.utils.unarchive
 import com.peterlaurence.trekme.core.map.domain.dao.MapSaverDao
 import com.peterlaurence.trekme.core.map.domain.dao.MapSeekerDao
 import com.peterlaurence.trekme.core.map.domain.models.MapImportResult
+import com.peterlaurence.trekme.core.map.domain.models.MapParseStatus
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.features.mapimport.domain.dao.MapArchiveRegistry
@@ -88,16 +90,17 @@ class UnarchiveDaoImpl(
 
     private suspend fun importMapFromFolder(folder: File) = withContext(ioDispatcher) {
         val map = mapSeekerDao.seek(folder).getOrNull()
-        if (map != null) {
-            /* If a map with the same id already exists, change the id and save the the map */
-            val mapToAdd = if (map in mapRepository.getCurrentMapList()) {
-                val mapWithNewId = map.copy(map.configSnapshot.copy(uuid = UUID.randomUUID()))
-                mapSaverDao.save(mapWithNewId)
-                mapWithNewId
-            } else map
+        if (map !is MapFileBased) return@withContext MapImportResult(null, MapParseStatus.NO_MAP)
 
-            mapRepository.addMaps(listOf(mapToAdd))
-        }
+        /* If a map with the same id already exists, change the id and save the map */
+        val mapToAdd = if (map.id in mapRepository.getCurrentMapList().map { it.id }) {
+            val newConfig = map.config.copy(uuid = UUID.randomUUID())
+            val mapWithNewId = MapFileBased(newConfig, folder)
+            mapSaverDao.save(mapWithNewId)
+            mapWithNewId
+        } else map
+
+        mapRepository.addMaps(listOf(mapToAdd))
 
         MapImportResult(map, mapSeekerDao.status)
     }

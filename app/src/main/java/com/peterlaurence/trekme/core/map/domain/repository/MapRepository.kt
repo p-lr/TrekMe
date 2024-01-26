@@ -49,30 +49,6 @@ class MapRepository {
         _mapListFlow.value = MapList(mapListState.mapList - map)
     }
 
-    fun notifyUpdate(oldMap: Map, newMap: Map) {
-        val mapListState = _mapListFlow.value as? MapList ?: return
-
-        _mapListFlow.value = MapList(
-            mapListState.mapList.indexOf(oldMap).let { i ->
-                if (i >= 0) {
-                    mapListState.mapList.toMutableList().apply {
-                        set(i, newMap)
-                    }
-                } else mapListState.mapList
-            }
-        )
-
-        /* If necessary, update the current map */
-        if (oldMap == _mapFlow.value) {
-            _mapFlow.value = newMap
-        }
-
-        /* If necessary, update the settings map */
-        if (oldMap == _settingsMapFlow.value) {
-            _settingsMapFlow.value = newMap
-        }
-    }
-
     /**
      * For situations when we need to get the list of maps at the time of the call, and we don't
      * need to react on map list changes.

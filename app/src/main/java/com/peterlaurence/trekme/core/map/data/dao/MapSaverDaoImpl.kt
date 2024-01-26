@@ -19,12 +19,13 @@ class MapSaverDaoImpl (
     private val json: Json
 ): MapSaverDao {
     override suspend fun save(map: Map) {
+        if (map !is MapFileBased) return
         val jsonString = withContext(mainDispatcher) {
-            val mapKtx = map.configSnapshot.toMapKtx()
+            val mapKtx = map.toMapKtx()
             json.encodeToString(mapKtx)
         }
 
-        val rootFolder = (map as? MapFileBased)?.folder ?: return
+        val rootFolder = map.folder
         withContext(ioDispatcher) {
             val configFile = File(rootFolder, MAP_FILENAME)
             writeToFile(jsonString, configFile) {

@@ -120,7 +120,7 @@ class MapSettingsViewModel @Inject constructor(
     }
 
     fun repair(map: Map) {
-        val creationData = map.configSnapshot.creationData
+        val creationData = map.creationData
         if (creationData != null) {
             val repairSpec = UpdateSpec(map, creationData, repairOnly = true)
             downloadRepository.postMapDownloadSpec(repairSpec)
