@@ -132,7 +132,10 @@ fun MapSettingsStateful(
                 viewModel.archiveMap(map, uri)
             },
             onStartRepair = {
-                viewModel.repair(map)
+                viewModel.update(map, repairOnly = true)
+            },
+            onStartUpdate = {
+                viewModel.update(map, repairOnly = false)
             },
             onNavigateToShop = onNavigateToShop,
             onBackClick = onBackClick
@@ -180,6 +183,7 @@ private fun MapSettingsScreen(
     onComputeMapSize: () -> Unit,
     onArchiveMap: (Uri) -> Unit,
     onStartRepair: () -> Unit,
+    onStartUpdate: () -> Unit,
     onNavigateToShop: () -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -261,7 +265,7 @@ private fun MapSettingsScreen(
             SettingDivider()
             MapSettings(name, mapSizeState, onMapRename, onComputeMapSize, onArchiveMap)
             SettingDivider()
-            MapRepairSetting(map, hasExtendedOffer, onNavigateToShop, onStartRepair)
+            MapRepairSetting(map, hasExtendedOffer, onNavigateToShop, onStartRepair, onStartUpdate)
         }
     }
 }
@@ -469,13 +473,14 @@ private fun MapRepairSetting(
     map: Map,
     hasExtendedOffer: Boolean,
     onNavigateToShop: () -> Unit,
-    onStartRepair: () -> Unit
+    onStartRepair: () -> Unit,
+    onStartUpdate: () -> Unit
 ) {
     if (map.creationData != null) {
         val missingTilesCount by map.missingTilesCount.collectAsStateWithLifecycle()
         HeaderSetting(name = stringResource(id = R.string.map_update_category))
         AnalyseAndRepair(missingTilesCount, hasExtendedOffer, onNavigateToShop, onStartRepair)
-        UpdateButton(hasExtendedOffer, onNavigateToShop, { /* TODO */ })
+        UpdateButton(hasExtendedOffer, onNavigateToShop, onStartUpdate)
     }
 }
 
@@ -597,6 +602,7 @@ private fun MapScreenPreview() {
             onComputeMapSize = {},
             onArchiveMap = {},
             onStartRepair = {},
+            onStartUpdate = {},
             onNavigateToShop = {},
             onBackClick = {}
         )

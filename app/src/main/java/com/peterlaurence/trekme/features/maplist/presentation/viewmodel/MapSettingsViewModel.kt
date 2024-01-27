@@ -119,10 +119,10 @@ class MapSettingsViewModel @Inject constructor(
         }
     }
 
-    fun repair(map: Map) {
+    fun update(map: Map, repairOnly: Boolean) {
         val creationData = map.creationData
         if (creationData != null) {
-            val repairSpec = UpdateSpec(map, creationData, repairOnly = true)
+            val repairSpec = UpdateSpec(map, creationData, repairOnly = repairOnly)
             downloadRepository.postMapDownloadSpec(repairSpec)
             val intent = Intent(app, DownloadService::class.java)
             app.startService(intent)
