@@ -38,6 +38,8 @@
     <string name="map_update">Mettre à jour</string>
     <string name="map_update_rationale">Cette fonctionnalité vous permet de re-télécharger la carte. C\'est utile quand la carte a été créée il y a plusieurs années et que son contenu est susceptible d\'avoir changé.</string>
     <string name="map_update_action">Mettre à jour</string>
+    <string name="map_created_on">Carte créée le %1$s</string>
+    <string name="map_updated_on">Dernière mise à jour le %1$s</string>
 
     <string name="map_delete_question">Confirmer la suppression de la carte</string>
     <string name="cancel_dialog_string">Annuler</string>

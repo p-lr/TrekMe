@@ -118,6 +118,8 @@
     <string name="map_update">Update</string>
     <string name="map_update_rationale">This feature allows you to re-download completely the map. It\'s useful when the map was created years ago and some parts are likely to have changed.</string>
     <string name="map_update_action">Update</string>
+    <string name="map_created_on">Map created on %1$s</string>
+    <string name="map_updated_on">Last updated on %1$s</string>
 
     <!-- Save map dialog fragment -->
     <string name="archive_dialog_title">Save map</string>

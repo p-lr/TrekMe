@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.map.domain.models.CreationData
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.features.common.domain.util.makeMapForComposePreview
@@ -63,8 +64,12 @@ import com.peterlaurence.trekme.util.ResultL
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 import com.peterlaurence.trekme.util.isFrench
 import kotlinx.coroutines.flow.MutableStateFlow
+import okhttp3.internal.UTC
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 /**
  * UI that shows the settings for a given map. It provides the abilities to :
@@ -476,11 +481,12 @@ private fun MapRepairSetting(
     onStartRepair: () -> Unit,
     onStartUpdate: () -> Unit
 ) {
-    if (map.creationData != null) {
+    val creationData = map.creationData
+    if (creationData != null) {
         val missingTilesCount by map.missingTilesCount.collectAsStateWithLifecycle()
         HeaderSetting(name = stringResource(id = R.string.map_update_category))
         AnalyseAndRepair(missingTilesCount, hasExtendedOffer, onNavigateToShop, onStartRepair)
-        UpdateButton(hasExtendedOffer, onNavigateToShop, onStartUpdate)
+        UpdateButton(map, creationData, hasExtendedOffer, onNavigateToShop, onStartUpdate)
     }
 }
 
@@ -512,17 +518,27 @@ private fun AnalyseAndRepair(
 
 @Composable
 private fun UpdateButton(
+    map: Map,
+    creationData: CreationData,
     hasExtendedOffer: Boolean,
     onNavigateToShop: () -> Unit,
     onStartUpdate: () -> Unit
 ) {
     var isShowingClickRationaleData by remember { mutableStateOf(false) }
+    val lastUpdateDate by map.lastUpdateDate.collectAsStateWithLifecycle()
+    val lastUptDate = lastUpdateDate
+    val subtitle = if (lastUptDate != null) {
+        stringResource(id = R.string.map_updated_on).format(formatIsoDate(lastUptDate))
+    } else {
+        stringResource(id = R.string.map_created_on).format(formatIsoDate(creationData.creationDate))
+    }
 
     ButtonSettingWithLock(
         name = stringResource(id = R.string.map_update),
+        subTitle = subtitle,
         enabled = true,
         isLocked = !hasExtendedOffer,
-        lockedRationale = stringResource(id = R.string.map_repair_rationale),
+        lockedRationale = stringResource(id = R.string.map_update_rationale),
         onNavigateToShop = onNavigateToShop,
         onClick = { isShowingClickRationaleData = true }
     )
@@ -576,6 +592,12 @@ private fun Long.formatSize(context: Context): String {
     }
     val number = BigDecimal(this / divider).setScale(2, RoundingMode.HALF_EVEN)
     return "$number $prefix$byteStr"
+}
+
+private fun formatIsoDate(epochSeconds: Long): String {
+    return runCatching {
+        DateTimeFormatter.ISO_LOCAL_DATE.withZone(ZoneId.of("UTC")).format(Instant.ofEpochSecond(epochSeconds))
+    }.getOrElse { "" }
 }
 
 @Preview
