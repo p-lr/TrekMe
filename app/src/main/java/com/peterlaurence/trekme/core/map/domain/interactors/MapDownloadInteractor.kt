@@ -64,14 +64,12 @@ class MapDownloadInteractor @Inject constructor(
             return MapDownloadResult.Error(MissingApiError)
         }
 
-        val progressEvent = MapUpdatePending(0, spec.repairOnly)
         val result = mapDownloadDao.processUpdateSpec(
             spec,
             tileStreamProvider,
             onProgress = {
                 /* Publish an application-wide event */
-                progressEvent.progress = it
-                repository.postDownloadEvent(progressEvent)
+                repository.postDownloadEvent(MapUpdatePending(spec.map.id, it, spec.repairOnly))
 
                 /* Report back the progression to the caller */
                 onProgress(it)
@@ -95,14 +93,12 @@ class MapDownloadInteractor @Inject constructor(
             return MapDownloadResult.Error(MissingApiError)
         }
 
-        val progressEvent = MapDownloadPending(0)
         val result = mapDownloadDao.processNewDownloadSpec(
             spec,
             tileStreamProvider,
             onProgress = {
                 /* Publish an application-wide event */
-                progressEvent.progress = it
-                repository.postDownloadEvent(progressEvent)
+                repository.postDownloadEvent(MapDownloadPending(it))
 
                 /* Report back the progression to the caller */
                 onProgress(it)

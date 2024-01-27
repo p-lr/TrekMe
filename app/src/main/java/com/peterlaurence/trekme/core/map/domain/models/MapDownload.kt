@@ -25,8 +25,8 @@ class UpdateSpec(
 ) : MapDownloadSpec
 
 sealed interface MapDownloadEvent
-data class MapDownloadPending(var progress: Int = 100): MapDownloadEvent
-data class MapUpdatePending(var progress: Int = 100, val repairOnly: Boolean): MapDownloadEvent
+data class MapDownloadPending(val progress: Int = 100): MapDownloadEvent
+data class MapUpdatePending(val mapId: UUID, val progress: Int = 100, val repairOnly: Boolean): MapDownloadEvent
 data class MapDownloadFinished(val mapId: UUID): MapDownloadEvent
 data class MapUpdateFinished(val mapId: UUID, val repairOnly: Boolean): MapDownloadEvent
 data object MapDownloadStorageError: MapDownloadEvent

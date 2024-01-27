@@ -8,6 +8,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -23,6 +25,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -64,7 +67,7 @@ import com.peterlaurence.trekme.util.ResultL
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 import com.peterlaurence.trekme.util.isFrench
 import kotlinx.coroutines.flow.MutableStateFlow
-import okhttp3.internal.UTC
+import kotlinx.coroutines.flow.StateFlow
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Instant
@@ -111,9 +114,11 @@ fun MapSettingsStateful(
 
     if (map != null) {
         val name by map.name.collectAsStateWithLifecycle()
+        val mapUpdateState = viewModel.mapUpdateStateFlow
         MapSettingsScreen(
             map = map,
             name = name,
+            mapUpdateState = mapUpdateState,
             hasExtendedOffer = hasExtendedOffer,
             snackbarHostState = snackbarHostState,
             mapSizeState = viewModel.mapSize,
@@ -177,6 +182,7 @@ private fun MapSettingsErrorScreen(onBackClick: () -> Unit = {}) {
 private fun MapSettingsScreen(
     map: Map,
     name: String,
+    mapUpdateState: StateFlow<MapSettingsViewModel.MapUpdateState?>,
     hasExtendedOffer: Boolean,
     snackbarHostState: SnackbarHostState,
     mapSizeState: MutableStateFlow<ResultL<Long?>>,
@@ -270,7 +276,14 @@ private fun MapSettingsScreen(
             SettingDivider()
             MapSettings(name, mapSizeState, onMapRename, onComputeMapSize, onArchiveMap)
             SettingDivider()
-            MapRepairSetting(map, hasExtendedOffer, onNavigateToShop, onStartRepair, onStartUpdate)
+            MapRepairSetting(
+                map,
+                hasExtendedOffer,
+                mapUpdateState,
+                onNavigateToShop,
+                onStartRepair,
+                onStartUpdate
+            )
         }
     }
 }
@@ -477,6 +490,7 @@ private fun SaveSetting(onArchiveMap: (Uri) -> Unit) {
 private fun MapRepairSetting(
     map: Map,
     hasExtendedOffer: Boolean,
+    mapUpdateState: StateFlow<MapSettingsViewModel.MapUpdateState?>,
     onNavigateToShop: () -> Unit,
     onStartRepair: () -> Unit,
     onStartUpdate: () -> Unit
@@ -484,41 +498,68 @@ private fun MapRepairSetting(
     val creationData = map.creationData
     if (creationData != null) {
         val missingTilesCount by map.missingTilesCount.collectAsStateWithLifecycle()
+        val mapUpdateState by mapUpdateState.collectAsStateWithLifecycle()
         HeaderSetting(name = stringResource(id = R.string.map_update_category))
-        AnalyseAndRepair(missingTilesCount, hasExtendedOffer, onNavigateToShop, onStartRepair)
-        UpdateButton(map, creationData, hasExtendedOffer, onNavigateToShop, onStartUpdate)
+        AnalyseAndRepair(
+            missingTilesCount = missingTilesCount,
+            progress = mapUpdateState?.let { if (it.mapId == map.id && it.repairOnly) it.progress else null },
+            hasExtendedOffer = hasExtendedOffer,
+            onNavigateToShop = onNavigateToShop,
+            onStartRepair = onStartRepair
+        )
+        UpdateButton(
+            map = map,
+            progress = mapUpdateState?.let { if (it.mapId == map.id && !it.repairOnly) it.progress else null },
+            creationData = creationData,
+            hasExtendedOffer = hasExtendedOffer,
+            onNavigateToShop = onNavigateToShop,
+            onStartUpdate = onStartUpdate
+        )
     }
 }
 
 @Composable
 private fun AnalyseAndRepair(
     missingTilesCount: Long?,
+    progress: Float?,
     hasExtendedOffer: Boolean,
     onNavigateToShop: () -> Unit,
     onStartRepair: () -> Unit
 ) {
-    if (missingTilesCount != null && missingTilesCount > 0) {
-        ButtonSettingWithLock(
-            name = stringResource(id = R.string.map_analyze_and_repair),
-            subTitle = "${stringResource(id = R.string.map_missing_tiles)} $missingTilesCount",
-            enabled = true,
-            isLocked = !hasExtendedOffer,
-            lockedRationale = stringResource(id = R.string.map_repair_rationale),
-            onNavigateToShop = onNavigateToShop,
-            onClick = onStartRepair
-        )
-    } else {
-        ButtonSetting(
-            name = stringResource(id = R.string.map_no_missing_tile),
-            subTitle = "${stringResource(id = R.string.map_missing_tiles)} 0",
-            enabled = false
-        )
-    }
+    ButtonSettingWithLock(
+        title = {
+            if (missingTilesCount != null && missingTilesCount > 0) {
+                if (progress == null) {
+                    Text(stringResource(id = R.string.map_analyze_and_repair))
+                } else {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(stringResource(id = R.string.map_analyze_and_repair_progress))
+                        Spacer(modifier = Modifier.width(24.dp))
+                        LinearProgressIndicator(
+                            progress = progress,
+                            Modifier
+                                .weight(1f)
+                                .padding(end = 16.dp)
+                        )
+                    }
+                }
+            } else {
+                Text(stringResource(id = R.string.map_no_missing_tile))
+            }
+        },
+        subTitle = "${stringResource(id = R.string.map_missing_tiles)} ${missingTilesCount ?: 0}",
+        enabled = missingTilesCount != null && missingTilesCount > 0 && progress == null,
+        isLocked = !hasExtendedOffer,
+        lockedRationale = stringResource(id = R.string.map_repair_rationale),
+        onNavigateToShop = onNavigateToShop,
+        onClick = onStartRepair
+    )
 }
 
 @Composable
 private fun UpdateButton(
     map: Map,
+    progress: Float?,
     creationData: CreationData,
     hasExtendedOffer: Boolean,
     onNavigateToShop: () -> Unit,
@@ -534,9 +575,24 @@ private fun UpdateButton(
     }
 
     ButtonSettingWithLock(
-        name = stringResource(id = R.string.map_update),
+        title = {
+            if (progress == null) {
+                Text(stringResource(id = R.string.map_update))
+            } else {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(stringResource(id = R.string.map_update_progress))
+                    Spacer(modifier = Modifier.width(24.dp))
+                    LinearProgressIndicator(
+                        progress = progress,
+                        Modifier
+                            .weight(1f)
+                            .padding(end = 16.dp)
+                    )
+                }
+            }
+        },
         subTitle = subtitle,
-        enabled = true,
+        enabled = progress == null,
         isLocked = !hasExtendedOffer,
         lockedRationale = stringResource(id = R.string.map_update_rationale),
         onNavigateToShop = onNavigateToShop,
@@ -596,7 +652,8 @@ private fun Long.formatSize(context: Context): String {
 
 private fun formatIsoDate(epochSeconds: Long): String {
     return runCatching {
-        DateTimeFormatter.ISO_LOCAL_DATE.withZone(ZoneId.of("UTC")).format(Instant.ofEpochSecond(epochSeconds))
+        DateTimeFormatter.ISO_LOCAL_DATE.withZone(ZoneId.of("UTC"))
+            .format(Instant.ofEpochSecond(epochSeconds))
     }.getOrElse { "" }
 }
 
@@ -613,6 +670,45 @@ private fun MapScreenPreview() {
         MapSettingsScreen(
             map = map,
             name = name,
+            mapUpdateState = MutableStateFlow(null),
+            hasExtendedOffer = false,
+            snackbarHostState = remember { SnackbarHostState() },
+            mapSizeState = mapSizeState,
+            onSetImage = {},
+            onSetProjection = {},
+            onNavigateToCalibration = {},
+            onSetCalibrationPointNumber = {},
+            onMapRename = {},
+            onComputeMapSize = {},
+            onArchiveMap = {},
+            onStartRepair = {},
+            onStartUpdate = {},
+            onNavigateToShop = {},
+            onBackClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun MapScreenRepairPendingPreview() {
+    TrekMeTheme {
+        val map = makeMapForComposePreview()
+        val name by map.name.collectAsStateWithLifecycle()
+
+        val mapSizeState: MutableStateFlow<ResultL<Long?>> =
+            remember { MutableStateFlow(ResultL.success(125468L)) }
+
+        MapSettingsScreen(
+            map = map,
+            name = name,
+            mapUpdateState = MutableStateFlow(
+                MapSettingsViewModel.MapUpdateState(
+                    map.id,
+                    0.4f,
+                    true
+                )
+            ),
             hasExtendedOffer = false,
             snackbarHostState = remember { SnackbarHostState() },
             mapSizeState = mapSizeState,

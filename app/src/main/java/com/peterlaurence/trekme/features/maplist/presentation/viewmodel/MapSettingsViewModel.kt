@@ -10,6 +10,7 @@ import com.peterlaurence.trekme.core.map.domain.dao.MapUpdateDataDao
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.interactors.*
 import com.peterlaurence.trekme.core.map.domain.models.CalibrationMethod
+import com.peterlaurence.trekme.core.map.domain.models.MapUpdatePending
 import com.peterlaurence.trekme.core.map.domain.models.UpdateSpec
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.features.mapcreate.app.service.download.DownloadService
@@ -42,17 +43,37 @@ class MapSettingsViewModel @Inject constructor(
 ) : ViewModel() {
     val mapFlow: StateFlow<Map?> = mapRepository.settingsMapFlow
 
-    val mapSize: MutableStateFlow<ResultL<Long?>> = MutableStateFlow(ResultL.success(mapFlow.value?.sizeInBytes?.value))
+    val mapSize: MutableStateFlow<ResultL<Long?>> = MutableStateFlow(
+        ResultL.success(mapFlow.value?.sizeInBytes?.value)
+    )
 
     private val _mapImageImportEvent = Channel<Boolean>(1)
     val mapImageImportEvent = _mapImageImportEvent.receiveAsFlow()
 
     val hasExtendedOffer = hasOneExtendedOfferInteractor.getPurchaseFlow(viewModelScope)
 
+    /* This state reflects whether or not a map is currently being updated, either by a repair or
+     * by a full update. */
+    val mapUpdateStateFlow: StateFlow<MapUpdateState?> = channelFlow {
+        downloadRepository.status.collectLatest { status ->
+            when(status) {
+                is DownloadRepository.Started -> {
+                    downloadRepository.downloadEvent.collect { event ->
+                        val state = if (event is MapUpdatePending) {
+                            MapUpdateState(event.mapId, event.progress / 100f, event.repairOnly)
+                        } else null
+                        send(state)
+                    }
+                }
+                DownloadRepository.Stopped -> send(null)
+            }
+        }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
     init {
         /* Lazy-load missing tiles count */
         viewModelScope.launch {
-            mapFlow.collect {settingsMap ->
+            mapFlow.collect { settingsMap ->
                 if (settingsMap != null) {
                     mapUpdateDataDao.loadMapUpdateData(settingsMap)
                 }
@@ -128,4 +149,9 @@ class MapSettingsViewModel @Inject constructor(
             app.startService(intent)
         }
     }
+
+    /**
+     * @param progress values are in the range [0.0 .. 1.0]
+     */
+    data class MapUpdateState(val mapId: UUID, val progress: Float, val repairOnly: Boolean)
 }

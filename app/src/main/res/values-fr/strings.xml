@@ -32,10 +32,12 @@
     <string name="map_save_string">Sauvegarder</string>
     <string name="map_update_category">Réparation et mise à jour</string>
     <string name="map_analyze_and_repair">Analyser &amp; réparer</string>
+    <string name="map_analyze_and_repair_progress">Réparation en cours</string>
     <string name="map_repair_rationale">Cette fonctionnalité vous permet de réparer la carte en téléchargeant les tuiles manquantes. Ceci requiert TrekMe Extended, et n\'est possible que pour les cartes créées à partir de TrekMe v4 et supérieur.</string>
     <string name="map_no_missing_tile">Carte complète</string>
     <string name="map_missing_tiles">Tuiles manquantes :</string>
     <string name="map_update">Mettre à jour</string>
+    <string name="map_update_progress">Mise à jour en cours</string>
     <string name="map_update_rationale">Cette fonctionnalité vous permet de re-télécharger la carte. C\'est utile quand la carte a été créée il y a plusieurs années et que son contenu est susceptible d\'avoir changé.</string>
     <string name="map_update_action">Mettre à jour</string>
     <string name="map_created_on">Carte créée le %1$s</string>

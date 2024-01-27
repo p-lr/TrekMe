@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -21,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -35,6 +37,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
@@ -89,7 +92,7 @@ fun ButtonSetting(name: String, subTitle: String? = null, enabled: Boolean, onCl
 
 @Composable
 fun ButtonSettingWithLock(
-    name: String,
+    title: @Composable () -> Unit,
     subTitle: String? = null,
     enabled: Boolean,
     isLocked: Boolean,
@@ -113,20 +116,30 @@ fun ButtonSettingWithLock(
             .padding(start = paddingStart),
         verticalArrangement = Arrangement.Center
     ) {
-        if (isLocked) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(text = name, fontSize = mainFontSize, color = MaterialTheme.colorScheme.onBackground)
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_lock),
-                    modifier = Modifier.padding(start = 8.dp).size(18.dp),
-                    tint = MaterialTheme.colorScheme.tertiary,
-                    contentDescription = null
+        CompositionLocalProvider(
+            LocalTextStyle provides LocalTextStyle.current.copy(
+                color =  MaterialTheme.colorScheme.onBackground,
+                fontSize = mainFontSize,
+                platformStyle = PlatformTextStyle(
+                    includeFontPadding = false
                 )
+            )
+        ) {
+            if (isLocked) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    title()
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_lock),
+                        modifier = Modifier.padding(start = 8.dp).size(18.dp),
+                        tint = MaterialTheme.colorScheme.tertiary,
+                        contentDescription = null
+                    )
+                }
+            } else {
+                title()
             }
-        } else {
-            Text(text = name, fontSize = mainFontSize, color = MaterialTheme.colorScheme.onBackground)
         }
 
         if (subTitle != null) {
