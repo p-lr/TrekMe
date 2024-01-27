@@ -137,12 +137,11 @@ object MapModule {
 
     @Singleton
     @Provides
-    fun provideMissingTilesCountDao(
-        @MainDispatcher mainDispatcher: CoroutineDispatcher,
+    fun provideMapUpdateDataDao(
         @IoDispatcher ioDispatcher: CoroutineDispatcher,
         @MapJson json: Json
-    ): MissingTilesCountDao {
-        return MissingTilesCountDaoImpl(mainDispatcher, ioDispatcher, json)
+    ): MapUpdateDataDao {
+        return MapUpdateDataDaoImpl(ioDispatcher, json)
     }
 
     @Singleton

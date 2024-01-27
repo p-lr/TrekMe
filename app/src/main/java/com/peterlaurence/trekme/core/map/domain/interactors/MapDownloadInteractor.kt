@@ -3,13 +3,14 @@ package com.peterlaurence.trekme.core.map.domain.interactors
 import android.app.Application
 import android.net.Uri
 import com.peterlaurence.trekme.core.map.domain.dao.MapDownloadDao
-import com.peterlaurence.trekme.core.map.domain.dao.MissingTilesCountDao
+import com.peterlaurence.trekme.core.map.domain.dao.MapUpdateDataDao
 import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamProviderDao
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
 import com.peterlaurence.trekme.features.common.domain.interactors.ImportGeoRecordInteractor
 import com.peterlaurence.trekme.features.common.domain.interactors.MapExcursionInteractor
+import java.time.Instant
 import javax.inject.Inject
 
 /**
@@ -22,7 +23,7 @@ class MapDownloadInteractor @Inject constructor(
     private val repository: DownloadRepository,
     private val importGeoRecordInteractor: ImportGeoRecordInteractor,
     private val mapExcursionInteractor: MapExcursionInteractor,
-    private val missingTilesCountDao: MissingTilesCountDao,
+    private val mapUpdateDataDao: MapUpdateDataDao,
     private val app: Application
 ) {
 
@@ -36,7 +37,19 @@ class MapDownloadInteractor @Inject constructor(
         }
 
         if (result is MapDownloadResult.Success) {
-            missingTilesCountDao.setMissingTilesCount(result.map, result.missingTilesCount)
+            val map = result.map
+            val missingTilesCount = result.missingTilesCount
+            when (spec) {
+                is NewDownloadSpec -> mapUpdateDataDao.setNewDownloadData(map, missingTilesCount)
+                is UpdateSpec -> {
+                    val date = Instant.now().epochSecond
+                    if (spec.repairOnly) {
+                        mapUpdateDataDao.setRepairData(map, missingTilesCount, date)
+                    } else {
+                        mapUpdateDataDao.setUpdateData(map, missingTilesCount, date)
+                    }
+                }
+            }
         }
     }
 

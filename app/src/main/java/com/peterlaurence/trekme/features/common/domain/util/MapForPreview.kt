@@ -49,7 +49,6 @@ fun makeMapForComposePreview(name: String = "Example map"): Map {
         override val elevationFix: MutableStateFlow<Int>
             get() = MutableStateFlow(0)
         override val sizeInBytes: MutableStateFlow<Long?> = MutableStateFlow(0L)
-        override val missingTilesCount: MutableStateFlow<Long?> = MutableStateFlow(15)
         override val projectionName: String?
             get() = projection?.name
         override val calibrationStatus: CalibrationStatus
@@ -83,5 +82,8 @@ fun makeMapForComposePreview(name: String = "Example map"): Map {
             mapSourceData = SwissTopoData,
             creationDate = 0L
         )
+        override val missingTilesCount: MutableStateFlow<Long?> = MutableStateFlow(15)
+        override val lastRepairDate: MutableStateFlow<Long?> = MutableStateFlow(null)
+        override val lastUpdateDate: MutableStateFlow<Long?> = MutableStateFlow(null)
     }
 }

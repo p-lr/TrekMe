@@ -42,6 +42,8 @@ class MapFileBased(
     override val sizeInBytes: MutableStateFlow<Long?> = MutableStateFlow(null)
     override val creationData: CreationData? = config.creationData
     override val missingTilesCount: MutableStateFlow<Long?> = MutableStateFlow(null)
+    override val lastRepairDate: MutableStateFlow<Long?> = MutableStateFlow(null)
+    override val lastUpdateDate: MutableStateFlow<Long?> = MutableStateFlow(null)
 
     /**
      * The calibration status is either :

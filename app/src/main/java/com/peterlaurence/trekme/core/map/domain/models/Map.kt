@@ -38,4 +38,6 @@ interface Map {
     val heightPx: Int
     val creationData: CreationData?
     val missingTilesCount: MutableStateFlow<Long?> // lazy loaded
+    val lastRepairDate: MutableStateFlow<Long?>
+    val lastUpdateDate: MutableStateFlow<Long?>
 }

@@ -6,7 +6,7 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.billing.domain.interactors.HasOneExtendedOfferInteractor
-import com.peterlaurence.trekme.core.map.domain.dao.MissingTilesCountDao
+import com.peterlaurence.trekme.core.map.domain.dao.MapUpdateDataDao
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.interactors.*
 import com.peterlaurence.trekme.core.map.domain.models.CalibrationMethod
@@ -36,7 +36,7 @@ class MapSettingsViewModel @Inject constructor(
     private val setMapThumbnailInteractor: SetMapThumbnailInteractor,
     private val archiveMapInteractor: ArchiveMapInteractor,
     private val mapRepository: MapRepository,
-    private val missingTilesCountDao: MissingTilesCountDao,
+    private val mapUpdateDataDao: MapUpdateDataDao,
     private val downloadRepository: DownloadRepository,
     hasOneExtendedOfferInteractor: HasOneExtendedOfferInteractor,
 ) : ViewModel() {
@@ -54,7 +54,7 @@ class MapSettingsViewModel @Inject constructor(
         viewModelScope.launch {
             mapFlow.collect {settingsMap ->
                 if (settingsMap != null) {
-                    missingTilesCountDao.loadMissingTilesCount(settingsMap)
+                    mapUpdateDataDao.loadMapUpdateData(settingsMap)
                 }
             }
         }
