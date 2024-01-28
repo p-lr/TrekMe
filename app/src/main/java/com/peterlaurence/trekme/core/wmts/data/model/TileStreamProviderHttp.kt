@@ -16,8 +16,7 @@ import java.net.URL
 class TileStreamProviderHttp(
     private val urlTileBuilder: UrlTileBuilder,
     private val requestProperties: Map<String, String> = mapOf()
-) :
-    TileStreamProvider {
+) : TileStreamProvider {
     override fun getTileStream(row: Int, col: Int, zoomLvl: Int): TileResult {
         val url = URL(urlTileBuilder.build(zoomLvl, row, col))
 

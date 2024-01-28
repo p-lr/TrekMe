@@ -278,7 +278,11 @@ class WmtsViewModel @Inject constructor(
             val tileStreamProvider = result.getOrNull()
             if (tileStreamProvider != null) {
                 mapState.removeAllLayers()
-                mapState.addLayer(tileStreamProvider.toMapComposeTileStreamProvider())
+                mapState.addLayer(
+                    /* The retry policy is applied here to affect map display only, and to not
+                     * cumulate with the retry policy already applied when downloading maps. */
+                    tileStreamProvider.withRetry(3).toMapComposeTileStreamProvider()
+                )
             } else {
                 _wmtsState.value = WmtsError.VPS_FAIL
             }
