@@ -600,6 +600,7 @@
     <string name="trekme_extended_ign_overlay_desc">Overlay slopes for mountain activities, cadastre, roads, paths and trails</string>
     <string name="trekme_extended_advanced_ft">Advanced features</string>
     <string name="track_follow_shop">Be alerted when you move more than (say) 50m from a track. The alert threshold can be changed</string>
+    <string name="trekme_extended_update_maps">Fix your maps by downloading missing tiles, or re-download them completely to make them up-to-date. This is only possible with TrekMe v4 and onwards.</string>
     <string name="add_beacons">Add beacons to alert you when you get close to specific locations</string>
     <string name="no_ads">No ads</string>
     <string name="create_map_from_track">Create a map from a gpx track</string>

@@ -428,6 +428,8 @@
     <string name="trekme_extended_ign_overlay_desc">Superposez des couches : pentes pour activité neige, parcelles cadastrales, réseau des routes, chemins et sentiers.</string>
     <string name="trekme_extended_advanced_ft">Fonctionnalités avancées</string>
     <string name="track_follow_shop">Soyez alerté quand vous vous éloignez de plus de 50m d\'une trace (distance modifiable).</string>
+    <string name="trekme_extended_update_maps">Réparez vos cartes en téléchargeant les tuiles manquantes ou re-téléchargez les complètement pour mise à jour.
+        Ceci n\'est possible qu\'avec les cartes créées à partir de la v4 de TrekMe.</string>
     <string name="add_beacons">Ajoutez des balises pour vous alerter quand vous vous rapprochez de lieux précis sur la carte.</string>
     <string name="no_ads">Pas de publicité</string>
     <string name="new_features">Des fonctionnalités exclusives seront ajoutées</string>
@@ -444,8 +446,7 @@
     <string name="offer_gateway_check_pending">Vérifications en cours…</string>
     <string name="offer_gateway_subscription_must_end">Votre abonnement TrekMe Extended doit prendre fin avant de pouvoir choisir l\'option IGN.
         Vous pouvez gérer votre abonnement depuis la gestion de vos abonnements dans l\'application Google Play.</string>
-    <string name="ign_caution">Le serveur de carte de l\'IGN a parfois des lenteurs. Concrètement, vous voulez créer une carte IGN mais …
-    rien ne s\'affiche. Dans ce cas, il est conseillé de réessayer plus tard dans la journée.</string>
+    <string name="ign_caution">Le serveur de carte de l\'IGN a parfois des lenteurs. Si vous avez des difficultés pour créer une carte, il est conseillé de réessayer plus tard dans la journée.</string>
     <string name="nb">N.B</string>
     <string name="go_to_track_on_map">Voir sur la carte</string>
     <string name="tracks_manage_frgmt_title">Gestion des traces</string>

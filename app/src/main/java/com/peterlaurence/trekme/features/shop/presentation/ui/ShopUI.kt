@@ -124,10 +124,12 @@ fun ShopStateful(
     )
 }
 
-private sealed interface UiState
-private data class Purchased(val isIgn: Boolean) : UiState
+private sealed interface UiState {
+    val isIgn: Boolean
+}
+private data class Purchased(override val isIgn: Boolean) : UiState
 private data class Selection(
-    val isIgn: Boolean,
+    override val isIgn: Boolean,
     val purchaseState: PurchaseState,
     val monthlySubDetails: SubscriptionDetails?,
     val yearlySubDetails: SubscriptionDetails?
@@ -172,10 +174,8 @@ private fun ShopUi(
                     }
                 },
                 content = {
-                    when (uiState) {
-                        is Purchased -> TrekMeExtendedPurchasedContent(withIgn = uiState.isIgn)
-                        is Selection -> TrekMeExtendedContent(uiState.isIgn, onIgnSelectionChanged)
-                    }
+                    val purchased = uiState is Purchased
+                    TrekMeExtendedContent(uiState.isIgn, purchased, onIgnSelectionChanged)
                 },
                 footerButtons = {
                     when (uiState) {
