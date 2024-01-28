@@ -1,6 +1,8 @@
 package com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
@@ -12,12 +14,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
@@ -46,9 +50,11 @@ fun WmtsAppBar(
     onQueryTextSubmit: (String) -> Unit,
     onZoomOnPosition: () -> Unit,
     onShowLayerOverlay: () -> Unit,
-    onUseTrack: () -> Unit
+    onUseTrack: () -> Unit,
+    onNavigateToShop: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
+    var isShowingTrackImportRedirection by remember { mutableStateOf(false) }
 
     TopAppBar(
         title = {
@@ -84,41 +90,60 @@ fun WmtsAppBar(
                             contentDescription = null,
                         )
                     }
-                    if (state.hasOverflowMenu) {
-                        IconButton(
-                            onClick = { expanded = true },
-                            modifier = Modifier.width(36.dp)
+                    IconButton(
+                        onClick = { expanded = true },
+                        modifier = Modifier.width(36.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.MoreVert,
+                            contentDescription = null,
+                        )
+                    }
+                    Box(
+                        Modifier
+                            .height(24.dp)
+                            .wrapContentSize(Alignment.BottomEnd, true)
+                    ) {
+                        DropdownMenu(
+                            modifier = Modifier.wrapContentSize(Alignment.TopEnd),
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                            offset = DpOffset(0.dp, 0.dp)
                         ) {
-                            Icon(
-                                Icons.Default.MoreVert,
-                                contentDescription = null,
-                            )
-                        }
-                        Box(
-                            Modifier
-                                .height(24.dp)
-                                .wrapContentSize(Alignment.BottomEnd, true)
-                        ) {
-                            DropdownMenu(
-                                modifier = Modifier.wrapContentSize(Alignment.TopEnd),
-                                expanded = expanded,
-                                onDismissRequest = { expanded = false },
-                                offset = DpOffset(0.dp, 0.dp)
-                            ) {
-                                if (state.hasOverlayLayers) {
-                                    DropdownMenuItem(
-                                        onClick = onShowLayerOverlay,
-                                        text = { Text(stringResource(id = R.string.mapcreate_overlay_layers)) }
-                                    )
-                                }
-
-                                if (state.hasTrackImport) {
-                                    DropdownMenuItem(
-                                        onClick = onUseTrack,
-                                        text = { Text(stringResource(id = R.string.mapcreate_from_track)) }
-                                    )
-                                }
+                            if (state.hasOverlayLayers) {
+                                DropdownMenuItem(
+                                    onClick = onShowLayerOverlay,
+                                    text = { Text(stringResource(id = R.string.mapcreate_overlay_layers)) }
+                                )
                             }
+
+                            DropdownMenuItem(
+                                onClick = {
+                                    if (state.hasTrackImport) {
+                                        onUseTrack()
+                                    } else {
+                                        isShowingTrackImportRedirection = true
+                                    }
+                                },
+                                text = {
+                                    if (state.hasTrackImport) {
+                                        Text(stringResource(id = R.string.mapcreate_from_track))
+                                    } else {
+                                        Row {
+                                            Text(stringResource(id = R.string.mapcreate_from_track))
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.ic_lock),
+                                                modifier = Modifier
+                                                    .padding(start = 8.dp)
+                                                    .size(18.dp),
+                                                tint = MaterialTheme.colorScheme.tertiary,
+                                                contentDescription = null
+                                            )
+                                        }
+                                    }
+
+                                }
+                            )
                         }
                     }
                 }
@@ -128,6 +153,46 @@ fun WmtsAppBar(
             }
         }
     )
+
+    if (isShowingTrackImportRedirection) {
+        AlertDialog(
+            title = {
+                Text(
+                    stringResource(id = R.string.map_settings_trekme_extended_title),
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            },
+            text = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(stringResource(id = R.string.mapcreate_from_track_rationale), Modifier.fillMaxWidth())
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Image(
+                        painter = painterResource(id = R.drawable.create_from_track),
+                        modifier = Modifier.clip(RoundedCornerShape(10.dp)),
+                        contentDescription = null
+                    )
+                }
+            },
+            onDismissRequest = { isShowingTrackImportRedirection = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        isShowingTrackImportRedirection = false
+                        onNavigateToShop()
+                    }
+                ) {
+                    Text(stringResource(id = R.string.ok_dialog))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { isShowingTrackImportRedirection = false }) {
+                    Text(text = stringResource(id = R.string.cancel_dialog_string))
+                }
+            }
+        )
+    }
 }
 
 @Composable

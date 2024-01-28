@@ -225,7 +225,8 @@ fun WmtsStateful(
             onShowLayerOverlay = onShowLayerOverlay,
             onUseTrack = {
                 launcher.launch("*/*")
-            }
+            },
+            onNavigateToShop = onGoToShop
         )
 
         OnBoardingOverlay(
@@ -308,7 +309,8 @@ private fun WmtsScaffold(
     onLayerSelection: () -> Unit,
     onZoomOnPosition: () -> Unit,
     onShowLayerOverlay: () -> Unit,
-    onUseTrack: () -> Unit
+    onUseTrack: () -> Unit,
+    onNavigateToShop: () -> Unit
 ) {
     Scaffold(
         Modifier.fillMaxSize(),
@@ -322,7 +324,8 @@ private fun WmtsScaffold(
                 onQueryTextSubmit,
                 onZoomOnPosition,
                 onShowLayerOverlay,
-                onUseTrack
+                onUseTrack,
+                onNavigateToShop
             )
         },
         floatingActionButton = {

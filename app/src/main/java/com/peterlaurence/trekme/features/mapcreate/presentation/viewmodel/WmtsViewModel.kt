@@ -712,7 +712,5 @@ private fun WmtsState.getMapState(): MapState? {
 
 sealed interface TopBarState
 object Empty : TopBarState
-data class Collapsed(val hasPrimaryLayers: Boolean, val hasOverlayLayers: Boolean, val hasTrackImport: Boolean) : TopBarState {
-    val hasOverflowMenu: Boolean = hasOverlayLayers || hasTrackImport
-}
+data class Collapsed(val hasPrimaryLayers: Boolean, val hasOverlayLayers: Boolean, val hasTrackImport: Boolean) : TopBarState
 data class SearchMode(val textValueState: MutableState<TextFieldValue>) : TopBarState

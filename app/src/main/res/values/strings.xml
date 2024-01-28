@@ -392,6 +392,7 @@
     <string name="mapcreate_define_layer">Choose layer</string>
     <string name="mapcreate_overlay_layers">Overlay layers</string>
     <string name="mapcreate_from_track">Use a track</string>
+    <string name="mapcreate_from_track_rationale">Use a gpx track to center directly on the right area.</string>
     <string name="wmts_settings_dialog">Map configuration</string>
     <string name="wmts_level_min_decrement">Decrement min level</string>
     <string name="wmts_level_min_increment">Increment min level</string>
