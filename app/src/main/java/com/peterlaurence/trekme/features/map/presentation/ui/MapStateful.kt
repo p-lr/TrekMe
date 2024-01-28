@@ -64,7 +64,8 @@ fun MapStateful(
     onNavigateToTracksManage: () -> Unit,
     onNavigateToMarkerEdit: (markerId: String, mapId: UUID) -> Unit,
     onNavigateToExcursionWaypointEdit: (waypointId: String, excursionId: String) -> Unit,
-    onNavigateToBeaconEdit: (beaconId: String, mapId: UUID) -> Unit
+    onNavigateToBeaconEdit: (beaconId: String, mapId: UUID) -> Unit,
+    onNavigateToShop: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val purchased by viewModel.purchaseFlow.collectAsState()
@@ -186,8 +187,6 @@ fun MapStateful(
         }
     }
 
-    var isShowingTrackFollowHelp by rememberSaveable { mutableStateOf(false) }
-
     when (uiState) {
         Loading -> {
             LoadingScreen()
@@ -233,7 +232,7 @@ fun MapStateful(
                         onPositionFabClick = viewModel.locationOrientationLayer::centerOnPosition,
                         onCompassClick = viewModel::alignToNorth,
                         onElevationFixUpdate = viewModel::onElevationFixUpdate,
-                        onShowTrackFollowHelp = { isShowingTrackFollowHelp = true },
+                        onNavigateToShop = onNavigateToShop,
                         recordingButtons = {
                             RecordingFabStateful(gpxRecordServiceViewModel)
                         }
@@ -337,20 +336,6 @@ fun MapStateful(
             },
         )
     }
-
-    if (isShowingTrackFollowHelp) {
-        AlertDialog(
-            onDismissRequest = { isShowingTrackFollowHelp = false },
-            text = {
-                Text(text = stringResource(id = R.string.track_follow_help))
-            },
-            confirmButton = {
-                TextButton(onClick = { isShowingTrackFollowHelp = false }) {
-                    Text(text = stringResource(id = R.string.ok_dialog))
-                }
-            },
-        )
-    }
 }
 
 @Composable
@@ -387,7 +372,7 @@ private fun MapScaffold(
     onPositionFabClick: () -> Unit,
     onCompassClick: () -> Unit,
     onElevationFixUpdate: (Int) -> Unit,
-    onShowTrackFollowHelp: () -> Unit,
+    onNavigateToShop: () -> Unit,
     recordingButtons: @Composable () -> Unit
 ) {
     Scaffold(
@@ -416,7 +401,7 @@ private fun MapScaffold(
                 onToggleLockPosition = onToggleLockOnPosition,
                 onToggleShowGpsData = onToggleShowGpsData,
                 onFollowTrack = onFollowTrack,
-                onShowTrackFollowHelp = onShowTrackFollowHelp
+                onNavigateToShop = onNavigateToShop
             )
         },
         floatingActionButton = {

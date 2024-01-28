@@ -8,11 +8,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
+import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.features.map.presentation.ui.navigation.MapGraph
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MapFragment : Fragment() {
+    @Inject
+    lateinit var appEventBus: AppEventBus
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -29,7 +33,9 @@ class MapFragment : Fragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
             setContent {
-                MapGraph()
+                MapGraph(
+                    onNavigateToShop = { appEventBus.navigateTo(AppEventBus.NavDestination.Shop) }
+                )
             }
         }
     }

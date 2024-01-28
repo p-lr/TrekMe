@@ -17,7 +17,8 @@ fun NavGraphBuilder.mapScreen(
     onNavigateToTrackManage: () -> Unit,
     onNavigateToMarkerEdit: (markerId: String, mapId: UUID) -> Unit,
     onNavigateToExcursionWaypointEdit: (waypointId: String, excursionId: String) -> Unit,
-    onNavigateToBeaconEdit: (beaconId: String, mapId: UUID) -> Unit
+    onNavigateToBeaconEdit: (beaconId: String, mapId: UUID) -> Unit,
+    onNavigateToShop: () -> Unit
 ) {
     composable(mapDestination) {
         TrekMeTheme {
@@ -35,7 +36,8 @@ fun NavGraphBuilder.mapScreen(
                     onNavigateToTracksManage = onNavigateToTrackManage,
                     onNavigateToMarkerEdit = onNavigateToMarkerEdit,
                     onNavigateToExcursionWaypointEdit = onNavigateToExcursionWaypointEdit,
-                    onNavigateToBeaconEdit = onNavigateToBeaconEdit
+                    onNavigateToBeaconEdit = onNavigateToBeaconEdit,
+                    onNavigateToShop = onNavigateToShop
                 )
             }
 

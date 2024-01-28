@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 @Composable
 fun MapGraph(
     modifier: Modifier = Modifier,
+    onNavigateToShop: () -> Unit
 ) {
     val navController = rememberNavController()
     NavHost(
@@ -26,7 +27,8 @@ fun MapGraph(
             },
             onNavigateToBeaconEdit = { beaconId, mapId ->
                 navController.navigateToBeaconEdit(beaconId, mapId.toString())
-            }
+            },
+            onNavigateToShop = onNavigateToShop
         )
 
         tracksManageScreen(
