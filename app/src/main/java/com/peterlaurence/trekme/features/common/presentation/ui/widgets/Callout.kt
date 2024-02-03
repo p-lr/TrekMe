@@ -6,6 +6,8 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.runtime.*
@@ -37,9 +39,10 @@ fun Callout(
     elevation: Dp = 3.dp,
     popupOrigin: PopupOrigin = PopupOrigin.BottomCenter,
     onAnimationDone: () -> Unit = {},
+    rightContent: @Composable RowScope.() -> Unit = {},
     content: @Composable ColumnScope.() -> Unit
 ) {
-    var animVal by remember { mutableStateOf(if (shouldAnimate) 0f else 1f) }
+    var animVal by remember { mutableFloatStateOf(if (shouldAnimate) 0f else 1f) }
 
     LaunchedEffect(true) {
         if (shouldAnimate) {
@@ -53,18 +56,22 @@ fun Callout(
             onAnimationDone()
         }
     }
-    ElevatedCard(
+    Row(
         modifier = modifier
             .alpha(animVal)
             .graphicsLayer {
                 scaleX = animVal
                 scaleY = animVal
                 transformOrigin = getTransformOrigin(popupOrigin)
-            },
-        shape = shape,
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = elevation),
-        content = content
-    )
+            }
+    ) {
+        ElevatedCard(
+            shape = shape,
+            elevation = CardDefaults.elevatedCardElevation(defaultElevation = elevation),
+            content = content
+        )
+        rightContent()
+    }
 }
 
 enum class PopupOrigin {

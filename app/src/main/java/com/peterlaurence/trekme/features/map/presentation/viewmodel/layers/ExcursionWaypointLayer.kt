@@ -20,6 +20,8 @@ import com.peterlaurence.trekme.features.map.domain.models.ExcursionWaypointWith
 import com.peterlaurence.trekme.features.map.presentation.ui.components.Marker
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerCallout
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerGrab
+import com.peterlaurence.trekme.features.map.presentation.ui.components.markerCalloutHeightDp
+import com.peterlaurence.trekme.features.map.presentation.ui.components.markerCalloutWidthDp
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapViewModel
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.positionCallout
@@ -205,7 +207,6 @@ class ExcursionWaypointLayer(
                 val title = waypoint.name
 
                 MarkerCallout(
-                    DpSize(markerCalloutWidthDp.dp, markerCalloutHeightDp.dp),
                     title = title,
                     subTitle = subTitle,
                     shouldAnimate,
@@ -331,9 +332,6 @@ class ExcursionWaypointLayer(
 private const val excursionWaypointPrefix = "excursionWpt"
 private const val calloutPrefix = "callout"
 private const val excursionWptGrabPrefix = "grabExcursionWpt"
-
-private const val markerCalloutWidthDp = 200
-private const val markerCalloutHeightDp = 120
 
 private val df = DecimalFormat("#.####").apply {
     roundingMode = RoundingMode.CEILING
