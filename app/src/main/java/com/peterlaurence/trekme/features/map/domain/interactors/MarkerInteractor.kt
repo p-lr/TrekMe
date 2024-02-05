@@ -54,7 +54,7 @@ class MarkerInteractor @Inject constructor(
      * Update the marker position and save.
      * [x] and [y] are expected to be normalized coordinates.
      */
-    fun updateAndSaveMarker(marker: Marker, map: Map, x: Double, y: Double) = scope.launch {
+    fun updateMarkerPosition(marker: Marker, map: Map, x: Double, y: Double) = scope.launch {
         val mapBounds = map.mapBounds
 
         val lonLat = getLonLatFromNormalizedCoordinate(x, y, map.projection, mapBounds)

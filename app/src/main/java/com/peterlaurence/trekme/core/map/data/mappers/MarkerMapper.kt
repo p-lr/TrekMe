@@ -10,27 +10,20 @@ fun Marker.toMarkerKtx(): MarkerKtx {
         lon = this.lon,
         name = this.name,
         elevation = this.elevation,
-        comment = this.comment
+        comment = this.comment,
+        color = color
     )
 }
 
 fun MarkerKtx.toDomain(): Marker {
-    return if (id != null) {
-        Marker(
-            id = id,
-            lat = this.lat,
-            lon = this.lon,
-            name = this.name ?: "",
-            elevation = this.elevation,
-            comment = this.comment ?: ""
-        )
-    } else {
-        Marker(
-            lat = this.lat,
-            lon = this.lon,
-            name = this.name ?: "",
-            elevation = this.elevation,
-            comment = this.comment ?: ""
-        )
-    }
+    return Marker.make(
+        id = id,
+        lat = this.lat,
+        lon = this.lon,
+        name = this.name,
+        elevation = this.elevation,
+        time = null,
+        comment = this.comment,
+        color = this.color
+    )
 }

@@ -1,14 +1,11 @@
 package com.peterlaurence.trekme.features.map.presentation.viewmodel.layers
 
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.Marker
@@ -21,7 +18,9 @@ import com.peterlaurence.trekme.features.map.presentation.ui.components.markerCa
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapViewModel
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.positionCallout
+import com.peterlaurence.trekme.util.darkenColor
 import com.peterlaurence.trekme.util.dpToPx
+import com.peterlaurence.trekme.util.parseColor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -70,6 +69,8 @@ class MarkerLayer(
             for (markerWithNormalizedPos in it) {
                 val existing = markerListState[markerWithNormalizedPos.marker.id]
                 if (existing != null) {
+                    // TODO: this is called even when the position hasn't changed. Instead, a Marker
+                    // could have observable properties.
                     existing.apply {
                         marker = markerWithNormalizedPos.marker
                         mapState.moveMarker(
@@ -196,7 +197,7 @@ class MarkerLayer(
         val marker = markerState.marker
         scope.launch {
             dataStateFlow.first().also {
-                markerInteractor.updateAndSaveMarker(
+                markerInteractor.updateMarkerPosition(
                     marker,
                     it.map,
                     markerInfo.x,
@@ -224,7 +225,14 @@ class MarkerLayer(
             clickableAreaCenterOffset = Offset(0f, -0.25f),
             clickableAreaScale = Offset(2f, 1f)  // 48dp wide and height
         ) {
-            Marker(isStatic = state.isStatic)
+            val backgroundColor = parseColor(state.marker.color)
+            val strokeColor = darkenColor(backgroundColor, 0.15f)
+
+            Marker(
+                isStatic = state.isStatic,
+                backgroundColor = Color(backgroundColor),
+                strokeColor = Color(strokeColor)
+            )
         }
         return state
     }

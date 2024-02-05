@@ -29,19 +29,20 @@ class MarkerEditViewModel @Inject constructor(
         _markerState.value = getMarker()
     }
 
-    fun saveMarker(lat: Double?, lon: Double?, name: String, comment: String) {
-        val marker = makeMarker(lat, lon, name, comment) ?: return
+    fun saveMarker(lat: Double?, lon: Double?, name: String, comment: String, color: String?) {
+        val marker = makeMarker(lat, lon, name, comment, color) ?: return
         markerInteractor.saveMarker(mapId, marker)
     }
 
-    private fun makeMarker(lat: Double?, lon: Double?, name: String, comment: String): Marker? {
+    private fun makeMarker(lat: Double?, lon: Double?, name: String, comment: String, color: String?): Marker? {
         val marker = getMarker() ?: return null
         return Marker(
             args.markerId,
             lat = lat ?: marker.lat,
             lon = lon ?: marker.lon,
             name = name,
-            comment = comment
+            comment = comment,
+            color = color ?: marker.color
         )
     }
 

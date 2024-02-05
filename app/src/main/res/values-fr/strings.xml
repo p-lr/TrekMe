@@ -61,6 +61,8 @@
     <string name="comment_label">Commentaire</string>
     <string name="save_action">Enregistrer</string>
     <string name="wgs84_label">Coordonnées WGS84</string>
+    <string name="color_label">Couleur</string>
+    <string name="change_color">Changer la couleur</string>
     <string name="projection_label">Coordonnées de projection</string>
     <string name="marker_changes_saved">Changements sauvegardés</string>
     <string name="beacon_help">Une balise sert à vous alerter quand vous rentrez dans la zone de proximité (indiquée en

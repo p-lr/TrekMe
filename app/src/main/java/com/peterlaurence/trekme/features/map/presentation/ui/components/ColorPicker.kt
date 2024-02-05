@@ -21,7 +21,6 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import kotlinx.parcelize.Parcelize
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ColorPicker(
     initColor: Long = 0L,
@@ -41,7 +40,7 @@ fun ColorPicker(
             }
         }
     }
-    var activeIndex by remember { mutableStateOf(initValues?.second ?: 0) }
+    var activeIndex by remember { mutableIntStateOf(initValues?.second ?: 0) }
 
     AlertDialog(
         onDismissRequest = onCancel,
@@ -130,7 +129,7 @@ fun ColorPicker(
                                 selected = paletteVariant == PaletteVariant.NORMAL,
                                 onClick = { paletteVariant = PaletteVariant.NORMAL }
                             )
-                            Text(text = stringResource(id = R.string.color_variant_normal),)
+                            Text(text = stringResource(id = R.string.color_variant_normal))
                         }
 
                         Row(
@@ -143,7 +142,7 @@ fun ColorPicker(
                                 selected = paletteVariant == PaletteVariant.LIGHT,
                                 onClick = { paletteVariant = PaletteVariant.LIGHT }
                             )
-                            Text(text = stringResource(id = R.string.color_variant_light),)
+                            Text(text = stringResource(id = R.string.color_variant_light))
                         }
 
                         Row(
@@ -156,7 +155,7 @@ fun ColorPicker(
                                 selected = paletteVariant == PaletteVariant.DARK,
                                 onClick = { paletteVariant = PaletteVariant.DARK }
                             )
-                            Text(text = stringResource(id = R.string.color_variant_dark),)
+                            Text(text = stringResource(id = R.string.color_variant_dark))
                         }
                     }
                 }
@@ -180,7 +179,7 @@ fun ColorPicker(
 }
 
 private fun findColorInPalettes(color: Long): Pair<PaletteVariant, Int>? {
-    PaletteVariant.values().forEach { variant ->
+    PaletteVariant.entries.forEach { variant ->
         val palette = when (variant) {
             PaletteVariant.NORMAL -> normalPalette
             PaletteVariant.LIGHT -> lightPalette

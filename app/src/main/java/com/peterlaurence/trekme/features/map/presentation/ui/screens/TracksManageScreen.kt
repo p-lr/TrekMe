@@ -38,6 +38,7 @@ import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.ConfirmDialog
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.map.presentation.ui.components.ColorIndicator
 import com.peterlaurence.trekme.features.map.presentation.ui.components.ColorPicker
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.TracksManageViewModel
 import com.peterlaurence.trekme.util.compose.SwipeToDismiss
@@ -507,24 +508,6 @@ private fun TrackItem(
             },
             onCancel = { isShowingColorPicker = false }
         )
-    }
-}
-
-@Composable
-private fun ColorIndicator(color: String, onClick: () -> Unit = {}) {
-    val colorContent = remember(color) {
-        Color(parseColorL(color))
-    }
-    val background = if (isSystemInDarkTheme()) Color(0xffa9b7c6) else Color.White
-    Canvas(
-        modifier = Modifier
-            .size(24.dp)
-            .clickable(onClick = onClick)
-    ) {
-        val r = 10.dp.toPx()
-        val r2 = 12.dp.toPx()
-        drawCircle(background, r2)
-        drawCircle(colorContent, r)
     }
 }
 

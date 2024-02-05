@@ -9,7 +9,8 @@ data class MarkerKtx(
     val lon: Double,
     val name: String? = null,
     val elevation: Double? = null,
-    val comment: String? = null
+    val comment: String? = null,
+    val color: String? = null  // Color introduced on 2024/02, existing data may not have it
 )
 
 @Serializable

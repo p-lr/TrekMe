@@ -271,7 +271,7 @@
         alert threshold can be changed in the settings.
     </string>
     <string name="itinerary_error">Sorry, no itinerary app found</string>
-    <!-- Marker, landmark, beacon edit screens -->
+    <!-- Marker, beacon edit screens -->
     <string name="marker_edit_screen_title">Marker edit</string>
     <string name="beacon_edit_screen_title">Beacon edit</string>
     <string name="marker_name_label">Name</string>
@@ -279,6 +279,8 @@
     <string name="beacon_radius_label">Radius</string>
     <string name="beacon_unit_label">Unit</string>
     <string name="wgs84_label">WGS84 coordinates</string>
+    <string name="color_label">Color</string>
+    <string name="change_color">Change color</string>
     <string name="projection_label">Projected coordinates</string>
     <string name="comment_label">Comment</string>
     <string name="save_action">Save</string>

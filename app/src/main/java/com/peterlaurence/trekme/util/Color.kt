@@ -2,6 +2,7 @@ package com.peterlaurence.trekme.util
 
 import androidx.annotation.ColorInt
 import androidx.annotation.Size
+import androidx.core.graphics.ColorUtils
 
 /**
  * Parse the color string, and return the corresponding color-int.
@@ -44,4 +45,22 @@ fun parseColorL(@Size(min = 1) colorString: String): Long {
         return color
     }
     throw IllegalArgumentException("Unknown color")
+}
+
+/**
+ * Turns e.g 0xffa5bef4 into "#ffa5bef4".
+ */
+fun encodeColor(color: Long): String {
+    return "#${java.lang.Long.toHexString(color)}"
+}
+
+/**
+ * Darken a color by a [factor] which is a value in the range 0..1f
+ */
+fun darkenColor(color: Int, factor: Float): Int {
+    val x = FloatArray(3)
+    ColorUtils.colorToHSL(color, x)
+    x[2] = x[2] * (1 - factor.coerceIn(0f..1f))
+
+    return ColorUtils.HSLToColor(x)
 }
