@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
+import androidx.compose.material3.TooltipDefaults.rememberRichTooltipPositionProvider
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -228,32 +229,36 @@ private fun MapSizeLine(modifier: Modifier = Modifier, mapSizeInMo: Long) {
         )
         if (mapSizeInMo > 200) {
             Spacer(modifier = Modifier.width(16.dp))
-            val tooltipState = remember { RichTooltipState() }
+            val tooltipState = remember { TooltipState() }
             val scope = rememberCoroutineScope()
-            RichTooltipBox(
-                title = { Text(stringResource(id = R.string.map_too_big)) },
-                action = {
-                    TextButton(
-                        onClick = { scope.launch { tooltipState.dismiss() } }
-                    ) { Text("Ok") }
-                },
-                text = { Text(stringResource(id = R.string.map_too_big_explanation)) },
-                tooltipState = tooltipState
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.warning),
-                    modifier = Modifier
-                        .tooltipAnchor()
-                        .clickable {
-                            scope.launch {
-                                tooltipState.show()
-                            }
+            TooltipBox(
+                state = tooltipState,
+                positionProvider = rememberRichTooltipPositionProvider(),
+                tooltip = {
+                    RichTooltip(
+                        title = { Text(stringResource(id = R.string.map_too_big)) },
+                        action = {
+                            TextButton(
+                                onClick = { scope.launch { tooltipState.dismiss() } }
+                            ) { Text("Ok") }
                         },
-                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.tertiary),
-                    contentDescription = null
-                )
-            }
-
+                        text = { Text(stringResource(id = R.string.map_too_big_explanation)) },
+                    )
+                },
+                content = {
+                    Image(
+                        painter = painterResource(id = R.drawable.warning),
+                        modifier = Modifier
+                            .clickable {
+                                scope.launch {
+                                    tooltipState.show()
+                                }
+                            },
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.tertiary),
+                        contentDescription = null
+                    )
+                }
+            )
         } else Modifier.width(35.dp)
     }
 }
