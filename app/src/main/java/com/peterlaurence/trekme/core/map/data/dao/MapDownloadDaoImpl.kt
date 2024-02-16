@@ -199,7 +199,7 @@ class MapDownloadDaoImpl(
             if (b != null) {
                 /* Only write if there was no error */
                 if (isActive) {
-                    tileWriter.write(tile, bitmap)
+                    tileWriter.write(tile, b)
                 }
             } else {
                 missingTilesCount.incrementAndGet()
@@ -317,7 +317,7 @@ class MapDownloadDaoImpl(
                 if (b != null) {
                     /* Only write if there was no error */
                     if (isActive) {
-                        tileWriter.write(tile, bitmap)
+                        tileWriter.write(tile, b)
                     }
                 } else {
                     missingTilesCount.incrementAndGet()
