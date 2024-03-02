@@ -28,6 +28,7 @@
     <string name="import_folder_select_btn">Sélection du dossier d\'archives</string>
     <string name="extraction_lbl">Extraction</string>
     <string name="map_created_lbl">Création de la carte</string>
+    <string name="map_import_success">Carte importée avec succès</string>
     <string name="map_manage_btn_string">Modifier</string>
     <string name="map_save_string">Sauvegarder</string>
     <string name="map_update_category">Réparation et mise à jour</string>

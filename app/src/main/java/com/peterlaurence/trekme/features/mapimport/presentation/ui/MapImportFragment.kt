@@ -24,7 +24,7 @@ import com.peterlaurence.trekme.databinding.FragmentMapImportBinding
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.mapimport.domain.model.MapArchive
 import com.peterlaurence.trekme.features.mapimport.domain.model.UnzipMapImportedEvent
-import com.peterlaurence.trekme.features.mapimport.presentation.ui.components.MapImportUiStateful
+import com.peterlaurence.trekme.features.mapimport.presentation.ui.screen.MapImportUiStateful
 import com.peterlaurence.trekme.features.mapimport.presentation.viewmodel.MapImportViewModel
 import com.peterlaurence.trekme.util.RecyclerItemClickListener
 import com.peterlaurence.trekme.util.collectWhileStarted
@@ -86,7 +86,8 @@ class MapImportFragment : Fragment() {
                 TrekMeTheme {
                     MapImportUiStateful(
                         viewModel = this@MapImportFragment.viewModel,
-                        onImportClicked = ::onImportButtonClick
+                        onShowMapList = {},
+                        onMainMenuClick = {}
                     )
                 }
             }
@@ -190,7 +191,7 @@ class MapImportFragment : Fragment() {
             fab.setOnClickListener {
                 itemSelected?.let { archive ->
                     lifecycleScope.launch {
-                        viewModel.unArchive(archive).collect { event ->
+                        viewModel.unArchiveOld(archive).collect { event ->
                             val active = data.firstOrNull { item ->
                                 item.id == event.archiveId
                             } ?: return@collect
