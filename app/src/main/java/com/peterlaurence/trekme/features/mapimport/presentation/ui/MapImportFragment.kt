@@ -1,231 +1,46 @@
 package com.peterlaurence.trekme.features.mapimport.presentation.ui
 
-import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
-import android.view.*
-import androidx.activity.result.contract.ActivityResultContracts
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.core.content.ContextCompat
-import androidx.core.view.MenuHost
-import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.snackbar.Snackbar
-import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.databinding.FragmentMapImportBinding
+import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.features.mapimport.domain.model.MapArchive
-import com.peterlaurence.trekme.features.mapimport.domain.model.UnzipMapImportedEvent
 import com.peterlaurence.trekme.features.mapimport.presentation.ui.screen.MapImportUiStateful
-import com.peterlaurence.trekme.features.mapimport.presentation.viewmodel.MapImportViewModel
-import com.peterlaurence.trekme.util.RecyclerItemClickListener
-import com.peterlaurence.trekme.util.collectWhileStarted
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-/**
- * Displays the list of maps archives available for import.
- *
- * @since 08/06/16 -- Converted to Kotlin on 18/01/19
- */
 @AndroidEntryPoint
 class MapImportFragment : Fragment() {
-    private var _binding: FragmentMapImportBinding? = null // backing field
-    private val binding get() = _binding!!
-
-    private var mapArchiveAdapter: MapArchiveAdapter? = null
-    private var fabEnabled = false
-    private lateinit var data: List<MapArchive>
-    private var itemSelected: MapArchive? = null
-    private val viewModel: MapImportViewModel by viewModels()
-
-    private val mapImportLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                result.data?.data?.let { uri ->
-                    viewModel.seekArchives(uri)
-                }
-            }
-        }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        viewModel.archives.collectWhileStarted(this) { mapArchiveList ->
-            this.data = mapArchiveList
-            mapArchiveAdapter?.setMapArchiveList(mapArchiveList)
-            if (mapArchiveList.isNotEmpty()) {
-                binding.welcomePanel.visibility = View.GONE
-                binding.archiveListPanel.visibility = View.VISIBLE
-            }
-        }
-    }
+    @Inject
+    lateinit var appEventBus: AppEventBus
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        /* The action bar isn't managed by Compose */
+        /* The action bar is managed by Compose */
         (requireActivity() as AppCompatActivity).supportActionBar?.apply {
-            show()
-            title = getString(R.string.import_title)
+            hide()
+            title = ""
         }
 
-        _binding = FragmentMapImportBinding.inflate(inflater, container, false)
-        binding.composeContent.apply {
+        return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+
             setContent {
                 TrekMeTheme {
                     MapImportUiStateful(
-                        viewModel = this@MapImportFragment.viewModel,
-                        onShowMapList = {},
-                        onMainMenuClick = {}
+                        onShowMapList = { appEventBus.navigateTo(AppEventBus.NavDestination.MapList) },
+                        onMainMenuClick = { appEventBus.openDrawer() }
                     )
                 }
             }
         }
-
-        return binding.root
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-        mapArchiveAdapter = null
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        setupMenu()
-
-        val recyclerViewMapImport = binding.recyclerViewMapImport
-        recyclerViewMapImport.setHasFixedSize(false)
-
-        val llm = LinearLayoutManager(context)
-        recyclerViewMapImport.layoutManager = llm
-
-        mapArchiveAdapter = MapArchiveAdapter()
-        recyclerViewMapImport.adapter = mapArchiveAdapter
-
-        recyclerViewMapImport.addOnItemTouchListener(
-            RecyclerItemClickListener(this.context,
-                recyclerViewMapImport,
-                object :
-                    RecyclerItemClickListener.OnItemClickListener {
-
-                    override fun onItemClick(view: View, position: Int) {
-                        binding.fab.activate()
-                        singleSelect(position)
-                    }
-
-                    override fun onItemLongClick(view: View?, position: Int) {
-                        // no-op
-                    }
-                })
-        )
-
-        /* Item decoration : divider */
-        val dividerItemDecoration = DividerItemDecoration(
-            view.context,
-            DividerItemDecoration.VERTICAL
-        )
-        val divider = ContextCompat.getDrawable(view.context, R.drawable.divider)
-        if (divider != null) {
-            dividerItemDecoration.setDrawable(divider)
-        }
-        recyclerViewMapImport.addItemDecoration(dividerItemDecoration)
-    }
-
-    private fun setupMenu() {
-        (requireActivity() as MenuHost).addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                /* Clear the existing action menu */
-                menu.clear()
-
-                /* Fill the new one */
-                menuInflater.inflate(R.menu.menu_fragment_map_import, menu)
-            }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                return when (menuItem.itemId) {
-                    R.id.import_maps_menu_button -> {
-                        onImportButtonClick()
-                        true
-                    }
-                    else -> false
-                }
-            }
-        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
-    }
-
-    private fun onImportButtonClick() {
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-        mapImportLauncher.launch(intent)
-    }
-
-    private fun singleSelect(position: Int) {
-        /* Update adapter to reflect selection */
-        mapArchiveAdapter?.setSelectedPosition(position)
-        mapArchiveAdapter?.notifyDataSetChanged()
-
-        /* Keep a reference on the selected archive */
-        itemSelected = data[position]
-    }
-
-    private fun FloatingActionButton.activate() {
-        val fab = binding.fab
-        if (!fabEnabled) {
-            fab.isEnabled = true
-            fab.drawable.mutate().setTint(resources.getColor(R.color.colorWhite, null))
-            fab.background.setTint(resources.getColor(R.color.colorAccent, null))
-
-            fab.setOnClickListener {
-                itemSelected?.let { archive ->
-                    lifecycleScope.launch {
-                        viewModel.unArchiveOld(archive).collect { event ->
-                            val active = data.firstOrNull { item ->
-                                item.id == event.archiveId
-                            } ?: return@collect
-
-                            mapArchiveAdapter?.setUnzipEventForItem(active, event)
-
-                            if (event is UnzipMapImportedEvent) {
-                                onMapImported()
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private fun onMapImported() {
-        val view = view ?: return
-        val snackbar = Snackbar.make(view, R.string.snack_msg_show_map_list, Snackbar.LENGTH_LONG)
-        snackbar.setAction(R.string.ok_dialog) {
-            runCatching {
-                findNavController().navigate(R.id.mapListFragment)
-            }
-        }
-        snackbar.show()
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-
-        outState.putBoolean(CREATE_FROM_SCREEN_ROTATE, true)
-    }
-
-    companion object {
-        private const val CREATE_FROM_SCREEN_ROTATE = "create"
     }
 }

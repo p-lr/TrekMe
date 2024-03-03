@@ -190,8 +190,6 @@
     <string name="import_folder_select_btn">Select archives folder</string>
     <string name="extraction_lbl">Extraction</string>
     <string name="map_created_lbl">Map creation</string>
-    <string name="imported_new_map">Imported and created a new map</string>
-    <string name="imported_untouched">Imported without modification</string>
     <string name="map_import_success">Map successfully imported</string>
     <string name="extraction_error">Extraction error</string>
     <string name="snack_msg_show_map_list">Show map list?</string>

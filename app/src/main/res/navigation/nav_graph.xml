@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/mapListFragment">
 
@@ -33,9 +32,8 @@
     <action android:id="@+id/action_global_wifiP2pFragment" app:destination="@id/wifiP2pFragment" />
     <fragment
         android:id="@+id/mapImportFragment"
-        android:name="com.peterlaurence.trekme.features.mapimport.presentation.ui.MapImportFragment2"
-        android:label="@string/fragment_map_import"
-        tools:layout="@layout/fragment_map_import" />
+        android:name="com.peterlaurence.trekme.features.mapimport.presentation.ui.MapImportFragment"
+        android:label="@string/fragment_map_import" />
     <action android:id="@+id/action_global_mapImportFragment" app:destination="@id/mapImportFragment" />
     <action android:id="@+id/action_global_mapListFragment" app:destination="@id/mapListFragment" />
     <fragment

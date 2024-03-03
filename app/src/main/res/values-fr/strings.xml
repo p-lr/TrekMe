@@ -83,7 +83,6 @@
     <string name="track_name_change">Entrez le nom de la trace</string>
     <string name="track_rename_action">Renommer</string>
     <string name="mapview_orientation_enable">Afficher l\'orientation</string>
-    <string name="imported_untouched">Carte importée sans modifications</string>
     <string name="extraction_error">Erreur d\'extraction</string>
     <string name="snack_msg_show_map_list">Afficher la liste des cartes ?</string>
     <string name="archive_dialog_title">Sauvegarde de carte</string>
@@ -277,7 +276,6 @@
     <string name="unknown_map_source">Source de carte inconnue. La configuration de cette carte est incorrecte.</string>
     <string name="service_gpx_error">Erreur à la création du fichier GPX :(</string>
     <string name="service_gpx_location_error">TrekMe n\'a pas accès à votre position :(</string>
-    <string name="imported_new_map">Une nouvelle carte a été créée</string>
     <string name="location_info_title">Information</string>
     <string name="background_location_rationale_gpx_recording">Pour réaliser un enregistrement GPX, TrekMe doit avoir accès à votre position en arrière plan même lorsque
         l\'application est fermée ou inutilisée. Pour cela, l\'autorisation de position doit être mise à «toujours autoriser» ou équivalent.\n\nCes informations de position sont stockées localement sur votre
