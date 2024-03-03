@@ -11,7 +11,6 @@ import com.peterlaurence.trekme.features.mapimport.domain.model.UnzipEvent
 import com.peterlaurence.trekme.features.mapimport.domain.model.UnzipMapImportedEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -26,7 +25,7 @@ class MapImportViewModel @Inject constructor(
     private val mapArchiveInteractor: MapArchiveInteractor
 ) : ViewModel() {
 
-    val archives: StateFlow<List<MapArchive>> = mapArchiveStateOwner.archivesFlow
+    private val archives: StateFlow<List<MapArchive>> = mapArchiveStateOwner.archivesFlow
     var isImporting = MutableStateFlow(false)
     val archivesUiState = MutableStateFlow<List<MapArchiveUiState>>(emptyList())
 
@@ -59,10 +58,6 @@ class MapImportViewModel @Inject constructor(
                 _importSuccessChannel.send(Unit)
             }
         }
-    }
-
-    suspend fun unArchiveOld(mapArchive: MapArchive): Flow<UnzipEvent> {
-        return mapArchiveInteractor.unarchiveAndGetEvents(mapArchive)
     }
 }
 

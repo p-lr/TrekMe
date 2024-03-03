@@ -7,9 +7,8 @@ import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.di.IoDispatcher
 import com.peterlaurence.trekme.features.mapimport.data.dao.FileBasedMapArchiveSeeker
-import com.peterlaurence.trekme.features.mapimport.data.dao.MapArchiveRegistryImpl
+import com.peterlaurence.trekme.features.mapimport.data.dao.MapArchiveRegistry
 import com.peterlaurence.trekme.features.mapimport.data.dao.UnarchiveDaoImpl
-import com.peterlaurence.trekme.features.mapimport.domain.dao.MapArchiveRegistry
 import com.peterlaurence.trekme.features.mapimport.domain.dao.MapArchiveSeeker
 import com.peterlaurence.trekme.features.mapimport.domain.dao.UnarchiveDao
 import com.peterlaurence.trekme.features.mapimport.domain.model.MapArchiveStateOwner
@@ -32,12 +31,6 @@ object MapImportModule {
 
     @Provides
     @Singleton
-    fun provideMapArchiveRegistry(): MapArchiveRegistry {
-        return MapArchiveRegistryImpl()
-    }
-
-    @Provides
-    @Singleton
     fun provideUnarchiveDao(
         app: Application,
         @IoDispatcher
@@ -56,8 +49,9 @@ object MapImportModule {
     fun provideMapArchiveSeeker(
         app: Application,
         @IoDispatcher
-        ioDispatcher: CoroutineDispatcher
+        ioDispatcher: CoroutineDispatcher,
+        mapArchiveRegistry: MapArchiveRegistry,
     ): MapArchiveSeeker {
-        return FileBasedMapArchiveSeeker(app, ioDispatcher)
+        return FileBasedMapArchiveSeeker(app, ioDispatcher, mapArchiveRegistry)
     }
 }

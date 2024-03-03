@@ -1,17 +1,19 @@
 package com.peterlaurence.trekme.features.mapimport.data.dao
 
 import androidx.documentfile.provider.DocumentFile
-import com.peterlaurence.trekme.features.mapimport.domain.dao.MapArchiveRegistry
 import java.util.*
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class MapArchiveRegistryImpl: MapArchiveRegistry {
+@Singleton
+class MapArchiveRegistry @Inject constructor() {
     private val _docForId = mutableMapOf<UUID, DocumentFile>()
 
-    override fun getDocumentForId(uuid: UUID): DocumentFile? {
+    fun getDocumentForId(uuid: UUID): DocumentFile? {
         return _docForId[uuid]
     }
 
-    override fun setDocumentForId(uuid: UUID, doc: DocumentFile) {
+    fun setDocumentForId(uuid: UUID, doc: DocumentFile) {
         _docForId[uuid] = doc
     }
 }

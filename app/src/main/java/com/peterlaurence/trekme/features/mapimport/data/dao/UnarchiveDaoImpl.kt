@@ -11,7 +11,6 @@ import com.peterlaurence.trekme.core.map.domain.models.MapImportResult
 import com.peterlaurence.trekme.core.map.domain.models.MapParseStatus
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.core.settings.Settings
-import com.peterlaurence.trekme.features.mapimport.domain.dao.MapArchiveRegistry
 import com.peterlaurence.trekme.features.mapimport.domain.dao.UnarchiveDao
 import com.peterlaurence.trekme.features.mapimport.domain.model.*
 import com.peterlaurence.trekme.util.UnzipProgressionListener
