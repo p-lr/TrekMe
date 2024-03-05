@@ -3,21 +3,24 @@ package com.peterlaurence.trekme.features.common.presentation.ui.settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -25,7 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -39,8 +42,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -51,7 +57,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun SettingDivider() {
-    Divider(thickness = Dp.Hairline)
+    HorizontalDivider(thickness = Dp.Hairline)
 }
 
 @Composable
@@ -61,30 +67,46 @@ fun HeaderSetting(name: String) {
         modifier = Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background)
-            .padding(start = paddingStart, top = 24.dp, bottom = 8.dp),
+            .padding(start = paddingStart, top = 24.dp, bottom = 12.dp),
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
-        color = MaterialTheme.colorScheme.primary
+        color = MaterialTheme.colorScheme.primary,
+        style = TextStyle(
+            platformStyle = PlatformTextStyle(
+                includeFontPadding = false
+            ),
+        )
     )
 }
 
 @Composable
-fun ButtonSetting(name: String, subTitle: String? = null, enabled: Boolean, onClick: () -> Unit = {}) {
+fun ButtonSetting(
+    name: String,
+    subTitle: String? = null,
+    enabled: Boolean,
+    onClick: () -> Unit = {}
+) {
     Column(
         Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background)
-            .height(getSettingHeight(hasSubtitle = subTitle != null))
+            .padding(vertical = paddingAround)
             .clickable(onClick = onClick, enabled = enabled)
             .padding(start = paddingStart),
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = name, fontSize = mainFontSize, color = MaterialTheme.colorScheme.onBackground)
+        Text(
+            text = name,
+            fontSize = mainFontSize,
+            color = MaterialTheme.colorScheme.onBackground,
+            style = nameStyle
+        )
         if (subTitle != null) {
             Text(
                 text = subTitle,
                 fontSize = subtitleFontSize,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                style = subTitleStyle
             )
         }
     }
@@ -106,7 +128,7 @@ fun ButtonSettingWithLock(
         Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background)
-            .height(getSettingHeight(hasSubtitle = subTitle != null))
+            .padding(vertical = paddingAround)
             .clickable(
                 onClick = {
                     if (isLocked) isShowingLockedRationale = true else onClick()
@@ -118,7 +140,7 @@ fun ButtonSettingWithLock(
     ) {
         CompositionLocalProvider(
             LocalTextStyle provides LocalTextStyle.current.copy(
-                color =  MaterialTheme.colorScheme.onBackground,
+                color = MaterialTheme.colorScheme.onBackground,
                 fontSize = mainFontSize,
                 platformStyle = PlatformTextStyle(
                     includeFontPadding = false
@@ -132,7 +154,9 @@ fun ButtonSettingWithLock(
                     title()
                     Icon(
                         painter = painterResource(id = R.drawable.ic_lock),
-                        modifier = Modifier.padding(start = 8.dp).size(18.dp),
+                        modifier = Modifier
+                            .padding(start = 8.dp)
+                            .size(18.dp),
                         tint = MaterialTheme.colorScheme.tertiary,
                         contentDescription = null
                     )
@@ -146,7 +170,8 @@ fun ButtonSettingWithLock(
             Text(
                 text = subTitle,
                 fontSize = subtitleFontSize,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                style = subTitleStyle
             )
         }
     }
@@ -185,11 +210,36 @@ fun ButtonSettingWithLock(
 }
 
 @Composable
+fun ToggleSetting(
+    name: String,
+    checked: Boolean,
+    onToggle: () -> Unit
+) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background)
+            .clickable(onClick = onToggle)
+            .padding(start = paddingStart, top = 5.dp, end = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = name,
+            fontSize = mainFontSize,
+            color = MaterialTheme.colorScheme.onBackground,
+            style = nameStyle
+        )
+        Switch(checked = checked, onCheckedChange = { onToggle() })
+    }
+}
+
+@Composable
 fun <T> ListSetting(
     name: String,
     values: List<Pair<T, String>>,
-    selectedIndex: Int,
-    subTitle: String? = null,
+    selectedValue: T,
+    showSubtitle: Boolean = true,
     onValueSelected: (index: Int, v: T) -> Unit = { _, _ -> }
 ) {
     var isShowingDialog by rememberSaveable { mutableStateOf(false) }
@@ -198,17 +248,23 @@ fun <T> ListSetting(
         Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background)
-            .height(getSettingHeight(hasSubtitle = subTitle != null))
+            .padding(vertical = paddingAround)
             .clickable { isShowingDialog = true }
             .padding(start = paddingStart),
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = name, fontSize = mainFontSize, color = MaterialTheme.colorScheme.onBackground)
-        if (subTitle != null) {
+        Text(
+            text = name,
+            fontSize = mainFontSize,
+            color = MaterialTheme.colorScheme.onBackground,
+            style = nameStyle
+        )
+        if (showSubtitle) {
             Text(
-                text = subTitle,
+                text = (values.firstOrNull { it.first == selectedValue } ?: values.first()).second,
                 fontSize = subtitleFontSize,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                style = subTitleStyle
             )
         }
     }
@@ -236,7 +292,7 @@ fun <T> ListSetting(
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             RadioButton(
-                                selected = index == selectedIndex,
+                                selected = pair.first == selectedValue,
                                 onClick = {
                                     isShowingDialog = false
                                     onValueSelected(index, pair.first)
@@ -258,6 +314,51 @@ fun <T> ListSetting(
 }
 
 @Composable
+fun SliderSetting(
+    name: String,
+    valueRange: ClosedFloatingPointRange<Float>,
+    current: Float,
+    onValueChange: (Float) -> Unit
+) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(vertical = paddingAround),
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            modifier = Modifier.padding(start = paddingStart),
+            text = name,
+            fontSize = mainFontSize,
+            color = MaterialTheme.colorScheme.onBackground,
+            style = nameStyle
+        )
+        var value by remember { mutableFloatStateOf(current) }
+        BoxWithConstraints(Modifier.fillMaxWidth()) {
+            Slider(
+                modifier = Modifier
+                    .padding(start = paddingStart - 7.dp)
+                    .width(maxWidth - 140.dp)
+                    .align(Alignment.CenterStart),
+                valueRange = valueRange,
+                value = value,
+                onValueChange = { value = it },
+                onValueChangeFinished = { onValueChange(value) }
+            )
+            Text(
+                modifier = Modifier
+                    .padding(end = 16.dp)
+                    .width(51.dp)
+                    .align(Alignment.CenterEnd),
+                textAlign = TextAlign.Center,
+                text = value.toInt().toString()
+            )
+        }
+    }
+}
+
+@Composable
 fun EditTextSetting(name: String, value: String, onValueChanged: (String) -> Unit) {
     var isShowingDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -265,22 +366,35 @@ fun EditTextSetting(name: String, value: String, onValueChanged: (String) -> Uni
         Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background)
-            .height(getSettingHeight(hasSubtitle = true))
+            .padding(vertical = paddingAround)
             .clickable { isShowingDialog = true }
             .padding(start = paddingStart),
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = name, fontSize = mainFontSize, color = MaterialTheme.colorScheme.onBackground)
+        Text(
+            text = name,
+            fontSize = mainFontSize,
+            color = MaterialTheme.colorScheme.onBackground,
+            style = nameStyle
+        )
         Text(
             text = value,
             fontSize = subtitleFontSize,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+            style = subTitleStyle
         )
     }
 
 
     if (isShowingDialog) {
-        var textFieldValue by remember { mutableStateOf(TextFieldValue(value, selection = TextRange(value.length))) }
+        var textFieldValue by remember {
+            mutableStateOf(
+                TextFieldValue(
+                    value,
+                    selection = TextRange(value.length)
+                )
+            )
+        }
         val focusRequester = remember { FocusRequester() }
 
         AlertDialog(
@@ -332,10 +446,22 @@ private val mainFontSize = 16.sp
 private val subtitleFontSize = 14.sp
 
 private val paddingStart = 72.dp
-private val settingHeightWithSubtitle = 72.dp
-private val settingHeightNoSubtitle = 53.dp
-
-private fun getSettingHeight(hasSubtitle: Boolean) = if (hasSubtitle) settingHeightWithSubtitle else settingHeightNoSubtitle
+private val paddingAround = 16.dp
+private val nameStyle = TextStyle(
+    platformStyle = PlatformTextStyle(
+        includeFontPadding = false
+    ),
+    lineHeight = 21.sp,
+    lineHeightStyle = LineHeightStyle(
+        trim = LineHeightStyle.Trim.FirstLineTop,
+        alignment = LineHeightStyle.Alignment.Top
+    )
+)
+private val subTitleStyle = TextStyle(
+    platformStyle = PlatformTextStyle(
+        includeFontPadding = false
+    ),
+)
 
 
 @Preview
@@ -345,10 +471,9 @@ private fun SettingPreview() {
         val snackbarHostState = remember { SnackbarHostState() }
         val scope = rememberCoroutineScope()
 
-        var selectedIndex by remember { mutableIntStateOf(0) }
-        var subTitle by remember { mutableStateOf("2") }
-
+        var selectedValue by remember { mutableStateOf("value1") }
         var name by remember { mutableStateOf("Mountain View") }
+        var toggled by remember { mutableStateOf(false) }
 
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) }
@@ -359,22 +484,26 @@ private fun SettingPreview() {
                 ButtonSetting(name = "Size", subTitle = "266.2 Mo", enabled = true)
                 ListSetting(
                     name = "Number of points",
-                    selectedIndex = selectedIndex,
+                    selectedValue = selectedValue,
                     values = listOf(
                         "value1" to "2",
                         "value2" to "4",
                         "value3" to "6"
                     ),
-                    subTitle = subTitle,
+                    showSubtitle = true,
                     onValueSelected = { i, v ->
-                        selectedIndex = i
-                        subTitle = name
+                        selectedValue = v
                         scope.launch {
                             snackbarHostState.showSnackbar("selected $v at index $i")
                         }
                     }
                 )
                 EditTextSetting("Name", name, onValueChanged = { v -> name = v })
+                ToggleSetting(
+                    name = "An option",
+                    checked = toggled,
+                    onToggle = { toggled = !toggled })
+                SliderSetting(name = "A slider option", valueRange = 0f..100f, current = 40f) {}
             }
         }
     }

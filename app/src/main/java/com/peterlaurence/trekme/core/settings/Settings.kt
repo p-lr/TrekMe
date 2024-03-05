@@ -198,7 +198,7 @@ class Settings @Inject constructor(
     }
 
     /**
-     * If `true`, [scaleCentered] is accounted for. Otherwise, [scaleCentered] is ignored.
+     * If `true`, [scaleRatioCentered] is accounted for. Otherwise, [scaleRatioCentered] is ignored.
      */
     fun getDefineScaleCentered(): Flow<Boolean> = dataStore.data.map {
         it[defineScaleWhenCentered] ?: true

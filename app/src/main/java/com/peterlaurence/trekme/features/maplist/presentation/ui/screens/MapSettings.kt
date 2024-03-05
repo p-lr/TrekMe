@@ -203,6 +203,7 @@ private fun MapSettingsScreen(
     Scaffold(
         topBar = {
             var expandedMenu by remember { mutableStateOf(false) }
+            /* Displaying calibration options is disabled for now */
             val dropDownMenu: @Composable () -> Unit = {
                 IconButton(
                     onClick = { expandedMenu = true },
@@ -341,22 +342,13 @@ private fun ProjectionSetting(map: Map, onSetProjection: (String?) -> Unit) {
         MercatorProjection.NAME to stringResource(id = R.string.pseudo_mercator),
         null to stringResource(id = R.string.projection_none)
     )
-    var subTitle: String? by remember { mutableStateOf(values.toMap()[map.projection?.name]) }
 
     ListSetting(
         name = stringResource(id = R.string.projection_preferences_title),
         values = values,
-        selectedIndex = values.indexOfFirst {
-            val projName = it.first
-            if (projName != null) {
-                map.projection?.let { p ->
-                    p.name == projName
-                } ?: false
-            } else true
-        },
-        subTitle = subTitle,
+        selectedValue = map.projection?.name,
+        showSubtitle = true,
         onValueSelected = { _: Int, v: String? ->
-            subTitle = values.toMap()[v]
             onSetProjection(v)
         }
     )
@@ -369,17 +361,13 @@ private fun CalibrationPointsSetting(map: Map, onSetCalibrationPointNumber: (Int
         3 to "3",
         4 to "4"
     )
-    var subTitle by remember { mutableStateOf(values.toMap()[map.calibrationPointsNumber]) }
 
     ListSetting(
         name = stringResource(id = R.string.points_number_preferences_title),
         values = values,
-        selectedIndex = values.indexOfFirst {
-            it.first == map.calibrationPointsNumber
-        },
-        subTitle = subTitle,
+        selectedValue = map.calibrationPointsNumber,
+        showSubtitle = true,
         onValueSelected = { _, v ->
-            subTitle = values.toMap()[v]
             onSetCalibrationPointNumber(v)
         }
     )

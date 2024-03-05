@@ -91,7 +91,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.appDirFlow.collect { path ->
-                    updateDownloadSelection(path)
+                    updateDownloadSelection(path ?: "error")
                 }
             }
         }
