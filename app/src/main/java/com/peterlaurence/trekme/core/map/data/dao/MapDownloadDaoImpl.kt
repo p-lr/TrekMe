@@ -212,7 +212,7 @@ class MapDownloadDaoImpl(
         val dateFormat = SimpleDateFormat("dd-MM-yyyy_HH-mm-ss", Locale.ENGLISH)
         val folderName = "map-" + dateFormat.format(Date())
 
-        val appDir = settings.getAppDir().firstOrNull() ?: error("App dir should be defined")
+        val appDir = settings.getAppDir().firstOrNull() ?: return null
         val mapFolder = File(appDir, MAP_FOLDER_NAME)
         val destFolder = File(mapFolder, folderName)
 
