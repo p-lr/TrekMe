@@ -16,6 +16,7 @@ import com.peterlaurence.trekme.core.excursion.domain.repository.ExcursionReposi
 import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.events.AppEventBus
+import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.features.record.data.datasource.LocationSerializerImpl
 import com.peterlaurence.trekme.features.record.data.datasource.createSinkFile
@@ -127,7 +128,14 @@ class GpxRecordService : Service() {
         }
         val notification = notificationBuilder.build()
 
-        startForeground(SERVICE_ID, notification)
+        runCatching {
+            startForeground(SERVICE_ID, notification)
+        }.onFailure {
+            // Required for Android 14 and up
+            appEventBus.postMessage(StandardMessage(getString(R.string.requires_location_permission_recording)))
+            stopSelf()
+            return START_NOT_STICKY
+        }
 
         scope.launch {
             /* Create the temp file in which locations will be written. If the application crashes,

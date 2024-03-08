@@ -216,11 +216,13 @@
     <string name="service_beacon_name">Service de balises</string>
     <string name="service_beacon_notification_name">Gestion des balises</string>
     <string name="service_beacon_stop">Arrêter</string>
+    <string name="requires_location_permission_beacon">La permission de position en arrière-plan est nécessaire pour utiliser les balises.</string>
 
     <!-- TrackFollowService -->
     <string name="service_track_follow_name">Service de suivi de trace</string>
     <string name="service_track_follow_notification_name">Suivi de trace</string>
     <string name="service_track_follow_stop">Arrêter</string>
+    <string name="requires_location_permission_track_follow">La permission de position en arrière-plan est nécessaire pour suivre une trace.</string>
 
     <string name="share_menu_title">Recevoir et envoyer</string>
     <string name="wifip2p_stop_btn">Stop</string>
@@ -287,6 +289,7 @@
     <string name="close_dialog">Fermer</string>
     <string name="understood_dialog">J\'ai compris</string>
     <string name="new_text">nouveau</string>
+    <string name="requires_location_permission_recording">La permission de position en arrière-plan est nécessaire pour lancer un enregistrement GPX.</string>
     <string name="privacy_policy_title">Politique de confidentialité</string>
     <string name="privacy_policy_desc">Nous respectons votre vie privée et ne communiquerons jamais
         votre position ou toute autre donnée personnelle à des tiers. Nous ne stockons pas ces informations

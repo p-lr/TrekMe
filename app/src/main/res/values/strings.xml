@@ -47,6 +47,7 @@
     <string name="service_gpx_record_action">GPX recording</string>
     <string name="service_gpx_location_error">Error while requesting your location :(</string>
     <string name="service_gpx_error">Error while saving the GPX file :(</string>
+    <string name="requires_location_permission_recording">The \"Allow all the time\" location permission is required to start a recording.</string>
 
     <!-- DownloadService -->
     <string name="service_download_name">Download service</string>
@@ -70,11 +71,13 @@
     <string name="service_beacon_name">Beacon service</string>
     <string name="service_beacon_notification_name">Beacon monitoring</string>
     <string name="service_beacon_stop">Stop</string>
+    <string name="requires_location_permission_beacon">The \"Allow all the time\" location permission is required use beacons.</string>
 
     <!-- TrackFollowService -->
     <string name="service_track_follow_name">Track follow service</string>
     <string name="service_track_follow_notification_name">Track follow monitoring</string>
     <string name="service_track_follow_stop">Stop</string>
+    <string name="requires_location_permission_track_follow">The \"Allow all the time\" location permission is required to follow a track.</string>
 
     <!-- MapDownloadDialog -->
     <string name="map_download_dialog_title">Current map download</string>

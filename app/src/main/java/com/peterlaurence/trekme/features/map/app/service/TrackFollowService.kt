@@ -17,6 +17,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.events.AppEventBus
+import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.md_theme_light_primary
 import com.peterlaurence.trekme.features.map.domain.core.TrackVicinityAlgorithm
 import com.peterlaurence.trekme.features.map.domain.models.TrackFollowServiceState
@@ -175,7 +176,14 @@ class TrackFollowService : Service() {
             notificationBuilder.setChannelId(notificationChannelId)
         }
 
-        startForeground(notificationId, notificationBuilder.build())
+        runCatching {
+            startForeground(notificationId, notificationBuilder.build())
+        }.onFailure {
+            // Required for Android 14 and up
+            appEventBus.postMessage(StandardMessage(getString(R.string.requires_location_permission_track_follow)))
+            stopSelf()
+            return START_NOT_STICKY
+        }
 
         job = scope.launch {
             val data = trackFollowRepository.serviceData.receive()
