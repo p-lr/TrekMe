@@ -224,6 +224,8 @@
     <string name="service_track_follow_stop">Arrêter</string>
     <string name="requires_location_permission_track_follow">La permission de position en arrière-plan est nécessaire pour suivre une trace.</string>
 
+    <string name="wifip2p_explanation">Envoyer ou recevoir une carte avec un autre utilisateur de TrekMe, via la wifi.\nPour continuer, il faut activer :</string>
+    <string name="wifip2p_explanation2">• la Wifi\n• la Localisation</string>
     <string name="share_menu_title">Recevoir et envoyer</string>
     <string name="wifip2p_stop_btn">Stop</string>
     <string name="wifip2p_rcv_btn">Recevoir</string>
@@ -234,7 +236,7 @@
     <string name="wifip2p_loading">Chargement en cours</string>
     <string name="wifip2p_error">Une erreur est survenue (%1$s).\nUne nouvelle tentative peut réussir.</string>
     <string name="wifip2p_successful_load">La carte %1$s a été chargée avec success</string>
-    <string name="wifip2p_warning_wifi">Vous devez activer la Wifi pour profiter de cette fonctionnalité. La communican avec l\'autre appareil se fait directement en Wifi.</string>
+    <string name="wifip2p_warning_wifi">Vous devez activer la Wifi pour profiter de cette fonctionnalité. La communication avec l\'autre appareil se fait directement en Wifi.</string>
     <string name="wifip2p_help_url">https://github.com/peterLaurence/TrekMe/blob/master/Readme.fr.md#partage-de-carte</string>
     <string name="mapview_measure_distance_on_track">Distance sur trace</string>
     <string name="module_check_unknown">Imposible de vérifier le module</string>

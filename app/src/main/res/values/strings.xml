@@ -528,6 +528,8 @@
 
     <!-- WifiP2pFragment -->
     <string name="wifip2p_title">Map sharing</string>
+    <string name="wifip2p_explanation">Send or receive a map with another TrekMe user using wifi.\nMake sure you have enabled:</string>
+    <string name="wifip2p_explanation2">• the Wifi\n• the Location</string>
     <string name="wifip2p_stop_btn">Stop</string>
     <string name="wifip2p_rcv_btn">Receive</string>
     <string name="wifip2p_send_btn">Send</string>

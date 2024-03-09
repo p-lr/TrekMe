@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.features.record.presentation.viewmodel
+package com.peterlaurence.trekme.features.common.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository

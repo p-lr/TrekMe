@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs
+package com.peterlaurence.trekme.features.common.presentation.ui.dialogs
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,18 +25,16 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.models.Map
-import com.peterlaurence.trekme.features.record.presentation.viewmodel.MapSelectionDialogViewModel
-import java.util.*
+import com.peterlaurence.trekme.features.common.presentation.viewmodel.MapSelectionDialogViewModel
 
 @Composable
 fun MapSelectionDialogStateful(
     viewModel: MapSelectionDialogViewModel = hiltViewModel(),
-    recordId: UUID,
-    onMapSelected: (map: Map, recordId: UUID) -> Unit,
+    onMapSelected: (map: Map) -> Unit,
     onDismissRequest: () -> Unit
 ) {
     val mapList = remember { viewModel.getMapList() }
-    var selectedIndex by rememberSaveable { mutableStateOf(0) }
+    var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
     val lazyListState = rememberLazyListState()
 
     AlertDialog(
@@ -54,7 +52,7 @@ fun MapSelectionDialogStateful(
                 onClick = {
                     val map = mapList.getOrNull(selectedIndex)
                     if (map != null) {
-                        onMapSelected(map, recordId)
+                        onMapSelected(map)
                     }
                     onDismissRequest()
                 }

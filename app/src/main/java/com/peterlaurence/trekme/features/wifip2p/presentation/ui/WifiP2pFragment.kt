@@ -22,6 +22,7 @@ import com.peterlaurence.trekme.features.wifip2p.presentation.ui.dialogs.MapSele
 import com.peterlaurence.trekme.features.wifip2p.presentation.events.WifiP2pEventBus
 import com.peterlaurence.trekme.features.wifip2p.presentation.viewmodel.Errors
 import com.peterlaurence.trekme.features.wifip2p.presentation.viewmodel.ServiceAlreadyStarted
+import com.peterlaurence.trekme.features.wifip2p.presentation.viewmodel.WifiNotEnabled
 import com.peterlaurence.trekme.features.wifip2p.presentation.viewmodel.WifiP2pViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -196,6 +197,7 @@ class WifiP2pFragment : Fragment() {
     private fun onError(error: Errors) {
         when (error) {
             ServiceAlreadyStarted -> _binding?.status?.editableText?.append("Service already started")
+            WifiNotEnabled -> {} // on purpose
         }
     }
 

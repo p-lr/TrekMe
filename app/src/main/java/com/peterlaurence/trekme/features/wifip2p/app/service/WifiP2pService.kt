@@ -599,7 +599,7 @@ class WifiP2pService : Service() {
  * Either in receiving or sending mode.
  */
 sealed class StartAction
-object StartRcv : StartAction()
+data object StartRcv : StartAction()
 data class StartSend(val map: Map) : StartAction()
 
 object StopAction
@@ -612,23 +612,23 @@ sealed class WifiP2pState : Comparable<WifiP2pState> {
     }
 }
 
-object Started : WifiP2pState() {
+data object Started : WifiP2pState() {
     override val index: Int = 0
 }
 
-object AwaitingP2pConnection : WifiP2pState() {
+data object AwaitingP2pConnection : WifiP2pState() {
     override val index: Int = 1
 }
 
-object P2pConnected : WifiP2pState() {
+data object P2pConnected : WifiP2pState() {
     override val index: Int = 2
 }
 
-object AwaitingSocketConnection : WifiP2pState() {
+data object AwaitingSocketConnection : WifiP2pState() {
     override val index: Int = 3
 }
 
-object SocketConnected : WifiP2pState() {
+data object SocketConnected : WifiP2pState() {
     override val index: Int = 4
 }
 
@@ -636,7 +636,7 @@ data class Loading(val progress: Int) : WifiP2pState() {
     override val index: Int = 5
 }
 
-object Stopping : WifiP2pState() {
+data object Stopping : WifiP2pState() {
     override val index: Int = 9
 }
 
@@ -645,7 +645,7 @@ data class Stopped(val stopReason: StopReason? = null) : WifiP2pState() {
 }
 
 sealed class StopReason
-object ByUser : StopReason()
+data object ByUser : StopReason()
 data class WithError(val error: WifiP2pServiceErrors) : StopReason()
 data class MapSuccessfullyLoaded(val name: String) : StopReason()
 

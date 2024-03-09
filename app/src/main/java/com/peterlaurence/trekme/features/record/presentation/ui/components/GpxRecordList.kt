@@ -35,7 +35,7 @@ import com.peterlaurence.trekme.features.common.domain.model.RecordingsAvailable
 import com.peterlaurence.trekme.features.common.presentation.ui.scrollbar.drawVerticalScrollbar
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.record.domain.model.RecordingData
-import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.MapSelectionDialogStateful
+import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.MapSelectionDialogStateful
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.RecordingRenameDialog
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordViewModel
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordingStatisticsViewModel
@@ -203,8 +203,7 @@ fun GpxRecordListStateful(
 
     recordingForMapImport?.also {
         MapSelectionDialogStateful(
-            recordId = it.uuid,
-            onMapSelected = { map, recordId -> recordViewModel.importRecordInMap(map.id, recordId) },
+            onMapSelected = { map -> recordViewModel.importRecordInMap(map.id, it.uuid) },
             onDismissRequest = { recordingForMapImport = null }
         )
     }
