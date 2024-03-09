@@ -1,9 +1,5 @@
 package com.peterlaurence.trekme.features.wifip2p.presentation.ui.widgets
 
-import android.content.Context
-import android.graphics.drawable.AnimatedVectorDrawable
-import android.util.AttributeSet
-import androidx.appcompat.widget.AppCompatImageButton
 import androidx.compose.animation.core.EaseOut
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animate
@@ -12,7 +8,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -35,34 +30,13 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import kotlinx.coroutines.delay
 
 /**
  * An indicator which animates a wave (like a sonar).
- * It nicely represents a discovery action.
- *
- * @author P.Laurence on 21/04/20
+ * It represents a discovery action.
  */
-class WaveSearchIndicator @JvmOverloads constructor(
-    ctx: Context,
-    attr: AttributeSet? = null,
-    defStyleAttr: Int = 0
-) : AppCompatImageButton(ctx, attr, defStyleAttr) {
-
-    private val avd: AnimatedVectorDrawable =
-        ctx.getDrawable(R.drawable.avd_wave_search) as AnimatedVectorDrawable
-
-    init {
-        setImageDrawable(avd)
-    }
-
-    fun start() = if (!avd.isRunning) avd.start() else Unit
-    fun stop() = if (avd.isRunning) avd.stop() else Unit
-}
-
 @Composable
 fun WaveSearchIndicator(
     modifier: Modifier = Modifier,
@@ -140,15 +114,6 @@ private fun Wave(
 @Composable
 private fun WaveSearchPreview() {
     TrekMeTheme {
-        Column {
-            AndroidView(
-                factory = { context ->
-                    WaveSearchIndicator(context).apply { start() }
-                }
-            )
-
-            WaveSearchIndicator(isBeating = true)
-        }
-
+        WaveSearchIndicator(isBeating = true)
     }
 }
