@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
@@ -247,7 +248,7 @@ private fun MapSettingsScreen(
                 title = { Text(text = name) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "")
                     }
                 },
                 actions = {
@@ -514,6 +515,8 @@ private fun AnalyseAndRepair(
     onNavigateToShop: () -> Unit,
     onStartRepair: () -> Unit
 ) {
+    var isShowingClickRationaleData by remember { mutableStateOf(false) }
+
     ButtonSettingWithLock(
         title = {
             if (missingTilesCount != null && missingTilesCount > 0) {
@@ -524,7 +527,7 @@ private fun AnalyseAndRepair(
                         Text(stringResource(id = R.string.map_analyze_and_repair_progress))
                         Spacer(modifier = Modifier.width(24.dp))
                         LinearProgressIndicator(
-                            progress = progress,
+                            progress = { progress },
                             Modifier
                                 .weight(1f)
                                 .padding(end = 16.dp)
@@ -536,12 +539,34 @@ private fun AnalyseAndRepair(
             }
         },
         subTitle = "${stringResource(id = R.string.map_missing_tiles)} ${missingTilesCount ?: 0}",
-        enabled = missingTilesCount != null && missingTilesCount > 0 && progress == null,
+        enabled = progress == null,
         isLocked = !hasExtendedOffer,
         lockedRationale = stringResource(id = R.string.map_repair_rationale),
         onNavigateToShop = onNavigateToShop,
-        onClick = onStartRepair
+        onClick = { isShowingClickRationaleData = true }
     )
+
+    if (isShowingClickRationaleData) {
+        AlertDialog(
+            text = { Text(stringResource(id = R.string.map_repair_rationale_subscribed_user)) },
+            onDismissRequest = { isShowingClickRationaleData = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        isShowingClickRationaleData = false
+                        onStartRepair()
+                    }
+                ) {
+                    Text(stringResource(id = R.string.map_repair_action))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { isShowingClickRationaleData = false }) {
+                    Text(text = stringResource(id = R.string.cancel_dialog_string))
+                }
+            }
+        )
+    }
 }
 
 @Composable
@@ -571,7 +596,7 @@ private fun UpdateButton(
                     Text(stringResource(id = R.string.map_update_progress))
                     Spacer(modifier = Modifier.width(24.dp))
                     LinearProgressIndicator(
-                        progress = progress,
+                        progress = { progress },
                         Modifier
                             .weight(1f)
                             .padding(end = 16.dp)

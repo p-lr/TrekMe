@@ -39,8 +39,10 @@
     <string name="map_missing_tiles">Tuiles manquantes :</string>
     <string name="map_update">Mettre à jour</string>
     <string name="map_update_progress">Mise à jour en cours</string>
+    <string name="map_repair_rationale_subscribed_user">Cette fonctionnalité vous permet de réparer la carte en téléchargeant les tuiles manquantes. C\'est utile après avoir téléchargé une carte avec une connexion instable, ou après avoir recu une carte avec la fonctionnalité de partage de carte.</string>
     <string name="map_update_rationale">Cette fonctionnalité vous permet de re-télécharger la carte. C\'est utile quand la carte a été créée il y a plusieurs années et que son contenu est susceptible d\'avoir changé.</string>
     <string name="map_update_action">Mettre à jour</string>
+    <string name="map_repair_action">Réparer</string>
     <string name="map_created_on">Carte créée le %1$s</string>
     <string name="map_updated_on">Dernière mise à jour le %1$s</string>
 
