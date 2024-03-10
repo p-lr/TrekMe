@@ -108,6 +108,6 @@
     <action android:id="@+id/action_global_trailSearchFragment" app:destination="@id/trailSearchFragment"/>
     <fragment
         android:id="@+id/gpsProFragment"
-        android:name="com.peterlaurence.trekme.features.gpspro.presentation.ui.screens.GpsProFragment"
+        android:name="com.peterlaurence.trekme.features.gpspro.presentation.ui.GpsProFragment"
         android:label="GpsProFragment" />
 </navigation>

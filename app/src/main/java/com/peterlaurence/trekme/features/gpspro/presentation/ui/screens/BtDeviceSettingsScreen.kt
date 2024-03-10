@@ -110,7 +110,7 @@ private fun BtDeviceSettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = stringResource(id = R.string.wifip2p_title)) },
+                title = { Text(text = stringResource(id = R.string.bt_device_frgmt_diag_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "")
@@ -262,10 +262,4 @@ private fun ShowDialog(openDialog: MutableState<Boolean>, onStartPressed: () -> 
             }
         }
     )
-}
-
-interface BtDeviceSettingsIntents {
-    fun onGenerateReport()
-    fun onCancelDiagnosisSave()
-    fun onSaveDiagnosis()
 }

@@ -95,7 +95,7 @@ private fun GpsProUI(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = stringResource(id = R.string.wifip2p_title)) },
+                title = { Text(text = stringResource(id = R.string.select_bt_devices_title)) },
                 navigationIcon = {
                     IconButton(onClick = onMainMenuClick) {
                         Icon(Icons.Filled.Menu, contentDescription = "")
