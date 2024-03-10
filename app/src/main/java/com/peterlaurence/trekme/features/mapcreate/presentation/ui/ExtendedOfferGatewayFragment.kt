@@ -22,9 +22,9 @@ class ExtendedOfferGatewayFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        /* The action bar isn't managed by Compose */
+        /* The action bar is managed by Compose */
         (requireActivity() as AppCompatActivity).supportActionBar?.apply {
-            show()
+            hide()
             title = ""
         }
 
@@ -34,7 +34,8 @@ class ExtendedOfferGatewayFragment : Fragment() {
                 TrekMeTheme {
                     ExtendedOfferGatewayStateful(
                         onNavigateToWmtsFragment = ::navigateToWmtsFragment,
-                        onNavigateToShop = ::navigateToShopFragment
+                        onNavigateToShop = ::navigateToShopFragment,
+                        onBack = { findNavController().popBackStack() }
                     )
                 }
             }

@@ -2,13 +2,25 @@ package com.peterlaurence.trekme.features.mapcreate.presentation.ui.offergateway
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -38,7 +50,8 @@ import kotlinx.coroutines.cancel
 fun ExtendedOfferGatewayStateful(
     viewModel: ExtendedOfferGatewayViewModel = viewModel(),
     onNavigateToWmtsFragment: () -> Unit,
-    onNavigateToShop: () -> Unit
+    onNavigateToShop: () -> Unit,
+    onBack: () -> Unit
 ) {
     val extendedOfferWithIgnPurchaseState by viewModel.extendedOfferWithIgnPurchaseStateFlow.collectAsState()
     val extendedOfferPurchaseState by viewModel.extendedOfferPurchaseStateFlow.collectAsState()
@@ -46,7 +59,7 @@ fun ExtendedOfferGatewayStateful(
     val uiState by remember {
         derivedStateOf {
             val hasTrekmeExtended = extendedOfferPurchaseState == PurchaseState.PURCHASED
-            when(extendedOfferWithIgnPurchaseState) {
+            when (extendedOfferWithIgnPurchaseState) {
                 PurchaseState.NOT_PURCHASED, PurchaseState.UNKNOWN -> NotPurchased(hasTrekmeExtended)
                 else -> Pending
             }
@@ -62,28 +75,47 @@ fun ExtendedOfferGatewayStateful(
         }
     }
 
-    Surface {
-        ExtendedOfferGateway(uiState, onNavigateToShop)
-    }
+    ExtendedOfferGateway(uiState, onNavigateToShop, onBack)
 }
 
 private sealed interface UiState
 object Pending : UiState
-data class NotPurchased(val hasTrekmeExtended: Boolean): UiState
+data class NotPurchased(val hasTrekmeExtended: Boolean) : UiState
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ExtendedOfferGateway(
     uiState: UiState,
-    onNavigateToShop: () -> Unit
+    onNavigateToShop: () -> Unit,
+    onBack: () -> Unit
 ) {
-    Column(
-        modifier = Modifier.padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        when (uiState) {
-            is NotPurchased -> SuggestShopNavigation(uiState.hasTrekmeExtended, onNavigateToShop)
-            Pending -> ShowPending()
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "")
+                    }
+                },
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .padding(paddingValues)
+                .padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            when (uiState) {
+                is NotPurchased -> SuggestShopNavigation(
+                    uiState.hasTrekmeExtended,
+                    onNavigateToShop
+                )
+
+                Pending -> ShowPending()
+            }
         }
     }
 }
