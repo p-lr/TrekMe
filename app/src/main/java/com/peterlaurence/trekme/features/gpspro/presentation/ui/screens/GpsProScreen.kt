@@ -61,8 +61,9 @@ import com.peterlaurence.trekme.util.android.activity
 
 @Composable
 fun GpsProStateful(
-    viewModel: GpsProViewModel = hiltViewModel(viewModelStoreOwner = LocalContext.current.activity),
-    onMainMenuClick: () -> Unit
+    viewModel: GpsProViewModel,
+    onMainMenuClick: () -> Unit,
+    onShowBtDeviceSettings: () -> Unit
 ) {
     val uriHandler = LocalUriHandler.current
     val helpUri = stringResource(id = R.string.gps_pro_help_url)
@@ -72,7 +73,7 @@ fun GpsProStateful(
         isHostSelected = viewModel.isHostSelected,
         onHostSelection = viewModel::onHostSelected,
         onBtDeviceSelection = viewModel::onBtDeviceSelection,
-        onShowSettings = viewModel::onShowBtDeviceSettings,
+        onShowSettings = onShowBtDeviceSettings,
         onMainMenuClick = onMainMenuClick,
         onShowHelp = {
             uriHandler.openUri(helpUri)

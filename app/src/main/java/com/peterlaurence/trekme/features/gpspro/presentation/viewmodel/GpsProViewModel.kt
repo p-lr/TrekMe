@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -15,24 +16,31 @@ import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.core.location.domain.model.InternalGps
 import com.peterlaurence.trekme.core.location.domain.model.LocationProducerBtInfo
 import com.peterlaurence.trekme.core.location.domain.model.LocationProducerInfo
 import com.peterlaurence.trekme.core.settings.Settings
+import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.features.gpspro.domain.repositories.GpsProDiagnosisRepo
 import com.peterlaurence.trekme.events.gpspro.GpsProEvents
+import com.peterlaurence.trekme.features.gpspro.domain.repositories.DiagnosisAwaitingSave
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import java.io.FileOutputStream
 import javax.inject.Inject
 
 @HiltViewModel
 class GpsProViewModel @Inject constructor(
     private val settings: Settings,
-    app: Application,
+    private val app: Application,
     private val appEventBus: AppEventBus,
     private val gpsProEvents: GpsProEvents,
     private val diagnosisRepo: GpsProDiagnosisRepo,
@@ -40,6 +48,10 @@ class GpsProViewModel @Inject constructor(
     var bluetoothState by mutableStateOf<BluetoothState>(Searching)
     var isHostSelected by mutableStateOf(false)
     var isDiagnosisRunning = diagnosisRepo.diagnosisRunningStateFlow
+
+    private var diagnosisPending: String? = null
+    private val _diagnosisEvent = Channel<String>(1)
+    val diagnosisEvent = _diagnosisEvent.receiveAsFlow()
 
     private val bluetoothAdapter: BluetoothAdapter? =
         (app.applicationContext.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager)?.adapter
@@ -99,10 +111,6 @@ class GpsProViewModel @Inject constructor(
         settings.setLocationProducerInfo(LocationProducerBtInfo(device.name, device.address))
     }
 
-    fun onShowBtDeviceSettings() {
-        gpsProEvents.requestShowBtDeviceSettingsFragment()
-    }
-
     private suspend fun startUpProcedure(bluetoothAdapter: BluetoothAdapter) {
         if (!bluetoothAdapter.isEnabled) {
             appEventBus.bluetoothEnabledFlow.map { enabled ->
@@ -154,7 +162,33 @@ class GpsProViewModel @Inject constructor(
 
     fun cancelDiagnosis() = diagnosisRepo.cancelDiagnosis()
 
-    fun saveDiagnosis() = diagnosisRepo.saveDiagnosis()
+    fun onRequestSaveDiagnosis() = viewModelScope.launch {
+        val repoState = diagnosisRepo.diagnosisRunningStateFlow.value
+        val diagnosis = if (repoState is DiagnosisAwaitingSave) {
+            repoState.fileContent
+        } else return@launch
+
+        diagnosisPending = diagnosis
+        _diagnosisEvent.send(diagnosis)
+
+        diagnosisRepo.diagnosisSaved()
+    }
+
+    fun writeDiagnosisFileTo(uri: Uri) {
+        val fileContent = diagnosisPending ?: return
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                app.applicationContext.contentResolver.openFileDescriptor(uri, "wt")?.use {
+                    FileOutputStream(it.fileDescriptor).use { fos ->
+                        fos.write(fileContent.toByteArray())
+                    }
+                }
+                appEventBus.postMessage(StandardMessage(app.applicationContext.getString(R.string.bt_device_frgmt_record_done)))
+            } catch (e: Exception) {
+                appEventBus.postMessage(StandardMessage(app.applicationContext.getString(R.string.bt_device_frgmt_record_error)))
+            }
+        }
+    }
 }
 
 data class BluetoothDeviceStub(val name: String, val address: String) {

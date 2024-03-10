@@ -44,7 +44,7 @@
             android:name="id"
             app:argType="android.os.ParcelUuid" />
     </fragment>
-    <action android:id="@+id/action_global_gpsProFragment" app:destination="@id/gpsProGraph"/>
+    <action android:id="@+id/action_global_gpsProFragment" app:destination="@id/gpsProFragment"/>
     <action android:id="@+id/action_global_mapCreateGraph" app:destination="@id/mapCreationGraph"/>
     <navigation android:id="@+id/mapCreationGraph"
         app:startDestination="@id/mapCreateFragment">
@@ -96,21 +96,6 @@
         android:id="@+id/shopFragment"
         android:name="com.peterlaurence.trekme.features.shop.presentation.ui.ShopFragment"
         android:label="@string/fragment_shop" /><action android:id="@+id/action_global_shopFragment" app:destination="@id/shopFragment"/>
-    <navigation android:id="@+id/gpsProGraph"
-        app:startDestination="@id/gpsProFragment">
-        <fragment
-            android:id="@+id/gpsProFragment"
-            android:name="com.peterlaurence.trekme.features.gpspro.presentation.ui.screens.GpsProFragment"
-            android:label="GpsProFragment">
-            <action
-                android:id="@+id/action_gpsProFragment_to_btDeviceSettingsFragment"
-                app:destination="@id/btDeviceSettingsFragment" />
-        </fragment>
-        <fragment
-            android:id="@+id/btDeviceSettingsFragment"
-            android:name="com.peterlaurence.trekme.features.gpspro.presentation.ui.screens.BtDeviceSettingsFragment"
-            android:label="BtDeviceSettingsFragment" />
-    </navigation>
     <fragment
         android:id="@+id/aboutFragment"
         android:name="com.peterlaurence.trekme.features.about.presentation.ui.AboutFragment"
@@ -121,4 +106,8 @@
         android:name="com.peterlaurence.trekme.features.trailsearch.presentation.ui.TrailSearchFragment"
         android:label="@string/fragment_trail_search" />
     <action android:id="@+id/action_global_trailSearchFragment" app:destination="@id/trailSearchFragment"/>
+    <fragment
+        android:id="@+id/gpsProFragment"
+        android:name="com.peterlaurence.trekme.features.gpspro.presentation.ui.screens.GpsProFragment"
+        android:label="GpsProFragment" />
 </navigation>

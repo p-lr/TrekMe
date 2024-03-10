@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.gpspro.presentation.ui.navigation.GpsProGraph
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -35,7 +36,7 @@ class GpsProFragment : Fragment() {
 
             setContent {
                 TrekMeTheme {
-                    GpsProStateful(
+                    GpsProGraph(
                         onMainMenuClick = appEventBus::openDrawer
                     )
                 }

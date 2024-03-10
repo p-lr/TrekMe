@@ -69,13 +69,7 @@ class GpsProDiagnosisRepo @Inject constructor(
         _diagnosisRunningStateFlow.value = Ready
     }
 
-    fun saveDiagnosis() {
-        val state = _diagnosisRunningStateFlow.value
-        if (state is DiagnosisAwaitingSave) {
-            gpsProEvents.writeDiagnosisFile(state.fileContent)
-        }
-
-        /* Whatever the outcome, go back to ready state */
+    fun diagnosisSaved() {
         _diagnosisRunningStateFlow.value = Ready
     }
 }

@@ -235,10 +235,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 AppEventBus.NavDestination.TrailSearch -> showTrailSearchFragment()
             }
         }.collectWhileStartedIn(this)
-
-        gpsProEvents.showBtDeviceSettingsFragmentSignal.collectWhileStarted(this) {
-            showBtDeviceSettingsFragment()
-        }
     }
 
     private fun showSnackBar(message: String, isLong: Boolean = false) {
@@ -407,11 +403,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun showGpsProFragment() {
         navController.popBackStack(R.id.gpsProFragment, true)
-        navController.navigate(R.id.gpsProGraph)
-    }
-
-    private fun showBtDeviceSettingsFragment() {
-        navController.navigate(R.id.action_gpsProFragment_to_btDeviceSettingsFragment)
+        navController.navigate(R.id.gpsProFragment)
     }
 
     private fun showSettingsFragment() {
