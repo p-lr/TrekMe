@@ -58,11 +58,11 @@
         </fragment>
         <fragment
             android:id="@+id/layerOverlayFragment"
-            android:name="com.peterlaurence.trekme.features.mapcreate.presentation.ui.overlay.LayerOverlayFragment2"
+            android:name="com.peterlaurence.trekme.features.mapcreate.presentation.ui.overlay.LayerOverlayFragment"
             android:label="LayerOverlayFragment">
             <argument
                 android:name="wmtsSourceBundle"
-                app:argType="com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.LayerOverlayDataBundle" />
+                app:argType="com.peterlaurence.trekme.features.mapcreate.presentation.ui.overlay.LayerOverlayDataBundle" />
         </fragment>
         <fragment
             android:id="@+id/mapCreateFragment"
