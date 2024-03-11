@@ -166,11 +166,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         permissionRequestHandler =
             PermissionRequestHandler(this, lifecycle, appEventBus, gpsProEvents)
 
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
         val drawer = binding.drawerLayout
         val toggle = ActionBarDrawerToggle(
-            this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close
+            this, drawer, null, R.string.navigation_drawer_open, R.string.navigation_drawer_close
         )
         drawer.addDrawerListener(toggle)
         toggle.syncState()

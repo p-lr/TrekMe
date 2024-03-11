@@ -32,12 +32,6 @@ class MapCreateFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        /* The action bar is managed by Compose */
-        (requireActivity() as AppCompatActivity).supportActionBar?.apply {
-            hide()
-            title = ""
-        }
-
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 

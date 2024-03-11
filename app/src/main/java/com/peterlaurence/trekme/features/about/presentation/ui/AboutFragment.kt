@@ -27,12 +27,6 @@ class AboutFragment : Fragment() {
     lateinit var appEventBus: AppEventBus
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        /* The action bar is managed by Compose */
-        (requireActivity() as AppCompatActivity).supportActionBar?.apply {
-            hide()
-            title = ""
-        }
-
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {

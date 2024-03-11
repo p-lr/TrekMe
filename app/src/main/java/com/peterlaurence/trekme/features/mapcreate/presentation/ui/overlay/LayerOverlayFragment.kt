@@ -43,12 +43,6 @@ class LayerOverlayFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        /* The action bar is managed by Compose */
-        (requireActivity() as AppCompatActivity).supportActionBar?.apply {
-            hide()
-            title = ""
-        }
-
         val wmtsSource = this.wmtsSource ?: return null
 
         return ComposeView(requireContext()).apply {
