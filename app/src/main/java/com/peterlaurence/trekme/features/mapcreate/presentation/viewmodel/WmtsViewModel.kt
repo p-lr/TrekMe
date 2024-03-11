@@ -401,7 +401,7 @@ class WmtsViewModel @Inject constructor(
     private suspend fun createTileStreamProvider(wmtsSource: WmtsSource): Flow<Pair<MapSourceData, Result<TileStreamProvider>>> {
         val mapSourceDataFlow: Flow<MapSourceData> = getMapSourceDataFlow(wmtsSource)
 
-        return mapSourceDataFlow.map {
+        return mapSourceDataFlow.debounce(1000).map {
             Pair(it, getTileStreamProviderDao.newTileStreamProvider(it)).also { (_, result) ->
                 /* Don't test the stream provider if it has overlays */
                 val provider = result.getOrNull()

@@ -19,10 +19,15 @@ import java.util.*
  */
 class LayerOverlayRepository {
     private val layersForSource: Map<WmtsSource, MutableStateFlow<List<LayerProperties>>> =
-        WmtsSource.values().associateWith {
+        WmtsSource.entries.associateWith {
             MutableStateFlow(emptyList())
         }
 
+    /**
+     * Due to how the layer overlay UI works at the moment, the value for a given StateFlow might
+     * change excessively rapidly (when changing order).
+     * Consumers should debounce.
+     */
     fun getLayerProperties(source: WmtsSource): StateFlow<List<LayerProperties>> {
         return layersForSource[source]
             ?: MutableStateFlow(emptyList())  // the right-hand side should never happen
@@ -49,19 +54,32 @@ class LayerOverlayRepository {
         }
     }
 
-    fun moveLayer(wmtsSource: WmtsSource, from: Int, to: Int) {
+    fun moveLayerUp(wmtsSource: WmtsSource, id: String) {
         layersForSource[wmtsSource]?.update {
-            if (from in it.indices && to in it.indices) {
+            val index = it.indexOfFirst { p -> p.layer.id == id }
+            if (index > 0) {
                 val newList = it.toList()
-                Collections.swap(newList, from, to)
+                Collections.swap(newList, index, index - 1)
                 newList
             } else it
         }
     }
 
-    fun removeLayer(wmtsSource: WmtsSource, index: Int) {
+    fun moveLayerDown(wmtsSource: WmtsSource, id: String) {
+        layersForSource[wmtsSource]?.update {
+            val index = it.indexOfFirst { p -> p.layer.id == id }
+            if (index < it.lastIndex) {
+                val newList = it.toList()
+                Collections.swap(newList, index, index + 1)
+                newList
+            } else it
+        }
+    }
+
+    fun removeLayer(wmtsSource: WmtsSource, id: String) {
         layersForSource[wmtsSource]?.update {
             val newList = it.toMutableList()
+            val index = it.indexOfFirst { p -> p.layer.id == id }
             newList.removeAt(index)
             newList
         }

@@ -1,52 +1,69 @@
 package com.peterlaurence.trekme.features.mapcreate.presentation.ui.overlay
 
-import android.content.Context
-import android.view.View
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidViewBinding
-import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.wmts.domain.model.Cadastre
 import com.peterlaurence.trekme.core.wmts.domain.model.LayerProperties
+import com.peterlaurence.trekme.core.wmts.domain.model.LayerPropertiesIgn
+import com.peterlaurence.trekme.core.wmts.domain.model.Road
 import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
 import com.peterlaurence.trekme.core.wmts.domain.model.ignCadastre
 import com.peterlaurence.trekme.core.wmts.domain.model.ignRoad
 import com.peterlaurence.trekme.core.wmts.domain.model.ignSlopes
-import com.peterlaurence.trekme.databinding.FragmentLayerOverlayBinding
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.LayerOverlayViewModel
 
 @Composable
@@ -60,8 +77,9 @@ fun LayerOverlayStateful(
 
     LayerOverlayScreen(
         layerProperties = layerProperties,
-        onMove = { from, to -> viewModel.moveLayer(wmtsSource, from, to) },
-        onSwiped = { pos -> viewModel.removeLayer(wmtsSource, pos) },
+        onMoveUp = { id -> viewModel.moveLayerUp(wmtsSource, id) },
+        onMoveDown = { id -> viewModel.moveLayerDown(wmtsSource, id) },
+        onRemove = { id -> viewModel.removeLayer(wmtsSource, id) },
         onUpdateOpacity = { opacity, layerId ->
             viewModel.updateOpacityForLayer(
                 wmtsSource,
@@ -96,12 +114,15 @@ fun LayerOverlayStateful(
 @Composable
 private fun LayerOverlayScreen(
     layerProperties: List<LayerProperties>,
-    onMove: (Int, Int) -> Unit,
-    onSwiped: (Int) -> Unit,
+    onMoveUp: (String) -> Unit,
+    onMoveDown: (String) -> Unit,
+    onRemove: (String) -> Unit,
     onUpdateOpacity: (opacity: Float, layerId: String) -> Unit,
     onAddLayer: () -> Unit,
     onBack: () -> Unit
 ) {
+    var selectedLayerId by remember { mutableStateOf<String?>(null) }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -113,92 +134,117 @@ private fun LayerOverlayScreen(
                 },
             )
         },
-    ) { paddingValues ->
-
-        val context = LocalContext.current
-        AndroidViewBinding(
-            factory = { inflater, vg, attach ->
-                FragmentLayerOverlayBinding.inflate(inflater, vg, attach).also { b ->
-                    /* Init recycler view and adapter */
-                    val recyclerView = b.recyclerView
-                    val llm = LinearLayoutManager(context)
-                    recyclerView.layoutManager = llm
-
-                    val itemTouchHelper = makeItemTouchHelper(onMove, onSwiped)
-                    itemTouchHelper.attachToRecyclerView(recyclerView)
-                    val adapter = LayerOverlayAdapter(
-                        itemTouchHelper,
-                        onOpacityUpdate = onUpdateOpacity
+        floatingActionButton = {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                selectedLayerId?.also { id ->
+                    SmallFloatingActionButton(onClick = { onRemove(id) }) {
+                        Icon(
+                            Icons.Filled.Clear,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    SmallFloatingActionButton(onClick = { onMoveUp(id) }) {
+                        Icon(Icons.Filled.KeyboardArrowUp, contentDescription = null)
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    SmallFloatingActionButton(onClick = { onMoveDown(id) }) {
+                        Icon(Icons.Filled.KeyboardArrowDown, contentDescription = null)
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+                FloatingActionButton(onClick = onAddLayer) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_baseline_add_24),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimaryContainer),
+                        contentDescription = null,
                     )
-                    recyclerView.adapter = adapter
+                }
+            }
+        }
+    ) { paddingValues ->
+        if (layerProperties.isEmpty()) {
+            Column(
+                Modifier
+                    .padding(paddingValues)
+                    .padding(horizontal = 24.dp)
+                    .fillMaxSize(),
+            ) {
+                Spacer(modifier = Modifier.weight(0.5f))
+                Text(text = stringResource(id = R.string.overlay_empty))
+                Spacer(modifier = Modifier.weight(1f))
+            }
+        } else {
+            Column(
+                Modifier
+                    .padding(paddingValues)
+                    .padding(top = 8.dp)
+            ) {
+                Row(
+                    Modifier
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth()
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.overlay_title),
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = stringResource(id = R.string.overlay_opacity),
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 6.dp)
+                    )
+                }
 
-                    b.addLayerFab.setOnClickListener {
-                        onAddLayer()
+                HorizontalDivider(Modifier.fillMaxWidth())
+
+                LazyColumn {
+                    items(layerProperties, key = { it.layer.id }) {
+                        var opacity by remember(it.layer.id) { mutableFloatStateOf(it.opacity) }
+                        BoxWithConstraints(
+                            Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    if (it.layer.id == selectedLayerId) MaterialTheme.colorScheme.tertiary.copy(
+                                        alpha = 0.15f
+                                    ) else Color.Transparent
+                                )
+                                .clickable { selectedLayerId = it.layer.id }
+                                .padding(horizontal = 16.dp)
+                        ) {
+                            Text(
+                                text = translateLayerName(it.layer.id) ?: "",
+                                modifier = Modifier
+                                    .requiredWidth(maxWidth / 2)
+                                    .align(Alignment.CenterStart)
+                            )
+
+                            Slider(
+                                value = opacity,
+                                onValueChange = { v ->
+                                    selectedLayerId = it.layer.id
+                                    opacity = v
+                                },
+                                onValueChangeFinished = {
+                                    onUpdateOpacity(opacity, it.layer.id)
+                                },
+                                modifier = Modifier
+                                    .requiredWidth(maxWidth / 2)
+                                    .padding(end = 16.dp)
+                                    .align(Alignment.CenterEnd),
+                            )
+                        }
                     }
                 }
-            },
-            modifier = Modifier.padding(paddingValues)
-        ) {
-            if (layerProperties.isEmpty()) {
-                header.visibility = View.GONE
-                emptyMessage.visibility = View.VISIBLE
-            } else {
-                header.visibility = View.VISIBLE
-                emptyMessage.visibility = View.GONE
-                val dataSet = layerProperties.mapNotNull { property ->
-                    val name =
-                        translateLayerName(property.layer.id, context) ?: return@mapNotNull null
-                    LayerInfo(name, property)
-                }
-                (recyclerView.adapter as? LayerOverlayAdapter)?.setLayerInfo(dataSet)
             }
         }
     }
-}
-
-private fun makeItemTouchHelper(
-    onMove: (Int, Int) -> Unit,
-    onSwiped: (Int) -> Unit,
-): ItemTouchHelper {
-    val simpleTouchCallback = object : ItemTouchHelper.SimpleCallback(
-        ItemTouchHelper.UP or ItemTouchHelper.DOWN or ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT,
-        ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
-    ) {
-        override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
-            super.onSelectedChanged(viewHolder, actionState)
-
-            if (actionState == ItemTouchHelper.ACTION_STATE_DRAG) {
-                viewHolder?.itemView?.alpha = 0.5f
-            }
-        }
-
-        override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
-            super.clearView(recyclerView, viewHolder)
-            viewHolder.itemView.alpha = 1.0f
-        }
-
-        override fun isLongPressDragEnabled(): Boolean {
-            return false
-        }
-
-        override fun onMove(
-            recyclerView: RecyclerView,
-            viewHolder: RecyclerView.ViewHolder,
-            target: RecyclerView.ViewHolder
-        ): Boolean {
-            val from = viewHolder.bindingAdapterPosition
-            val to = target.bindingAdapterPosition
-
-            onMove(from, to)
-            return true
-        }
-
-        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-            onSwiped(viewHolder.bindingAdapterPosition)
-        }
-    }
-
-    return ItemTouchHelper(simpleTouchCallback)
 }
 
 private val layerIdToResId = mapOf(
@@ -206,11 +252,6 @@ private val layerIdToResId = mapOf(
     ignSlopes to R.string.layer_ign_slopes,
     ignCadastre to R.string.layer_ign_cadastre
 )
-
-private fun translateLayerName(layerId: String, context: Context): String? {
-    val res = layerIdToResId[layerId] ?: return null
-    return context.getString(res)
-}
 
 @Composable
 private fun translateLayerName(layerId: String): String? {
@@ -281,4 +322,21 @@ private fun LayerSelectDialog(
     )
 }
 
-data class LayerInfo(val name: String, val properties: LayerProperties)
+@Preview(locale = "fr")
+@Composable
+private fun LayerOverlayScreenPreview() {
+    TrekMeTheme {
+        LayerOverlayScreen(
+            layerProperties = listOf(
+                LayerPropertiesIgn(Cadastre, 0.4f),
+                LayerPropertiesIgn(Road, 0.4f)
+            ),
+            onAddLayer = {},
+            onUpdateOpacity = { _, _ -> },
+            onBack = {},
+            onMoveDown = {},
+            onMoveUp = {},
+            onRemove = {}
+        )
+    }
+}

@@ -34,11 +34,15 @@ class LayerOverlayViewModel @Inject constructor(
         repository.addLayer(wmtsSource, id)
     }
 
-    fun moveLayer(wmtsSource: WmtsSource, from: Int, to: Int) {
-        repository.moveLayer(wmtsSource, from, to)
+    fun moveLayerUp(wmtsSource: WmtsSource, id: String) {
+        repository.moveLayerUp(wmtsSource, id)
     }
 
-    fun removeLayer(wmtsSource: WmtsSource, index: Int) {
-        repository.removeLayer(wmtsSource, index)
+    fun moveLayerDown(wmtsSource: WmtsSource, id: String) {
+        repository.moveLayerDown(wmtsSource, id)
+    }
+
+    fun removeLayer(wmtsSource: WmtsSource, id: String) {
+        repository.removeLayer(wmtsSource, id)
     }
 }
