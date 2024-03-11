@@ -52,7 +52,7 @@ class LayerOverlayFragment : Fragment() {
         super.onCreate(savedInstanceState)
 
         wmtsSource = arguments?.let {
-            LayerOverlayFragmentArgs.fromBundle(it)
+            LayerOverlayFragment2Args.fromBundle(it)
         }?.wmtsSourceBundle?.wmtsSource
     }
 
@@ -166,5 +166,3 @@ class LayerOverlayFragment : Fragment() {
         return getString(res)
     }
 }
-
-data class LayerInfo(val name: String, val properties: LayerProperties)

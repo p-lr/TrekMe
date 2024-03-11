@@ -440,6 +440,7 @@
     <string name="trekme_extended_advert">Enjoy far better image quality and more readable texts.</string>
 
     <!-- LayerOverlayFragment -->
+    <string name="overlay_screen_title">Overlays</string>
     <string name="overlay_title">Layer name</string>
     <string name="overlay_opacity">Opacity</string>
     <string name="overlay_empty">No layers added\nUse the button below to add a new layer.</string>

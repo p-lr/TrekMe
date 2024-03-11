@@ -13,7 +13,7 @@
         android:layout_marginTop="8dp"
         android:alpha="0.87"
         android:fontFamily="sans-serif-medium"
-        android:textColor="@color/colorPrimaryTextBlack"
+        android:textColor="?android:textColorPrimary"
         android:textSize="17sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -49,6 +49,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:tint="?android:textColorPrimary"
         app:srcCompat="@drawable/ic_drag_indicator_24px" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
