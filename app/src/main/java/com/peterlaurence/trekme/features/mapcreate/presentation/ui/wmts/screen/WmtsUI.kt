@@ -103,6 +103,10 @@ fun WmtsStateful(
         viewModel.onLocationReceived(it)
     }
 
+    LaunchedEffectWithLifecycle(viewModel.tileStreamProviderFlow) {
+        viewModel.onNewTileStreamProvider(it)
+    }
+
     val snackbarHostState = remember { SnackbarHostState() }
 
     val ok = stringResource(id = R.string.ok_dialog)

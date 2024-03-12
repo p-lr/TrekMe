@@ -26,7 +26,7 @@ class LayerOverlayRepository {
     /**
      * Due to how the layer overlay UI works at the moment, the value for a given StateFlow might
      * change excessively rapidly (when changing order).
-     * Consumers should debounce.
+     * Consumers should cancel flow collection when the map isn't visible.
      */
     fun getLayerProperties(source: WmtsSource): StateFlow<List<LayerProperties>> {
         return layersForSource[source]

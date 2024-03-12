@@ -55,6 +55,7 @@ import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.to
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.layers.RouteLayer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import ovh.plrapps.mapcompose.api.*
@@ -99,6 +100,11 @@ class WmtsViewModel @Inject constructor(
 
     val wmtsSourceState = wmtsSourceRepository.wmtsSourceState
     val locationFlow = locationSource.locationFlow
+
+    /* Allow the "view" to collect those events only at some lifecycle stages, in order to avoid
+     * unnecessary network requests when e.g changing overlay layers from a different screen. */
+    private val _tileStreamProviderChannel = Channel<TileStreamProvider>(1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    val tileStreamProviderFlow = _tileStreamProviderChannel.receiveAsFlow()
 
     private val _eventsChannel = Channel<WmtsEvent>(1)
     val events = _eventsChannel.receiveAsFlow()
@@ -277,16 +283,22 @@ class WmtsViewModel @Inject constructor(
         tileStreamProviderFlow.collect { (_, result) ->
             val tileStreamProvider = result.getOrNull()
             if (tileStreamProvider != null) {
-                mapState.removeAllLayers()
-                mapState.addLayer(
-                    /* The retry policy is applied here to affect map display only, and to not
-                     * cumulate with the retry policy already applied when downloading maps. */
-                    tileStreamProvider.withRetry(3).toMapComposeTileStreamProvider()
-                )
+                _tileStreamProviderChannel.send(tileStreamProvider)
             } else {
                 _wmtsState.value = WmtsError.VPS_FAIL
             }
         }
+    }
+
+    fun onNewTileStreamProvider(tileStreamProvider: TileStreamProvider) {
+        val mapState = _wmtsState.value.let { if (it is MapReady) it.mapState else null} ?: return
+
+        mapState.removeAllLayers()
+        mapState.addLayer(
+            /* The retry policy is applied here to affect map display only, and to not
+             * cumulate with the retry policy already applied when downloading maps. */
+            tileStreamProvider.withRetry(3).toMapComposeTileStreamProvider()
+        )
     }
 
     private fun getTileSize(wmtsSource: WmtsSource): Int {
@@ -401,7 +413,7 @@ class WmtsViewModel @Inject constructor(
     private suspend fun createTileStreamProvider(wmtsSource: WmtsSource): Flow<Pair<MapSourceData, Result<TileStreamProvider>>> {
         val mapSourceDataFlow: Flow<MapSourceData> = getMapSourceDataFlow(wmtsSource)
 
-        return mapSourceDataFlow.debounce(1000).map {
+        return mapSourceDataFlow.map {
             Pair(it, getTileStreamProviderDao.newTileStreamProvider(it)).also { (_, result) ->
                 /* Don't test the stream provider if it has overlays */
                 val provider = result.getOrNull()
