@@ -18,7 +18,7 @@ import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 
 
 @Composable
-fun RecordScreen(
+fun RecordStateful(
     statViewModel: RecordingStatisticsViewModel,
     recordViewModel: RecordViewModel,
     onElevationGraphClick: (RecordingData) -> Unit,

@@ -495,7 +495,6 @@ private fun NoTrails(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ClickableCard(
     iconId: Int,
@@ -517,6 +516,32 @@ private fun ClickableCard(
             )
             Text(text = stringResource(id = textId), textAlign = TextAlign.Center)
         }
+    }
+}
+
+@Preview
+@Composable
+private fun GpxRecordListPreview() {
+    TrekMeTheme {
+        val stats = RecordStats(
+            "11.51 km",
+            "+127 m",
+            "-655 m",
+            "2h46",
+            "8.2 km/h"
+        )
+        GpxRecordList(
+            items = listOf(
+                SelectableRecordingItem(
+                    id = UUID.randomUUID(), name = "Track 1", isSelected = false, stats = stats),
+                SelectableRecordingItem(id = UUID.randomUUID(), name = "Track 2", isSelected = true, stats = stats),
+                SelectableRecordingItem(id = UUID.randomUUID(), name = "Track 3", isSelected = false, stats = stats)
+            ),
+            isMultiSelectionMode = false,
+            lazyListState = LazyListState(),
+            onItemClick = {},
+            actioner = {}
+        )
     }
 }
 
