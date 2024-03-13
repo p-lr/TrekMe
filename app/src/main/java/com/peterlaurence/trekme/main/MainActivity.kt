@@ -354,7 +354,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     inclusive = true
                 }
             }
-            navController.navigate(NavGraphDirections.actionGlobalMapCreateGraph(), options)
+            navController.navigate(NavGraphDirections.actionGlobalMapCreateFragment(), options)
             permissionRequestHandler?.requestMapCreationPermission()
             warnIfNotInternet(getString(R.string.no_internet))
         }

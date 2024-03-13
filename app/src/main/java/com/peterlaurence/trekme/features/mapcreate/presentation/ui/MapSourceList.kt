@@ -171,13 +171,14 @@ private fun getImageForSource(source: WmtsSource): Painter {
 @Composable
 fun MapSourceListStateful(
     viewModel: MapSourceListViewModel,
-    onSourceClick: (WmtsSource) -> Unit
+    onSourceClick: (WmtsSource) -> Unit,
+    onMainMenuClick: () -> Unit
 ) {
     val sourceList by viewModel.sourceList
     var showOnBoarding by viewModel.showOnBoarding
 
     BoxWithConstraints {
-        MapSourceListUi(sourceList, onSourceClick, onMainMenuClick = viewModel::onMainMenuClick)
+        MapSourceListUi(sourceList, onSourceClick, onMainMenuClick = onMainMenuClick)
         if (showOnBoarding) {
             OnBoardingTip(
                 modifier = Modifier

@@ -66,23 +66,28 @@ import com.peterlaurence.trekme.core.wmts.domain.model.ignSlopes
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.LayerOverlayViewModel
 
+/**
+ * User interface to add, remove, and reorder overlays.
+ * Removal is done with a swipe gesture, while reordering is done using drag & drop using a handle
+ * on the right-side.
+ *
+ * @since 2021-01-09
+ */
 @Composable
 fun LayerOverlayStateful(
     viewModel: LayerOverlayViewModel,
-    wmtsSource: WmtsSource,
     onBack: () -> Unit
 ) {
-    val layerProperties by viewModel.getLayerPropertiesFlow(wmtsSource).collectAsState()
+    val layerProperties by viewModel.getLayerPropertiesFlow().collectAsState()
     var isShowingLayerDialog by remember { mutableStateOf(false) }
 
     LayerOverlayScreen(
         layerProperties = layerProperties,
-        onMoveUp = { id -> viewModel.moveLayerUp(wmtsSource, id) },
-        onMoveDown = { id -> viewModel.moveLayerDown(wmtsSource, id) },
-        onRemove = { id -> viewModel.removeLayer(wmtsSource, id) },
+        onMoveUp = { id -> viewModel.moveLayerUp(id) },
+        onMoveDown = { id -> viewModel.moveLayerDown(id) },
+        onRemove = { id -> viewModel.removeLayer(id) },
         onUpdateOpacity = { opacity, layerId ->
             viewModel.updateOpacityForLayer(
-                wmtsSource,
                 layerId,
                 opacity
             )
@@ -92,14 +97,14 @@ fun LayerOverlayStateful(
     )
 
     if (isShowingLayerDialog) {
-        val ids = viewModel.getAvailableLayersId(wmtsSource)
+        val ids = viewModel.getAvailableLayersId()
         val idsAndNames = ids.map { id -> Pair(id, translateLayerName(id)) }
 
         LayerSelectDialog(
             title = stringResource(id = R.string.add_layer),
             onConfirmPressed = { id ->
                 if (id != null) {
-                    viewModel.addLayer(wmtsSource, id)
+                    viewModel.addLayer(id)
                 }
             },
             layers = idsAndNames,

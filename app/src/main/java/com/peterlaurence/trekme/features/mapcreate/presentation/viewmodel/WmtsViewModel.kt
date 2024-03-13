@@ -31,7 +31,6 @@ import com.peterlaurence.trekme.core.wmts.domain.model.LayerProperties
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.WmtsSourceRepository
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.PositionMarker
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.DownloadFormData
-import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.WmtsFragment
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components.AreaUiController
 import com.peterlaurence.trekme.features.common.presentation.ui.component.PlaceMarker
 import com.peterlaurence.trekme.features.common.domain.util.toMapComposeTileStreamProvider

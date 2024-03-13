@@ -33,47 +33,6 @@
     <action android:id="@+id/action_global_mapImportFragment" app:destination="@id/mapImportFragment" />
     <action android:id="@+id/action_global_mapListFragment" app:destination="@id/mapListFragment" />
     <action android:id="@+id/action_global_gpsProFragment" app:destination="@id/gpsProFragment"/>
-    <action android:id="@+id/action_global_mapCreateGraph" app:destination="@id/mapCreationGraph"/>
-    <navigation android:id="@+id/mapCreationGraph"
-        app:startDestination="@id/mapCreateFragment">
-        <fragment
-            android:id="@+id/wmtsFragment"
-            android:name="com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.WmtsFragment"
-            android:label="@string/map_wmts_label">
-            <action
-                android:id="@+id/action_WmtsFragment_to_layerOverlayFragment"
-                app:destination="@id/layerOverlayFragment" />
-        </fragment>
-        <fragment
-            android:id="@+id/layerOverlayFragment"
-            android:name="com.peterlaurence.trekme.features.mapcreate.presentation.ui.overlay.LayerOverlayFragment"
-            android:label="LayerOverlayFragment">
-            <argument
-                android:name="wmtsSourceBundle"
-                app:argType="com.peterlaurence.trekme.features.mapcreate.presentation.ui.overlay.LayerOverlayDataBundle" />
-        </fragment>
-        <fragment
-            android:id="@+id/mapCreateFragment"
-            android:name="com.peterlaurence.trekme.features.mapcreate.presentation.ui.MapCreateFragment"
-            android:label="@string/fragment_map_create">
-            <action
-                android:id="@+id/action_mapCreateFragment_to_wmtsFragment"
-                app:destination="@id/wmtsFragment" />
-            <action
-                android:id="@+id/action_mapCreateFragment_to_extendedOfferGatewayFragment"
-                app:destination="@id/extendedOfferGatewayFragment" />
-        </fragment>
-        <fragment
-            android:id="@+id/extendedOfferGatewayFragment"
-            android:name="com.peterlaurence.trekme.features.mapcreate.presentation.ui.ExtendedOfferGatewayFragment"
-            android:label="ExtendedOfferGatewayFragment" >
-            <action
-                android:id="@+id/action_extendedOfferGatewayFragment_to_wmtsFragment"
-                app:destination="@id/wmtsFragment"
-                app:popUpTo="@id/extendedOfferGatewayFragment"
-                app:popUpToInclusive="true" />
-        </fragment>
-    </navigation>
     <fragment
         android:id="@+id/mapFragment"
         android:name="com.peterlaurence.trekme.features.map.presentation.ui.MapFragment"
@@ -98,4 +57,9 @@
         android:id="@+id/gpsProFragment"
         android:name="com.peterlaurence.trekme.features.gpspro.presentation.ui.GpsProFragment"
         android:label="GpsProFragment" />
+    <fragment
+        android:id="@+id/mapCreateFragment"
+        android:name="com.peterlaurence.trekme.features.mapcreate.presentation.ui.MapCreateFragment"
+        android:label="MapCreateFragment" />
+    <action android:id="@+id/action_global_mapCreateFragment" app:destination="@id/mapCreateFragment"/>
 </navigation>

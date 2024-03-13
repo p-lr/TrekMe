@@ -1,9 +1,10 @@
 package com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.peterlaurence.trekme.core.wmts.domain.model.LayerProperties
-import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.LayerOverlayRepository
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.navigation.LayerOverlayArg
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
@@ -16,33 +17,36 @@ import javax.inject.Inject
 @HiltViewModel
 class LayerOverlayViewModel @Inject constructor(
     private val repository: LayerOverlayRepository,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+    private val arg = LayerOverlayArg(savedStateHandle)
+    private val wmtsSource = arg.wmtsSource
 
-    fun getLayerPropertiesFlow(wmtsSource: WmtsSource): StateFlow<List<LayerProperties>> {
+    fun getLayerPropertiesFlow(): StateFlow<List<LayerProperties>> {
         return repository.getLayerProperties(wmtsSource)
     }
 
-    fun updateOpacityForLayer(wmtsSource: WmtsSource, layerId: String, opacity: Float) {
+    fun updateOpacityForLayer(layerId: String, opacity: Float) {
         repository.updateOpacityForLayer(wmtsSource, layerId, opacity)
     }
 
-    fun getAvailableLayersId(wmtsSource: WmtsSource): List<String> {
+    fun getAvailableLayersId(): List<String> {
         return repository.getAvailableLayersId(wmtsSource)
     }
 
-    fun addLayer(wmtsSource: WmtsSource, id: String) {
+    fun addLayer(id: String) {
         repository.addLayer(wmtsSource, id)
     }
 
-    fun moveLayerUp(wmtsSource: WmtsSource, id: String) {
+    fun moveLayerUp(id: String) {
         repository.moveLayerUp(wmtsSource, id)
     }
 
-    fun moveLayerDown(wmtsSource: WmtsSource, id: String) {
+    fun moveLayerDown(id: String) {
         repository.moveLayerDown(wmtsSource, id)
     }
 
-    fun removeLayer(wmtsSource: WmtsSource, id: String) {
+    fun removeLayer(id: String) {
         repository.removeLayer(wmtsSource, id)
     }
 }

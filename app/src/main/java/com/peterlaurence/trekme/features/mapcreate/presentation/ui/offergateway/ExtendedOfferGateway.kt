@@ -38,7 +38,6 @@ import androidx.compose.ui.text.style.Hyphens
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentGreen
@@ -48,8 +47,8 @@ import kotlinx.coroutines.cancel
 
 @Composable
 fun ExtendedOfferGatewayStateful(
-    viewModel: ExtendedOfferGatewayViewModel = viewModel(),
-    onNavigateToWmtsFragment: () -> Unit,
+    viewModel: ExtendedOfferGatewayViewModel,
+    onNavigateToWmtsScreen: () -> Unit,
     onNavigateToShop: () -> Unit,
     onBack: () -> Unit
 ) {
@@ -69,7 +68,7 @@ fun ExtendedOfferGatewayStateful(
     LaunchedEffect(Unit) {
         viewModel.extendedOfferWithIgnPurchaseStateFlow.collect {
             if (it == PurchaseState.PURCHASED) {
-                onNavigateToWmtsFragment()
+                onNavigateToWmtsScreen()
                 cancel()
             }
         }

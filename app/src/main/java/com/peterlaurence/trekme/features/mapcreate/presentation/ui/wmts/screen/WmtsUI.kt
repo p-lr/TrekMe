@@ -84,12 +84,40 @@ import ovh.plrapps.mapcompose.ui.state.MapState
 import kotlin.math.abs
 import kotlin.math.min
 
-
+/**
+ * Displays Google Maps - compatible tile matrix sets.
+ * For example :
+ *
+ * [IGN WMTS](https://geoservices.ign.fr/documentation/geoservices/wmts.html). A `GetCapabilities`
+ * request reveals that each level is square area. Here is an example for level 18 :
+ * ```
+ * <TileMatrix>
+ *   <ows:Identifier>18</ows:Identifier>
+ *   <ScaleDenominator>2132.7295838497840572</ScaleDenominator>
+ *   <TopLeftCorner>
+ *     -20037508.3427892476320267 20037508.3427892476320267
+ *   </TopLeftCorner>
+ *   <TileWidth>256</TileWidth>
+ *   <TileHeight>256</TileHeight>
+ *   <MatrixWidth>262144</MatrixWidth>
+ *   <MatrixHeight>262144</MatrixHeight>
+ * </TileMatrix>
+ * ```
+ * This level correspond to a 256 * 262144 = 67108864 px wide and height area.
+ * The `TopLeftCorner` corner contains the WebMercator coordinates. The bottom right corner has
+ * implicitly the opposite coordinates.
+ * **Beware** that this "level 18" is actually the 19th level (matrix set starts at 0).
+ *
+ * The same settings can be seen at [USGS WMTS](https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/WMTS/1.0.0/WMTSCapabilities.xml)
+ * for the "GoogleMapsCompatible" TileMatrixSet (and not the "default028mm" one).
+ *
+ * @since 11/05/2018
+ */
 @Composable
 fun WmtsStateful(
     viewModel: WmtsViewModel,
     onBoardingViewModel: WmtsOnBoardingViewModel,
-    onShowLayerOverlay: () -> Unit,
+    onShowLayerOverlay: (WmtsSource) -> Unit,
     onMenuClick: () -> Unit,
     onGoToShop: () -> Unit
 ) {
@@ -226,7 +254,9 @@ fun WmtsStateful(
                 viewModel.zoomOnPosition()
                 onBoardingViewModel.onCenterOnPosTipAck()
             },
-            onShowLayerOverlay = onShowLayerOverlay,
+            onShowLayerOverlay = {
+                wmtsSource?.also { onShowLayerOverlay(it) }
+            },
             onUseTrack = {
                 launcher.launch("*/*")
             },

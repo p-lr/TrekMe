@@ -4,28 +4,25 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
-import androidx.navigation.navGraphViewModels
-import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
+import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.MapSourceListViewModel
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.navigation.MapCreateGraph
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 /**
  * This fragment is used for displaying available WMTS map sources.
  *
- * @author P.Laurence on 08/04/18
+ * @since 08/04/18
  */
 @AndroidEntryPoint
 class MapCreateFragment : Fragment() {
-    val viewModel: MapSourceListViewModel by navGraphViewModels(R.id.mapCreationGraph) {
-        defaultViewModelProviderFactory
-    }
+
+    @Inject
+    lateinit var appEventBus: AppEventBus
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -37,34 +34,12 @@ class MapCreateFragment : Fragment() {
 
             setContent {
                 TrekMeTheme {
-                    MapSourceListStateful(viewModel) {
-                        viewModel.setMapSource(it)
-                        if (it == WmtsSource.IGN) {
-                            navigateToOfferGateway()
-                        } else {
-                            navigateToWmtsFragment()
-                        }
-                    }
+                    MapCreateGraph(
+                        onMenuClick = { appEventBus.openDrawer() },
+                        onNavigateToShop = { appEventBus.navigateTo(AppEventBus.NavDestination.Shop) }
+                    )
                 }
             }
-        }
-    }
-
-    private fun navigateToWmtsFragment() {
-        val navController = findNavController()
-        if (navController.currentDestination?.id == R.id.mapCreateFragment) {
-            val action =
-                MapCreateFragmentDirections.actionMapCreateFragmentToWmtsFragment()
-            navController.navigate(action)
-        }
-    }
-
-    private fun navigateToOfferGateway() {
-        val navController = findNavController()
-        if (navController.currentDestination?.id == R.id.mapCreateFragment) {
-            val action =
-                MapCreateFragmentDirections.actionMapCreateFragmentToExtendedOfferGatewayFragment()
-            navController.navigate(action)
         }
     }
 }
