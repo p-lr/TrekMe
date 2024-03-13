@@ -311,7 +311,7 @@ private fun BoxWithConstraintsScope.OnBoardingOverlay(
         OnBoardingTip(
             modifier = Modifier
                 .width(min(maxWidth * 0.8f, 310.dp))
-                .padding(top = 60.dp, end = 16.dp)
+                .padding(top = 60.dp, end = 50.dp)
                 .align(Alignment.TopEnd),
             text = stringResource(id = R.string.onboarding_center_on_pos),
             popupOrigin = PopupOrigin.TopEnd,
