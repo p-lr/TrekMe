@@ -22,7 +22,8 @@ fun RecordStateful(
     statViewModel: RecordingStatisticsViewModel,
     recordViewModel: RecordViewModel,
     onElevationGraphClick: (RecordingData) -> Unit,
-    onGoToTrailSearchClick: () -> Unit
+    onGoToTrailSearchClick: () -> Unit,
+    onMainMenuClick: () -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -62,7 +63,7 @@ fun RecordStateful(
 
     Scaffold(
         topBar = {
-            RecordTopAppbar(onMainMenuClick = recordViewModel::onMainMenuClick)
+            RecordTopAppbar(onMainMenuClick = onMainMenuClick)
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { paddingValues ->

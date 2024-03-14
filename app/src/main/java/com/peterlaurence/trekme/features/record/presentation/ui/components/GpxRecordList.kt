@@ -341,7 +341,7 @@ private fun BottomBarButtons(selectionCount: Int, actioner: Actioner) {
             enabled = selectionCount == 1
         ) {
             Icon(
-                painterResource(id = R.drawable.import_30dp),
+                painterResource(id = R.drawable.import_24dp),
                 contentDescription = stringResource(
                     id = R.string.recording_import_desc
                 )

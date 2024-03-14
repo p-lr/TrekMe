@@ -28,7 +28,8 @@ class MapFragment : Fragment() {
 
             setContent {
                 MapGraph(
-                    onNavigateToShop = { appEventBus.navigateTo(AppEventBus.NavDestination.Shop) }
+                    onNavigateToShop = { appEventBus.navigateTo(AppEventBus.NavDestination.Shop) },
+                    onMainMenuClick = { appEventBus.openDrawer() }
                 )
             }
         }

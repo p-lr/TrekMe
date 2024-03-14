@@ -9,6 +9,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.peterlaurence.trekme.features.record.domain.model.RecordingData
@@ -27,7 +28,29 @@ fun RecordGraph(onNavigateToTrailSearch: () -> Unit) {
             onNavigateToElevationGraph = {
                 navController.navigateToElevationGraph(it.id.toString())
             },
-            onNavigateToTrailSearch = onNavigateToTrailSearch
+            onNavigateToTrailSearch = onNavigateToTrailSearch,
+            onMainMenuClick = {}
+        )
+
+        elevationGraphDestination(
+            onBack = { navController.popBackStack() }
+        )
+    }
+}
+
+
+fun NavGraphBuilder.recordGraph(
+    navController: NavController,
+    onNavigateToTrailSearch: () -> Unit,
+    onMainMenuClick: () -> Unit
+) {
+    navigation(startDestination = recordListDestination, route = recordGraph) {
+        recordListDestination(
+            onNavigateToElevationGraph = {
+                navController.navigateToElevationGraph(it.id.toString())
+            },
+            onNavigateToTrailSearch = onNavigateToTrailSearch,
+            onMainMenuClick = onMainMenuClick
         )
 
         elevationGraphDestination(
@@ -38,14 +61,16 @@ fun RecordGraph(onNavigateToTrailSearch: () -> Unit) {
 
 private fun NavGraphBuilder.recordListDestination(
     onNavigateToElevationGraph: (RecordingData) -> Unit,
-    onNavigateToTrailSearch: () -> Unit
+    onNavigateToTrailSearch: () -> Unit,
+    onMainMenuClick: () -> Unit
 ) {
     composable(route = recordListDestination) {
         RecordStateful(
             statViewModel = hiltViewModel(LocalContext.current.activity),
             recordViewModel = hiltViewModel(LocalContext.current.activity),
             onElevationGraphClick = onNavigateToElevationGraph,
-            onGoToTrailSearchClick = onNavigateToTrailSearch
+            onGoToTrailSearchClick = onNavigateToTrailSearch,
+            onMainMenuClick = onMainMenuClick
         )
     }
 }
@@ -74,7 +99,8 @@ private fun NavController.navigateToElevationGraph(recordingDataId: String) {
     navigate("$elevationGraphDestination/$recordingDataId")
 }
 
-private const val recordListDestination = "recordListDestination"
+const val recordGraph = "recordGraph"
+const val recordListDestination = "recordListDestination"
 private const val elevationGraphDestination = "elevationGraphDestination"
 
 private const val recordingDataId = "recordingDataId"

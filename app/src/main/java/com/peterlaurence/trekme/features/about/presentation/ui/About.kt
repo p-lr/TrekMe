@@ -1,6 +1,10 @@
 package com.peterlaurence.trekme.features.about.presentation.ui
 
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import android.net.Uri
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -13,6 +17,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -28,13 +33,27 @@ import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeThem
 
 @Composable
 fun AboutStateful(
-    onUserManual: () -> Unit,
-    onAppRating: () -> Unit,
-    onSendMail: () -> Unit,
     onMainMenuClick: () -> Unit
 ) {
+    val context = LocalContext.current
+    val uriHandler = LocalUriHandler.current
+    val helpUri = stringResource(id = R.string.help_url)
+
     val scrollState = rememberScrollState()
-    AboutScreen(scrollState, onUserManual, onAppRating, onSendMail, onMainMenuClick)
+    AboutScreen(
+        scrollState = scrollState,
+        onUserManualClick = { uriHandler.openUri(helpUri) },
+        onAppRating = {
+            val packageName = context.applicationContext.packageName
+            try {
+                uriHandler.openUri("market://details?id=$packageName")
+            } catch (e: ActivityNotFoundException) {
+                uriHandler.openUri("http://play.google.com/store/apps/details?id=$packageName")
+            }
+        },
+        onSendMail = { sendMail(context) },
+        onMainMenuClick = onMainMenuClick
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -219,6 +238,14 @@ private fun PrivacyPolicy() {
                 }
         }
     )
+}
+
+private fun sendMail(context: Context) {
+    val emailIntent = Intent(Intent.ACTION_SENDTO,
+        Uri.fromParts("mailto", context.getString(R.string.email_support), null))
+    runCatching {
+        context.startActivity(emailIntent)
+    }
 }
 
 

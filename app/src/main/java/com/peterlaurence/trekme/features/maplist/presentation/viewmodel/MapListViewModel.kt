@@ -37,8 +37,7 @@ class MapListViewModel @Inject constructor(
     private val downloadRepository: DownloadRepository,
     private val onBoardingRepository: OnBoardingRepository,
     private val deleteMapInteractor: DeleteMapInteractor,
-    private val app: Application,
-    private val appEventBus: AppEventBus
+    private val app: Application
 ) : ViewModel() {
 
     /**
@@ -150,10 +149,6 @@ class MapListViewModel @Inject constructor(
 
     private fun Map.toMapItem(isFavorite: Boolean): MapItem {
         return MapItem(id, titleFlow = name, isFavorite = isFavorite, image = thumbnail)
-    }
-
-    fun onMainMenuClick() {
-        appEventBus.openDrawer()
     }
 }
 

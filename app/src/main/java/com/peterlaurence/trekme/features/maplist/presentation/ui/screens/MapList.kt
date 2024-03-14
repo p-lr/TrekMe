@@ -42,7 +42,8 @@ fun MapListStateful(
     onNavigateToMapCreate: () -> Unit,
     onNavigateToMapSettings: () -> Unit,
     onNavigateToMap: (UUID) -> Unit,
-    onNavigateToExcursionSearch: () -> Unit
+    onNavigateToExcursionSearch: () -> Unit,
+    onMainMenuClick: () -> Unit
 ) {
     val intents = object : MapListIntents {
         override fun onMapClicked(mapId: UUID) {
@@ -85,7 +86,7 @@ fun MapListStateful(
     }
 
     val mapListState by mapListViewModel.mapListState.collectAsState()
-    MapListUi(mapListState, intents, onMainMenuClick = mapListViewModel::onMainMenuClick)
+    MapListUi(mapListState, intents, onMainMenuClick = onMainMenuClick)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

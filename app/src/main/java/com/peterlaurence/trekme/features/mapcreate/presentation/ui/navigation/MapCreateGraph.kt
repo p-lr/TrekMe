@@ -8,6 +8,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
@@ -47,6 +48,37 @@ fun MapCreateGraph(
     }
 }
 
+fun NavGraphBuilder.mapCreateGraph(
+    navController: NavController,
+    onMenuClick: () -> Unit,
+    onNavigateToShop: () -> Unit,
+) {
+    navigation(startDestination = mapSourceListDestination, route = mapCreateGraph) {
+        mapSourceListDestination(
+            onMenuClick,
+            onNavigateToWmtsScreen = { navController.navigate(wmtsDestination) },
+            onNavigateToOfferGateway = { navController.navigate(gatewayDestination) }
+        )
+        gatewayDestination(
+            onNavigateToWmtsScreen = {
+                navController.navigate(wmtsDestination) {
+                    popUpTo(mapSourceListDestination)
+                }
+            },
+            onNavigateToShop = onNavigateToShop,
+            onBack = { navController.popBackStack() }
+        )
+        wmtsDestination(
+            onMenuClick,
+            onNavigateToOverlayLayers = { navController.navigateToOverlayLayers(it) },
+            onNavigateToShop = onNavigateToShop,
+        )
+        overlayLayersDestination(
+            onBack = { navController.popBackStack() }
+        )
+    }
+}
+
 fun NavGraphBuilder.mapSourceListDestination(
     onMenuClick: () -> Unit,
     onNavigateToWmtsScreen: () -> Unit,
@@ -69,7 +101,7 @@ fun NavGraphBuilder.mapSourceListDestination(
     }
 }
 
-fun NavGraphBuilder.gatewayDestination(
+private fun NavGraphBuilder.gatewayDestination(
     onNavigateToWmtsScreen: () -> Unit,
     onNavigateToShop: () -> Unit,
     onBack: () -> Unit
@@ -84,7 +116,7 @@ fun NavGraphBuilder.gatewayDestination(
     }
 }
 
-fun NavGraphBuilder.wmtsDestination(
+private fun NavGraphBuilder.wmtsDestination(
     onMenuClick: () -> Unit,
     onNavigateToOverlayLayers: (WmtsSource) -> Unit,
     onNavigateToShop: () -> Unit,
@@ -100,7 +132,7 @@ fun NavGraphBuilder.wmtsDestination(
     }
 }
 
-fun NavGraphBuilder.overlayLayersDestination(
+private fun NavGraphBuilder.overlayLayersDestination(
     onBack: () -> Unit
 ) {
     composable(
@@ -132,7 +164,8 @@ internal class LayerOverlayArg(val wmtsSource: WmtsSource) {
 
 private const val layerOverlayArg = "layerOverlayArg"
 
-private const val mapSourceListDestination = "mapSourceListDestination"
+const val mapCreateGraph = "mapcreateGraph"
+const val mapSourceListDestination = "mapSourceListDestination"
 private const val wmtsDestination = "wmtsDestination"
 private const val gatewayDestination = "extendedOfferGatewayDestination"
 private const val overlayLayersDestination = "overlayLayersDestination"

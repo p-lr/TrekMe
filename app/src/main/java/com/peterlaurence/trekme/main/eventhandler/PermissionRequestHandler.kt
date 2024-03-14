@@ -53,17 +53,18 @@ class PermissionRequestHandler(
         if (grantedMap.values.any { !it }) {
             /* User has denied one of the critical permissions so we suggest navigating to the app settings */
             with(activity) {
-                Snackbar.make(
-                    binding.root,
-                    getString(R.string.storage_perm_denied),
-                    Snackbar.LENGTH_INDEFINITE
-                ).setAction(getString(R.string.ok_dialog)) {
-                    val intent = Intent()
-                    intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                    val uri = Uri.fromParts("package", activity.packageName, null)
-                    intent.data = uri
-                    startActivity(intent)
-                }.show()
+                // TODO
+//                Snackbar.make(
+//                    binding.root,
+//                    getString(R.string.storage_perm_denied),
+//                    Snackbar.LENGTH_INDEFINITE
+//                ).setAction(getString(R.string.ok_dialog)) {
+//                    val intent = Intent()
+//                    intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+//                    val uri = Uri.fromParts("package", activity.packageName, null)
+//                    intent.data = uri
+//                    startActivity(intent)
+//                }.show()
             }
         }
     }

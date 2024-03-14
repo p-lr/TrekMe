@@ -51,17 +51,20 @@ class MainActivityViewModel @Inject constructor(
 ) : ViewModel() {
     private var attemptedAtLeastOnce = false
 
-    private val _showMapListSignal = MutableSharedFlow<Unit>()
-    val showMapListSignal = _showMapListSignal.asSharedFlow()
+//    private val _showMapListSignal = MutableSharedFlow<Unit>()
+//    val showMapListSignal = _showMapListSignal.asSharedFlow()
 
-    private val _showMapViewSignal = MutableSharedFlow<Unit>()
-    val showMapViewSignal = _showMapViewSignal.asSharedFlow()
+//    private val _showMapViewSignal = MutableSharedFlow<Unit>()
+//    val showMapViewSignal = _showMapViewSignal.asSharedFlow()
 
-    private val _gpsProPurchased = MutableSharedFlow<Boolean>()
-    val gpsProPurchased = _gpsProPurchased.asSharedFlow()
+    private val _gpsProPurchased = MutableStateFlow(false)
+    val gpsProPurchased = _gpsProPurchased.asStateFlow()
 
-    private val _showRecordingsSignal = Channel<Unit>(1)
-    val showRecordingsFlow = _showRecordingsSignal.receiveAsFlow()
+//    private val _showRecordingsSignal = Channel<Unit>(1)
+//    val showRecordingsFlow = _showRecordingsSignal.receiveAsFlow()
+
+    private val event = Channel<MainActivityEvent>(1)
+    val eventFlow = event.receiveAsFlow()
 
     /**
      * When the [MainActivity] first starts, we init the [TrekMeContext] and the [UnitFormatter].
@@ -90,12 +93,12 @@ class MainActivityViewModel @Inject constructor(
             /* The shortcut takes precedence over the startup policy */
             if (shortcut != null) {
                 when(shortcut) {
-                    Shortcut.RECORDINGS -> _showRecordingsSignal.send(Unit)
+                    Shortcut.RECORDINGS -> event.send(MainActivityEvent.ShowRecordings)
                     Shortcut.LAST_MAP -> showLastMap()
                 }
             } else {
                 when (settings.getStartOnPolicy().first()) {
-                    StartOnPolicy.MAP_LIST -> _showMapListSignal.emit(Unit)
+                    StartOnPolicy.MAP_LIST -> event.send(MainActivityEvent.ShowMapList)
                     StartOnPolicy.LAST_MAP -> showLastMap()
                 }
             }
@@ -105,12 +108,12 @@ class MainActivityViewModel @Inject constructor(
             gpsProStateOwner.purchaseFlow.collect { state ->
                 when (state) {
                     PurchaseState.PURCHASED -> {
-                        _gpsProPurchased.emit(true)
+                        _gpsProPurchased.value = true
                     }
                     PurchaseState.NOT_PURCHASED -> {
                         /* If denied, switch back to internal GPS */
                         settings.setLocationProducerInfo(InternalGps)
-                        _gpsProPurchased.emit(false)
+                        _gpsProPurchased.value = false
                     }
                     else -> { /* Nothing to do */
                     }
@@ -130,14 +133,14 @@ class MainActivityViewModel @Inject constructor(
             val map = mapRepository.getMap(id)
             map?.let {
                 mapRepository.setCurrentMap(map)
-                _showMapViewSignal.emit(Unit)
+                event.send(MainActivityEvent.ShowMap)
                 true
             } ?: false
         } ?: false
 
         if (!found) {
             /* Fall back to show the map list */
-            _showMapListSignal.emit(Unit)
+            event.send(MainActivityEvent.ShowMapList)
         }
     }
 
@@ -167,4 +170,10 @@ class MainActivityViewModel @Inject constructor(
     }
 
     fun getMapIndex(mapId: UUID): Int = mapRepository.getCurrentMapList().indexOfFirst { it.id == mapId }
+}
+
+sealed interface MainActivityEvent {
+    data object ShowMapList : MainActivityEvent
+    data object ShowMap : MainActivityEvent
+    data object ShowRecordings : MainActivityEvent
 }

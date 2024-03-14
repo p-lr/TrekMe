@@ -27,7 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.billing.domain.model.SubscriptionDetails
@@ -42,9 +42,9 @@ import java.util.*
 
 @Composable
 fun ShopStateful(
-    extendedWithIgnViewModel: ExtendedWithIgnViewModel = viewModel(),
-    extendedOfferViewModel: ExtendedOfferViewModel = viewModel(),
-    gpsProPurchaseViewModel: GpsProPurchaseViewModel = viewModel(),
+    extendedWithIgnViewModel: ExtendedWithIgnViewModel = hiltViewModel(),
+    extendedOfferViewModel: ExtendedOfferViewModel = hiltViewModel(),
+    gpsProPurchaseViewModel: GpsProPurchaseViewModel = hiltViewModel(),
     onMainMenuClick: () -> Unit
 ) {
     val extendedOfferWithIgnPurchaseState by extendedWithIgnViewModel.purchaseFlow.collectAsState()

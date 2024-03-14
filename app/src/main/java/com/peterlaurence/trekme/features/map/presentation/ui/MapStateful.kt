@@ -65,7 +65,8 @@ fun MapStateful(
     onNavigateToMarkerEdit: (markerId: String, mapId: UUID) -> Unit,
     onNavigateToExcursionWaypointEdit: (waypointId: String, excursionId: String) -> Unit,
     onNavigateToBeaconEdit: (beaconId: String, mapId: UUID) -> Unit,
-    onNavigateToShop: () -> Unit
+    onNavigateToShop: () -> Unit,
+    onMainMenuClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val purchased by viewModel.purchaseFlow.collectAsState()
@@ -217,7 +218,7 @@ fun MapStateful(
                         hasElevationFix = purchased,
                         hasBeacons = purchased,
                         hasTrackFollow = purchased,
-                        onMainMenuClick = viewModel::onMainMenuClick,
+                        onMainMenuClick = onMainMenuClick,
                         onManageTracks = onNavigateToTracksManage,
                         onToggleShowOrientation = viewModel::toggleShowOrientation,
                         onAddMarker = viewModel.markerLayer::addMarker,
@@ -247,8 +248,8 @@ fun MapStateful(
 
         is Error -> ErrorScaffold(
             uiState as Error,
-            onMainMenuClick = viewModel::onMainMenuClick,
-            onShopClick = viewModel::onShopClick
+            onMainMenuClick = onMainMenuClick,
+            onShopClick = onNavigateToShop
         )
     }
 

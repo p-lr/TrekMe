@@ -6,7 +6,6 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.map.presentation.ui.screens.MarkerEditStateful
 
 private const val markerEditDestination = "marker_edit_dest"
@@ -23,9 +22,7 @@ fun NavGraphBuilder.markerEditScreen(
             navArgument(mapArgId) { type = NavType.StringType },
         )
     ) {
-        TrekMeTheme {
-            MarkerEditStateful(onBackAction = onBack)
-        }
+        MarkerEditStateful(onBackAction = onBack)
     }
 }
 

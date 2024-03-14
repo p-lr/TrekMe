@@ -11,6 +11,8 @@ import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.interactors.ArchiveMapInteractor
+import com.peterlaurence.trekme.events.AppEventBus
+import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.events.maparchive.MapArchiveEvents
 import com.peterlaurence.trekme.main.MainActivity
 import kotlinx.coroutines.launch
@@ -20,7 +22,9 @@ import kotlinx.coroutines.launch
  * activity only.
  */
 class MapArchiveEventHandler(
-    private val activity: MainActivity, private val lifecycle: Lifecycle,
+    private val activity: MainActivity,
+    private val lifecycle: Lifecycle,
+    private val appEventBus: AppEventBus,
     mapArchiveEvents: MapArchiveEvents
 ) {
 
@@ -100,6 +104,6 @@ class MapArchiveEventHandler(
         builder.setContentText(archiveOkMsg) // Removes the progress bar
             .setProgress(0, 0, false)
         notifyMgr?.notify(event.mapId.hashCode(), builder.build())
-        activity.showSnackbar(archiveOkMsg, isLong = false)
+        appEventBus.postMessage(StandardMessage(archiveOkMsg))
     }
 }

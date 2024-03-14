@@ -51,7 +51,8 @@ class MapListFragment : Fragment() {
                         },
                         onNavigateToShop = {
                             appEventBus.navigateTo(AppEventBus.NavDestination.Shop)
-                        }
+                        },
+                        onMainMenuClick = { appEventBus.openDrawer() }
                     )
                 }
             }

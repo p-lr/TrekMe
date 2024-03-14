@@ -319,7 +319,7 @@ private fun MapImportUi(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
-            painter = painterResource(id = R.drawable.import_30dp),
+            painter = painterResource(id = R.drawable.import_24dp),
             contentDescription = stringResource(
                 id = R.string.recording_import_desc
             ),

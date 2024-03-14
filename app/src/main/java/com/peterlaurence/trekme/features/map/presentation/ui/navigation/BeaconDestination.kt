@@ -6,7 +6,6 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.map.presentation.ui.screens.BeaconEditStateful
 
 private const val beaconEditDestination = "beacon_edit_dest"
@@ -23,9 +22,7 @@ fun NavGraphBuilder.beaconEditScreen(
             navArgument(mapArgId) { type = NavType.StringType },
         )
     ) {
-        TrekMeTheme {
-            BeaconEditStateful(onBackAction = onBack)
-        }
+        BeaconEditStateful(onBackAction = onBack)
     }
 }
 

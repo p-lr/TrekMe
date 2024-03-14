@@ -12,13 +12,15 @@ fun NavGraphBuilder.mapListDestination(
     onNavigateToMapSettings: () -> Unit,
     onNavigateToMap: (UUID) -> Unit,
     onNavigateToExcursionSearch: () -> Unit,
+    onMainMenuClick: () -> Unit
 ) {
     composable(route = mapListDestinationRoute) {
         MapListStateful(
             onNavigateToMapCreate = onNavigateToMapCreate,
             onNavigateToMapSettings = onNavigateToMapSettings,
             onNavigateToMap = onNavigateToMap,
-            onNavigateToExcursionSearch = onNavigateToExcursionSearch
+            onNavigateToExcursionSearch = onNavigateToExcursionSearch,
+            onMainMenuClick = onMainMenuClick
         )
     }
 }

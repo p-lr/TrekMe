@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.georecord.domain.interactors.GeoRecordInteractor
 import com.peterlaurence.trekme.core.map.domain.interactors.GetMapInteractor
-import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.features.common.domain.interactors.ImportGeoRecordInteractor
 import com.peterlaurence.trekme.features.common.domain.interactors.MapExcursionInteractor
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
@@ -26,7 +25,6 @@ class RecordViewModel @Inject constructor(
     private val mapExcursionInteractor: MapExcursionInteractor,
     private val restoreRecordInteractor: RestoreRecordInteractor,
     private val app: Application,
-    private val appEventBus: AppEventBus,
 ) : ViewModel() {
 
     private val geoRecordImportResultChannel = Channel<GeoRecordImportResult>(1)
@@ -63,9 +61,5 @@ class RecordViewModel @Inject constructor(
                 geoRecordImportResultChannel.send(it)
             }
         }
-    }
-
-    fun onMainMenuClick() {
-        appEventBus.openDrawer()
     }
 }

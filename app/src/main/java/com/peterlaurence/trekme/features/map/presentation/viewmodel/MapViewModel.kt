@@ -100,7 +100,7 @@ class MapViewModel @Inject constructor(
     val settings: Settings,
     private val mapFeatureEvents: MapFeatureEvents,
     gpxRecordEvents: GpxRecordEvents,
-    private val appEventBus: AppEventBus,
+    appEventBus: AppEventBus,
     private val mapLicenseInteractor: MapLicenseInteractor,
     hasOneExtendedOfferInteractor: HasOneExtendedOfferInteractor,
     private val elevationFixInteractor: ElevationFixInteractor,
@@ -245,16 +245,6 @@ class MapViewModel @Inject constructor(
             }
         }
     }
-
-    /* region events */
-    fun onMainMenuClick() {
-        appEventBus.openDrawer()
-    }
-
-    fun onShopClick() {
-        appEventBus.navigateTo(AppEventBus.NavDestination.Shop)
-    }
-    /* endregion */
 
     suspend fun checkMapLicense() = coroutineScope {
         val map = mapRepository.getCurrentMap() ?: return@coroutineScope

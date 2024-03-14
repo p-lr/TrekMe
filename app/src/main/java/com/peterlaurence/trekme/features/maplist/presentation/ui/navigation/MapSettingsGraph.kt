@@ -8,7 +8,7 @@ import com.peterlaurence.trekme.features.maplist.presentation.ui.screens.Calibra
 import com.peterlaurence.trekme.features.maplist.presentation.ui.screens.MapSettingsStateful
 
 const val mapSettingsGraphRoute = "mapSettingsGraphRoute"
-private const val mapSettingsDestination = "mapSettingsDestination"
+const val mapSettingsDestination = "mapSettingsDestination"
 private const val mapCalibrationDestination = "mapCalibrationDestination"
 
 fun NavGraphBuilder.mapSettingsGraph(navController: NavController, onNavigateToShop: () -> Unit) {
