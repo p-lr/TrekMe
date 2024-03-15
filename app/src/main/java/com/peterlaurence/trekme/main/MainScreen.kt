@@ -53,8 +53,10 @@ import com.peterlaurence.trekme.core.map.domain.models.MissingApiError
 import com.peterlaurence.trekme.events.GenericMessage
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.events.WarningMessage
+import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.WarningDialog
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.navigation.wmtsDestination
+import com.peterlaurence.trekme.features.record.app.service.event.NewExcursionEvent
 import com.peterlaurence.trekme.main.navigation.MainGraph
 import com.peterlaurence.trekme.main.navigation.navigateToAbout
 import com.peterlaurence.trekme.main.navigation.navigateToGpsPro
@@ -67,6 +69,7 @@ import com.peterlaurence.trekme.main.navigation.navigateToSettings
 import com.peterlaurence.trekme.main.navigation.navigateToShop
 import com.peterlaurence.trekme.main.navigation.navigateToTrailSearch
 import com.peterlaurence.trekme.main.navigation.navigateToWifiP2p
+import com.peterlaurence.trekme.main.viewmodel.RecordingEventHandlerViewModel
 import com.peterlaurence.trekme.util.android.activity
 import com.peterlaurence.trekme.util.checkInternet
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
@@ -77,8 +80,9 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 
 @Composable
-fun MainScreen(
+fun MainStateful(
     viewModel: MainActivityViewModel,
+    recordingEventHandlerViewModel: RecordingEventHandlerViewModel,
     genericMessages: Flow<GenericMessage>
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -105,6 +109,11 @@ fun MainScreen(
         )
     }
 
+    RecordingEventHandler(
+        recordingEventHandlerViewModel.gpxRecordEvents,
+        onNewExcursion = recordingEventHandlerViewModel::onNewExcursionEvent
+    )
+
     MapDownloadEventHandler(
         downloadEvents = viewModel.downloadEvents,
         navController = navController,
@@ -114,6 +123,7 @@ fun MainScreen(
         onGoToMap = { uuid -> viewModel.onGoToMap(uuid) },
         onShowWarningDialog = { isShowingWarningDialog = it }
     )
+
     HandleGenericMessages(
         genericMessages = genericMessages,
         scope = scope,
@@ -278,6 +288,16 @@ private fun HandleGenericMessages(
                 onShowWarningDialog(message)
             }
         }
+    }
+}
+
+@Composable
+private fun RecordingEventHandler(
+    gpxRecordEvents: GpxRecordEvents,
+    onNewExcursion: (NewExcursionEvent) -> Unit
+) {
+    LaunchedEffectWithLifecycle(gpxRecordEvents.newExcursionEvent) { event ->
+        onNewExcursion(event)
     }
 }
 

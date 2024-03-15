@@ -7,22 +7,18 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.lifecycleScope
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.core.map.domain.interactors.GetMapInteractor
-import com.peterlaurence.trekme.core.map.domain.interactors.SetMapInteractor
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.gpspro.GpsProEvents
 import com.peterlaurence.trekme.events.maparchive.MapArchiveEvents
-import com.peterlaurence.trekme.events.recording.GpxRecordEvents
-import com.peterlaurence.trekme.features.common.domain.interactors.MapExcursionInteractor
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
 import com.peterlaurence.trekme.main.eventhandler.MapArchiveEventHandler
 import com.peterlaurence.trekme.main.eventhandler.PermissionRequestHandler
-import com.peterlaurence.trekme.main.eventhandler.RecordingEventHandler
 import com.peterlaurence.trekme.main.shortcut.Shortcut
 import com.peterlaurence.trekme.util.android.hasLocationPermission
 import com.peterlaurence.trekme.util.collectWhileStarted
@@ -39,25 +35,13 @@ class MainActivity : AppCompatActivity() {
     lateinit var mapRepository: MapRepository
 
     @Inject
-    lateinit var setMapInteractor: SetMapInteractor
-
-    @Inject
     lateinit var mapArchiveEvents: MapArchiveEvents
-
-    @Inject
-    lateinit var downloadRepository: DownloadRepository
 
     @Inject
     lateinit var gpsProEvents: GpsProEvents
 
     @Inject
     lateinit var locationSource: LocationSource
-
-    @Inject
-    lateinit var gpxRecordEvents: GpxRecordEvents
-
-    @Inject
-    lateinit var mapExcursionInteractor: MapExcursionInteractor
 
     @Inject
     lateinit var getMapInteractor: GetMapInteractor
@@ -74,25 +58,13 @@ class MainActivity : AppCompatActivity() {
 
         setContent {
             TrekMeTheme {
-                MainScreen(
-                    viewModel,
+                MainStateful(
+                    viewModel = viewModel,
+                    recordingEventHandlerViewModel = hiltViewModel(),
                     appEventBus.genericMessageEvents
                 )
             }
         }
-
-        /* Handle recording events */
-        RecordingEventHandler(
-            lifecycle,
-            gpxRecordEvents,
-            mapExcursionInteractor,
-            getMapInteractor,
-            onImportDone = { importCount ->
-                // TODO
-                val msg = getString(R.string.automatic_import_feedback, importCount)
-//                showSnackbar(msg)
-            }
-        )
 
         /* Handle application wide map-archive related events */
         MapArchiveEventHandler(this, lifecycle, appEventBus, mapArchiveEvents)
