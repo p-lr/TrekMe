@@ -31,6 +31,10 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.settings.privacyPolicyUrl
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 
+/**
+ * Displays the link on the user manual, and encourages the user to give feedback about the
+ * application.
+ */
 @Composable
 fun AboutStateful(
     onMainMenuClick: () -> Unit
