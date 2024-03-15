@@ -145,11 +145,11 @@ class TrackFollowLayer(
         }
     }
 
-    private suspend fun checkBackgroundLocationPerm() {
+    private fun checkBackgroundLocationPerm() {
         if (!isBackgroundLocationGranted(appContext)) {
-            _events.send(Event.BackgroundLocationNotGranted)
-        } else {
-            appEventBus.requestBackgroundLocation()
+            appEventBus.requestBackgroundLocation(
+                appContext.getString(R.string.background_location_rationale_track_follow)
+            )
         }
     }
 
@@ -214,7 +214,6 @@ class TrackFollowLayer(
 
     sealed interface Event {
         object DisableBatteryOptSignal : Event
-        object BackgroundLocationNotGranted : Event
         object SelectTrackToFollow : Event
     }
 }

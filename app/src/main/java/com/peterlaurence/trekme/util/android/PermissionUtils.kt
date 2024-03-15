@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.PowerManager
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.location.LocationManagerCompat
 
 /* Permission-group codes */
@@ -81,6 +82,12 @@ fun requestNearbyWifiPermission(activity: Activity) {
 fun hasPermissions(activity: Activity, vararg permissions: String): Boolean {
     return permissions.all {
         ActivityCompat.checkSelfPermission(activity, it) == PackageManager.PERMISSION_GRANTED
+    }
+}
+
+fun hasPermissions(context: Context, vararg permissions: String): Boolean {
+    return permissions.all {
+        ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
     }
 }
 

@@ -94,20 +94,12 @@ class GpxRecordServiceViewModel @Inject constructor(
         app.startService(intent)
 
         if (!isBackgroundLocationGranted(app.applicationContext)) {
-            _events.send(Event.BackgroundLocationNotGranted)
-        } else {
-            /* If the disclaimer is discarded, ask for the permission anyway */
-            requestBackgroundLocationPerm()
+            appEventBus.requestBackgroundLocation(app.applicationContext.getString(R.string.background_location_rationale_gpx_recording))
         }
-    }
-
-    fun requestBackgroundLocationPerm() {
-        appEventBus.requestBackgroundLocation()
     }
 
     sealed interface Event {
         object DisableBatteryOptSignal : Event
-        object BackgroundLocationNotGranted : Event
     }
 }
 

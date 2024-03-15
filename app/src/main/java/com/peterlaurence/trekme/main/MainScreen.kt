@@ -1,8 +1,14 @@
 package com.peterlaurence.trekme.main
 
 import android.Manifest
+import android.app.Activity
+import android.bluetooth.BluetoothAdapter
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -30,6 +36,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,6 +44,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -50,13 +58,16 @@ import com.peterlaurence.trekme.core.map.domain.models.MapNotRepairable
 import com.peterlaurence.trekme.core.map.domain.models.MapUpdateFinished
 import com.peterlaurence.trekme.core.map.domain.models.MapUpdatePending
 import com.peterlaurence.trekme.core.map.domain.models.MissingApiError
+import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.GenericMessage
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.events.WarningMessage
+import com.peterlaurence.trekme.events.gpspro.GpsProEvents
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.WarningDialog
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.navigation.wmtsDestination
 import com.peterlaurence.trekme.features.record.app.service.event.NewExcursionEvent
+import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.LocationRationale
 import com.peterlaurence.trekme.main.navigation.MainGraph
 import com.peterlaurence.trekme.main.navigation.navigateToAbout
 import com.peterlaurence.trekme.main.navigation.navigateToGpsPro
@@ -70,9 +81,15 @@ import com.peterlaurence.trekme.main.navigation.navigateToShop
 import com.peterlaurence.trekme.main.navigation.navigateToTrailSearch
 import com.peterlaurence.trekme.main.navigation.navigateToWifiP2p
 import com.peterlaurence.trekme.main.viewmodel.RecordingEventHandlerViewModel
+import com.peterlaurence.trekme.util.android.MIN_PERMISSIONS_ANDROID_9_AND_BELOW
 import com.peterlaurence.trekme.util.android.activity
+import com.peterlaurence.trekme.util.android.hasPermissions
+import com.peterlaurence.trekme.util.android.requestNearbyWifiPermission
+import com.peterlaurence.trekme.util.android.requestNotificationPermission
+import com.peterlaurence.trekme.util.android.shouldShowBackgroundLocPermRationale
 import com.peterlaurence.trekme.util.checkInternet
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
+import com.peterlaurence.trekme.util.compose.LifeCycleObserver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
@@ -83,7 +100,8 @@ import java.util.UUID
 fun MainStateful(
     viewModel: MainActivityViewModel,
     recordingEventHandlerViewModel: RecordingEventHandlerViewModel,
-    genericMessages: Flow<GenericMessage>
+    appEventBus: AppEventBus,
+    gpsProEvents: GpsProEvents
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -109,6 +127,13 @@ fun MainStateful(
         )
     }
 
+    PermissionRequestHandler(
+        appEventBus = appEventBus,
+        gpsProEvents = gpsProEvents,
+        snackbarHostState = snackbarHostState,
+        scope = scope
+    )
+
     RecordingEventHandler(
         recordingEventHandlerViewModel.gpxRecordEvents,
         onNewExcursion = recordingEventHandlerViewModel::onNewExcursionEvent
@@ -125,7 +150,7 @@ fun MainStateful(
     )
 
     HandleGenericMessages(
-        genericMessages = genericMessages,
+        genericMessages = appEventBus.genericMessageEvents,
         scope = scope,
         snackbarHostState = snackbarHostState,
         onShowWarningDialog = { isShowingWarningDialog = it }
@@ -288,6 +313,155 @@ private fun HandleGenericMessages(
                 onShowWarningDialog(message)
             }
         }
+    }
+}
+
+@Composable
+private fun PermissionRequestHandler(
+    appEventBus: AppEventBus,
+    gpsProEvents: GpsProEvents,
+    snackbarHostState: SnackbarHostState,
+    scope: CoroutineScope
+) {
+    val context = LocalContext.current
+    val activity = context.activity
+    val storagePermLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { isGranted: Map<String, @JvmSuppressWildcards Boolean> ->
+        if (isGranted.values.any { !it }) {
+            scope.launch {
+                val result = snackbarHostState.showSnackbar(
+                    message = context.getString(R.string.storage_perm_denied),
+                    isLong = true,
+                    actionLabel = context.getString(R.string.ok_dialog)
+                )
+
+                if (result == SnackbarResult.ActionPerformed) {
+                    val intent = Intent()
+                    intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                    val uri = Uri.fromParts("package", activity.packageName, null)
+                    intent.data = uri
+                    activity.startActivity(intent)
+                }
+            }
+        }
+    }
+
+    var isShowingAndroid9AndBelowRationale by remember { mutableStateOf(false) }
+
+    fun requestStorageAndLocationPermissions() {
+        if (!hasPermissions(context, *MIN_PERMISSIONS_ANDROID_9_AND_BELOW)) {
+            isShowingAndroid9AndBelowRationale = true
+        }
+    }
+
+    if (isShowingAndroid9AndBelowRationale) {
+        WarningDialog(
+            title = stringResource(id = R.string.warning_title),
+            contentText = stringResource(id = R.string.no_storage_perm),
+            onConfirmPressed = { storagePermLauncher.launch(MIN_PERMISSIONS_ANDROID_9_AND_BELOW) },
+            confirmButtonText = stringResource(id = R.string.ok_dialog),
+            onDismissRequest = {
+                storagePermLauncher.launch(MIN_PERMISSIONS_ANDROID_9_AND_BELOW)
+            }
+        )
+    }
+
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        // TODO: warn the user that a critical perm isn't granted
+    }
+
+    /**
+     * Checks whether the app has permission to access fine location and (for Android < 10) to
+     * write to device storage.
+     * If the app does not have the requested permissions then the user will be prompted.
+     */
+    fun requestMinimalPermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            /* We absolutely need storage and location perm under Android 10 */
+            requestStorageAndLocationPermissions()
+        } else {
+            /* On Android 10 and above, we just need the location perm */
+            val hasLocationPermission = ActivityCompat.checkSelfPermission(
+                activity,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+            if (!hasLocationPermission) {
+                locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+            }
+        }
+    }
+
+    LifeCycleObserver(
+        onStart = {
+            requestMinimalPermission()
+        }
+    )
+
+    val bluetoothLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        when (result.resultCode) {
+            Activity.RESULT_OK -> appEventBus.bluetoothEnabled(true)
+            Activity.RESULT_CANCELED -> appEventBus.bluetoothEnabled(false)
+        }
+    }
+
+    LaunchedEffectWithLifecycle(appEventBus.requestBluetoothEnableFlow) {
+        bluetoothLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
+    }
+
+    val requestBtConnectPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        gpsProEvents.postBluetoothPermissionResult(granted)
+    }
+
+    LaunchedEffectWithLifecycle(gpsProEvents.requestBluetoothPermissionFlow) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            requestBtConnectPermissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT)
+        }
+    }
+
+    var isShowingBackgroundLocationRationale by rememberSaveable { mutableStateOf<String?>(null) }
+
+    val backgroundLocationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        // TODO: send an event with the origin info of the request, so that we can avoid starting
+        // a service when we know that the background location perm isn't granted.
+    }
+
+    LaunchedEffectWithLifecycle(appEventBus.requestBackgroundLocationSignal) { rationale ->
+        if (Build.VERSION.SDK_INT < 29) return@LaunchedEffectWithLifecycle
+        if (shouldShowBackgroundLocPermRationale(activity)) {
+            isShowingBackgroundLocationRationale = rationale
+        } else {
+            backgroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        }
+    }
+
+    isShowingBackgroundLocationRationale?.also { rationale ->
+        LocationRationale(
+            text = rationale,
+            onConfirm = {
+                backgroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                isShowingBackgroundLocationRationale = null
+            },
+            onIgnore = {
+                isShowingBackgroundLocationRationale = null
+            },
+        )
+    }
+
+    LaunchedEffectWithLifecycle(appEventBus.requestNotificationPermFlow) {
+        requestNotificationPermission(activity)
+    }
+
+    LaunchedEffectWithLifecycle(appEventBus.requestNearbyWifiDevicesPermFlow) {
+        requestNearbyWifiPermission(activity)
     }
 }
 

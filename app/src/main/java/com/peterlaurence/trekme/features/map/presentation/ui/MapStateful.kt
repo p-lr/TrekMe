@@ -46,9 +46,6 @@ import com.peterlaurence.trekme.features.map.presentation.viewmodel.*
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.TrackFollowLayer
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimSolutionDialog
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimWarningDialog
-import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.LocationRationale
-import com.peterlaurence.trekme.util.android.requestBackgroundLocationPermission
-import com.peterlaurence.trekme.util.android.shouldShowBackgroundLocPermRationale
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -161,27 +158,13 @@ fun MapStateful(
         }
     }
 
-    val activity = context.getActivity()
     val selectTrack = stringResource(id = R.string.select_track_to_follow)
     var isShowingBatteryWarning by rememberSaveable { mutableStateOf(false) }
     var isShowingBatterySolution by rememberSaveable { mutableStateOf(false) }
-    var isShowingLocationRationale by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffectWithLifecycle(flow = viewModel.trackFollowLayer.events) { event ->
         when (event) {
             TrackFollowLayer.Event.DisableBatteryOptSignal -> isShowingBatteryWarning = true
-            TrackFollowLayer.Event.BackgroundLocationNotGranted -> {
-                /* In this case, check if we should show a rationale. Whatever the outcome, we'll ask
-                 * for the permission. */
-                if (activity == null) return@LaunchedEffectWithLifecycle
-                if (shouldShowBackgroundLocPermRationale(activity)) {
-                    isShowingLocationRationale = true
-                } else {
-                    /* Request permission anyway */
-                    requestBackgroundLocationPermission(activity)
-                }
-            }
-
             TrackFollowLayer.Event.SelectTrackToFollow -> {
                 showSnackbar(scope, snackbarHostState, selectTrack, ok)
             }
@@ -322,21 +305,6 @@ fun MapStateful(
             }
         )
     }
-
-    if (isShowingLocationRationale) {
-        LocationRationale(
-            text = stringResource(id = R.string.background_location_rationale_track_follow),
-            onConfirm = {
-                if (activity != null) {
-                    requestBackgroundLocationPermission(activity)
-                }
-                isShowingLocationRationale = false
-            },
-            onIgnore = {
-                isShowingLocationRationale = false
-            },
-        )
-    }
 }
 
 @Composable
@@ -451,14 +419,9 @@ private fun RecordingFabStateful(viewModel: GpxRecordServiceViewModel) {
     val gpxRecordState by viewModel.status.collectAsState()
     var isShowingBatteryWarning by rememberSaveable { mutableStateOf(false) }
     var isShowingBatterySolution by rememberSaveable { mutableStateOf(false) }
-    var isShowingLocationRationale by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffectWithLifecycle(flow = viewModel.events) { event ->
         when (event) {
-            GpxRecordServiceViewModel.Event.BackgroundLocationNotGranted -> {
-                isShowingLocationRationale = true
-            }
-
             GpxRecordServiceViewModel.Event.DisableBatteryOptSignal -> {
                 isShowingBatteryWarning = true
             }
@@ -485,22 +448,6 @@ private fun RecordingFabStateful(viewModel: GpxRecordServiceViewModel) {
                 isShowingBatterySolution = false
                 viewModel.ackBatteryOptSignal.trySend(Unit)
             }
-        )
-    }
-
-    if (isShowingLocationRationale) {
-        LocationRationale(
-            text = stringResource(id = R.string.background_location_rationale_gpx_recording),
-            onConfirm = {
-                /* The background location permission is asked after the rationale is closed. But it doesn't
-                 * matter that the recording is already started - it works even when the permission is
-                 * granted during the recording. */
-                viewModel.requestBackgroundLocationPerm()
-                isShowingLocationRationale = false
-            },
-            onIgnore = {
-                isShowingLocationRationale = false
-            },
         )
     }
 

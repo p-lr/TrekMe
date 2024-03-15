@@ -61,17 +61,14 @@ class MainActivity : AppCompatActivity() {
                 MainStateful(
                     viewModel = viewModel,
                     recordingEventHandlerViewModel = hiltViewModel(),
-                    appEventBus.genericMessageEvents
+                    appEventBus,
+                    gpsProEvents
                 )
             }
         }
 
         /* Handle application wide map-archive related events */
         MapArchiveEventHandler(this, lifecycle, appEventBus, mapArchiveEvents)
-
-        /* Handle permission request events */
-        permissionRequestHandler =
-            PermissionRequestHandler(this, lifecycle, appEventBus, gpsProEvents)
 
         // TODO
 //        val versionTextView = headerView.findViewById<TextView>(R.id.app_version)

@@ -20,10 +20,10 @@ class AppEventBus {
 
     /**********************************************************************************************/
 
-    private val _requestBackgroundLocationSignal = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    private val _requestBackgroundLocationSignal = MutableSharedFlow<String>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     val requestBackgroundLocationSignal = _requestBackgroundLocationSignal.asSharedFlow()
 
-    fun requestBackgroundLocation() = _requestBackgroundLocationSignal.tryEmit(Unit)
+    fun requestBackgroundLocation(rationale: String) = _requestBackgroundLocationSignal.tryEmit(rationale)
 
     /**********************************************************************************************/
 

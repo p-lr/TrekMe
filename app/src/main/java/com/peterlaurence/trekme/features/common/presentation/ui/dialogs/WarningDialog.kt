@@ -19,10 +19,10 @@ fun WarningDialog(
     confirmButtonText: String = stringResource(id = R.string.ok_dialog),
     onConfirmPressed: () -> Unit = {},
     confirmColorBackground: Color? = null,
+    dismissButtonText: String? = null,
     onDismissRequest: () -> Unit
 ) {
     AlertDialog(
-        onDismissRequest = onDismissRequest,
         title = {
             Text(title, fontSize = 18.sp, fontWeight = FontWeight.Medium)
         },
@@ -42,5 +42,21 @@ fun WarningDialog(
                 Text(confirmButtonText)
             }
         },
+        dismissButton = dismissButtonText?.let {
+            {
+                Button(
+                    onClick = {
+                        onDismissRequest()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = confirmColorBackground
+                            ?: MaterialTheme.colorScheme.primary,
+                    )
+                ) {
+                    Text(it)
+                }
+            }
+        },
+        onDismissRequest = onDismissRequest,
     )
 }
