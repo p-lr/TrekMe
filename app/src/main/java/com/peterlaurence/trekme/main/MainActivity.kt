@@ -21,7 +21,6 @@ import com.peterlaurence.trekme.features.common.domain.interactors.MapExcursionI
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
 import com.peterlaurence.trekme.main.eventhandler.MapArchiveEventHandler
-import com.peterlaurence.trekme.main.eventhandler.MapDownloadEventHandler
 import com.peterlaurence.trekme.main.eventhandler.PermissionRequestHandler
 import com.peterlaurence.trekme.main.eventhandler.RecordingEventHandler
 import com.peterlaurence.trekme.main.shortcut.Shortcut
@@ -82,46 +81,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        /* Handle application wide map download events */
-        MapDownloadEventHandler(this, lifecycle, downloadRepository,
-            onMapDownloadFinished = { uuid ->
-                /* Only if the user is still on the WmtsFragment, navigate to the map list */
-                // TODO
-//                if (getString(R.string.map_wmts_label) == navController.currentDestination?.label) {
-//                    showMapListFragment()
-//                }
-//                val snackbar = showSnackbar(
-//                    getString(R.string.service_download_finished),
-//                    isLong = true
-//                )
-//                snackbar.setAction(getString(R.string.show_map_action)) {
-//                    lifecycleScope.launch {
-//                        setMapInteractor.setMap(uuid)
-//                        // TODO
-//                        // showMapFragment()
-//                    }
-//                }
-            },
-            onMapUpdateFinished = { uuid, isRepair ->
-                // TODO
-//                val snackbar = showSnackbar(
-//                    message = if (isRepair) {
-//                        getString(R.string.service_repair_finished)
-//                    } else {
-//                        getString(R.string.service_update_finished)
-//                    },
-//                    isLong = true
-//                ) ?: return@MapDownloadEventHandler
-//                snackbar.setAction(getString(R.string.show_map_action)) {
-//                    lifecycleScope.launch {
-//                        setMapInteractor.setMap(uuid)
-//                        // TODO
-//                        // showMapFragment()
-//                    }
-//                }
-            }
-        )
-
         /* Handle recording events */
         RecordingEventHandler(
             lifecycle,
@@ -167,36 +126,6 @@ class MainActivity : AppCompatActivity() {
 //                AppEventBus.NavDestination.TrailSearch -> showTrailSearchFragment()
 //            }
         }.collectWhileStartedIn(this)
-    }
-
-    // TODO
-//    private fun showSnackbar(message: String, isLong: Boolean = false): Snackbar {
-//        val duration = if (isLong) Snackbar.LENGTH_LONG else Snackbar.LENGTH_SHORT
-//        return Snackbar.make(binding.navView, message, duration).also {
-//            it.show()
-//        }
-//    }
-
-    /**
-     * If the side menu is opened, just close it.
-     * If the navigation component reports that there's no previous destination, display
-     * a confirmation snackbar to back once more before killing the app.
-     * Otherwise, navigate up.
-     */
-    private fun onBackPressedCustom() {
-//        val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
-//        if (drawer != null && drawer.isDrawerOpen(GravityCompat.START)) {
-//            drawer.closeDrawer(GravityCompat.START)
-//        } else if (navController.previousBackStackEntry == null) {
-//            /* BACK button twice to exit */
-//            if (snackBarExit.isShown) {
-//                finish()
-//            } else {
-//                snackBarExit.show()
-//            }
-//        } else {
-//            navController.navigateUp()
-//        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

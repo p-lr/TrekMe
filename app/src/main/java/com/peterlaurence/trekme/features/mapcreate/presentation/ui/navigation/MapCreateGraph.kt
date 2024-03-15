@@ -166,6 +166,6 @@ private const val layerOverlayArg = "layerOverlayArg"
 
 const val mapCreateGraph = "mapcreateGraph"
 const val mapSourceListDestination = "mapSourceListDestination"
-private const val wmtsDestination = "wmtsDestination"
+const val wmtsDestination = "wmtsDestination"
 private const val gatewayDestination = "extendedOfferGatewayDestination"
 private const val overlayLayersDestination = "overlayLayersDestination"

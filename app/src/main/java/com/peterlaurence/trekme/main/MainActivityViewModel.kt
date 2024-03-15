@@ -10,6 +10,7 @@ import com.peterlaurence.trekme.core.billing.domain.interactors.TrekmeExtendedIn
 import com.peterlaurence.trekme.core.billing.domain.interactors.TrekmeExtendedWithIgnInteractor
 import com.peterlaurence.trekme.core.billing.domain.model.GpsProStateOwner
 import com.peterlaurence.trekme.core.location.domain.model.InternalGps
+import com.peterlaurence.trekme.core.map.domain.interactors.SetMapInteractor
 import com.peterlaurence.trekme.core.map.domain.interactors.UpdateMapsInteractor
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.core.settings.Settings
@@ -17,6 +18,7 @@ import com.peterlaurence.trekme.core.settings.StartOnPolicy
 import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.WarningMessage
+import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
 import com.peterlaurence.trekme.main.shortcut.Shortcut
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -47,7 +49,9 @@ class MainActivityViewModel @Inject constructor(
     private val trekmeExtendedInteractor: TrekmeExtendedInteractor,
     private val gpsProStateOwner: GpsProStateOwner,
     private val appEventBus: AppEventBus,
-    private val updateMapsInteractor: UpdateMapsInteractor
+    private val updateMapsInteractor: UpdateMapsInteractor,
+    private val downloadRepository: DownloadRepository,
+    private val setMapInteractor: SetMapInteractor
 ) : ViewModel() {
     private var attemptedAtLeastOnce = false
 
@@ -62,6 +66,8 @@ class MainActivityViewModel @Inject constructor(
 
 //    private val _showRecordingsSignal = Channel<Unit>(1)
 //    val showRecordingsFlow = _showRecordingsSignal.receiveAsFlow()
+
+    val downloadEvents = downloadRepository.downloadEvent
 
     private val event = Channel<MainActivityEvent>(1)
     val eventFlow = event.receiveAsFlow()
@@ -125,6 +131,11 @@ class MainActivityViewModel @Inject constructor(
     fun onActivityResume() {
         trekmeExtendedWithIgnInteractor.acknowledgePurchase()
         trekmeExtendedInteractor.acknowledgePurchase()
+    }
+
+    fun onGoToMap(uuid: UUID) = viewModelScope.launch {
+        setMapInteractor.setMap(uuid)
+        event.send(MainActivityEvent.ShowMap)
     }
 
     private suspend fun showLastMap() {

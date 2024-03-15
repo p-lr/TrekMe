@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.main
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalDrawerSheet
@@ -18,6 +20,7 @@ import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
@@ -35,12 +38,23 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.map.domain.models.MapDownloadAlreadyRunning
+import com.peterlaurence.trekme.core.map.domain.models.MapDownloadEvent
+import com.peterlaurence.trekme.core.map.domain.models.MapDownloadFinished
+import com.peterlaurence.trekme.core.map.domain.models.MapDownloadPending
+import com.peterlaurence.trekme.core.map.domain.models.MapDownloadStorageError
+import com.peterlaurence.trekme.core.map.domain.models.MapNotRepairable
+import com.peterlaurence.trekme.core.map.domain.models.MapUpdateFinished
+import com.peterlaurence.trekme.core.map.domain.models.MapUpdatePending
+import com.peterlaurence.trekme.core.map.domain.models.MissingApiError
 import com.peterlaurence.trekme.events.GenericMessage
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.events.WarningMessage
 import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.WarningDialog
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.navigation.wmtsDestination
 import com.peterlaurence.trekme.main.navigation.MainGraph
 import com.peterlaurence.trekme.main.navigation.navigateToAbout
 import com.peterlaurence.trekme.main.navigation.navigateToGpsPro
@@ -56,8 +70,11 @@ import com.peterlaurence.trekme.main.navigation.navigateToWifiP2p
 import com.peterlaurence.trekme.util.android.activity
 import com.peterlaurence.trekme.util.checkInternet
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 @Composable
 fun MainScreen(
@@ -67,6 +84,7 @@ fun MainScreen(
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val navController = rememberNavController()
+    val context = LocalContext.current
 
     LaunchedEffectWithLifecycle(viewModel.eventFlow) { event ->
         when (event) {
@@ -79,23 +97,6 @@ fun MainScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     var isShowingWarningDialog by remember { mutableStateOf<WarningMessage?>(null) }
-    LaunchedEffectWithLifecycle(genericMessages) { message ->
-        when (message) {
-            is StandardMessage -> {
-                scope.launch {
-                    snackbarHostState.showSnackbar(
-                        message = message.msg,
-                        duration = if (message.showLong) SnackbarDuration.Long else SnackbarDuration.Short
-                    )
-                }
-            }
-
-            is WarningMessage -> {
-                isShowingWarningDialog = message
-            }
-        }
-    }
-
     isShowingWarningDialog?.also {
         WarningDialog(
             title = it.title,
@@ -104,31 +105,22 @@ fun MainScreen(
         )
     }
 
-    val activity = LocalContext.current.activity
-    val confirmExit = stringResource(id = R.string.confirm_exit)
-    BackHandler {
-        if (drawerState.isOpen) {
-            scope.launch {
-                drawerState.close()
-            }
-        } else {
-            if (navController.previousBackStackEntry == null) {
-                if (snackbarHostState.currentSnackbarData?.visuals?.message == confirmExit) {
-                    activity.finish()
-                } else {
-                    scope.launch {
-                        snackbarHostState.showSnackbar(
-                            confirmExit,
-                            withDismissAction = true,
-                            duration = SnackbarDuration.Short
-                        )
-                    }
-                }
-            } else {
-                navController.navigateUp()
-            }
-        }
-    }
+    MapDownloadEventHandler(
+        downloadEvents = viewModel.downloadEvents,
+        navController = navController,
+        snackbarHostState = snackbarHostState,
+        scope = scope,
+        context = context,
+        onGoToMap = { uuid -> viewModel.onGoToMap(uuid) },
+        onShowWarningDialog = { isShowingWarningDialog = it }
+    )
+    HandleGenericMessages(
+        genericMessages = genericMessages,
+        scope = scope,
+        snackbarHostState = snackbarHostState,
+        onShowWarningDialog = { isShowingWarningDialog = it }
+    )
+    HandleBackGesture(drawerState, scope, navController, snackbarHostState)
 
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -138,7 +130,7 @@ fun MainScreen(
 
     val checkInternetPermission = {
         if (ContextCompat.checkSelfPermission(
-                activity,
+                context,
                 Manifest.permission.INTERNET
             ) == PackageManager.PERMISSION_DENIED
         ) {
@@ -224,6 +216,177 @@ fun MainScreen(
                 )
             }
         }
+    )
+}
+
+/**
+ * If the side menu is opened, just close it.
+ * If there's no previous destination, display a confirmation snackbar to back once more before
+ * killing the app.
+ * Otherwise, navigate up.
+ */
+@Composable
+fun HandleBackGesture(
+    drawerState: DrawerState,
+    scope: CoroutineScope,
+    navController: NavController,
+    snackbarHostState: SnackbarHostState
+) {
+    val activity = LocalContext.current.activity
+    val confirmExit = stringResource(id = R.string.confirm_exit)
+    BackHandler {
+        if (drawerState.isOpen) {
+            scope.launch {
+                drawerState.close()
+            }
+        } else {
+            if (navController.previousBackStackEntry == null) {
+                if (snackbarHostState.currentSnackbarData?.visuals?.message == confirmExit) {
+                    activity.finish()
+                } else {
+                    scope.launch {
+                        snackbarHostState.showSnackbar(
+                            confirmExit,
+                            withDismissAction = true,
+                            duration = SnackbarDuration.Short
+                        )
+                    }
+                }
+            } else {
+                navController.navigateUp()
+            }
+        }
+    }
+}
+
+@Composable
+private fun HandleGenericMessages(
+    genericMessages: Flow<GenericMessage>,
+    scope: CoroutineScope,
+    snackbarHostState: SnackbarHostState,
+    onShowWarningDialog: (WarningMessage) -> Unit
+) {
+    LaunchedEffectWithLifecycle(genericMessages) { message ->
+        when (message) {
+            is StandardMessage -> {
+                scope.launch {
+                    snackbarHostState.showSnackbar(message = message.msg, isLong = message.showLong)
+                }
+            }
+
+            is WarningMessage -> {
+                onShowWarningDialog(message)
+            }
+        }
+    }
+}
+
+@Composable
+private fun MapDownloadEventHandler(
+    downloadEvents: SharedFlow<MapDownloadEvent>,
+    navController: NavController,
+    snackbarHostState: SnackbarHostState,
+    scope: CoroutineScope,
+    context: Context,
+    onGoToMap: (UUID) -> Unit,
+    onShowWarningDialog: (WarningMessage) -> Unit
+) {
+    LaunchedEffectWithLifecycle(downloadEvents) { event ->
+        when (event) {
+            is MapDownloadFinished -> {
+                if (wmtsDestination == navController.currentDestination?.route) {
+                    navController.navigateToMapList()
+                }
+                scope.launch {
+                    val result = snackbarHostState.showSnackbar(
+                        context.getString(R.string.service_download_finished),
+                        actionLabel = context.getString(R.string.ok_dialog),
+                        isLong = true
+                    )
+
+                    if (result == SnackbarResult.ActionPerformed) {
+                        onGoToMap(event.mapId)
+                    }
+                }
+            }
+
+            is MapUpdateFinished -> {
+                val result = snackbarHostState.showSnackbar(
+                    message = if (event.repairOnly) {
+                        context.getString(R.string.service_repair_finished)
+                    } else {
+                        context.getString(R.string.service_update_finished)
+                    },
+                    actionLabel = context.getString(R.string.ok_dialog),
+                    isLong = true
+                )
+
+                if (result == SnackbarResult.ActionPerformed) {
+                    onGoToMap(event.mapId)
+                }
+            }
+
+            MapDownloadAlreadyRunning -> {
+                onShowWarningDialog(
+                    WarningMessage(
+                        title = context.getString(R.string.warning_title),
+                        msg = context.getString(
+                            R.string.service_download_already_running
+                        )
+                    )
+                )
+            }
+
+            MapDownloadStorageError -> {
+                onShowWarningDialog(
+                    WarningMessage(
+                        title = context.getString(R.string.warning_title),
+                        msg = context.getString(
+                            R.string.service_download_bad_storage
+                        )
+                    )
+                )
+            }
+
+            MapNotRepairable -> {
+                onShowWarningDialog(
+                    WarningMessage(
+                        title = context.getString(R.string.warning_title),
+                        msg = context.getString(
+                            R.string.service_download_repair_error
+                        )
+                    )
+                )
+            }
+
+            is MapDownloadPending, is MapUpdatePending -> {
+                // Nothing particular to do, the service which fire those events already sends
+                // notifications with the progression.
+            }
+
+            MissingApiError -> {
+                onShowWarningDialog(
+                    WarningMessage(
+                        title = context.getString(R.string.warning_title),
+                        msg = context.getString(
+                            R.string.service_download_missing_api
+                        )
+                    )
+                )
+            }
+        }
+    }
+}
+
+private suspend fun SnackbarHostState.showSnackbar(
+    message: String,
+    isLong: Boolean = false,
+    actionLabel: String? = null,
+): SnackbarResult {
+    return showSnackbar(
+        message,
+        actionLabel = actionLabel,
+        duration = if (isLong) SnackbarDuration.Long else SnackbarDuration.Short
     )
 }
 
