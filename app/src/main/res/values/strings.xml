@@ -95,6 +95,7 @@
     <string name="welcome_excursion_search">Search for excursions</string>
     <string name="ok_dialog">Ok</string>
     <string name="no_dialog">No</string>
+    <string name="open_dialog">Open</string>
     <string name="no_authorize_dialog">Don\'t authorize</string>
     <string name="delete_dialog">Delete</string>
     <string name="map_manage_btn_string">Edit</string>

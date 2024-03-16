@@ -6,9 +6,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,14 +26,15 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.getTitleForSource
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.Collapsed
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.Empty
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.SearchMode
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.TopBarState
 
 /**
- * This top app bar implements [material design](https://material.io/components/app-bars-top).
- * It includes a search mode triggered when "search" button is clicked. In search mode, the
+ * This app bar includes a search mode triggered when "search" button is clicked. In search mode, the
  * text input field occupies all horizontal space (other buttons are hidden). The search can be left
  * using the navigation icon.
  *
@@ -44,9 +44,10 @@ import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.TopBar
 @Composable
 fun WmtsAppBar(
     state: TopBarState,
+    wmtsSource: WmtsSource?,
     onSearchClick: () -> Unit,
     onCloseSearch: () -> Unit,
-    onMenuClick: () -> Unit,
+    onBack: () -> Unit,
     onQueryTextSubmit: (String) -> Unit,
     onZoomOnPosition: () -> Unit,
     onShowLayerOverlay: () -> Unit,
@@ -58,18 +59,13 @@ fun WmtsAppBar(
 
     TopAppBar(
         title = {
+            Text(
+                text = wmtsSource?.let { getTitleForSource(it) } ?: "",
+            )
         },
-        navigationIcon = if (state is SearchMode) {
-            {
-                IconButton(onClick = onCloseSearch) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = "")
-                }
-            }
-        } else {
-            {
-                IconButton(onClick = onMenuClick) {
-                    Icon(Icons.Filled.Menu, contentDescription = "")
-                }
+        navigationIcon = {
+            IconButton(onClick = if (state is SearchMode) onCloseSearch else onBack) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "")
             }
         },
         actions = {
@@ -77,7 +73,6 @@ fun WmtsAppBar(
                 is Empty -> {
                 }
                 is Collapsed -> {
-                    Spacer(modifier = Modifier.weight(1f))
                     IconButton(onClick = onSearchClick) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_baseline_search_24),

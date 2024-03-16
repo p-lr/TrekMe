@@ -118,7 +118,7 @@ fun WmtsStateful(
     viewModel: WmtsViewModel,
     onBoardingViewModel: WmtsOnBoardingViewModel,
     onShowLayerOverlay: (WmtsSource) -> Unit,
-    onMenuClick: () -> Unit,
+    onBack: () -> Unit,
     onGoToShop: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -239,14 +239,15 @@ fun WmtsStateful(
             snackbarHostState = snackbarHostState,
             topBarState = topBarState,
             uiState = uiState,
+            wmtsSource = wmtsSource,
             onToggleArea = {
                 viewModel.toggleArea()
                 onBoardingViewModel.onFabTipAck()
             },
             onValidateArea = onValidateArea,
-            onMenuClick = onMenuClick,
             onSearchClick = viewModel::onSearchClick,
             onCloseSearch = viewModel::onCloseSearch,
+            onBack = onBack,
             onQueryTextSubmit = viewModel::onQueryTextSubmit,
             onGeoPlaceSelection = viewModel::moveToPlace,
             onLayerSelection = onPrimaryLayerSelection,
@@ -333,11 +334,12 @@ private fun WmtsScaffold(
     snackbarHostState: SnackbarHostState,
     topBarState: TopBarState,
     uiState: UiState,
+    wmtsSource: WmtsSource?,
     onToggleArea: () -> Unit,
     onValidateArea: () -> Unit,
-    onMenuClick: () -> Unit,
     onSearchClick: () -> Unit,
     onCloseSearch: () -> Unit,
+    onBack: () -> Unit,
     onQueryTextSubmit: (String) -> Unit,
     onGeoPlaceSelection: (GeoPlace) -> Unit,
     onLayerSelection: () -> Unit,
@@ -352,9 +354,10 @@ private fun WmtsScaffold(
         topBar = {
             WmtsAppBar(
                 topBarState,
+                wmtsSource,
                 onSearchClick,
                 onCloseSearch,
-                onMenuClick,
+                onBack,
                 onQueryTextSubmit,
                 onZoomOnPosition,
                 onShowLayerOverlay,

@@ -44,7 +44,7 @@ fun MapDownloadEventHandler(
                 scope.launch {
                     val result = snackbarHostState.showSnackbar(
                         context.getString(R.string.service_download_finished),
-                        actionLabel = context.getString(R.string.ok_dialog),
+                        actionLabel = context.getString(R.string.open_dialog),
                         isLong = true
                     )
 

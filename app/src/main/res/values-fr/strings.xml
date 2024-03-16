@@ -23,6 +23,7 @@
     <string name="calibration_projection_saved_ok">Projection changée</string>
     <string name="ok_dialog">Ok</string>
     <string name="no_dialog">Non</string>
+    <string name="open_dialog">Ouvrir</string>
     <string name="no_authorize_dialog">Ne pas autoriser</string>
     <string name="import_menu_title">Importer une carte</string>
     <string name="import_folder_select_btn">Sélection du dossier d\'archives</string>

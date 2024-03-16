@@ -1,15 +1,12 @@
 package com.peterlaurence.trekme.features.mapcreate.presentation.ui.navigation
 
-import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.MapSourceListStateful
@@ -18,35 +15,6 @@ import com.peterlaurence.trekme.features.mapcreate.presentation.ui.overlay.Layer
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.screen.WmtsStateful
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.MapSourceListViewModel
 
-
-@Composable
-fun MapCreateGraph(
-    onMenuClick: () -> Unit,
-    onNavigateToShop: () -> Unit,
-) {
-    val navController = rememberNavController()
-
-    NavHost(navController, startDestination = mapSourceListDestination) {
-        mapSourceListDestination(
-            onMenuClick,
-            onNavigateToWmtsScreen = { navController.navigate(wmtsDestination) },
-            onNavigateToOfferGateway = { navController.navigate(gatewayDestination) }
-        )
-        gatewayDestination(
-            onNavigateToWmtsScreen = { navController.navigate(wmtsDestination) },
-            onNavigateToShop = onNavigateToShop,
-            onBack = { navController.popBackStack() }
-        )
-        wmtsDestination(
-            onMenuClick,
-            onNavigateToOverlayLayers = { navController.navigateToOverlayLayers(it) },
-            onNavigateToShop = onNavigateToShop,
-        )
-        overlayLayersDestination(
-            onBack = { navController.popBackStack() }
-        )
-    }
-}
 
 fun NavGraphBuilder.mapCreateGraph(
     navController: NavController,
@@ -69,9 +37,9 @@ fun NavGraphBuilder.mapCreateGraph(
             onBack = { navController.popBackStack() }
         )
         wmtsDestination(
-            onMenuClick,
             onNavigateToOverlayLayers = { navController.navigateToOverlayLayers(it) },
             onNavigateToShop = onNavigateToShop,
+            onBack = { navController.popBackStack() }
         )
         overlayLayersDestination(
             onBack = { navController.popBackStack() }
@@ -117,17 +85,17 @@ private fun NavGraphBuilder.gatewayDestination(
 }
 
 private fun NavGraphBuilder.wmtsDestination(
-    onMenuClick: () -> Unit,
     onNavigateToOverlayLayers: (WmtsSource) -> Unit,
     onNavigateToShop: () -> Unit,
+    onBack: () -> Unit
 ) {
     composable(route = wmtsDestination) {
         WmtsStateful(
             viewModel = hiltViewModel(),
             onBoardingViewModel = hiltViewModel(),
             onShowLayerOverlay = onNavigateToOverlayLayers,
-            onMenuClick = onMenuClick,
-            onGoToShop = onNavigateToShop
+            onGoToShop = onNavigateToShop,
+            onBack = onBack
         )
     }
 }
