@@ -26,6 +26,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -91,14 +92,26 @@ class TrackFollowLayer(
     /**
      * 3 steps:
      * 1. Check that location is enabled and that battery optimization is disabled
-     * 2. Make paths clickable and start the service upon path selection
-     * 3. Check for background location permission
+     * 2. Check for background location permission. If the permission isn't granted, stop there and
+     *    warn the user.
+     * 3. Make paths clickable and start the service upon path selection
      */
     fun start() = scope.launch {
         /* Step 1 */
         checkLocationAndBatteryOpt()
 
         /* Step 2 */
+        if (!checkBackgroundLocationPerm()) {
+            appEventBus.postMessage(
+                WarningMessage(
+                    title = appContext.getString(R.string.warning_title),
+                    msg = appContext.getString(R.string.background_location_track_follow_failure)
+                )
+            )
+            return@launch
+        }
+
+        /* Step 3 */
         val (map, mapState) = dataStateFlow.firstOrNull() ?: return@launch
         _events.send(Event.SelectTrackToFollow)
 
@@ -121,9 +134,6 @@ class TrackFollowLayer(
                 updatePath(p.id, clickable = true)
             }
         }
-
-        /* Step 3 */
-        checkBackgroundLocationPerm()
     }
 
     private suspend fun checkLocationAndBatteryOpt() {
@@ -145,12 +155,16 @@ class TrackFollowLayer(
         }
     }
 
-    private fun checkBackgroundLocationPerm() {
-        if (!isBackgroundLocationGranted(appContext)) {
-            appEventBus.requestBackgroundLocation(
-                appContext.getString(R.string.background_location_rationale_track_follow)
+    private suspend fun checkBackgroundLocationPerm(): Boolean {
+        return if (!isBackgroundLocationGranted(appContext)) {
+            val request = AppEventBus.BackgroundLocationRequest(
+                R.string.background_location_rationale_track_follow
             )
-        }
+
+            appEventBus.requestBackgroundLocation(request)
+
+            request.result.receiveAsFlow().first()
+        } else true
     }
 
     private fun startTrackFollowService(pathData: PathData, map: Map, trackId: String) = scope.launch {

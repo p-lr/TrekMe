@@ -269,6 +269,7 @@
     <string name="elevation_fix_name">Fix</string>
     <string name="elevation_fix_help">The fix value is added to the elevation from the GPS</string>
     <string name="beacon_background_loc_perm">This map has at least one beacon. As a result, the app needs to collect location data even when the app is closed or not in use.\n\nCurrently, the <b>authorization isn\'t granted</b>.</string>
+    <string name="beacon_background_loc_perm_failure">Beacons feature isn\'t started because the location permission is not set as "Allow all the time". Please grant the permission and restart the app.</string>
     <string name="select_track_to_follow">Press on the track to follow</string>
     <string name="track_follow_already_running">The track-follow service is already running. Do you want to stop it?</string>
     <string name="track_follow_help">When following a track, your distance to the track is checked and if you move more than (say) 50m away from the track, you get notified with a sound and vibration.\n\nThe
@@ -328,9 +329,11 @@
     <string name="background_location_rationale_gpx_recording">TrekMe collects location data during the GPX recording,
         even when the app is closed or not in use. In order to do that, the location permission must be set to "allow all the time" or equivalent.\n\nThis location data <b>isn\'t shared with anyone</b>,
         and gpx files are stored locally on your device.</string>
+    <string name="background_location_gpx_recording_failure">The GPX recording feature can only work when the location permission is set to "Allow all the time". Please grant the permission in the app settings.</string>
     <string name="background_location_rationale_track_follow">In order to regularly check your distance to the followed track, TrekMe needs to collect location data in the background,
         even when the app is closed or not in use. In order to do that, the location permission must be set to "allow all the time" or equivalent.\n\nThis location data <b>isn\'t shared with anyone</b>.
     </string>
+    <string name="background_location_track_follow_failure">The track follow feature can only work when the location permission is set to "Allow all the time". Please grant the permission in the app settings.</string>
     <string name="recording_imported_success">Successfully imported in %1$d files</string>
     <string name="recording_imported_failure">Couldn\'t import %1$s</string>
     <string name="recording_edit_name_desc">Edit recording name</string>

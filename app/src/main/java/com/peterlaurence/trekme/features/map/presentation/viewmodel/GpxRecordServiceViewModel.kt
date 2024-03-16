@@ -18,6 +18,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -89,13 +90,25 @@ class GpxRecordServiceViewModel @Inject constructor(
             ackBatteryOptSignal.receive()
         }
 
-        /* Start the service */
+        if (!isBackgroundLocationGranted(app.applicationContext)) {
+            val request = AppEventBus.BackgroundLocationRequest(R.string.background_location_rationale_gpx_recording)
+            appEventBus.requestBackgroundLocation(request)
+
+            val granted = request.result.receiveAsFlow().first()
+            if (!granted) {
+                appEventBus.postMessage(
+                    WarningMessage(
+                        title = app.getString(R.string.warning_title),
+                        msg = app.getString(R.string.background_location_gpx_recording_failure)
+                    )
+                )
+                return
+            }
+        }
+
+        /* Start service */
         val intent = Intent(app, GpxRecordService::class.java)
         app.startService(intent)
-
-        if (!isBackgroundLocationGranted(app.applicationContext)) {
-            appEventBus.requestBackgroundLocation(app.applicationContext.getString(R.string.background_location_rationale_gpx_recording))
-        }
     }
 
     sealed interface Event {

@@ -2,6 +2,7 @@ package com.peterlaurence.trekme.events
 
 import com.peterlaurence.trekme.core.billing.data.model.BillingParams
 import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 
@@ -20,10 +21,20 @@ class AppEventBus {
 
     /**********************************************************************************************/
 
-    private val _requestBackgroundLocationSignal = MutableSharedFlow<String>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    private val _requestBackgroundLocationSignal = MutableSharedFlow<BackgroundLocationRequest>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     val requestBackgroundLocationSignal = _requestBackgroundLocationSignal.asSharedFlow()
 
-    fun requestBackgroundLocation(rationale: String) = _requestBackgroundLocationSignal.tryEmit(rationale)
+    fun requestBackgroundLocation(request: BackgroundLocationRequest) = _requestBackgroundLocationSignal.tryEmit(request)
+
+    /**
+     * The sender sends a [BackgroundLocationRequest] and "collects" the channel (so the sender
+     * suspends). The receiver (some permission handler in the app), does what necessary and posts
+     * the result (true if the perm is granted or false otherwise). Then, the receiver can act upon
+     * the decision of the user.
+     */
+    data class BackgroundLocationRequest(val rationaleId: Int) {
+        val result = Channel<Boolean>(1)
+    }
 
     /**********************************************************************************************/
 

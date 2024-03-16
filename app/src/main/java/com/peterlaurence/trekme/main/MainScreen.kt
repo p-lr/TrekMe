@@ -34,6 +34,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -425,32 +426,38 @@ private fun PermissionRequestHandler(
         }
     }
 
-    var isShowingBackgroundLocationRationale by rememberSaveable { mutableStateOf<String?>(null) }
+    var isShowingBackgroundLocationRationale by rememberSaveable { mutableStateOf<AppEventBus.BackgroundLocationRequest?>(null) }
 
+    var backgroundLocationRequest: AppEventBus.BackgroundLocationRequest? by remember { mutableStateOf(null, policy = neverEqualPolicy()) }
     val backgroundLocationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { granted ->
-        // TODO: send an event with the origin info of the request, so that we can avoid starting
-        // a service when we know that the background location perm isn't granted.
+        scope.launch {
+            backgroundLocationRequest?.result?.send(granted)
+        }
     }
 
-    LaunchedEffectWithLifecycle(appEventBus.requestBackgroundLocationSignal) { rationale ->
+    LaunchedEffectWithLifecycle(appEventBus.requestBackgroundLocationSignal) { request ->
         if (Build.VERSION.SDK_INT < 29) return@LaunchedEffectWithLifecycle
+        backgroundLocationRequest = request
         if (shouldShowBackgroundLocPermRationale(activity)) {
-            isShowingBackgroundLocationRationale = rationale
+            isShowingBackgroundLocationRationale = request
         } else {
             backgroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
         }
     }
 
-    isShowingBackgroundLocationRationale?.also { rationale ->
+    isShowingBackgroundLocationRationale?.also { request ->
         LocationRationale(
-            text = rationale,
+            text = context.getString(request.rationaleId),
             onConfirm = {
                 backgroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                 isShowingBackgroundLocationRationale = null
             },
             onIgnore = {
+                scope.launch {
+                    request.result.send(false)
+                }
                 isShowingBackgroundLocationRationale = null
             },
         )

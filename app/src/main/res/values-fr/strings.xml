@@ -287,9 +287,11 @@
         l\'application est fermée ou inutilisée. Pour cela, l\'autorisation de position doit être mise à «toujours autoriser» ou équivalent.\n\nCes informations de position sont stockées localement sur votre
         appareil et ne sont <b>en aucun cas communiquées à des tiers</b>.
     </string>
+    <string name="background_location_gpx_recording_failure">L\'enregistrement GPX ne peut fonctionner que si l\'autorisation de localistion est à "toujours autoriser". Veuillez accorder cette permission dans les paramètres de l\'application.</string>
     <string name="background_location_rationale_track_follow">Pour vérifier à intervalle régulier votre distance par rapport à la trace suivie, TrekMe doit avoir accès à votre position en arrière plan.\nPour
         cela, l\'autorisation de position doit être mise à «toujours autoriser» ou équivalent.\n\nVotre position ne sera <b>en aucun cas communiquées à des tiers</b>.
     </string>
+    <string name="background_location_track_follow_failure">Le suivi de trace ne peut fonctionner que si l\'autorisation de localistion est à "toujours autoriser". Veuillez accorder cette permission dans les paramètres de l\'application.</string>
     <string name="close_dialog">Fermer</string>
     <string name="understood_dialog">J\'ai compris</string>
     <string name="new_text">nouveau</string>
@@ -415,6 +417,7 @@
     <string name="elevation_fix_help">La correction est ajoutée à l\'altitude fournie par le GPS</string>
     <string name="beacon_background_loc_perm">Cette carte contient des balises, ce qui nécessite de collecter les données de localisation
         même lorsque l\'application est fermée ou inutilisée.\n\nCette autorisation <b>n\'est pour le moment pas accordée</b>.</string>
+    <string name="beacon_background_loc_perm_failure">Les balises sont inactives car la permission de localisation n\'est pas "toujours autoriser". Veuillez accorder cette permission et relancer l\'application.</string>
     <string name="select_track_to_follow">Appuyez sur la trace à suivre</string>
     <string name="track_follow_already_running">Le suivi de trace est déjà en cours d\'exécution. Voulez-vous l\'arrêter ?</string>
     <string name="track_follow_help">Vous choisissez une trace à suivre, et si vous vous éloignez de plus de 50m de la trace, vous êtes alerté par un son et une vibration.\n\nLe

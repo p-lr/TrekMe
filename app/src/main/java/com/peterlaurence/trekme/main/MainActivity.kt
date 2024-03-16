@@ -18,7 +18,6 @@ import com.peterlaurence.trekme.events.gpspro.GpsProEvents
 import com.peterlaurence.trekme.events.maparchive.MapArchiveEvents
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.main.eventhandler.MapArchiveEventHandler
-import com.peterlaurence.trekme.main.eventhandler.PermissionRequestHandler
 import com.peterlaurence.trekme.main.shortcut.Shortcut
 import com.peterlaurence.trekme.util.android.hasLocationPermission
 import com.peterlaurence.trekme.util.collectWhileStarted
@@ -48,8 +47,6 @@ class MainActivity : AppCompatActivity() {
 
     @Inject
     lateinit var appEventBus: AppEventBus
-
-    private var permissionRequestHandler: PermissionRequestHandler? = null
 
     private val viewModel: MainActivityViewModel by viewModels()
 
@@ -110,8 +107,6 @@ class MainActivity : AppCompatActivity() {
      * notifying the view-model that everything is ready.
      */
     public override fun onStart() {
-        permissionRequestHandler?.requestMinimalPermission()
-
         /* Prefetch location now - useful to reduce wait time */
         if (hasLocationPermission()) {
             lifecycleScope.launch {
