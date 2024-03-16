@@ -1,14 +1,7 @@
 package com.peterlaurence.trekme.main
 
 import android.Manifest
-import android.app.Activity
-import android.bluetooth.BluetoothAdapter
-import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
-import android.os.Build
-import android.provider.Settings
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -26,7 +19,6 @@ import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
@@ -34,10 +26,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,30 +35,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.map.domain.models.MapDownloadAlreadyRunning
-import com.peterlaurence.trekme.core.map.domain.models.MapDownloadEvent
-import com.peterlaurence.trekme.core.map.domain.models.MapDownloadFinished
-import com.peterlaurence.trekme.core.map.domain.models.MapDownloadPending
-import com.peterlaurence.trekme.core.map.domain.models.MapDownloadStorageError
-import com.peterlaurence.trekme.core.map.domain.models.MapNotRepairable
-import com.peterlaurence.trekme.core.map.domain.models.MapUpdateFinished
-import com.peterlaurence.trekme.core.map.domain.models.MapUpdatePending
-import com.peterlaurence.trekme.core.map.domain.models.MissingApiError
 import com.peterlaurence.trekme.events.AppEventBus
-import com.peterlaurence.trekme.events.GenericMessage
-import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.events.WarningMessage
 import com.peterlaurence.trekme.events.gpspro.GpsProEvents
-import com.peterlaurence.trekme.events.recording.GpxRecordEvents
+import com.peterlaurence.trekme.events.maparchive.MapArchiveEvents
 import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.WarningDialog
-import com.peterlaurence.trekme.features.mapcreate.presentation.ui.navigation.wmtsDestination
-import com.peterlaurence.trekme.features.record.app.service.event.NewExcursionEvent
-import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.LocationRationale
+import com.peterlaurence.trekme.main.eventhandler.HandleGenericMessages
+import com.peterlaurence.trekme.main.eventhandler.MapArchiveEventHandler
+import com.peterlaurence.trekme.main.eventhandler.MapDownloadEventHandler
+import com.peterlaurence.trekme.main.eventhandler.RecordingEventHandler
 import com.peterlaurence.trekme.main.navigation.MainGraph
 import com.peterlaurence.trekme.main.navigation.navigateToAbout
 import com.peterlaurence.trekme.main.navigation.navigateToGpsPro
@@ -81,28 +60,21 @@ import com.peterlaurence.trekme.main.navigation.navigateToSettings
 import com.peterlaurence.trekme.main.navigation.navigateToShop
 import com.peterlaurence.trekme.main.navigation.navigateToTrailSearch
 import com.peterlaurence.trekme.main.navigation.navigateToWifiP2p
+import com.peterlaurence.trekme.main.permission.PermissionRequestHandler
 import com.peterlaurence.trekme.main.viewmodel.RecordingEventHandlerViewModel
-import com.peterlaurence.trekme.util.android.MIN_PERMISSIONS_ANDROID_9_AND_BELOW
 import com.peterlaurence.trekme.util.android.activity
-import com.peterlaurence.trekme.util.android.hasPermissions
-import com.peterlaurence.trekme.util.android.requestNearbyWifiPermission
-import com.peterlaurence.trekme.util.android.requestNotificationPermission
-import com.peterlaurence.trekme.util.android.shouldShowBackgroundLocPermRationale
 import com.peterlaurence.trekme.util.checkInternet
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
-import com.peterlaurence.trekme.util.compose.LifeCycleObserver
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
-import java.util.UUID
 
 @Composable
 fun MainStateful(
     viewModel: MainActivityViewModel,
     recordingEventHandlerViewModel: RecordingEventHandlerViewModel,
     appEventBus: AppEventBus,
-    gpsProEvents: GpsProEvents
+    gpsProEvents: GpsProEvents,
+    mapArchiveEvents: MapArchiveEvents
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -127,6 +99,8 @@ fun MainStateful(
             onDismissRequest = { isShowingWarningDialog = null }
         )
     }
+
+    HandleBackGesture(drawerState, scope, navController, snackbarHostState)
 
     PermissionRequestHandler(
         appEventBus = appEventBus,
@@ -156,7 +130,8 @@ fun MainStateful(
         snackbarHostState = snackbarHostState,
         onShowWarningDialog = { isShowingWarningDialog = it }
     )
-    HandleBackGesture(drawerState, scope, navController, snackbarHostState)
+
+    MapArchiveEventHandler(appEventBus, mapArchiveEvents)
 
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -262,7 +237,7 @@ fun MainStateful(
  * Otherwise, navigate up.
  */
 @Composable
-fun HandleBackGesture(
+private fun HandleBackGesture(
     drawerState: DrawerState,
     scope: CoroutineScope,
     navController: NavController,
@@ -293,302 +268,6 @@ fun HandleBackGesture(
             }
         }
     }
-}
-
-@Composable
-private fun HandleGenericMessages(
-    genericMessages: Flow<GenericMessage>,
-    scope: CoroutineScope,
-    snackbarHostState: SnackbarHostState,
-    onShowWarningDialog: (WarningMessage) -> Unit
-) {
-    LaunchedEffectWithLifecycle(genericMessages) { message ->
-        when (message) {
-            is StandardMessage -> {
-                scope.launch {
-                    snackbarHostState.showSnackbar(message = message.msg, isLong = message.showLong)
-                }
-            }
-
-            is WarningMessage -> {
-                onShowWarningDialog(message)
-            }
-        }
-    }
-}
-
-@Composable
-private fun PermissionRequestHandler(
-    appEventBus: AppEventBus,
-    gpsProEvents: GpsProEvents,
-    snackbarHostState: SnackbarHostState,
-    scope: CoroutineScope
-) {
-    val context = LocalContext.current
-    val activity = context.activity
-    val storagePermLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { isGranted: Map<String, @JvmSuppressWildcards Boolean> ->
-        if (isGranted.values.any { !it }) {
-            scope.launch {
-                val result = snackbarHostState.showSnackbar(
-                    message = context.getString(R.string.storage_perm_denied),
-                    isLong = true,
-                    actionLabel = context.getString(R.string.ok_dialog)
-                )
-
-                if (result == SnackbarResult.ActionPerformed) {
-                    val intent = Intent()
-                    intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                    val uri = Uri.fromParts("package", activity.packageName, null)
-                    intent.data = uri
-                    activity.startActivity(intent)
-                }
-            }
-        }
-    }
-
-    var isShowingAndroid9AndBelowRationale by remember { mutableStateOf(false) }
-
-    fun requestStorageAndLocationPermissions() {
-        if (!hasPermissions(context, *MIN_PERMISSIONS_ANDROID_9_AND_BELOW)) {
-            isShowingAndroid9AndBelowRationale = true
-        }
-    }
-
-    if (isShowingAndroid9AndBelowRationale) {
-        WarningDialog(
-            title = stringResource(id = R.string.warning_title),
-            contentText = stringResource(id = R.string.no_storage_perm),
-            onConfirmPressed = { storagePermLauncher.launch(MIN_PERMISSIONS_ANDROID_9_AND_BELOW) },
-            confirmButtonText = stringResource(id = R.string.ok_dialog),
-            onDismissRequest = {
-                storagePermLauncher.launch(MIN_PERMISSIONS_ANDROID_9_AND_BELOW)
-            }
-        )
-    }
-
-    val locationPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        // TODO: warn the user that a critical perm isn't granted
-    }
-
-    /**
-     * Checks whether the app has permission to access fine location and (for Android < 10) to
-     * write to device storage.
-     * If the app does not have the requested permissions then the user will be prompted.
-     */
-    fun requestMinimalPermission() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            /* We absolutely need storage and location perm under Android 10 */
-            requestStorageAndLocationPermissions()
-        } else {
-            /* On Android 10 and above, we just need the location perm */
-            val hasLocationPermission = ActivityCompat.checkSelfPermission(
-                activity,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-            if (!hasLocationPermission) {
-                locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-            }
-        }
-    }
-
-    LifeCycleObserver(
-        onStart = {
-            requestMinimalPermission()
-        }
-    )
-
-    val bluetoothLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        when (result.resultCode) {
-            Activity.RESULT_OK -> appEventBus.bluetoothEnabled(true)
-            Activity.RESULT_CANCELED -> appEventBus.bluetoothEnabled(false)
-        }
-    }
-
-    LaunchedEffectWithLifecycle(appEventBus.requestBluetoothEnableFlow) {
-        bluetoothLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
-    }
-
-    val requestBtConnectPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        gpsProEvents.postBluetoothPermissionResult(granted)
-    }
-
-    LaunchedEffectWithLifecycle(gpsProEvents.requestBluetoothPermissionFlow) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            requestBtConnectPermissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT)
-        }
-    }
-
-    var isShowingBackgroundLocationRationale by rememberSaveable { mutableStateOf<AppEventBus.BackgroundLocationRequest?>(null) }
-
-    var backgroundLocationRequest: AppEventBus.BackgroundLocationRequest? by remember { mutableStateOf(null, policy = neverEqualPolicy()) }
-    val backgroundLocationPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        scope.launch {
-            backgroundLocationRequest?.result?.send(granted)
-        }
-    }
-
-    LaunchedEffectWithLifecycle(appEventBus.requestBackgroundLocationSignal) { request ->
-        if (Build.VERSION.SDK_INT < 29) return@LaunchedEffectWithLifecycle
-        backgroundLocationRequest = request
-        if (shouldShowBackgroundLocPermRationale(activity)) {
-            isShowingBackgroundLocationRationale = request
-        } else {
-            backgroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-        }
-    }
-
-    isShowingBackgroundLocationRationale?.also { request ->
-        LocationRationale(
-            text = context.getString(request.rationaleId),
-            onConfirm = {
-                backgroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-                isShowingBackgroundLocationRationale = null
-            },
-            onIgnore = {
-                scope.launch {
-                    request.result.send(false)
-                }
-                isShowingBackgroundLocationRationale = null
-            },
-        )
-    }
-
-    LaunchedEffectWithLifecycle(appEventBus.requestNotificationPermFlow) {
-        requestNotificationPermission(activity)
-    }
-
-    LaunchedEffectWithLifecycle(appEventBus.requestNearbyWifiDevicesPermFlow) {
-        requestNearbyWifiPermission(activity)
-    }
-}
-
-@Composable
-private fun RecordingEventHandler(
-    gpxRecordEvents: GpxRecordEvents,
-    onNewExcursion: (NewExcursionEvent) -> Unit
-) {
-    LaunchedEffectWithLifecycle(gpxRecordEvents.newExcursionEvent) { event ->
-        onNewExcursion(event)
-    }
-}
-
-@Composable
-private fun MapDownloadEventHandler(
-    downloadEvents: SharedFlow<MapDownloadEvent>,
-    navController: NavController,
-    snackbarHostState: SnackbarHostState,
-    scope: CoroutineScope,
-    context: Context,
-    onGoToMap: (UUID) -> Unit,
-    onShowWarningDialog: (WarningMessage) -> Unit
-) {
-    LaunchedEffectWithLifecycle(downloadEvents) { event ->
-        when (event) {
-            is MapDownloadFinished -> {
-                if (wmtsDestination == navController.currentDestination?.route) {
-                    navController.navigateToMapList()
-                }
-                scope.launch {
-                    val result = snackbarHostState.showSnackbar(
-                        context.getString(R.string.service_download_finished),
-                        actionLabel = context.getString(R.string.ok_dialog),
-                        isLong = true
-                    )
-
-                    if (result == SnackbarResult.ActionPerformed) {
-                        onGoToMap(event.mapId)
-                    }
-                }
-            }
-
-            is MapUpdateFinished -> {
-                val result = snackbarHostState.showSnackbar(
-                    message = if (event.repairOnly) {
-                        context.getString(R.string.service_repair_finished)
-                    } else {
-                        context.getString(R.string.service_update_finished)
-                    },
-                    actionLabel = context.getString(R.string.ok_dialog),
-                    isLong = true
-                )
-
-                if (result == SnackbarResult.ActionPerformed) {
-                    onGoToMap(event.mapId)
-                }
-            }
-
-            MapDownloadAlreadyRunning -> {
-                onShowWarningDialog(
-                    WarningMessage(
-                        title = context.getString(R.string.warning_title),
-                        msg = context.getString(
-                            R.string.service_download_already_running
-                        )
-                    )
-                )
-            }
-
-            MapDownloadStorageError -> {
-                onShowWarningDialog(
-                    WarningMessage(
-                        title = context.getString(R.string.warning_title),
-                        msg = context.getString(
-                            R.string.service_download_bad_storage
-                        )
-                    )
-                )
-            }
-
-            MapNotRepairable -> {
-                onShowWarningDialog(
-                    WarningMessage(
-                        title = context.getString(R.string.warning_title),
-                        msg = context.getString(
-                            R.string.service_download_repair_error
-                        )
-                    )
-                )
-            }
-
-            is MapDownloadPending, is MapUpdatePending -> {
-                // Nothing particular to do, the service which fire those events already sends
-                // notifications with the progression.
-            }
-
-            MissingApiError -> {
-                onShowWarningDialog(
-                    WarningMessage(
-                        title = context.getString(R.string.warning_title),
-                        msg = context.getString(
-                            R.string.service_download_missing_api
-                        )
-                    )
-                )
-            }
-        }
-    }
-}
-
-private suspend fun SnackbarHostState.showSnackbar(
-    message: String,
-    isLong: Boolean = false,
-    actionLabel: String? = null,
-): SnackbarResult {
-    return showSnackbar(
-        message,
-        actionLabel = actionLabel,
-        duration = if (isLong) SnackbarDuration.Long else SnackbarDuration.Short
-    )
 }
 
 private fun getNameForMenu(menuItem: MenuItem): Int {

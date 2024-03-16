@@ -6,57 +6,34 @@ import android.app.NotificationManager
 import android.content.Context
 import android.graphics.Color
 import android.os.Build
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.coroutineScope
-import androidx.lifecycle.repeatOnLifecycle
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.interactors.ArchiveMapInteractor
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.events.maparchive.MapArchiveEvents
-import com.peterlaurence.trekme.main.MainActivity
-import kotlinx.coroutines.launch
+import com.peterlaurence.trekme.util.android.activity
+import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 
 /**
  * Handles application wide map archive events. This class is intended to be used by the main
  * activity only.
  */
-class MapArchiveEventHandler(
-    private val activity: MainActivity,
-    private val lifecycle: Lifecycle,
-    private val appEventBus: AppEventBus,
-    mapArchiveEvents: MapArchiveEvents
-) {
-
+@Composable
+fun MapArchiveEventHandler(appEventBus: AppEventBus, mapArchiveEvents: MapArchiveEvents) {
     /* Used for notifications */
-    private var builder: Notification.Builder? = null
-    private var notifyMgr: NotificationManager? = null
+    var builder: Notification.Builder? = null
+    var notifyMgr: NotificationManager? = null
 
-    init {
-        lifecycle.coroutineScope.launch {
-            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                mapArchiveEvents.mapArchiveEventFlow.collect { event ->
-                    when (event) {
-                        is ArchiveMapInteractor.ZipProgressEvent -> onZipProgressEvent(event)
-                        is ArchiveMapInteractor.ZipFinishedEvent -> onZipFinishedEvent(event)
-                        ArchiveMapInteractor.ZipError -> {
-                            //TODO: Display a warning
-                        }
-                        is ArchiveMapInteractor.ZipCloseEvent -> {
-                            // Nothing to do
-                        }
-                    }
-                }
-            }
-        }
-    }
+    val activity = LocalContext.current.activity
 
     /**
      * A [Notification] is sent to the user showing the progression in percent. The
      * [NotificationManager] only process one notification at a time, which is handy since
      * it prevents the application from using too much cpu.
      */
-    private fun onZipProgressEvent(event: ArchiveMapInteractor.ZipProgressEvent) {
+    val onZipProgressEvent = { event: ArchiveMapInteractor.ZipProgressEvent ->
         val notificationChannelId = "trekadvisor_map_save"
         if (builder == null || notifyMgr == null) {
             try {
@@ -95,15 +72,27 @@ class MapArchiveEventHandler(
         notifyMgr?.notify(event.mapId.hashCode(), builder!!.build())
     }
 
-    private fun onZipFinishedEvent(event: ArchiveMapInteractor.ZipFinishedEvent) {
-        if (!lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return
-
+    val onZipFinishedEvent = l@{ event: ArchiveMapInteractor.ZipFinishedEvent ->
         val archiveOkMsg = activity.getString(R.string.archive_snackbar_finished)
-        val builder = builder ?: return
+        val builder = builder ?: return@l
         /* When the loop is finished, updates the notification */
         builder.setContentText(archiveOkMsg) // Removes the progress bar
             .setProgress(0, 0, false)
         notifyMgr?.notify(event.mapId.hashCode(), builder.build())
         appEventBus.postMessage(StandardMessage(archiveOkMsg))
+    }
+
+    LaunchedEffectWithLifecycle(mapArchiveEvents.mapArchiveEventFlow) { event ->
+        when (event) {
+            is ArchiveMapInteractor.ZipProgressEvent -> onZipProgressEvent(event)
+            is ArchiveMapInteractor.ZipFinishedEvent -> onZipFinishedEvent(event)
+            ArchiveMapInteractor.ZipError -> {
+                //TODO: Display a warning
+            }
+
+            is ArchiveMapInteractor.ZipCloseEvent -> {
+                // Nothing to do
+            }
+        }
     }
 }

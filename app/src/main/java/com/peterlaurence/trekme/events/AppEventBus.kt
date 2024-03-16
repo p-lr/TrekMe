@@ -72,21 +72,4 @@ class AppEventBus {
 
     fun startBillingFlow(billingParams: BillingParams) = _billingFLow.tryEmit(billingParams)
 
-    /**********************************************************************************************/
-
-    private val _openDrawerFlow = MutableSharedFlow<Unit>(0, 1, BufferOverflow.DROP_OLDEST)
-    val openDrawerFlow = _openDrawerFlow.asSharedFlow()
-
-    fun openDrawer() = _openDrawerFlow.tryEmit(Unit)
-
-    /**********************************************************************************************/
-
-    private val _navigateToFlow = MutableSharedFlow<NavDestination>(0, 1, BufferOverflow.DROP_OLDEST)
-    val navigateFlow = _navigateToFlow.asSharedFlow()
-
-    fun navigateTo(dest: NavDestination) = _navigateToFlow.tryEmit(dest)
-
-    enum class NavDestination {
-        Shop, MapList, MapCreation, TrailSearch
-    }
 }
