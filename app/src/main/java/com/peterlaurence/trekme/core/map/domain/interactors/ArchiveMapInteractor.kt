@@ -6,6 +6,7 @@ import com.peterlaurence.trekme.core.map.domain.dao.ArchiveMapDao
 import com.peterlaurence.trekme.di.ApplicationScope
 import com.peterlaurence.trekme.events.maparchive.MapArchiveEvents
 import com.peterlaurence.trekme.util.ZipProgressionListener
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
@@ -33,8 +34,12 @@ class ArchiveMapInteractor @Inject constructor(
         /* Process archive tasks serially */
         applicationScope.launch {
             for (task in channel) {
-                makeFlow(task.map, task.uri).collect {
-                    mapArchiveEvents.postEvent(it)
+                try {
+                    makeFlow(task.map, task.uri).collect {
+                        mapArchiveEvents.postEvent(it)
+                    }
+                } catch (_: CancellationException) {
+                    // don't cancel parent coroutine
                 }
             }
         }
@@ -61,7 +66,7 @@ class ArchiveMapInteractor @Inject constructor(
                     /* Use sendBlocking instead of offer to be sure not to lose those events */
                     trySendBlocking(ZipFinishedEvent(map.id))
                     trySendBlocking(ZipCloseEvent)
-                    channel.close()
+                    cancel()
                 }
 
                 override fun onZipError() {
