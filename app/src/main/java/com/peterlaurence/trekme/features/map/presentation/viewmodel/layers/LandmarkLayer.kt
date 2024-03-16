@@ -275,4 +275,4 @@ private class LandmarkState(val idOnMap: String, initLandmark: Landmark) {
 
 
 private const val landmarkCalloutWidthDp = 140
-private const val landmarkCalloutHeightDp = 100
+private const val landmarkCalloutHeightDp = 110

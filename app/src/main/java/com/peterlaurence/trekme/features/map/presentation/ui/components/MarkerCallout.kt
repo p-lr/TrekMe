@@ -11,16 +11,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -48,15 +50,15 @@ fun MarkerCallout(
     Callout(
         shouldAnimate = shouldAnimate,
         onAnimationDone = onAnimationDone,
-        elevation = 0.dp,
         rightContent = {
             IconButton(
                 onClick = onStartItinerary,
                 modifier = Modifier
                     .padding(start = 4.dp)
+                    .shadow(3.dp, CircleShape)
                     .clip(CircleShape)
                     .size(40.dp)
-                    .background(MaterialTheme.colorScheme.surface)
+                    .background(MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp))
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_itinerary),
@@ -67,9 +69,8 @@ fun MarkerCallout(
         }
     ) {
         Column(
-            Modifier.size(
+            Modifier.width(
                 (markerCalloutWidthDp - 44).dp, // 44 is the width of the right content including margin
-                markerCalloutHeightDp.dp
             ),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -88,8 +89,7 @@ fun MarkerCallout(
                 modifier = Modifier.padding(vertical = 4.dp),
                 fontSize = 10.sp
             )
-            Spacer(modifier = Modifier.weight(1f))
-            Divider(thickness = 0.5.dp)
+            HorizontalDivider(thickness = 0.5.dp)
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -105,7 +105,7 @@ fun MarkerCallout(
                     tint = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                Divider(
+                HorizontalDivider(
                     Modifier
                         .height(16.dp)
                         .width(1.dp), thickness = 0.5.dp
@@ -122,7 +122,7 @@ fun MarkerCallout(
                     tint = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                Divider(
+                HorizontalDivider(
                     Modifier
                         .height(16.dp)
                         .width(1.dp), thickness = 0.5.dp

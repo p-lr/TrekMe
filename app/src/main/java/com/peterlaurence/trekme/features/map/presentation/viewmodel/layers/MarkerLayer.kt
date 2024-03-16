@@ -108,7 +108,7 @@ class MarkerLayer(
         scope.launch {
             var shouldAnimate by mutableStateOf(true)
 
-            val calloutHeight = dpToPx(markerCalloutHeightDp).toInt()
+            val calloutHeight = dpToPx(markerCalloutHeightDp).toInt()  // the actual height might be greater than this fixed height, but the resulting positioning should be good enough
             val markerHeight =
                 dpToPx(48f).toInt() // The view height is 48dp, but only the top half is used to draw the marker.
             val calloutWidth = dpToPx(markerCalloutWidthDp).toInt()
