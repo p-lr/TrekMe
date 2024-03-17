@@ -17,7 +17,7 @@ import com.peterlaurence.trekme.core.map.domain.models.MapUpdatePending
 import com.peterlaurence.trekme.core.map.domain.models.MissingApiError
 import com.peterlaurence.trekme.events.WarningMessage
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.navigation.wmtsDestination
-import com.peterlaurence.trekme.main.navigation.navigateToMapList
+import com.peterlaurence.trekme.main.ui.navigation.navigateToMapList
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 import com.peterlaurence.trekme.util.compose.showSnackbar
 import kotlinx.coroutines.CoroutineScope

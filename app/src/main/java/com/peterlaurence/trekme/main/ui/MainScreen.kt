@@ -1,22 +1,20 @@
-package com.peterlaurence.trekme.main
+package com.peterlaurence.trekme.main.ui
 
 import android.Manifest
 import android.content.pm.PackageManager
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.DrawerState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -34,38 +32,38 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.WarningMessage
 import com.peterlaurence.trekme.events.gpspro.GpsProEvents
 import com.peterlaurence.trekme.events.maparchive.MapArchiveEvents
+import com.peterlaurence.trekme.main.ui.component.DrawerHeader
 import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.WarningDialog
+import com.peterlaurence.trekme.main.viewmodel.MainActivityEvent
+import com.peterlaurence.trekme.main.viewmodel.MainActivityViewModel
 import com.peterlaurence.trekme.main.eventhandler.HandleGenericMessages
 import com.peterlaurence.trekme.main.eventhandler.MapArchiveEventHandler
 import com.peterlaurence.trekme.main.eventhandler.MapDownloadEventHandler
 import com.peterlaurence.trekme.main.eventhandler.RecordingEventHandler
-import com.peterlaurence.trekme.main.navigation.MainGraph
-import com.peterlaurence.trekme.main.navigation.navigateToAbout
-import com.peterlaurence.trekme.main.navigation.navigateToGpsPro
-import com.peterlaurence.trekme.main.navigation.navigateToMap
-import com.peterlaurence.trekme.main.navigation.navigateToMapCreation
-import com.peterlaurence.trekme.main.navigation.navigateToMapImport
-import com.peterlaurence.trekme.main.navigation.navigateToMapList
-import com.peterlaurence.trekme.main.navigation.navigateToRecord
-import com.peterlaurence.trekme.main.navigation.navigateToSettings
-import com.peterlaurence.trekme.main.navigation.navigateToShop
-import com.peterlaurence.trekme.main.navigation.navigateToTrailSearch
-import com.peterlaurence.trekme.main.navigation.navigateToWifiP2p
+import com.peterlaurence.trekme.main.ui.navigation.MainGraph
+import com.peterlaurence.trekme.main.ui.navigation.navigateToAbout
+import com.peterlaurence.trekme.main.ui.navigation.navigateToGpsPro
+import com.peterlaurence.trekme.main.ui.navigation.navigateToMap
+import com.peterlaurence.trekme.main.ui.navigation.navigateToMapCreation
+import com.peterlaurence.trekme.main.ui.navigation.navigateToMapImport
+import com.peterlaurence.trekme.main.ui.navigation.navigateToMapList
+import com.peterlaurence.trekme.main.ui.navigation.navigateToRecord
+import com.peterlaurence.trekme.main.ui.navigation.navigateToSettings
+import com.peterlaurence.trekme.main.ui.navigation.navigateToShop
+import com.peterlaurence.trekme.main.ui.navigation.navigateToTrailSearch
+import com.peterlaurence.trekme.main.ui.navigation.navigateToWifiP2p
 import com.peterlaurence.trekme.main.permission.PermissionRequestHandler
+import com.peterlaurence.trekme.main.ui.gesture.HandleBackGesture
 import com.peterlaurence.trekme.main.viewmodel.RecordingEventHandlerViewModel
-import com.peterlaurence.trekme.util.android.activity
 import com.peterlaurence.trekme.util.checkInternet
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
@@ -170,8 +168,13 @@ fun MainStateful(
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            ModalDrawerSheet {
-                Spacer(Modifier.height(12.dp))
+            ModalDrawerSheet(
+                Modifier
+                    .fillMaxHeight()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                DrawerHeader()
+
                 menuItems.forEach { item ->
                     NavigationDrawerItem(
                         icon = {
@@ -228,46 +231,6 @@ fun MainStateful(
             }
         }
     )
-}
-
-/**
- * If the side menu is opened, just close it.
- * If there's no previous destination, display a confirmation snackbar to back once more before
- * killing the app.
- * Otherwise, navigate up.
- */
-@Composable
-private fun HandleBackGesture(
-    drawerState: DrawerState,
-    scope: CoroutineScope,
-    navController: NavController,
-    snackbarHostState: SnackbarHostState
-) {
-    val activity = LocalContext.current.activity
-    val confirmExit = stringResource(id = R.string.confirm_exit)
-    BackHandler {
-        if (drawerState.isOpen) {
-            scope.launch {
-                drawerState.close()
-            }
-        } else {
-            if (navController.previousBackStackEntry == null) {
-                if (snackbarHostState.currentSnackbarData?.visuals?.message == confirmExit) {
-                    activity.finish()
-                } else {
-                    scope.launch {
-                        snackbarHostState.showSnackbar(
-                            confirmExit,
-                            withDismissAction = true,
-                            duration = SnackbarDuration.Short
-                        )
-                    }
-                }
-            } else {
-                navController.navigateUp()
-            }
-        }
-    }
 }
 
 private fun getNameForMenu(menuItem: MenuItem): Int {

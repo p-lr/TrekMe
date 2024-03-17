@@ -12,6 +12,8 @@ import com.peterlaurence.trekme.events.gpspro.GpsProEvents
 import com.peterlaurence.trekme.events.maparchive.MapArchiveEvents
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.main.shortcut.Shortcut
+import com.peterlaurence.trekme.main.ui.MainStateful
+import com.peterlaurence.trekme.main.viewmodel.MainActivityViewModel
 import com.peterlaurence.trekme.util.android.hasLocationPermission
 import com.peterlaurence.trekme.util.collectWhileStarted
 import dagger.hilt.android.AndroidEntryPoint

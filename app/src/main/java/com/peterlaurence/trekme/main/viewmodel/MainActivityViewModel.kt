@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.main
+package com.peterlaurence.trekme.main.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.ViewModel

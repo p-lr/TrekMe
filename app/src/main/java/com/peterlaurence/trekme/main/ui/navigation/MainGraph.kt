@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.main.navigation
+package com.peterlaurence.trekme.main.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
