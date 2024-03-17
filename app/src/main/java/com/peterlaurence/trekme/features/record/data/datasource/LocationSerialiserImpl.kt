@@ -88,22 +88,27 @@ class AppRecordRestorer(private val settings: Settings) : RecordRestorer {
         return sink != null
     }
 
-    override suspend fun restore(): Pair<GeoRecord, BoundingBox>? {
+    override suspend fun restore(): Pair<GeoRecord, BoundingBox?>? {
         if (!hasInit) {
             sink = getSinkFile(settings)
         }
 
-        val stream = sink?.let { FileInputStream(it) } ?: return null
-        val gpx = LocationDeSerializerImpl(stream).readGpx() ?: return null
-        val name = gpx.metadata?.name ?: return null
-        val boundingBox = gpx.metadata.bounds?.let {
+        val file = sink ?: return null
+        val stream = FileInputStream(file)
+        val gpx = LocationDeSerializerImpl(stream).readGpx() ?: run {
+            /* If we failed to parse as Gpx, delete the file */
+            deleteRecord()
+            return null
+        }
+        val name = gpx.metadata?.name ?: file.name
+        val boundingBox = gpx.metadata?.bounds?.let {
             BoundingBox(
                 minLat = it.minLat,
                 maxLat = it.maxLat,
                 minLon = it.minLon,
                 maxLon = it.maxLon
             )
-        } ?: return null
+        }
 
         return Pair(gpxToDomain(gpx, name = name), boundingBox)
     }

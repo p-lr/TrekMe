@@ -5,6 +5,6 @@ import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
 
 interface RecordRestorer {
     suspend fun hasRecordToRestore(): Boolean
-    suspend fun restore(): Pair<GeoRecord, BoundingBox>?
+    suspend fun restore(): Pair<GeoRecord, BoundingBox?>?
     suspend fun deleteRecord()
 }

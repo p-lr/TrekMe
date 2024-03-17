@@ -20,7 +20,7 @@ class RestoreRecordInteractor @Inject constructor(
     }
 
     suspend fun recoverRecord(): Boolean {
-        val (geoRecord, bb) = restorer.restore() ?: return false
+        val (geoRecord, _) = restorer.restore() ?: return false
 
         val excursionId = UUID.randomUUID().toString()
         val result = excursionRepository.putExcursion(
