@@ -10,6 +10,7 @@ import com.peterlaurence.trekme.core.billing.domain.interactors.TrekmeExtendedIn
 import com.peterlaurence.trekme.core.billing.domain.interactors.TrekmeExtendedWithIgnInteractor
 import com.peterlaurence.trekme.core.billing.domain.model.GpsProStateOwner
 import com.peterlaurence.trekme.core.location.domain.model.InternalGps
+import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.core.map.domain.interactors.SetMapInteractor
 import com.peterlaurence.trekme.core.map.domain.interactors.UpdateMapsInteractor
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
@@ -20,6 +21,7 @@ import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.WarningMessage
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
 import com.peterlaurence.trekme.main.shortcut.Shortcut
+import com.peterlaurence.trekme.util.android.hasLocationPermission
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
@@ -51,21 +53,13 @@ class MainActivityViewModel @Inject constructor(
     private val appEventBus: AppEventBus,
     private val updateMapsInteractor: UpdateMapsInteractor,
     private val downloadRepository: DownloadRepository,
-    private val setMapInteractor: SetMapInteractor
+    private val setMapInteractor: SetMapInteractor,
+    private val locationSource: LocationSource
 ) : ViewModel() {
     private var attemptedAtLeastOnce = false
 
-//    private val _showMapListSignal = MutableSharedFlow<Unit>()
-//    val showMapListSignal = _showMapListSignal.asSharedFlow()
-
-//    private val _showMapViewSignal = MutableSharedFlow<Unit>()
-//    val showMapViewSignal = _showMapViewSignal.asSharedFlow()
-
     private val _gpsProPurchased = MutableStateFlow(false)
     val gpsProPurchased = _gpsProPurchased.asStateFlow()
-
-//    private val _showRecordingsSignal = Channel<Unit>(1)
-//    val showRecordingsFlow = _showRecordingsSignal.receiveAsFlow()
 
     val downloadEvents = downloadRepository.downloadEvent
 
@@ -84,6 +78,13 @@ class MainActivityViewModel @Inject constructor(
         viewModelScope.launch {
             if (attemptedAtLeastOnce) return@launch
             attemptedAtLeastOnce = true // remember that we tried once
+
+            /* Prefetch location now - useful to reduce wait time */
+            launch {
+                if (hasLocationPermission(app.applicationContext)) {
+                    locationSource.locationFlow.first()
+                }
+            }
 
             trekMeContext.init(app.applicationContext)
             warnIfBadStorageState()

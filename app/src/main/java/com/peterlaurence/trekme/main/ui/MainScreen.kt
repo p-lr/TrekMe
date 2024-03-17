@@ -41,6 +41,7 @@ import com.peterlaurence.trekme.events.gpspro.GpsProEvents
 import com.peterlaurence.trekme.events.maparchive.MapArchiveEvents
 import com.peterlaurence.trekme.main.ui.component.DrawerHeader
 import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.WarningDialog
+import com.peterlaurence.trekme.main.eventhandler.BillingEventHandler
 import com.peterlaurence.trekme.main.viewmodel.MainActivityEvent
 import com.peterlaurence.trekme.main.viewmodel.MainActivityViewModel
 import com.peterlaurence.trekme.main.eventhandler.HandleGenericMessages
@@ -60,7 +61,8 @@ import com.peterlaurence.trekme.main.ui.navigation.navigateToShop
 import com.peterlaurence.trekme.main.ui.navigation.navigateToTrailSearch
 import com.peterlaurence.trekme.main.ui.navigation.navigateToWifiP2p
 import com.peterlaurence.trekme.main.permission.PermissionRequestHandler
-import com.peterlaurence.trekme.main.ui.gesture.HandleBackGesture
+import com.peterlaurence.trekme.main.ui.component.HandleBackGesture
+import com.peterlaurence.trekme.main.ui.component.MainActivityLifecycleObserver
 import com.peterlaurence.trekme.main.viewmodel.RecordingEventHandlerViewModel
 import com.peterlaurence.trekme.util.checkInternet
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
@@ -130,6 +132,8 @@ fun MainStateful(
     )
 
     MapArchiveEventHandler(appEventBus, mapArchiveEvents)
+
+    BillingEventHandler(appEventBus)
 
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -231,6 +235,8 @@ fun MainStateful(
             }
         }
     )
+
+    MainActivityLifecycleObserver(viewModel)
 }
 
 private fun getNameForMenu(menuItem: MenuItem): Int {

@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.main.ui.gesture
+package com.peterlaurence.trekme.main.ui.component
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.material3.DrawerState
