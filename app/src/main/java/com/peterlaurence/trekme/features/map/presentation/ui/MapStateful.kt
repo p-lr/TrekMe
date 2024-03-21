@@ -1,11 +1,9 @@
 package com.peterlaurence.trekme.features.map.presentation.ui
 
 import android.content.Context
-import android.content.ContextWrapper
 import android.content.Intent
 import android.os.Build
 import android.view.Surface
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -46,6 +44,7 @@ import com.peterlaurence.trekme.features.map.presentation.viewmodel.*
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.TrackFollowLayer
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimSolutionDialog
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimWarningDialog
+import com.peterlaurence.trekme.util.android.getActivityOrNull
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -463,7 +462,7 @@ private fun RecordingFabStateful(viewModel: GpxRecordServiceViewModel) {
  * We need to know the display rotation (either 0, 90°, 180°, or 270°) - and not just the
  * portrait / landscape mode.
  * To get that information, we only need a [Context] for Android 11 and up. However, on Android 10
- * and below, we need the [AppCompatActivity].
+ * and below, we need the activity.
  *
  * @return The angle in decimal degrees
  */
@@ -471,7 +470,7 @@ private fun RecordingFabStateful(viewModel: GpxRecordServiceViewModel) {
 private fun getDisplayRotation(): Int {
     val surfaceRotation: Int = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
         @Suppress("DEPRECATION")
-        LocalContext.current.getActivity()?.windowManager?.defaultDisplay?.rotation
+        LocalContext.current.getActivityOrNull()?.windowManager?.defaultDisplay?.rotation
             ?: Surface.ROTATION_0
     } else {
         LocalContext.current.display?.rotation ?: Surface.ROTATION_0
@@ -483,15 +482,6 @@ private fun getDisplayRotation(): Int {
         Surface.ROTATION_270 -> 270
         else -> 0
     }
-}
-
-/**
- * Depending on where the compose tree was originally created, we might have a [ContextWrapper].
- */
-private tailrec fun Context.getActivity(): AppCompatActivity? = when (this) {
-    is AppCompatActivity -> this
-    is ContextWrapper -> baseContext.getActivity()
-    else -> null
 }
 
 fun showSnackbar(

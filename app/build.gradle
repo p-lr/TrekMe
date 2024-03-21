@@ -72,7 +72,6 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-runtime-compose:$lifecycle_version"
     implementation 'androidx.fragment:fragment-ktx:1.6.2'
     implementation "androidx.navigation:navigation-compose:$nav_version"
-    implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.datastore:datastore-preferences:1.0.0'
     implementation 'androidx.activity:activity-compose:1.8.2'
 
