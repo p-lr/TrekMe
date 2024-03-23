@@ -158,8 +158,9 @@ class ElevationRepository(
                                 } else {
                                     _events.emit(ElevationCorrectionErrorEvent)
                                 }
-                                /* Stop the flow */
-                                throw CancellationException()
+                                job?.cancel()
+                                noError.set(false)
+                                pts
                             }
                             NonTrusted -> {
                                 noError.set(false)

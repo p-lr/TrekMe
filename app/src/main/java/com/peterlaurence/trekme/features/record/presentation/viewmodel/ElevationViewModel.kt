@@ -63,7 +63,7 @@ class ElevationViewModel @Inject constructor(
                 when (it) {
                     ElevationCorrectionErrorEvent -> {
                         val msg = ctx.getString(R.string.elevation_correction_error)
-                        appEventBus.postMessage(StandardMessage(msg, showLong = true))
+                        appEventBus.postMessage(StandardMessage(msg, showLong = false))
                     }
                     is NoNetworkEvent -> {
                         val msg = if (!it.internetOk) {

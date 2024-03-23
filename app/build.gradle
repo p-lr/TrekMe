@@ -9,7 +9,6 @@ android {
     compileSdk 34
 
     buildFeatures {
-        viewBinding true
         compose true
     }
 
@@ -70,7 +69,6 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-runtime-compose:$lifecycle_version"
-    implementation 'androidx.fragment:fragment-ktx:1.6.2'
     implementation "androidx.navigation:navigation-compose:$nav_version"
     implementation 'androidx.datastore:datastore-preferences:1.0.0'
     implementation 'androidx.activity:activity-compose:1.8.2'
