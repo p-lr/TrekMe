@@ -73,13 +73,24 @@ class ElevationGraphView @JvmOverloads constructor(
         color = context.getColor(R.color.colorDarkGrey)
     }
 
-    private val paddingLeft = dpToPx(8f)
-    private val paddingRight = paddingLeft
+    companion object {
+        private val innerPaddingLeft = dpToPx(8f)
+        private val innerPaddingRight = innerPaddingLeft
+        private val maxDistanceMargin = dpToPx(16f)
+
+        /**
+         * Returns the numbers of pixels eaten in padding. Client code uses this information to know
+         * the width in pixels of the usable part of the graph.
+         */
+        fun getDrawingPadding(): Int {
+            return innerPaddingLeft.toInt() + innerPaddingRight.toInt() + maxDistanceMargin.toInt()
+        }
+    }
+
     private val paddingTop = dpToPx(8f)
     private val paddingBottom = dpToPx(16f)
     private val minElevationMargin = dpToPx(16f)
     private val maxElevationMargin = dpToPx(16f)
-    private val maxDistanceMargin = dpToPx(16f)
     private val highlightEleTxtPadding = dpToPx(4f)
     private var highlightEleTxtOffsetX = 0f
     private val highlightEleTxtOffsetY = dpToPx(10f)
@@ -165,14 +176,6 @@ class ElevationGraphView @JvmOverloads constructor(
         invalidate()
     }
 
-    /**
-     * Returns the numbers of pixels eaten in padding. Client code uses this information to know
-     * the width in pixels of the usable part of the graph.
-     */
-    fun getDrawingPadding(): Int {
-        return paddingLeft.toInt() + paddingRight.toInt() + maxDistanceMargin.toInt()
-    }
-
     private fun makeArea(elevationLine: Path, distMax: Double): Path {
         val path = Path()
         path.addPath(elevationLine)
@@ -206,7 +209,7 @@ class ElevationGraphView @JvmOverloads constructor(
     }
 
     private fun translateX(x: Double, xRange: Double): Float {
-        return paddingLeft + ((width - paddingLeft - paddingRight - maxDistanceMargin) * x / xRange).toFloat()
+        return innerPaddingLeft + ((width - innerPaddingLeft - innerPaddingRight - maxDistanceMargin) * x / xRange).toFloat()
     }
 
     private fun translateY(y: Double, yRange: Double, distMax: Double): Float {
@@ -222,7 +225,7 @@ class ElevationGraphView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         val elevationLine = elevationProfile ?: return
-        val xOrig = paddingLeft
+        val xOrig = innerPaddingLeft
         val yOrig = height - paddingBottom
 
         /* Elevation line */
@@ -232,7 +235,7 @@ class ElevationGraphView @JvmOverloads constructor(
         canvas.drawPath(areaPath, areaPaint)
 
         /* Axis */
-        canvas.drawLine(xOrig, yOrig, width - paddingRight, yOrig, axisPaint)
+        canvas.drawLine(xOrig, yOrig, width - innerPaddingRight, yOrig, axisPaint)
         canvas.drawLine(xOrig, yOrig, xOrig, paddingTop, axisPaint)
 
         /* Elevation text and bubble */
@@ -259,10 +262,10 @@ class ElevationGraphView @JvmOverloads constructor(
         elevationTextPaint.getTextBounds(eleText, 0, eleText.length, highlightPtRect)
         val b = highlightPtRect
         val p = highlightEleTxtPadding
-        val offsetX = if (highlightPtX - (b.right - b.left) / 2f - p < paddingLeft) {
-            highlightPtX - paddingLeft - p
+        val offsetX = if (highlightPtX - (b.right - b.left) / 2f - p < innerPaddingLeft) {
+            highlightPtX - innerPaddingLeft - p
         } else if (highlightPtX + (b.right - b.left) / 2f + p > right) {
-            highlightPtX + b.right + p - right + paddingLeft
+            highlightPtX + b.right + p - right + innerPaddingLeft
         } else {
             (b.right - b.left) / 2f
         }
@@ -281,10 +284,10 @@ class ElevationGraphView @JvmOverloads constructor(
         val r = Rect()
         distancePaint.getTextBounds(distText, 0, distText.length, r)
         val p = highlightEleTxtPadding
-        distTextOffsetX = if (highlightPtX + (r.right - r.left) / 2 > right - paddingLeft) {
-            right - highlightPtX - paddingLeft + r.left - r.right - p
-        } else if (highlightPtX - (r.right - r.left) / 2 < paddingLeft) {
-            paddingLeft - highlightPtX
+        distTextOffsetX = if (highlightPtX + (r.right - r.left) / 2 > right - innerPaddingLeft) {
+            right - highlightPtX - innerPaddingLeft + r.left - r.right - p
+        } else if (highlightPtX - (r.right - r.left) / 2 < innerPaddingLeft) {
+            innerPaddingLeft - highlightPtX
         } else {
             (r.left - r.right) / 2f
         }
