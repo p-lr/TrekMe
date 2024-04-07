@@ -56,12 +56,11 @@ android {
 
 dependencies {
     def lifecycle_version = '2.7.0'
-    def coroutines_version = '1.7.3'
 
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 //    implementation project(":mapcompose-local")  // for dev purposes
-    implementation 'ovh.plrapps:mapcompose:2.12.1'
+    implementation 'ovh.plrapps:mapcompose:2.12.2'
     implementation 'com.android.billingclient:billing:6.2.0'
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
@@ -74,7 +73,7 @@ dependencies {
     implementation 'androidx.activity:activity-compose:1.8.2'
 
     // Compose // see https://developer.android.com/jetpack/compose/setup#bom-version-mapping
-    implementation platform('androidx.compose:compose-bom:2024.02.02')
+    implementation platform('androidx.compose:compose-bom:2024.04.00')
     implementation "androidx.compose.ui:ui"
     implementation "androidx.compose.material:material"
     implementation "androidx.compose.material3:material3"
@@ -88,7 +87,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.11.0'
     implementation 'com.google.android.gms:play-services-location:21.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutine_version"
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1'
     implementation "com.squareup.okhttp3:okhttp:4.9.1"
 //    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.12'
@@ -96,7 +95,7 @@ dependencies {
     kapt "com.google.dagger:hilt-compiler:$hilt_version"
     testImplementation 'junit:junit:4.13.2'
     testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
-    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutines_version"
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutine_version"
     testImplementation 'org.robolectric:robolectric:4.7.3'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test:core:1.5.0'
