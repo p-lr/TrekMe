@@ -4,4 +4,4 @@ import com.peterlaurence.trekme.features.record.domain.model.RecordingData
 
 sealed interface RecordingsState
 data class RecordingsAvailable(val recordings: List<RecordingData>): RecordingsState
-object Loading: RecordingsState
+data object Loading: RecordingsState

@@ -79,7 +79,7 @@ fun BeaconCallout(
                 fontSize = 10.sp
             )
             Spacer(modifier = Modifier.weight(1f))
-            Divider(thickness = 0.5.dp)
+            HorizontalDivider(thickness = 0.5.dp)
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -95,7 +95,7 @@ fun BeaconCallout(
                     tint = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                Divider(
+                HorizontalDivider(
                     Modifier
                         .height(16.dp)
                         .width(1.dp), thickness = 0.5.dp
@@ -112,7 +112,7 @@ fun BeaconCallout(
                     tint = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                Divider(
+                HorizontalDivider(
                     Modifier
                         .height(16.dp)
                         .width(1.dp), thickness = 0.5.dp

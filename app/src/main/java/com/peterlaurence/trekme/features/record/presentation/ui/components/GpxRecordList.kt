@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ShareCompat
+import androidx.lifecycle.Lifecycle
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.features.common.domain.model.Loading
@@ -39,7 +40,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.MapSelec
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.RecordingRenameDialog
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordViewModel
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordingStatisticsViewModel
-import com.peterlaurence.trekme.util.launchFlowCollectionWithLifecycle
+import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 import kotlinx.parcelize.Parcelize
 import java.util.*
 
@@ -80,7 +81,10 @@ fun GpxRecordListStateful(
 
     val lazyListState = rememberLazyListState()
 
-    launchFlowCollectionWithLifecycle(statViewModel.newRecordingEventFlow) {
+    LaunchedEffectWithLifecycle(
+        statViewModel.newRecordingEventFlow,
+        minActiveState = Lifecycle.State.RESUMED
+    ) {
         lazyListState.animateScrollToItem(0)
     }
 
@@ -501,11 +505,11 @@ private fun ClickableCard(
     textId: Int,
     onClick: () -> Unit
 ) {
-    Card(onClick = onClick) {
+    OutlinedCard(onClick = onClick) {
         Column(
             Modifier
                 .width(120.dp)
-                .padding(8.dp),
+                .padding(vertical = 16.dp, horizontal = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
@@ -519,7 +523,7 @@ private fun ClickableCard(
     }
 }
 
-@Preview
+@Preview(heightDp = 500)
 @Composable
 private fun GpxRecordListPreview() {
     TrekMeTheme {
@@ -545,7 +549,7 @@ private fun GpxRecordListPreview() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, heightDp = 500)
 @Composable
 private fun NoTrailsPreview() {
     TrekMeTheme {

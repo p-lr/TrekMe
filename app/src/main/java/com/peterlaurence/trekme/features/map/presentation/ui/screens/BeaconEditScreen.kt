@@ -9,6 +9,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -74,7 +75,7 @@ fun BeaconEditStateful(
                         title = { Text(stringResource(id = R.string.beacon_edit_screen_title)) },
                         navigationIcon = {
                             IconButton(onClick = onBackAction) {
-                                Icon(Icons.Filled.ArrowBack, contentDescription = "")
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "")
                             }
                         }
                     )
@@ -231,7 +232,7 @@ private fun BeaconEditScreen(
                                 modifier = Modifier.padding(start = 21.dp, bottom = 8.dp)
                             )
 
-                            for (unit in values()) {
+                            for (unit in entries) {
                                 Row(
                                     modifier = Modifier
                                         .clickable {
