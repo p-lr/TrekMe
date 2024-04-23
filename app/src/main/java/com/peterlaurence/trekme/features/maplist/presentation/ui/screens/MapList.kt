@@ -94,14 +94,17 @@ fun MapListStateful(
 private fun MapListUi(state: MapListState, intents: MapListIntents, onMainMenuClick: () -> Unit) {
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(text = stringResource(id = R.string.app_name)) },
-                navigationIcon = {
-                    IconButton(onClick = onMainMenuClick) {
-                        Icon(Icons.Filled.Menu, contentDescription = "")
+            // Prevent the user from accessing the main menu while maps aren't loaded yet.
+            if (!state.isMapListLoading) {
+                TopAppBar(
+                    title = { Text(text = stringResource(id = R.string.app_name)) },
+                    navigationIcon = {
+                        IconButton(onClick = onMainMenuClick) {
+                            Icon(Icons.Filled.Menu, contentDescription = "")
+                        }
                     }
-                }
-            )
+                )
+            }
         }
     ) { paddingValues ->
         Column(
@@ -217,5 +220,13 @@ private fun MapListPreview() {
 
     TrekMeTheme {
         MapListUi(mapListState, intents, onMainMenuClick = {})
+    }
+}
+
+@Preview(heightDp = 450)
+@Composable
+private fun PendingPreview() {
+    TrekMeTheme {
+        PendingScreen()
     }
 }

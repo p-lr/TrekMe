@@ -73,6 +73,8 @@ class MainActivityViewModel @Inject constructor(
      * The startup policy has two cases:
      * * show the last viewed map
      * * show the map list
+     *
+     * By design, the user can't navigate until this initialization step is done.
      */
     fun onActivityStart(shortcut: Shortcut? = null) {
         viewModelScope.launch {
