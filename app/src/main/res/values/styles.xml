@@ -46,19 +46,9 @@
         <item name="sightBackgroundColor">@color/colorAreaMarker</item>
     </style>
 
-    <style name="AreaViewStyle">
-        <item name="backgroundColor">@color/colorBackgroundAreaView</item>
-        <item name="strokeColor">@color/colorStrokeAreaView</item>
-    </style>
 
     <style name="GreenTheme" parent="AppTheme">
         <item name="android:colorAccent">@color/colorGreen</item>
-    </style>
-
-    <style name="SliderTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
-        <item name="colorPrimary">@color/colorAccent</item>
-        <item name="colorPrimaryDark">@color/colorAccentDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
     </style>
 
     <style name="recordingsToolbarTitle">
