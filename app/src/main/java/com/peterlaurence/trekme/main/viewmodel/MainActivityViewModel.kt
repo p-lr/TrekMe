@@ -18,10 +18,12 @@ import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.settings.StartOnPolicy
 import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.events.AppEventBus
+import com.peterlaurence.trekme.events.FatalMessage
 import com.peterlaurence.trekme.events.WarningMessage
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
 import com.peterlaurence.trekme.main.shortcut.Shortcut
 import com.peterlaurence.trekme.util.android.hasLocationPermission
+import com.peterlaurence.trekme.util.map
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
@@ -61,20 +63,27 @@ class MainActivityViewModel @Inject constructor(
     private val _gpsProPurchased = MutableStateFlow(false)
     val gpsProPurchased = _gpsProPurchased.asStateFlow()
 
+    val mapsInitializing = mapRepository.mapListFlow.map {
+        it == MapRepository.Loading
+    }
+
     val downloadEvents = downloadRepository.downloadEvent
 
     private val event = Channel<MainActivityEvent>(1)
     val eventFlow = event.receiveAsFlow()
 
     /**
-     * When the [MainActivity] first starts, we init the [TrekMeContext] and the [UnitFormatter].
+     * When the main activity first starts, we init the [TrekMeContext] and the [UnitFormatter].
      * The application may be started from a shortcut. In this case, the shortcut takes precedence
      * over the startup policy.
      * The startup policy has two cases:
      * * show the last viewed map
      * * show the map list
      *
-     * By design, the user can't navigate until this initialization step is done.
+     * By design, the user can't navigate until this initialization step is done. This is done by:
+     * - disabling gestures on the drawer
+     * - hiding the top app bar of the default destination (map list), because this bar shows a
+     *   button to expand the menu.
      */
     fun onActivityStart(shortcut: Shortcut? = null) {
         viewModelScope.launch {
@@ -88,8 +97,7 @@ class MainActivityViewModel @Inject constructor(
                 }
             }
 
-            trekMeContext.init(app.applicationContext)
-            warnIfBadStorageState()
+            initTrekMeContext()
 
             mapRepository.mapsLoading()
             trekMeContext.rootDirListFlow.value.also { dirList ->
@@ -155,6 +163,23 @@ class MainActivityViewModel @Inject constructor(
         if (!found) {
             /* Fall back to show the map list */
             event.send(MainActivityEvent.ShowMapList)
+        }
+    }
+
+    private suspend fun initTrekMeContext() {
+        val ctx = app.applicationContext
+        val errorTitle = ctx.getString(R.string.error_title)
+
+        val initOk = trekMeContext.init(app.applicationContext)
+        if (initOk) {
+            warnIfBadStorageState()
+        } else {
+            appEventBus.postMessage(
+                FatalMessage(
+                    errorTitle,
+                    ctx.getString(R.string.init_error)
+                )
+            )
         }
     }
 

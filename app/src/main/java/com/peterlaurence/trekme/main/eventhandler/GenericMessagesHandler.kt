@@ -2,6 +2,7 @@ package com.peterlaurence.trekme.main.eventhandler
 
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import com.peterlaurence.trekme.events.FatalMessage
 import com.peterlaurence.trekme.events.GenericMessage
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.events.WarningMessage
@@ -16,7 +17,8 @@ fun HandleGenericMessages(
     genericMessages: Flow<GenericMessage>,
     scope: CoroutineScope,
     snackbarHostState: SnackbarHostState,
-    onShowWarningDialog: (WarningMessage) -> Unit
+    onShowWarningDialog: (WarningMessage) -> Unit,
+    onShowErrorDialog: (FatalMessage) -> Unit
 ) {
     LaunchedEffectWithLifecycle(genericMessages) { message ->
         when (message) {
@@ -28,6 +30,10 @@ fun HandleGenericMessages(
 
             is WarningMessage -> {
                 onShowWarningDialog(message)
+            }
+
+            is FatalMessage -> {
+                onShowErrorDialog(message)
             }
         }
     }

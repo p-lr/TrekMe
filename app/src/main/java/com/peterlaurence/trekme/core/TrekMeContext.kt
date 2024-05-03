@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.IOException
 
 /**
  * General context attributes of the application.
@@ -37,7 +36,7 @@ interface TrekMeContext {
     val rootDirListFlow: StateFlow<List<File>>
     val credentialsDir: File
     suspend fun isAppDirReadOnly(): Boolean
-    suspend fun init(applicationContext: Context)
+    suspend fun init(applicationContext: Context): Boolean
     suspend fun checkAppDir(): Boolean
 }
 
@@ -87,16 +86,13 @@ class TrekMeContextAndroid : TrekMeContext {
      * @param applicationContext The context that *should not* be an Activity context. It should be
      * obtained from [Context.getApplicationContext].
      */
-    override suspend fun init(applicationContext: Context) {
-        withContext(Dispatchers.IO) {
-            try {
+    override suspend fun init(applicationContext: Context): Boolean {
+        return withContext(Dispatchers.IO) {
+            runCatching {
                 resolveDirs(applicationContext)
                 createAppDirs()
-            } catch (e: SecurityException) {
-                Log.e(TAG, "We don't have right access to create application folder")
-            } catch (e: IOException) {
-                Log.e(TAG, "We don't have right access to create application folder")
-            }
+                true
+            }.getOrDefault(false)
         }
     }
 

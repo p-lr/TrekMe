@@ -11,7 +11,6 @@ import com.peterlaurence.trekme.core.map.domain.models.MapDownloadPending
 import com.peterlaurence.trekme.core.map.domain.models.NewDownloadSpec
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.core.settings.Settings
-import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.features.common.domain.repositories.OnBoardingRepository
 import com.peterlaurence.trekme.features.mapcreate.app.service.download.DownloadService
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
@@ -154,7 +153,7 @@ class MapListViewModel @Inject constructor(
 
 data class MapListState(
     val mapItems: List<MapItem>,
-    val isMapListLoading: Boolean,
+    val isMapListInitializing: Boolean,
     val downloadProgress: Int = 0,
     val isDownloadPending: Boolean = false
 )

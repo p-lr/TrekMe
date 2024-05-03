@@ -36,6 +36,7 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.compose.rememberNavController
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.events.AppEventBus
+import com.peterlaurence.trekme.events.FatalMessage
 import com.peterlaurence.trekme.events.WarningMessage
 import com.peterlaurence.trekme.events.gpspro.GpsProEvents
 import com.peterlaurence.trekme.events.maparchive.MapArchiveEvents
@@ -64,6 +65,7 @@ import com.peterlaurence.trekme.main.permission.PermissionRequestHandler
 import com.peterlaurence.trekme.main.ui.component.HandleBackGesture
 import com.peterlaurence.trekme.main.ui.component.MainActivityLifecycleObserver
 import com.peterlaurence.trekme.main.viewmodel.RecordingEventHandlerViewModel
+import com.peterlaurence.trekme.util.android.activity
 import com.peterlaurence.trekme.util.checkInternet
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 import kotlinx.coroutines.launch
@@ -76,6 +78,7 @@ fun MainStateful(
     gpsProEvents: GpsProEvents,
     mapArchiveEvents: MapArchiveEvents
 ) {
+    val mapsInitializing by viewModel.mapsInitializing.collectAsState()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val navController = rememberNavController()
@@ -97,6 +100,15 @@ fun MainStateful(
             title = it.title,
             contentText = it.msg,
             onDismissRequest = { isShowingWarningDialog = null }
+        )
+    }
+
+    var isShowingErrorDialog by remember { mutableStateOf<FatalMessage?>(null) }
+    isShowingErrorDialog?.also {
+        WarningDialog(
+            title = it.title,
+            contentText = it.msg,
+            onDismissRequest = { context.activity.finish() }
         )
     }
 
@@ -128,7 +140,8 @@ fun MainStateful(
         genericMessages = appEventBus.genericMessageEvents,
         scope = scope,
         snackbarHostState = snackbarHostState,
-        onShowWarningDialog = { isShowingWarningDialog = it }
+        onShowWarningDialog = { isShowingWarningDialog = it },
+        onShowErrorDialog = { isShowingErrorDialog = it }
     )
 
     MapArchiveEventHandler(appEventBus, mapArchiveEvents)
@@ -171,6 +184,7 @@ fun MainStateful(
 
     ModalNavigationDrawer(
         drawerState = drawerState,
+        gesturesEnabled = !mapsInitializing,
         drawerContent = {
             ModalDrawerSheet(
                 Modifier

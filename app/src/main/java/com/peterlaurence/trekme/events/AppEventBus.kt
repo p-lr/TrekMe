@@ -5,6 +5,7 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 
 /**
  * Application-wide event-bus.
@@ -12,11 +13,11 @@ import kotlinx.coroutines.flow.asSharedFlow
  * @since 2020/10/31
  */
 class AppEventBus {
-    private val _genericMessageEvents = MutableSharedFlow<GenericMessage>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    val genericMessageEvents = _genericMessageEvents.asSharedFlow()
+    private val _genericMessageEvents = Channel<GenericMessage>(Channel.BUFFERED)
+    val genericMessageEvents = _genericMessageEvents.receiveAsFlow()
 
     fun postMessage(msg: GenericMessage) {
-        _genericMessageEvents.tryEmit(msg)
+        _genericMessageEvents.trySend(msg)
     }
 
     /**********************************************************************************************/

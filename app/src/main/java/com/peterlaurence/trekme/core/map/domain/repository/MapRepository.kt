@@ -89,5 +89,5 @@ class MapRepository {
 
     sealed interface MapListState
     data class MapList(val mapList: List<Map>) : MapListState
-    object Loading : MapListState
+    data object Loading : MapListState
 }

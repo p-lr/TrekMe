@@ -95,7 +95,7 @@ private fun MapListUi(state: MapListState, intents: MapListIntents, onMainMenuCl
     Scaffold(
         topBar = {
             // Prevent the user from accessing the main menu while maps aren't loaded yet.
-            if (!state.isMapListLoading) {
+            if (!state.isMapListInitializing) {
                 TopAppBar(
                     title = { Text(text = stringResource(id = R.string.app_name)) },
                     navigationIcon = {
@@ -120,7 +120,7 @@ private fun MapListUi(state: MapListState, intents: MapListIntents, onMainMenuCl
                 )
             }
 
-            if (state.isMapListLoading && !state.isDownloadPending) {
+            if (state.isMapListInitializing && !state.isDownloadPending) {
                 PendingScreen()
             } else {
                 val listState = rememberLazyListState()
