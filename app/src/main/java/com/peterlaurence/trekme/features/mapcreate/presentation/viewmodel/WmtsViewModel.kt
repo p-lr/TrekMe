@@ -64,7 +64,7 @@ import ovh.plrapps.mapcompose.ui.state.MapState
 import javax.inject.Inject
 
 /**
- * View-model for [WmtsFragment]. It takes care of:
+ * View-model for the map creation screen. It takes care of:
  * * storing the predefined init scale and position for each [WmtsSource]
  * * keeping track of the layer (as to each [WmtsSource] may correspond multiple layers)
  * * exposes [UiState] and [TopBarState] for the view made mostly in Compose
@@ -125,10 +125,7 @@ class WmtsViewModel @Inject constructor(
     private val routeLayer = RouteLayer(viewModelScope, wgs84ToMercatorInteractor)
     private val geoRecordUrls = mutableSetOf<Uri>()
 
-    private val activePrimaryLayerForSource: MutableMap<WmtsSource, Layer> = mutableMapOf(
-        WmtsSource.IGN to defaultIgnLayer,
-        WmtsSource.OPEN_STREET_MAP to defaultOsmLayer
-    )
+    private val activePrimaryLayerForSource = mutableMapOf<WmtsSource, Layer>()
 
     private var shouldCenterOnNextLocation = false
 
@@ -157,7 +154,7 @@ class WmtsViewModel @Inject constructor(
                     areaController.detach(st.mapState)
                     MapReady(st.mapState)
                 }
-                Loading, is WmtsError -> null
+                is Loading, is WmtsError -> null
                 is MapReady -> {
                     areaController.attachAndInit(st.mapState)
                     AreaSelection(st.mapState, areaController)
@@ -336,7 +333,12 @@ class WmtsViewModel @Inject constructor(
     fun getAvailablePrimaryLayersForSource(wmtsSource: WmtsSource): List<Layer>? {
         return when (wmtsSource) {
             WmtsSource.IGN -> ignLayersPrimary
-            WmtsSource.OPEN_STREET_MAP -> osmLayersPrimary
+            WmtsSource.OPEN_STREET_MAP -> osmLayersPrimary.let {
+                /* If extended offer, osm hd first */
+                if (hasExtendedOffer.value) {
+                    it.sortedByDescending { l -> l == OsmAndHd }
+                } else it
+            }
             else -> null
         }
     }
@@ -710,7 +712,7 @@ data class Wmts(val wmtsState: WmtsState) : UiState
 data class GeoplaceList(val geoPlaceList: List<GeoPlace>) : UiState
 
 sealed interface WmtsState
-object Loading : WmtsState
+data object Loading : WmtsState
 data class MapReady(val mapState: MapState) : WmtsState
 data class AreaSelection(val mapState: MapState, val areaUiController: AreaUiController) : WmtsState
 enum class WmtsError : WmtsState {
@@ -720,12 +722,12 @@ enum class WmtsError : WmtsState {
 private fun WmtsState.getMapState(): MapState? {
     return when (this) {
         is AreaSelection -> mapState
-        Loading, is WmtsError -> null
+        is Loading, is WmtsError -> null
         is MapReady -> mapState
     }
 }
 
 sealed interface TopBarState
-object Empty : TopBarState
+data object Empty : TopBarState
 data class Collapsed(val hasPrimaryLayers: Boolean, val hasOverlayLayers: Boolean, val hasTrackImport: Boolean) : TopBarState
 data class SearchMode(val textValueState: MutableState<TextFieldValue>) : TopBarState
