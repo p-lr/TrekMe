@@ -10,11 +10,11 @@ import com.peterlaurence.trekme.core.settings.StartOnPolicy
 import com.peterlaurence.trekme.core.units.MeasurementSystem
 import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
+import com.peterlaurence.trekme.util.map as mapStateFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -28,8 +28,9 @@ class SettingsViewModel @Inject constructor(
     hasOneExtendedOfferInteractor: HasOneExtendedOfferInteractor,
     mapFeatureEvents: MapFeatureEvents
 ) : ViewModel() {
-    private val _appDirList = MutableStateFlow<List<String>>(emptyList())
-    val appDirListFlow: StateFlow<List<String>> = _appDirList.asStateFlow()
+    val appDirListFlow: StateFlow<List<String>> = trekMeContext.rootDirListFlow.mapStateFlow { folders ->
+        folders.map { it.absolutePath }
+    }
     val appDirFlow: Flow<String?> = settings.getAppDir().map { it?.absolutePath }
     val startOnPolicyFlow: Flow<StartOnPolicy> = settings.getStartOnPolicy()
     val measurementSystemFlow: Flow<MeasurementSystem> = settings.getMeasurementSystem()
@@ -45,9 +46,6 @@ class SettingsViewModel @Inject constructor(
     val currentZoom = MutableStateFlow<Int?>(null)
 
     init {
-        /* App dir list */
-        _appDirList.value = trekMeContext.rootDirListFlow.value.map { it.absolutePath }
-
         viewModelScope.launch {
             mapFeatureEvents.mapScaleFlow.collect { scale ->
                 val maxScale = maxScaleFlow.first()

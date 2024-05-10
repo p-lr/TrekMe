@@ -25,6 +25,7 @@ import com.peterlaurence.trekme.core.units.MeasurementSystem
 import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.features.common.presentation.ui.settings.HeaderSetting
 import com.peterlaurence.trekme.features.common.presentation.ui.settings.ListSetting
+import com.peterlaurence.trekme.features.common.presentation.ui.settings.LoadingSetting
 import com.peterlaurence.trekme.features.common.presentation.ui.settings.SettingDivider
 import com.peterlaurence.trekme.features.common.presentation.ui.settings.SliderSetting
 import com.peterlaurence.trekme.features.common.presentation.ui.settings.ToggleSetting
@@ -199,12 +200,19 @@ private fun RootFolderSetting(
     onAppDirChange: (String) -> Unit
 ) {
     HeaderSetting(name = stringResource(id = R.string.root_folder_category))
-    ListSetting(
-        name = stringResource(id = R.string.preference_root_location_title),
-        values = appDirList.map { Pair(it, it) },
-        selectedValue = appDir ?: appDirList.first(),
-        onValueSelected = { _, v -> onAppDirChange(v) }
-    )
+
+    val selected = appDir ?: appDirList.firstOrNull()
+    val settingName = stringResource(id = R.string.preference_root_location_title)
+    if (selected != null) {
+        ListSetting(
+            name = settingName,
+            values = appDirList.map { Pair(it, it) },
+            selectedValue = selected,
+            onValueSelected = { _, v -> onAppDirChange(v) }
+        )
+    } else {
+        LoadingSetting()
+    }
 }
 
 @Composable
