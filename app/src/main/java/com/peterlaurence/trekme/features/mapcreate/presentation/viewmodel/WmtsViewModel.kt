@@ -48,6 +48,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.swiss
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.usgsConfig
 import com.peterlaurence.trekme.features.mapcreate.domain.interactors.ParseGeoRecordInteractor
 import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToMercatorInteractor
+import com.peterlaurence.trekme.core.wmts.domain.tools.getNumberOfTiles
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.osmHdConfig
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.toDomain
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.toModel
@@ -482,26 +483,23 @@ class WmtsViewModel @Inject constructor(
             ).toModel()
         }
 
+        val tilesNumberLimit = if (hasExtendedOffer.value) null else tileNumberLimit
         val mapSourceBundle = if (levelConf != null) {
-            if (startMaxLevel != null) {
-                DownloadFormData(
-                    wmtsSource,
-                    p1,
-                    p2,
-                    levelConf.levelMin,
-                    levelConf.levelMax,
-                    startMaxLevel
-                )
-            } else {
-                DownloadFormData(wmtsSource, p1, p2, levelConf.levelMin, levelConf.levelMax)
-            }
+            DownloadFormData(
+                wmtsSource = wmtsSource,
+                p1 = p1,
+                p2 = p2,
+                levelMin = levelConf.levelMin,
+                levelMax = levelConf.levelMax,
+                startMaxLevel = startMaxLevel ?: 16,
+                tilesNumberLimit = tilesNumberLimit
+            )
         } else {
-            DownloadFormData(wmtsSource, p1, p2)
+            DownloadFormData(wmtsSource, p1, p2, tilesNumberLimit = tilesNumberLimit)
         }
 
-        return mapSourceBundle.also {
-            downloadFormData = it
-        }
+        downloadFormData = mapSourceBundle
+        return mapSourceBundle
     }
 
     /**
@@ -512,6 +510,18 @@ class WmtsViewModel @Inject constructor(
     fun onDownloadFormConfirmed(minLevel: Int, maxLevel: Int) {
         val downloadForm = downloadFormData ?: return
         val (wmtsSource, p1, p2) = downloadForm
+
+        /* If there's a limit on the number of tiles, */
+        if (downloadForm.tilesNumberLimit != null) {
+            /* ..double-check the number of tiles */
+            val tilesNumber = computeTilesNumber(minLevel, maxLevel, p1.toDomain(), p2.toDomain())
+            if (tilesNumber > tileNumberLimit) {
+                viewModelScope.launch {
+                    _eventsChannel.send(WmtsEvent.SHOW_MAP_SIZE_LIMIT_RATIONALE)
+                }
+            }
+            return
+        }
 
         val tileSize = getTileSize(wmtsSource)
         viewModelScope.launch {
@@ -529,6 +539,15 @@ class WmtsViewModel @Inject constructor(
             val intent = Intent(app, DownloadService::class.java)
             app.startService(intent)
         }
+    }
+
+    fun computeTilesNumber(minLevel: Int, maxLevel: Int, p1: Point, p2: Point): Long {
+        return getNumberOfTiles(
+            levelMin = minLevel,
+            levelMax = maxLevel,
+            point1 = p1,
+            point2 = p2
+        )
     }
 
     /**
@@ -704,7 +723,11 @@ fun List<BoundingBox>.contains(latitude: Double, longitude: Double): Boolean {
 }
 
 enum class WmtsEvent {
-    CURRENT_LOCATION_OUT_OF_BOUNDS, PLACE_OUT_OF_BOUNDS, AWAITING_LOCATION, SHOW_TREKME_EXTENDED_ADVERT
+    CURRENT_LOCATION_OUT_OF_BOUNDS,
+    PLACE_OUT_OF_BOUNDS,
+    AWAITING_LOCATION,
+    SHOW_TREKME_EXTENDED_ADVERT,
+    SHOW_MAP_SIZE_LIMIT_RATIONALE
 }
 
 sealed interface UiState

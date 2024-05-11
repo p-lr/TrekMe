@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.features.mapcreate.presentation.ui.offergateway
+package com.peterlaurence.trekme.features.mapcreate.presentation.ui.gateway
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -46,7 +46,7 @@ import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.Extend
 import kotlinx.coroutines.cancel
 
 @Composable
-fun ExtendedOfferGatewayStateful(
+fun IgnGatewayStateful(
     viewModel: ExtendedOfferGatewayViewModel,
     onNavigateToWmtsScreen: () -> Unit,
     onNavigateToShop: () -> Unit,
@@ -66,6 +66,7 @@ fun ExtendedOfferGatewayStateful(
     }
 
     LaunchedEffect(Unit) {
+        /* If extended offer with IGN is already purchased, navigate to next step */
         viewModel.extendedOfferWithIgnPurchaseStateFlow.collect {
             if (it == PurchaseState.PURCHASED) {
                 onNavigateToWmtsScreen()
@@ -74,7 +75,7 @@ fun ExtendedOfferGatewayStateful(
         }
     }
 
-    ExtendedOfferGateway(uiState, onNavigateToShop, onBack)
+    IgnGateway(uiState, onNavigateToShop, onBack)
 }
 
 private sealed interface UiState
@@ -83,7 +84,7 @@ data class NotPurchased(val hasTrekmeExtended: Boolean) : UiState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ExtendedOfferGateway(
+private fun IgnGateway(
     uiState: UiState,
     onNavigateToShop: () -> Unit,
     onBack: () -> Unit

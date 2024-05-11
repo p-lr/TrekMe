@@ -10,7 +10,7 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.MapSourceListStateful
-import com.peterlaurence.trekme.features.mapcreate.presentation.ui.offergateway.ExtendedOfferGatewayStateful
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.gateway.IgnGatewayStateful
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.overlay.LayerOverlayStateful
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.screen.WmtsStateful
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.MapSourceListViewModel
@@ -25,9 +25,9 @@ fun NavGraphBuilder.mapCreateGraph(
         mapSourceListDestination(
             onMenuClick,
             onNavigateToWmtsScreen = { navController.navigate(wmtsDestination) },
-            onNavigateToOfferGateway = { navController.navigate(gatewayDestination) }
+            onNavigateToOfferGateway = { navController.navigate(ignGatewayDestination) }
         )
-        gatewayDestination(
+        ignGatewayDestination(
             onNavigateToWmtsScreen = {
                 navController.navigate(wmtsDestination) {
                     popUpTo(mapSourceListDestination)
@@ -69,13 +69,13 @@ fun NavGraphBuilder.mapSourceListDestination(
     }
 }
 
-private fun NavGraphBuilder.gatewayDestination(
+private fun NavGraphBuilder.ignGatewayDestination(
     onNavigateToWmtsScreen: () -> Unit,
     onNavigateToShop: () -> Unit,
     onBack: () -> Unit
 ) {
-    composable(route = gatewayDestination) {
-        ExtendedOfferGatewayStateful(
+    composable(route = ignGatewayDestination) {
+        IgnGatewayStateful(
             viewModel = hiltViewModel(),
             onNavigateToWmtsScreen = onNavigateToWmtsScreen,
             onNavigateToShop = onNavigateToShop,
@@ -135,5 +135,5 @@ private const val layerOverlayArg = "layerOverlayArg"
 const val mapCreateGraph = "mapcreateGraph"
 const val mapSourceListDestination = "mapSourceListDestination"
 const val wmtsDestination = "wmtsDestination"
-private const val gatewayDestination = "extendedOfferGatewayDestination"
+private const val ignGatewayDestination = "ignGatewayDestination"
 private const val overlayLayersDestination = "overlayLayersDestination"

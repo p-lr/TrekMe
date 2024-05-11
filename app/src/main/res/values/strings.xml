@@ -275,7 +275,7 @@
     <string name="beacon_background_loc_perm_failure">Beacons feature isn\'t started because the location permission is not set as "Allow all the time". Please grant the permission and restart the app.</string>
     <string name="select_track_to_follow">Press on the track to follow</string>
     <string name="track_follow_already_running">The track-follow service is already running. Do you want to stop it?</string>
-    <string name="track_follow_help">When following a track, your distance to the track is checked and if you move more than (say) 50m away from the track, you get notified with a sound and vibration.\n\nThe
+    <string name="track_follow_help">When following a track, your distance to the track is checked and if you move away from the track, you get notified with a sound and vibration.\n\nThe
         alert threshold can be changed in the settings.
     </string>
     <string name="itinerary_error">Sorry, no itinerary app found</string>
@@ -444,6 +444,12 @@
     <string name="validate_area">Validate</string>
     <string name="search_hint">Search…</string>
     <string name="trekme_extended_advert">Enjoy far better image quality and more readable texts.</string>
+    <string name="tile_count_text">Download of %1$s tiles</string>
+    <string name="map_size_limit_title">Almost there…</string>
+    <string name="map_size_limit_rationale">Unlock downloads of big maps (e.g with more than %1$d tiles) with TrekMe Extended.
+        \n\nAlso enjoy other advantages such as OpenStreetMap HD, with much better image quality and text readability:
+    </string>
+    <string name="map_size_limit_rationale_2">As a premium user, you also benefit from personal support.</string>
 
     <!-- LayerOverlayFragment -->
     <string name="overlay_screen_title">Overlays</string>
@@ -608,21 +614,21 @@
     <string name="trekme_extended_offer" translatable="false">TrekMe Extended</string>
     <string name="trekme_extended_trial">7d of free trial</string>
     <string name="trekme_extended_maps_title">Maps</string>
-    <string name="trekme_extended_osm_hd_desc">Download OSM HD maps, with a twice better resolution than standard and better readable texts</string>
+    <string name="trekme_extended_osm_hd_desc">Download OSM HD maps, with a twice better resolution than standard and better readable texts.</string>
     <string name="trekme_extended_activate_ign">With IGN option</string>
     <string name="trekme_extended_ign_maps_title">IGN maps</string>
     <string name="trekme_extended_ign_maps_offline">Topographic IGN maps</string>
     <string name="trekme_extended_ign_maps_satellite">Satellite view</string>
     <string name="trekme_extended_ign_overlay_desc">Overlay slopes for mountain activities, cadastre, roads, paths and trails</string>
     <string name="trekme_extended_advanced_ft">Advanced features</string>
-    <string name="track_follow_shop">Be alerted when you move more than (say) 50m from a track. The alert threshold can be changed</string>
+    <string name="track_follow_shop">Be alerted when you move away from a track. The alert threshold can be customized.</string>
     <string name="trekme_extended_update_maps">Fix your maps by downloading missing tiles, or re-download them completely to make them up-to-date. This is only possible with TrekMe v4 and onwards.</string>
-    <string name="add_beacons">Add beacons to alert you when you get close to specific locations</string>
+    <string name="add_beacons">Add beacons to alert you when you get close to specific locations.</string>
     <string name="no_ads">No ads</string>
-    <string name="create_map_from_track">Create a map from a gpx track</string>
-    <string name="center_on_track">Quick center on a track from tracks management screen</string>
-    <string name="define_elevation_fix">Set an elevation fix in the GPS statistics panel</string>
-    <string name="osm_level_17">Unlock the 17th level for OSM maps</string>
+    <string name="create_map_from_track">Create a map from a gpx track.</string>
+    <string name="center_on_track">Quick center on a track from tracks management screen.</string>
+    <string name="define_elevation_fix">Set an elevation fix in the GPS statistics panel.</string>
+    <string name="osm_level_17">Unlock the 17th level for OSM maps.</string>
     <string name="new_features">Exclusive features will be added</string>
     <string name="module_owned">You own this module</string>
     <string name="module_purchase_pending">Purchase pending…</string>

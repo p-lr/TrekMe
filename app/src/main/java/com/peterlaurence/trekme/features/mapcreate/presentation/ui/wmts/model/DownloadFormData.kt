@@ -11,5 +11,6 @@ data class DownloadFormData(
     val p2: Point,
     val levelMin: Int = 1,
     val levelMax: Int = 18,
-    val startMaxLevel: Int = 16
+    val startMaxLevel: Int = 16,
+    val tilesNumberLimit: Long? = null
 ) : Parcelable

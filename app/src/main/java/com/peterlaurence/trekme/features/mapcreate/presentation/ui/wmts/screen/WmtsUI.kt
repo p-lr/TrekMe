@@ -54,11 +54,13 @@ import com.peterlaurence.trekme.features.common.presentation.ui.widgets.OnBoardi
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.PopupOrigin
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.AdvertTrekmeExtendedDialog
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.LevelsDialogStateful
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.MapSizeLimitRationaleDialog
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.PrimaryLayerDialogStateful
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components.GeoPlaceListUI
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components.WmtsAppBar
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.DownloadFormData
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.PrimaryLayerSelectionData
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.toDomain
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.AreaSelection
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.Collapsed
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.GeoplaceList
@@ -142,7 +144,9 @@ fun WmtsStateful(
     val outSideOfCoveredArea = stringResource(id = R.string.place_outside_of_covered_area)
     val awaitingLocation = stringResource(id = R.string.awaiting_location)
     var showTrekmeExtendedAdvert by remember { mutableStateOf(false) }
+    var showMapSizeLimitRationale by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+
     LaunchedEffectWithLifecycle(viewModel.events) { event ->
         val message = when (event) {
             WmtsEvent.CURRENT_LOCATION_OUT_OF_BOUNDS -> outOfBounds
@@ -150,6 +154,10 @@ fun WmtsStateful(
             WmtsEvent.AWAITING_LOCATION -> awaitingLocation
             WmtsEvent.SHOW_TREKME_EXTENDED_ADVERT -> {
                 showTrekmeExtendedAdvert = true
+                return@LaunchedEffectWithLifecycle
+            }
+            WmtsEvent.SHOW_MAP_SIZE_LIMIT_RATIONALE -> {
+                showMapSizeLimitRationale = true
                 return@LaunchedEffectWithLifecycle
             }
         }
@@ -165,6 +173,13 @@ fun WmtsStateful(
     if (showTrekmeExtendedAdvert) {
         AdvertTrekmeExtendedDialog(
             onDismissRequest = { showTrekmeExtendedAdvert = false },
+            onSeeOffer = onGoToShop
+        )
+    }
+
+    if (showMapSizeLimitRationale) {
+        MapSizeLimitRationaleDialog(
+            onDismissRequest = { showMapSizeLimitRationale = false },
             onSeeOffer = onGoToShop
         )
     }
@@ -198,11 +213,18 @@ fun WmtsStateful(
         LevelsDialogStateful(
             minLevel = data.levelMin,
             maxLevel = data.levelMax,
-            p1 = data.p1,
-            p2 = data.p2,
+            tilesNumberProvider = { lMin, lMax ->
+                viewModel.computeTilesNumber(lMin, lMax, data.p1.toDomain(), data.p2.toDomain())
+            },
+            tilesNumberLimit = data.tilesNumberLimit,
             onDownloadClicked = { minLevel, maxLevel ->
                 viewModel.onDownloadFormConfirmed(minLevel, maxLevel)
-                levelsDialogData = null
+                /* Only dismiss the dialog on download click if there's no download limit, because
+                 * otherwise we show another dialog and the user should be able to go back to this
+                 * dialog. */
+                if (data.tilesNumberLimit == null) {
+                    levelsDialogData = null
+                }
             },
             onDismiss = { levelsDialogData = null }
         )

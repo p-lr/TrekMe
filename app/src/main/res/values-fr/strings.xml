@@ -337,6 +337,12 @@
     <string name="layer_osm_outdoors">Outdoors</string>
     <string name="place_search_hint">Chercher un lieu</string>
     <string name="trekme_extended_advert">Profitez d\'une bien meilleure qualité d\'image et de textes plus lisibles.</string>
+    <string name="tile_count_text">Téléchargement de %1$s tuiles</string>
+    <string name="map_size_limit_title">Vous y êtes presque…</string>
+    <string name="map_size_limit_rationale">Débloquez le téléchargement de cartes de grande taille (cad ayant plus de %1$d tuiles) avec TrekMe Extended.
+        \n\nBénéficiez également d\'autres avantages tel que OpenStreetMap HD, avec une bien meilleure qualité d\'image et des textes plus lisibles :
+    </string>
+    <string name="map_size_limit_rationale_2">La liste complète des avantages est sur la page de l\'offre.</string>
     <string name="place_outside_of_covered_area">Ce lieu est hors de la zone couverte par cette carte.</string>
     <string name="mapcreate_overlay_layers">Superposer des couches</string>
     <string name="mapcreate_from_track">Utiliser une trace</string>
