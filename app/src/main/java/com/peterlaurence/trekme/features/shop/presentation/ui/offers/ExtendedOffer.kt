@@ -68,6 +68,7 @@ fun TrekMeExtendedContent(withIgn: Boolean, purchased: Boolean, onIgnSelectionCh
     CheckSeparator()
     TitleRow(R.string.trekme_extended_maps_title)
     LineItem(R.string.trekme_extended_osm_hd_desc)
+    LineItem(id = R.string.no_download_limit)
     LineItem(id = R.string.osm_level_17)
 
     if (!purchased) {
@@ -142,14 +143,13 @@ private fun TitleRow(@StringRes id: Int) {
 @Composable
 private fun LineItem(@StringRes id: Int) {
     Row(
-        Modifier
-            .padding(bottom = 4.dp)
-            .padding(horizontal = 32.dp)) {
-        Text("\u2022")
+        Modifier.padding(horizontal = 32.dp),
+    ) {
+        Text("\u2022", modifier = Modifier.alignByBaseline())
         Text(
             stringResource(id),
             fontSize = 14.sp,
-            modifier = Modifier.padding(start = 8.dp),
+            modifier = Modifier.padding(start = 8.dp).alignByBaseline(),
             lineHeight = 18.sp,
             style = TextStyle(hyphens = Hyphens.Auto)
         )

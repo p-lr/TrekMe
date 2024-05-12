@@ -72,6 +72,7 @@ private fun MissingOffer(modifier: Modifier = Modifier, message: String, onShopC
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(modifier = Modifier.weight(0.5f))
         Image(
             painter = painterResource(id = R.drawable.ic_emoji_disappointed_face_1f61e),
             contentDescription = null,
@@ -89,6 +90,7 @@ private fun MissingOffer(modifier: Modifier = Modifier, message: String, onShopC
             text = stringResource(id = R.string.navigate_to_shop),
             color = if (isSystemInDarkTheme()) dark_accentGreen else light_accentGreen
         )
+        Spacer(modifier = Modifier.weight(1f))
     }
 }
 

@@ -533,20 +533,22 @@ class WmtsViewModel @Inject constructor(
      * relevant repository before the service is started.
      * The service then process the request when it starts.
      */
-    fun onDownloadFormConfirmed(minLevel: Int, maxLevel: Int) {
-        val downloadForm = downloadFormData ?: return
+    fun onDownloadFormConfirmed(minLevel: Int, maxLevel: Int): Boolean {
+        val downloadForm = downloadFormData ?: return true // download not launched, but ui should proceed as if it was.
         val (wmtsSource, p1, p2) = downloadForm
 
-        /* If there's a limit on the number of tiles, */
-        if (downloadForm.tilesNumberLimit != null) {
+        /* If there's a limit on the number of tiles.
+         * If purchase was made meanwhile, don't do this. */
+        if (downloadForm.tilesNumberLimit != null && !hasExtendedOffer.value) {
             /* ..double-check the number of tiles */
             val tilesNumber = computeTilesNumber(minLevel, maxLevel, p1.toDomain(), p2.toDomain())
             if (tilesNumber > tileNumberLimit) {
                 viewModelScope.launch {
                     _eventsChannel.send(WmtsEvent.SHOW_MAP_SIZE_LIMIT_RATIONALE)
                 }
+                /* Notify caller that download was blocked */
+                return false
             }
-            return
         }
 
         val tileSize = getTileSize(wmtsSource)
@@ -565,6 +567,7 @@ class WmtsViewModel @Inject constructor(
             val intent = Intent(app, DownloadService::class.java)
             app.startService(intent)
         }
+        return true
     }
 
     fun computeTilesNumber(minLevel: Int, maxLevel: Int, p1: Point, p2: Point): Long {

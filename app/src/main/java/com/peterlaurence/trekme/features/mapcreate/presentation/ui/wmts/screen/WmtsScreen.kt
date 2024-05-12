@@ -218,11 +218,7 @@ fun WmtsStateful(
             },
             tilesNumberLimit = data.tilesNumberLimit,
             onDownloadClicked = { minLevel, maxLevel ->
-                viewModel.onDownloadFormConfirmed(minLevel, maxLevel)
-                /* Only dismiss the dialog on download click if there's no download limit, because
-                 * otherwise we show another dialog and the user should be able to go back to this
-                 * dialog. */
-                if (data.tilesNumberLimit == null) {
+                if (viewModel.onDownloadFormConfirmed(minLevel, maxLevel)) {
                     levelsDialogData = null
                 }
             },
