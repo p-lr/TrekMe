@@ -128,7 +128,9 @@ class WmtsViewModel @Inject constructor(
 
     private val activePrimaryLayerForSource = mutableMapOf<WmtsSource, Layer>()
 
-    private var shouldCenterOnNextLocation = false
+    /* While awaiting the first location, and if the user hasn't panned or zoomed the map, let this
+     * flag to true. */
+    private var shouldCenterOnNextLocation = true
 
     init {
         viewModelScope.launch {
@@ -258,6 +260,10 @@ class WmtsViewModel @Inject constructor(
             }
         }
 
+        mapState.onFirstMove(this) {
+            shouldCenterOnNextLocation = false
+        }
+
         /* The top bar configuration depends on the wmtsSource */
         updateTopBarConfig(wmtsSource)
 
@@ -283,6 +289,26 @@ class WmtsViewModel @Inject constructor(
                 _tileStreamProviderChannel.send(tileStreamProvider)
             } else {
                 _wmtsState.value = WmtsError.VPS_FAIL
+            }
+        }
+    }
+
+    /**
+     * Executes [block] action once, when the map was detected idle for the first time and after
+     * the first move.
+     */
+    private fun MapState.onFirstMove(scope: CoroutineScope, block: () -> Unit) {
+        scope.launch {
+            var idleOnce = false
+            idleStateFlow().collect { idle ->
+                if (idle) {
+                    idleOnce = true
+                } else {
+                    if (idleOnce) {
+                        block()
+                        cancel()
+                    }
+                }
             }
         }
     }
