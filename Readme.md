@@ -78,12 +78,12 @@ In this mode, you use a specific map provider. Google map is a well known exampl
 But their maps aren't ideal for hiking. When possible, it is better to use maps with more terrain
 details. 
 
-For example, France's IGN is ideal when you are in France and its territories (Guadeloupe, Martinique,
-Réunion, Tahiti, etc.). There is also USGS for the USA. However, not all countries have similar service, 
-so sometimes you will have to fallback to OpenStreetMap.
+For example, USGS is USA's official map provider. France's IGN is ideal when you are in France and 
+its territories. However, not all countries have similar service.
+OpenStreetMap has a worldwide coverage. In particular, OpenStreetMap HD has a much better quality. 
 
-Some providers require you to subscribe to download their maps. This step is free for individuals, 
-unless you have specific needs like heavy loads for your organization.
+Some providers require a subscription to download their maps. The others are free for maps of 
+reasonable size.
 
 From the "Create map" option menu, you get to choose between available providers:
 

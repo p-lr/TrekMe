@@ -79,10 +79,12 @@ Ici, on utilise une source de carte spécifique. Google map est un exemple de so
 
 Les cartes IGN sont parfaites pour cela. Elles couvrent la France entière ainsi que les DOM-TOM 
 (Guadeloupe, Martinique, Réunion, Tahiti, etc.). Pour les Etats-Unis, il y a l'USGS.
-Il est important de noter que tous les pays n'ont pas un service national équivalent de l'IGN. Donc 
-parfois, il faut se contenter des cartes OpenStreetMap.
+Il est important de noter que tous les pays n'ont pas un service national équivalent de l'IGN. 
+Pour le reste, les cartes OpenStreetMap ont une couverture mondiale; et la version OpenStreetMap HD 
+offre un bien meilleur niveau de qualité.
 
-Certains fournisseurs de carte nécessitent une souscription, pour l'instant seulement l'IGN.
+Certains fournisseurs de carte nécessitent une souscription, pour l'instant seulement l'IGN et 
+OpenStreetMap HD. Pour les autres, le téléchargement est gratuit en deçà d'un certain seuil.
 
 Depuis le menu principal, choisissez "Créer une carte". Un menu vous donne alors le choix entre les 
 sources suivantes : 
