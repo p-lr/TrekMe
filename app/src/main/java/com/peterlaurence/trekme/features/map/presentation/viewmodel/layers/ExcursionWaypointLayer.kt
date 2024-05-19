@@ -54,7 +54,7 @@ class ExcursionWaypointLayer(
      * Correspondence between excursion ids and their [ExcursionWaypointsState].
      */
     private var excursionWptListState = mutableMapOf<ExcursionRef, ExcursionWaypointsState>()
-    private var lastLocation: Location? = null
+    private var lastLocation by mutableStateOf<Location?>(null)
 
     init {
         scope.launch {

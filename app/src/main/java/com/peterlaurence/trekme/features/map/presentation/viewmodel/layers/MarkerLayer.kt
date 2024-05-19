@@ -43,7 +43,7 @@ class MarkerLayer(
      * or not.
      */
     private var markerListState = mutableMapOf<String, MarkerState>()
-    private var lastLocation: Location? = null
+    private var lastLocation by mutableStateOf<Location?>(null)
 
     init {
         scope.launch {
