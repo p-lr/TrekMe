@@ -17,6 +17,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -106,7 +107,7 @@ fun MarkerCallout(
                     tint = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                HorizontalDivider(
+                VerticalDivider(
                     Modifier
                         .height(16.dp)
                         .width(1.dp), thickness = 0.5.dp
@@ -123,10 +124,10 @@ fun MarkerCallout(
                     tint = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                HorizontalDivider(
-                    Modifier
-                        .height(16.dp)
-                        .width(1.dp), thickness = 0.5.dp
+                VerticalDivider(
+                        Modifier
+                            .height(16.dp)
+                            .width(1.dp), thickness = 0.5.dp
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Icon(

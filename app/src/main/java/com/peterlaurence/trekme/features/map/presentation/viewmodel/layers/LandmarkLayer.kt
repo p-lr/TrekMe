@@ -111,7 +111,7 @@ class LandmarkLayer(
         scope.launch {
             var shouldAnimate by mutableStateOf(true)
 
-            val calloutHeight = dpToPx(landmarkCalloutHeightDp).toInt()
+            val calloutHeight = dpToPx(landmarkCalloutHeightDp).toInt() // the actual height might be greater than this fixed height, but the resulting positioning should be good enough
             val markerHeight =
                 dpToPx(48f).toInt() // The view height is 48dp, but only the top half is used to draw the marker.
             val calloutWidth = dpToPx(landmarkCalloutWidthDp).toInt()
@@ -135,7 +135,6 @@ class LandmarkLayer(
                 autoDismiss = true, clickable = false, zIndex = 3f
             ) {
                 LandmarkCallout(
-                    DpSize(landmarkCalloutWidthDp.dp, landmarkCalloutHeightDp.dp),
                     lat = landmarkState.landmark.lat,
                     lon = landmarkState.landmark.lon,
                     shouldAnimate,
@@ -274,5 +273,5 @@ private class LandmarkState(val idOnMap: String, initLandmark: Landmark) {
 }
 
 
-private const val landmarkCalloutWidthDp = 140
+const val landmarkCalloutWidthDp = 140
 private const val landmarkCalloutHeightDp = 110
