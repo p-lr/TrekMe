@@ -5,14 +5,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
-import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.geotools.distanceApprox
+import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.features.map.domain.interactors.MarkerInteractor
 import com.peterlaurence.trekme.features.map.presentation.ui.components.Marker
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerCallout
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerGrab
+import com.peterlaurence.trekme.features.map.presentation.ui.components.makeMarkerSubtitle
 import com.peterlaurence.trekme.features.map.presentation.ui.components.markerCalloutHeightDp
 import com.peterlaurence.trekme.features.map.presentation.ui.components.markerCalloutWidthDp
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
@@ -26,8 +27,6 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.state.MapState
-import java.math.RoundingMode
-import java.text.DecimalFormat
 import java.util.*
 
 class MarkerLayer(
@@ -44,6 +43,7 @@ class MarkerLayer(
      * or not.
      */
     private var markerListState = mutableMapOf<String, MarkerState>()
+    private var lastLocation: Location? = null
 
     init {
         scope.launch {
@@ -62,6 +62,10 @@ class MarkerLayer(
         val markerState = addMarkerOnMap(marker, mapState, x, y)
         morphToDynamic(markerState, x, y, mapState)
         markerListState[marker.id] = markerState
+    }
+
+    fun onLocation(location: Location) {
+        lastLocation = location
     }
 
     private suspend fun onMapUpdate(map: Map, mapState: MapState) {
@@ -132,15 +136,16 @@ class MarkerLayer(
                 autoDismiss = true, clickable = false, zIndex = 3f
             ) {
                 val marker = markerListState[markerId]?.marker ?: return@addCallout
-                val subTitle = marker.let {
-                    "${stringResource(id = R.string.latitude_short)} : ${df.format(it.lat)}  " +
-                            "${stringResource(id = R.string.longitude_short)} : ${df.format(it.lon)}"
-                }
+                val distance = lastLocation?.let { distanceApprox(it.latitude, it.longitude, marker.lat, marker.lon) }
                 val title = marker.name
 
                 MarkerCallout(
                     title = title,
-                    subTitle = subTitle,
+                    subTitle = makeMarkerSubtitle(
+                        latitude = marker.lat,
+                        longitude = marker.lon,
+                        distanceInMeters = distance
+                    ),
                     shouldAnimate,
                     onAnimationDone = { shouldAnimate = false },
                     onEditAction = {
@@ -247,10 +252,6 @@ class MarkerLayer(
 private const val markerPrefix = "marker"
 private const val calloutPrefix = "callout"
 private const val markerGrabPrefix = "grabMarker"
-
-private val df = DecimalFormat("#.####").apply {
-    roundingMode = RoundingMode.CEILING
-}
 
 private class MarkerState(val idOnMap: String, initMarker: Marker) {
     var marker by mutableStateOf<Marker>(initMarker)

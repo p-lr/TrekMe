@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun ElevationFixDialog(
     elevationFix: Int,

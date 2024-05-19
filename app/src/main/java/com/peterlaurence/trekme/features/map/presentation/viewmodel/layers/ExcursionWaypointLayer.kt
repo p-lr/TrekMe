@@ -1,18 +1,14 @@
 package com.peterlaurence.trekme.features.map.presentation.viewmodel.layers
 
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.dp
-import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionWaypoint
+import com.peterlaurence.trekme.core.geotools.distanceApprox
+import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.features.map.domain.interactors.ExcursionInteractor
@@ -20,6 +16,7 @@ import com.peterlaurence.trekme.features.map.domain.models.ExcursionWaypointWith
 import com.peterlaurence.trekme.features.map.presentation.ui.components.Marker
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerCallout
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerGrab
+import com.peterlaurence.trekme.features.map.presentation.ui.components.makeMarkerSubtitle
 import com.peterlaurence.trekme.features.map.presentation.ui.components.markerCalloutHeightDp
 import com.peterlaurence.trekme.features.map.presentation.ui.components.markerCalloutWidthDp
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
@@ -44,8 +41,6 @@ import ovh.plrapps.mapcompose.api.removeCallout
 import ovh.plrapps.mapcompose.api.removeMarker
 import ovh.plrapps.mapcompose.api.updateMarkerClickable
 import ovh.plrapps.mapcompose.ui.state.MapState
-import java.math.RoundingMode
-import java.text.DecimalFormat
 import java.util.UUID
 
 class ExcursionWaypointLayer(
@@ -59,6 +54,7 @@ class ExcursionWaypointLayer(
      * Correspondence between excursion ids and their [ExcursionWaypointsState].
      */
     private var excursionWptListState = mutableMapOf<ExcursionRef, ExcursionWaypointsState>()
+    private var lastLocation: Location? = null
 
     init {
         scope.launch {
@@ -67,6 +63,10 @@ class ExcursionWaypointLayer(
                 onMapUpdate(map, mapState)
             }
         }
+    }
+
+    fun onLocation(location: Location) {
+        lastLocation = location
     }
 
     private suspend fun onMapUpdate(map: Map, mapState: MapState) {
@@ -200,15 +200,16 @@ class ExcursionWaypointLayer(
                 autoDismiss = true, clickable = false, zIndex = 3f
             ) {
                 val waypoint = wptState.waypoint
-                val subTitle = waypoint.let {
-                    "${stringResource(id = R.string.latitude_short)} : ${df.format(it.latitude)}  " +
-                            "${stringResource(id = R.string.longitude_short)} : ${df.format(it.longitude)}"
-                }
+                val distance = lastLocation?.let { distanceApprox(it.latitude, it.longitude, waypoint.latitude, waypoint.longitude) }
                 val title = waypoint.name
 
                 MarkerCallout(
                     title = title,
-                    subTitle = subTitle,
+                    subTitle = makeMarkerSubtitle(
+                        latitude = waypoint.latitude,
+                        longitude = waypoint.longitude,
+                        distanceInMeters = distance
+                    ),
                     shouldAnimate,
                     onAnimationDone = { shouldAnimate = false },
                     onEditAction = {
@@ -332,10 +333,6 @@ class ExcursionWaypointLayer(
 private const val excursionWaypointPrefix = "excursionWpt"
 private const val calloutPrefix = "callout"
 private const val excursionWptGrabPrefix = "grabExcursionWpt"
-
-private val df = DecimalFormat("#.####").apply {
-    roundingMode = RoundingMode.CEILING
-}
 
 private class ExcursionWaypointsState(val excursionRef: ExcursionRef) {
     val waypointsState = mutableMapOf<String, WaypointState>()

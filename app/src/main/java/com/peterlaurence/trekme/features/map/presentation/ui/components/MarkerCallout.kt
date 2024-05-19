@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.Hyphens
 import androidx.compose.ui.text.style.TextOverflow
@@ -39,7 +40,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.widgets.Callout
 @Composable
 fun MarkerCallout(
     title: String,
-    subTitle: String,
+    subTitle: AnnotatedString,
     shouldAnimate: Boolean,
     onAnimationDone: () -> Unit,
     onEditAction: () -> Unit,
@@ -86,8 +87,8 @@ fun MarkerCallout(
 
             Text(
                 text = subTitle,
-                modifier = Modifier.padding(vertical = 4.dp),
-                fontSize = 10.sp
+                modifier = Modifier.padding(vertical = 8.dp),
+                fontSize = 10.sp,
             )
             HorizontalDivider(thickness = 0.5.dp)
             Row(
@@ -153,7 +154,11 @@ private fun MarkerCalloutPreview() {
     TrekMeTheme {
         MarkerCallout(
             title = "Les petites chutes souterraines du Plateau des Cascades",
-            subTitle = "Lat : -21.2059 Lon : 55.6268",
+            subTitle = makeMarkerSubtitle(
+                latitude = -21.2059,
+                longitude = 55.6268,
+                distanceInMeters = 14237.0
+            ),
             shouldAnimate = false,
             onAnimationDone = {},
             onEditAction = {},

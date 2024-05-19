@@ -185,6 +185,7 @@
     <string name="latitude_short">Lat</string>
     <string name="longitude_short">Lng</string>
     <string name="elevation_short">Ele</string>.
+    <string name="distance_short">Dst</string>
     <string name="update_short">Δt\ </string>
     <string name="projected_x_short">E</string>
     <string name="projected_y_short">N</string>

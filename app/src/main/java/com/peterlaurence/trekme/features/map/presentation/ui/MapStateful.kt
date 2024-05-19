@@ -111,6 +111,8 @@ fun MapStateful(
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 locationFlow.collect {
                     viewModel.locationOrientationLayer.onLocation(it)
+                    viewModel.excursionWaypointLayer.onLocation(it)
+                    viewModel.markerLayer.onLocation(it)
                 }
             }
         }
