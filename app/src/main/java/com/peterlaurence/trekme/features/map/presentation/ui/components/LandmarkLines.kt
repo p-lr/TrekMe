@@ -187,19 +187,19 @@ private fun coerceInBoundingBox(
 
     if (intersections.size == 0) return null
     if (intersections.size == 2) {
-        if (bb.contains(aX, aY)) {
-            return makeOffset(
+        return if (bb.contains(aX, aY)) {
+            makeOffset(
                 (aX + intersections[0]) / 2,
                 (aY + intersections[1]) / 2,
                 mapState
             )
         } else if (bb.contains(bX, bY)) {
-            return makeOffset(
+            makeOffset(
                 (bX + intersections[0]) / 2,
                 (bY + intersections[1]) / 2,
                 mapState
             )
-        } else return null
+        } else null
     }
     if (intersections.size == 4) {
         return makeOffset(

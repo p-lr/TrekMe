@@ -100,8 +100,8 @@ private val strokeColor = Color(0xFF4A148C)
 fun BeaconPreview() {
     TrekMeTheme {
         var isStatic by remember { mutableStateOf(true) }
-        var scale by remember { mutableStateOf(1f) }
-        var radius by remember { mutableStateOf(100f) }
+        var scale by remember { mutableFloatStateOf(1f) }
+        var radius by remember { mutableFloatStateOf(100f) }
         Column(Modifier.padding(horizontal = 16.dp)) {
             Button(onClick = { isStatic = !isStatic }) {
                 Text("Toggle")
