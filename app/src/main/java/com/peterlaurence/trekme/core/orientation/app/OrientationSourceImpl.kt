@@ -7,9 +7,8 @@ import androidx.lifecycle.lifecycleScope
 import com.peterlaurence.trekme.core.orientation.model.OrientationSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 class OrientationSourceImpl(
@@ -28,7 +27,6 @@ class OrientationSourceImpl(
 
     private fun makeFlow(): SharedFlow<Double> {
         return callbackFlow {
-            var started = true
 
             val listener = object : SensorEventListener {
                 override fun onSensorChanged(event: SensorEvent) {
@@ -40,6 +38,13 @@ class OrientationSourceImpl(
                             0,
                             rotationVectorReading.size
                         )
+
+                        updateOrientation()
+
+                        /* Get the azimuth value (orientation[0]) in radians */
+                        val azimuth = orientationAngles[0].toDouble()
+
+                        this@callbackFlow.trySendBlocking(azimuth)
                     }
                 }
 
@@ -55,19 +60,7 @@ class OrientationSourceImpl(
                 )
             }
 
-            launch {
-                while (started) {
-                    delay(1)
-                    updateOrientation()
-
-                    /* Get the azimuth value (orientation[0]) in radians */
-                    val azimuth = orientationAngles[0].toDouble()
-
-                    send(azimuth)
-                }
-            }
             awaitClose {
-                started = false
                 sensorManager.unregisterListener(listener)
             }
         }.distinctUntilChanged { old, new ->
