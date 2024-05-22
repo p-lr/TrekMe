@@ -60,11 +60,7 @@ fun PermissionRequestHandler(
                 )
 
                 if (result == SnackbarResult.ActionPerformed) {
-                    val intent = Intent()
-                    intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                    val uri = Uri.fromParts("package", activity.packageName, null)
-                    intent.data = uri
-                    activity.startActivity(intent)
+                    openAppSettings(activity)
                 }
             }
         }
@@ -90,10 +86,29 @@ fun PermissionRequestHandler(
         )
     }
 
+    var isShowingLocationRationale by remember { mutableStateOf(false) }
+
+    if (isShowingLocationRationale) {
+        WarningDialog(
+            title = stringResource(id = R.string.warning_title),
+            contentText = stringResource(id = R.string.no_location_perm),
+            onConfirmPressed = {
+                isShowingLocationRationale = false
+                openAppSettings(activity)
+            },
+            confirmButtonText = stringResource(id = R.string.ok_dialog),
+            onDismissRequest = {
+                isShowingLocationRationale = false
+            }
+        )
+    }
+
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
-        // TODO: warn the user that a critical perm isn't granted
+        if (!granted) {
+            isShowingLocationRationale = true
+        }
     }
 
     /**
@@ -201,4 +216,12 @@ fun PermissionRequestHandler(
     LaunchedEffectWithLifecycle(appEventBus.requestNearbyWifiDevicesPermFlow) {
         requestNearbyWifiPermission(activity)
     }
+}
+
+private fun openAppSettings(activity: Activity) {
+    val intent = Intent()
+    intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+    val uri = Uri.fromParts("package", activity.packageName, null)
+    intent.data = uri
+    activity.startActivity(intent)
 }

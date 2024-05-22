@@ -77,9 +77,12 @@ class Billing(
 
     private val productDetailsForId = mutableMapOf<UUID, ProductDetails>()
 
-    private val billingClient =
-        BillingClient.newBuilder(application).setListener(purchaseUpdatedListener)
-            .enablePendingPurchases().build()
+    private val billingClient = BillingClient
+        .newBuilder(application)
+        .setListener(purchaseUpdatedListener)
+        .enablePendingPurchases(
+            PendingPurchasesParams.newBuilder().enableOneTimeProducts().build()
+        ).build()
 
     /**
      * Attempts to connect the billing service. This function immediately returns.
