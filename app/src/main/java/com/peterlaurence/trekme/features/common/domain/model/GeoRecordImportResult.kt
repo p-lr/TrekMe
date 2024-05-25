@@ -4,11 +4,12 @@ import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.map.domain.models.Route
 
-sealed class GeoRecordImportResult {
+sealed interface GeoRecordImportResult {
     data class GeoRecordImportOk(
         val map: Map, val routes: List<Route>, val wayPoints: List<Marker>,
         val newRouteCount: Int, val newMarkersCount: Int
-    ) : GeoRecordImportResult()
+    ) : GeoRecordImportResult
 
-    data object GeoRecordImportError : GeoRecordImportResult()
+    data object GeoRecordOutOfBounds : GeoRecordImportResult
+    data object GeoRecordImportError : GeoRecordImportResult
 }

@@ -29,6 +29,7 @@ fun RecordStateful(
 
     val deletionFailedMsg = stringResource(id = R.string.files_could_not_be_deleted)
     val geoRecordAddMsg = stringResource(id = R.string.track_is_being_added)
+    val geoRecordOutOfBoundsMsg = stringResource(id = R.string.import_result_out_of_bounds)
     val geoRecordAdErrorMsg = stringResource(id = R.string.track_add_error)
     val geoRecordRecover = stringResource(id = R.string.track_is_being_restored)
 
@@ -42,9 +43,13 @@ fun RecordStateful(
                 /* Tell the user that the track will be shortly available in the map */
                 snackbarHostState.showSnackbar(geoRecordAddMsg)
 
-            is GeoRecordImportResult.GeoRecordImportError ->
+            GeoRecordImportResult.GeoRecordImportError ->
                 /* Tell the user that an error occurred */
                 snackbarHostState.showSnackbar(geoRecordAdErrorMsg)
+
+            GeoRecordImportResult.GeoRecordOutOfBounds ->
+                /* Tell the user that the tracks is out of bounds */
+                snackbarHostState.showSnackbar(geoRecordOutOfBoundsMsg)
         }
     }
 

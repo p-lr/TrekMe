@@ -15,7 +15,7 @@ import androidx.compose.material.DismissDirection.EndToStart
 import androidx.compose.material.DismissDirection.StartToEnd
 import androidx.compose.material.DismissValue.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.rememberDismissState
@@ -90,12 +90,10 @@ fun TracksManageStateful(
 
     val snackbarHostState = remember { SnackbarHostState() }
     val errorMsg = stringResource(id = R.string.gpx_import_error_msg)
+    val outOfBoundsMsg = stringResource(id = R.string.import_result_out_of_bounds)
     val resultRecap = stringResource(id = R.string.import_result_recap)
     launchFlowCollectionWithLifecycle(viewModel.routeImportEventFlow) { result ->
         when (result) {
-            GeoRecordImportResult.GeoRecordImportError -> {
-                snackbarHostState.showSnackbar(errorMsg)
-            }
             is GeoRecordImportResult.GeoRecordImportOk -> {
                 snackbarHostState.showSnackbar(
                     resultRecap.format(
@@ -103,6 +101,12 @@ fun TracksManageStateful(
                         result.newMarkersCount
                     )
                 )
+            }
+            GeoRecordImportResult.GeoRecordImportError -> {
+                snackbarHostState.showSnackbar(errorMsg)
+            }
+            GeoRecordImportResult.GeoRecordOutOfBounds -> {
+                snackbarHostState.showSnackbar(outOfBoundsMsg)
             }
         }
     }
@@ -272,7 +276,7 @@ private fun TrackTopAppbar(
         title = { Text(text = stringResource(id = R.string.tracks_manage_frgmt_title)) },
         navigationIcon = {
             IconButton(onClick = onBackClick) {
-                Icon(Icons.Filled.ArrowBack, contentDescription = "")
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "")
             }
         },
         actions = {

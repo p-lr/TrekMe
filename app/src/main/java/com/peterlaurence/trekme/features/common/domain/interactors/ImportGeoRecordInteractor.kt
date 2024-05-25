@@ -10,6 +10,8 @@ import com.peterlaurence.trekme.core.map.domain.repository.RouteRepository
 import com.peterlaurence.trekme.core.map.domain.dao.MarkersDao
 import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordParser
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
+import com.peterlaurence.trekme.core.georecord.domain.model.getBoundingBox
+import com.peterlaurence.trekme.core.map.domain.models.intersects
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import kotlinx.coroutines.flow.update
 import java.io.File
@@ -35,10 +37,16 @@ class ImportGeoRecordInteractor @Inject constructor(
         uri: Uri, contentResolver: ContentResolver, map: Map
     ): GeoRecordImportResult {
         return runCatching {
-            geoRecordParser.parse(uri, contentResolver)?.let { (uuid, routeGroups, markers) ->
-                val routes = routeGroups.flatMap { it.routes }
-                setRoutesAndMarkersToMap(map, routes, markers)
-            } ?: GeoRecordImportResult.GeoRecordImportError
+            val geoRecord = geoRecordParser.parse(uri, contentResolver)
+            if (geoRecord != null) {
+                val bb = geoRecord.getBoundingBox() ?: return@runCatching GeoRecordImportResult.GeoRecordImportError
+                if (map.intersects(bb)) {
+                    val routes = geoRecord.routeGroups.flatMap { it.routes }
+                    setRoutesAndMarkersToMap(map, routes, geoRecord.markers)
+                } else {
+                    GeoRecordImportResult.GeoRecordOutOfBounds
+                }
+            } else GeoRecordImportResult.GeoRecordImportError
         }.onFailure {
             Log.e(TAG, "File with uri $uri doesn't exists")
         }.getOrNull() ?: GeoRecordImportResult.GeoRecordImportError

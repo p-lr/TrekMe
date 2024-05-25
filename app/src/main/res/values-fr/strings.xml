@@ -167,6 +167,7 @@
     <string name="mapcreate_define_layer">Couches</string>
     <string name="ign_select_layer_title">Choix de la couche</string>
     <string name="import_result_recap">Résultat d\'import\n  Routes: %s \n  Marqueurs: %s</string>
+    <string name="import_result_out_of_bounds">Cette trace est hors des limites de la carte.</string>
     <string name="gpx_import_error_msg">Oups.. il y a eu problème pendant l\'import</string>
     <string name="about">À propos</string>
     <string name="help_url">https://github.com/p-lr/TrekMe/blob/master/Readme.fr.md#sommaire</string>
