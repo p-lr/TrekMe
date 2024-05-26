@@ -36,8 +36,10 @@ fun MapTopAppBar(
     isShowingGpsData: Boolean,
     hasBeacons: Boolean,
     hasTrackFollow: Boolean,
+    hasMarkerManage: Boolean,
     onMenuClick: () -> Unit,
     onManageTracks: () -> Unit,
+    onManageMarkers: () -> Unit,
     onFollowTrack: () -> Unit,
     onToggleShowOrientation: () -> Unit,
     onAddMarker: () -> Unit,
@@ -54,6 +56,7 @@ fun MapTopAppBar(
     var expandedAddOnMap by remember { mutableStateOf(false) }
     var isShowingTrackFollowHelp by rememberSaveable { mutableStateOf(false) }
     var isShowingTrackFollowRedirect by rememberSaveable { mutableStateOf(false) }
+    var isShowingManageMarkersRedirect by rememberSaveable { mutableStateOf(false) }
 
     TopAppBar(
         title = {
@@ -149,6 +152,33 @@ fun MapTopAppBar(
                         text = {
                             Text(stringResource(id = R.string.manage_tracks_menu))
                             Spacer(Modifier.weight(1f))
+                        }
+                    )
+                    DropdownMenuItem(
+                        onClick = {
+                            expandedMenu = false
+                            if (hasMarkerManage) {
+                                onManageMarkers()
+                            } else {
+                                isShowingManageMarkersRedirect = true
+                            }
+                        },
+                        text = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(stringResource(id = R.string.manage_markers_menu))
+                                Spacer(Modifier.weight(1f))
+                                if (!hasMarkerManage) {
+                                    IconButton(
+                                        onClick = { isShowingManageMarkersRedirect = true }
+                                    ) {
+                                        Image(
+                                            painter = painterResource(id = R.drawable.ic_lock),
+                                            contentDescription = null,
+                                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.tertiary)
+                                        )
+                                    }
+                                }
+                            }
                         }
                     )
                     DropdownMenuItem(
@@ -311,6 +341,37 @@ fun MapTopAppBar(
             },
         )
     }
+
+    if (isShowingManageMarkersRedirect) {
+        AlertDialog(
+            onDismissRequest = { isShowingTrackFollowRedirect = false },
+            title = {
+                Text(stringResource(id = R.string.map_settings_trekme_extended_title))
+            },
+            text = {
+                Text(text = stringResource(id = R.string.track_follow_help))
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        isShowingTrackFollowRedirect = false
+                    }
+                ) {
+                    Text(text = stringResource(id = R.string.cancel_dialog_string))
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        isShowingTrackFollowRedirect = false
+                        onNavigateToShop()
+                    }
+                ) {
+                    Text(text = stringResource(id = R.string.ok_dialog))
+                }
+            },
+        )
+    }
 }
 
 @Composable
@@ -323,6 +384,39 @@ private fun IconAndText(icon: @Composable (Modifier) -> Unit, textId: Int, onCli
     ) {
         icon(Modifier.align(Alignment.TopCenter))
         Text(stringResource(id = textId), Modifier.align(Alignment.BottomCenter))
+    }
+}
+
+@Preview
+@Composable
+private fun MapTopAppBarPreview() {
+    TrekMeTheme {
+        MapTopAppBar(
+            title = "A map",
+            isShowingOrientation = false,
+            isShowingDistance = false,
+            isShowingDistanceOnTrack = false,
+            isShowingSpeed = false,
+            isLockedOnPosition = false,
+            isShowingGpsData = false,
+            hasBeacons = true,
+            hasTrackFollow = false,
+            hasMarkerManage = true,
+            onMenuClick = { },
+            onManageTracks = { },
+            onManageMarkers = { },
+            onFollowTrack = { },
+            onToggleShowOrientation = { },
+            onAddMarker = { },
+            onAddLandmark = { },
+            onAddBeacon = { },
+            onShowDistance = { },
+            onToggleDistanceOnTrack = { },
+            onToggleSpeed = { },
+            onToggleLockPosition = { },
+            onToggleShowGpsData = { },
+            onNavigateToShop = { }
+        )
     }
 }
 
