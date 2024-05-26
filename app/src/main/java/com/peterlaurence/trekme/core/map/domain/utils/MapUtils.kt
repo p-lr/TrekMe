@@ -10,6 +10,8 @@ import java.io.File
  */
 @Suppress("BlockingMethodInNonBlockingContext")
 suspend fun createNomediaFile(directory: File) = withContext(Dispatchers.IO) {
-    val noMedia = File(directory, ".nomedia")
-    noMedia.createNewFile()
+    runCatching {
+        val noMedia = File(directory, ".nomedia")
+        noMedia.createNewFile()
+    }.getOrElse { false }
 }
