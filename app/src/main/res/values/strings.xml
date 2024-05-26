@@ -213,7 +213,7 @@
     <string name="follow_track_menu">Follow a track</string>
     <string name="manage_markers_menu">Manage markers</string>
 
-    <!-- Tracks manage fragment -->
+    <!-- Tracks manage -->
     <string name="tracks_manage_frgmt_title">Tracks manage</string>
     <string name="import_tracks_menu_title">Tracks</string>
     <string name="import_tracks_action_settings">Settings</string>
@@ -237,6 +237,9 @@
     <string name="color_variant_dark">Dark</string>
     <string name="add_track_btn_desc" translatable="false">Add track button</string>
     <string name="track_remove_question">Confirm track removal</string>
+
+    <!-- Markers manage -->
+    <string name="markers_manage_title">Markers manage</string>
 
     <!-- Map feature -->
     <string name="mapview_show_speed">Show speed</string>
@@ -264,6 +267,7 @@
     <string name="mile">ml</string>
     <string name="no_track_message">You haven\'t created nor imported any track yet.
         You can import a gpx track downloaded from a website (or a recording of your own) using the import button below.</string>
+    <string name="no_markers_message">There\'s no markers on this map.</string>
     <string name="missing_extended_with_ign">To open this map, your TrekMe Extended subscription with IGN option must be active.</string>
     <string name="missing_extended">To open this map, your TrekMe Extended subscription must be active.</string>
     <string name="empty_map">This map appears to be empty</string>

@@ -161,6 +161,7 @@
     <string name="track_is_being_added">La trace est en cours d\'import dans la carte</string>
     <string name="track_is_being_restored">Une trace est en cours de récupération</string>
     <string name="no_track_message">Vous n\'avez pas encore importé de trace. Vous pouvez créer votre propre trace en enregistrant votre parcours. Ou bien vous pouvez télécharger des traces au format gpx sur un site internet de randonnée, et l\'importer avec le bouton ci-dessus.</string>
+    <string name="no_markers_message">Il n\'y a pas de marqueurs sur cette carte.</string>
     <string name="track_stats_menu_title">Statistiques enregistrement en cours</string>
     <string name="no_internet">Vous devez être connecté à internet pour créer une carte</string>
     <string name="distance">Distance</string>
@@ -319,6 +320,10 @@
     <string name="color_variant_light">Claire</string>
     <string name="color_variant_dark">Foncée</string>
     <string name="track_remove_question">Confirmez la suppression de la trace</string>
+
+    <!-- Markers manage -->
+    <string name="markers_manage_title">Gestion des marqueurs</string>
+
     <string name="preference_measurement_system_title">Unités de mesure</string>
     <string name="metric_system">Système métrique</string>
     <string name="imperial_system">Système impérial (miles)</string>
