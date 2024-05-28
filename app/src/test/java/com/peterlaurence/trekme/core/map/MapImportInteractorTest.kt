@@ -60,13 +60,13 @@ class MapImportInteractorTest {
                          * extracted from an archive, we don't know whether the map was zipped within a
                          * subdirectory or not. A way to know that is to analyse the extracted file structure.
                          */
-                        assertEquals("mapname", map.name)
+                        assertEquals("mapname", map.name.value)
 
-                        assertEquals(4, map.configSnapshot.levels.size.toLong())
-                        assertEquals(256, map.configSnapshot.levels[0].tileSize.width.toLong())
+                        assertEquals(4, map.levelList.size.toLong())
+                        assertEquals(256, map.levelList[0].tileSize.width.toLong())
                         assertEquals(".jpg", map.imageExtension)
                         assertEquals(true, File(expectedParentFolder, ".nomedia").exists())
-                        assertNull(map.thumbnailImage)
+                        assertNull(map.thumbnail.value)
                     } catch (e: Exception) {
                         fail()
                     }
@@ -84,8 +84,8 @@ class MapImportInteractorTest {
                     try {
                         val res = mapImportInteractor.importFromFile(libVipsMapDir)
                         val map = assertNotNull(res.map)
-                        assertEquals("La Réunion - Est", map.name)
-                        assertEquals(3, map.configSnapshot.levels.size.toLong())
+                        assertEquals("La Réunion - Est", map.name.value)
+                        assertEquals(3, map.levelList.size.toLong())
                         val expectedParentFolder = File(libVipsMapDir, "reunion-est")
                         assertEquals(true, File(expectedParentFolder, ".nomedia").exists())
                     } catch (e: Exception) {

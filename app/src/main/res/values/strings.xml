@@ -240,6 +240,7 @@
 
     <!-- Markers manage -->
     <string name="markers_manage_title">Markers manage</string>
+    <string name="markers_manage_no_name">without name</string>
 
     <!-- Map feature -->
     <string name="mapview_show_speed">Show speed</string>
