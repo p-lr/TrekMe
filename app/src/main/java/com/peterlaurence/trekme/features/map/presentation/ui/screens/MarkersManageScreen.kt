@@ -2,12 +2,15 @@ package com.peterlaurence.trekme.features.map.presentation.ui.screens
 
 import android.content.res.Configuration
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -15,6 +18,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
@@ -24,21 +28,28 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -46,6 +57,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.models.Marker
@@ -110,25 +122,7 @@ private fun MarkersManageScreen(
             Column(
                 Modifier.padding(paddingValues)
             ) {
-                OutlinedTextField(
-                    value = searchText,
-                    onValueChange = {
-                        searchText = it
-                        onNewSearch(it)
-                    },
-                    leadingIcon = {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_baseline_search_24),
-                            contentDescription = stringResource(id = R.string.search_hint)
-                        )
-                    },
-                    placeholder = {
-                        Text(text = stringResource(id = R.string.search_hint))
-                    },
-                    shape = RoundedCornerShape(50),
-                    modifier = Modifier.padding(horizontal = 8.dp)
-//                    modifier = Modifier.border(1.dp, Color.DarkGray, shape = RoundedCornerShape(50))
-                )
+                SearchBar(onNewSearch = onNewSearch)
 
                 LazyColumn(
                     contentPadding = PaddingValues(8.dp),
@@ -166,6 +160,89 @@ private fun MarkersTopAppBar(onBackClick: () -> Unit) {
         },
         actions = { }
     )
+}
+
+@Composable
+private fun SearchBar(
+    modifier: Modifier = Modifier,
+    onNewSearch: (String) -> Unit,
+) {
+    var searchText by rememberSaveable {
+        mutableStateOf("")
+    }
+    Surface(
+        Modifier
+            .padding(start = 8.dp, end = 8.dp)
+            .fillMaxWidth()
+            .padding(top = 12.dp)
+            .height(40.dp)
+            .border(
+                1.dp,
+                MaterialTheme.colorScheme.outlineVariant,
+                RoundedCornerShape(50)
+            ),
+        shape = RoundedCornerShape(50),
+    ) {
+        val focusRequester = remember { FocusRequester() }
+        BasicTextField(
+            modifier = Modifier.focusRequester(focusRequester),
+            value = searchText,
+            onValueChange = {
+                searchText = it
+                onNewSearch(it)
+            },
+            singleLine = true,
+            textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp),
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary)
+        ) { innerTextField ->
+            Row(
+                modifier,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Leading icon
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_baseline_search_24),
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    contentDescription = stringResource(id = R.string.search_hint)
+                )
+
+                Box(
+                    Modifier.weight(1f).padding(start = 8.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    if (searchText.isEmpty()) {
+                        Text(
+                            stringResource(id = R.string.excursion_search_button),
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.67f),
+                            fontSize = 16.sp
+                        )
+                    }
+                    innerTextField()
+                }
+
+                // Trailing icon
+                if (searchText.isNotEmpty()) {
+                    IconButton(
+                        onClick = {
+                            searchText = ""
+                            onNewSearch("")
+                        }
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.close_circle_outline),
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
+                            contentDescription = null
+                        )
+                    }
+                }
+            }
+        }
+
+        DisposableEffect(Unit) {
+            focusRequester.requestFocus()
+            onDispose { }
+        }
+    }
 }
 
 @Composable
