@@ -1,7 +1,9 @@
 package com.peterlaurence.trekme.features.map.presentation.ui.screens
 
+import android.content.res.Configuration
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -9,13 +11,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material3.Card
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -25,7 +29,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -41,6 +44,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.peterlaurence.trekme.R
@@ -82,6 +86,7 @@ fun MarkersManageStateful(
         markers = filteredMarkers,
         hasMarkers = markers.isNotEmpty(),
         onNewSearch = { search = it },
+        onGoToMarker = {},
         onBackClick = onBackClick
     )
 }
@@ -92,6 +97,7 @@ private fun MarkersManageScreen(
     markers: List<Marker>,
     hasMarkers: Boolean,
     onNewSearch: (String) -> Unit,
+    onGoToMarker: (Marker) -> Unit,
     onBackClick: () -> Unit
 ) {
     Scaffold(
@@ -131,7 +137,8 @@ private fun MarkersManageScreen(
                     items(markers, key = { it.id }) {
                         MarkerCard(
                             modifier = Modifier.animateItemPlacement(),
-                            marker = it
+                            marker = it,
+                            onGoToMarker = onGoToMarker
                         )
                     }
                 }
@@ -164,8 +171,11 @@ private fun MarkersTopAppBar(onBackClick: () -> Unit) {
 @Composable
 private fun MarkerCard(
     modifier: Modifier = Modifier,
-    marker: Marker
+    marker: Marker,
+    onGoToMarker: (Marker) -> Unit
 ) {
+    var expandedMenu by remember { mutableStateOf(false) }
+
     ElevatedCard(modifier = modifier) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -198,18 +208,72 @@ private fun MarkerCard(
             }
             Spacer(modifier = Modifier.weight(1f))
 
-            VerticalDivider(Modifier.height(24.dp))
-            Icon(
-                Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                modifier = Modifier.padding(horizontal = 8.dp),
-                contentDescription = stringResource(id = R.string.open_dialog)
-            )
+            IconButton(
+                onClick = { expandedMenu = true },
+            ) {
+                Icon(
+                    Icons.Default.MoreVert,
+                    contentDescription = null,
+                )
+            }
+            Box(
+                Modifier
+                    .height(24.dp)
+                    .wrapContentSize(Alignment.BottomEnd, true)
+            ) {
+                DropdownMenu(
+                    expanded = expandedMenu,
+                    onDismissRequest = { expandedMenu = false },
+                    offset = DpOffset(0.dp, 0.dp)
+                ) {
+                    DropdownMenuItem(
+                        onClick = {
+                            expandedMenu = false
+                            onGoToMarker(marker)
+                        },
+                        text = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(stringResource(id = R.string.markers_manage_goto))
+                                Spacer(Modifier.weight(1f))
+                                IconButton(onClick = { onGoToMarker(marker) }) {
+                                    Icon(
+                                        painterResource(id = R.drawable.ic_gps_fixed_24dp),
+                                        contentDescription = stringResource(id = R.string.open_dialog)
+                                    )
+                                }
+                            }
+                        }
+                    )
+
+                    DropdownMenuItem(
+                        onClick = {
+                            expandedMenu = false
+                            // TODO
+                        },
+                        text = {
+                            Text(stringResource(id = R.string.markers_manage_edit))
+                            Spacer(Modifier.weight(1f))
+                        }
+                    )
+
+                    DropdownMenuItem(
+                        onClick = {
+                            expandedMenu = false
+                            // TODO
+                        },
+                        text = {
+                            Text(stringResource(id = R.string.delete_dialog))
+                            Spacer(Modifier.weight(1f))
+                        }
+                    )
+                }
+            }
         }
     }
 }
 
-
 @Preview
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun MarkersManagePreview() {
     TrekMeTheme {
@@ -224,6 +288,7 @@ private fun MarkersManagePreview() {
             markers = markers,
             hasMarkers = true,
             onNewSearch = {},
+            onGoToMarker = {},
             onBackClick = {}
         )
     }
