@@ -326,6 +326,8 @@
     <string name="markers_manage_no_name">sans nom</string>
     <string name="markers_manage_edit">Modifier</string>
     <string name="markers_manage_goto">Voir</string>
+    <string name="markers_manage_select_all">Tout sélectionner</string>
+    <string name="markers_manage_deselect_all">Tout déselectionner</string>
 
     <string name="preference_measurement_system_title">Unités de mesure</string>
     <string name="metric_system">Système métrique</string>

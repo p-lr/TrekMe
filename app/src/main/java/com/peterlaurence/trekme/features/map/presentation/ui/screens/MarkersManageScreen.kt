@@ -35,7 +35,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,8 +44,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
@@ -60,6 +57,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionWaypoint
+import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.map.presentation.ui.components.Marker
@@ -77,16 +76,21 @@ fun MarkersManageStateful(
     onBackClick: () -> Unit
 ) {
     val markers by viewModel.getMarkersFlow().collectAsState()
+    val excursionWaypoints by viewModel.excursionWaypointFlow.collectAsState()
+    // if changing excursion waypoint color causes recomposition of the whole screen and maybe a flicker,
+    // then try observing each excursion using the state below.
+//    val waypoints by viewModel.getExcursionWaypointsFlow2().collectAsState()
     var search by remember { mutableStateOf("") }
 
-    var searchJob: Job? = null
+    var searchJob1: Job? = null
 
     val filteredMarkers by produceState(
         initialValue = markers,
-        key1 = search
+        key1 = search,
+        key2 = markers
     ) {
-        searchJob?.cancel()
-        searchJob = launch(Dispatchers.Default) {
+        searchJob1?.cancel()
+        searchJob1 = launch(Dispatchers.Default) {
             val lowerCase = search.lowercase().trim()
             value = markers.filter {
                 it.name.lowercase().contains(lowerCase)
@@ -94,8 +98,30 @@ fun MarkersManageStateful(
         }
     }
 
+    var searchJob2: Job? = null
+    val filteredWaypoints by produceState(
+        initialValue = excursionWaypoints,
+        key1 = search,
+        key2 = excursionWaypoints
+    ) {
+        searchJob2?.cancel()
+        searchJob2 = launch(Dispatchers.Default) {
+            val lowerCase = search.lowercase().trim()
+            value = if (search.isNotEmpty()) {
+                buildMap {
+                    excursionWaypoints.mapKeys {
+                        it.value.filter { wpt ->
+                            wpt.name.lowercase().contains(lowerCase)
+                        }
+                    }
+                }
+            } else excursionWaypoints
+        }
+    }
+
     MarkersManageScreen(
         markers = filteredMarkers,
+        excursionWaypoints = filteredWaypoints,
         hasMarkers = markers.isNotEmpty(),
         onNewSearch = { search = it },
         onGoToMarker = {},
@@ -107,18 +133,23 @@ fun MarkersManageStateful(
 @Composable
 private fun MarkersManageScreen(
     markers: List<Marker>,
+    excursionWaypoints: Map<ExcursionRef, List<ExcursionWaypoint>>,
     hasMarkers: Boolean,
     onNewSearch: (String) -> Unit,
     onGoToMarker: (Marker) -> Unit,
     onBackClick: () -> Unit
 ) {
+
     Scaffold(
         topBar = {
-            MarkersTopAppBar(onBackClick)
+            MarkersTopAppBar(
+                hasAtLeastOneNotSelected = true, // TODO
+                onToggleSelectAll = {}, // TODO
+                onBackClick
+            )
         }
     ) { paddingValues ->
         if (hasMarkers) {
-            var searchText by remember { mutableStateOf("") }
             Column(
                 Modifier.padding(paddingValues)
             ) {
@@ -135,6 +166,21 @@ private fun MarkersManageScreen(
                             onGoToMarker = onGoToMarker
                         )
                     }
+                    for (excursion in excursionWaypoints.keys) {
+                        val name = excursion.name.value
+                        val wpts = excursionWaypoints[excursion]
+                        if (wpts.isNullOrEmpty()) continue
+                        item(key = excursion.id) {
+                            Text(text = name)
+                        }
+                        items(wpts, key = { it.id }) {
+//                            MarkerCard(
+//                                modifier = Modifier.animateItemPlacement(),
+//                                marker = it,
+//                                onGoToMarker = onGoToMarker
+//                            )
+                        }
+                    }
                 }
             }
         } else {
@@ -150,7 +196,11 @@ private fun MarkersManageScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MarkersTopAppBar(onBackClick: () -> Unit) {
+private fun MarkersTopAppBar(
+    hasAtLeastOneNotSelected: Boolean,
+    onToggleSelectAll: () -> Unit,
+    onBackClick: () -> Unit
+) {
     TopAppBar(
         title = { Text(text = stringResource(id = R.string.markers_manage_title)) },
         navigationIcon = {
@@ -158,7 +208,42 @@ private fun MarkersTopAppBar(onBackClick: () -> Unit) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "")
             }
         },
-        actions = { }
+        actions = {
+            var expanded by remember { mutableStateOf(false) }
+
+            IconButton(
+                onClick = { expanded = true },
+                modifier = Modifier.width(36.dp)
+            ) {
+                Icon(
+                    Icons.Default.MoreVert,
+                    contentDescription = null,
+                )
+            }
+            Box(
+                Modifier
+                    .height(24.dp)
+                    .wrapContentSize(Alignment.BottomEnd, true)
+            ) {
+                DropdownMenu(
+                    modifier = Modifier.wrapContentSize(Alignment.TopEnd),
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    offset = DpOffset(0.dp, 0.dp)
+                ) {
+                    DropdownMenuItem(
+                        onClick = onToggleSelectAll,
+                        text = {
+                            if (hasAtLeastOneNotSelected) {
+                                Text(stringResource(id = R.string.markers_manage_select_all))
+                            } else {
+                                Text(stringResource(id = R.string.markers_manage_deselect_all))
+                            }
+                        }
+                    )
+                }
+            }
+        }
     )
 }
 
@@ -183,16 +268,17 @@ private fun SearchBar(
             ),
         shape = RoundedCornerShape(50),
     ) {
-        val focusRequester = remember { FocusRequester() }
         BasicTextField(
-            modifier = Modifier.focusRequester(focusRequester),
             value = searchText,
             onValueChange = {
                 searchText = it
                 onNewSearch(it)
             },
             singleLine = true,
-            textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp),
+            textStyle = LocalTextStyle.current.copy(
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 14.sp
+            ),
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary)
         ) { innerTextField ->
             Row(
@@ -207,7 +293,9 @@ private fun SearchBar(
                 )
 
                 Box(
-                    Modifier.weight(1f).padding(start = 8.dp),
+                    Modifier
+                        .weight(1f)
+                        .padding(start = 8.dp),
                     contentAlignment = Alignment.CenterStart
                 ) {
                     if (searchText.isEmpty()) {
@@ -236,11 +324,6 @@ private fun SearchBar(
                     }
                 }
             }
-        }
-
-        DisposableEffect(Unit) {
-            focusRequester.requestFocus()
-            onDispose { }
         }
     }
 }
@@ -363,6 +446,7 @@ private fun MarkersManagePreview() {
 
         MarkersManageScreen(
             markers = markers,
+            excursionWaypoints = emptyMap(),
             hasMarkers = true,
             onNewSearch = {},
             onGoToMarker = {},
