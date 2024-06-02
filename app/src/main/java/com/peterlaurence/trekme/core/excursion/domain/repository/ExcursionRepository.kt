@@ -29,9 +29,9 @@ class ExcursionRepository @Inject constructor(
         dao.updateWaypoint(excursion, waypoint, newLat, newLon)
     }
 
-    suspend fun updateWaypoint(excursionId: String, waypoint: ExcursionWaypoint, name: String?, lat: Double?, lon: Double?, comment: String?) {
+    suspend fun updateWaypoint(excursionId: String, waypoint: ExcursionWaypoint, name: String?, lat: Double?, lon: Double?, comment: String?, color: String?) {
         val excursion = getExcursion(excursionId) ?: return
-        dao.updateWaypoint(excursion, waypoint, name, lat, lon, comment)
+        dao.updateWaypoint(excursion, waypoint, name, lat, lon, comment, color)
     }
 
     suspend fun deleteWaypoint(excursionId: String, waypoint: ExcursionWaypoint) {

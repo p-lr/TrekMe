@@ -18,6 +18,6 @@ interface ExcursionDao {
     suspend fun updateGeoRecord(id: String, geoRecord: GeoRecord): Boolean
     suspend fun initWaypoints(excursion: Excursion)
     suspend fun updateWaypoint(excursion: Excursion, waypoint: ExcursionWaypoint, newLat: Double, newLon: Double)
-    suspend fun updateWaypoint(excursion: Excursion, waypoint: ExcursionWaypoint, name: String?, lat: Double?, lon: Double?, comment: String?)
+    suspend fun updateWaypoint(excursion: Excursion, waypoint: ExcursionWaypoint, name: String?, lat: Double?, lon: Double?, comment: String?, color: String?)
     suspend fun deleteWaypoint(excursion: Excursion, waypoint: ExcursionWaypoint)
 }

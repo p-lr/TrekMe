@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionWaypoint
 import com.peterlaurence.trekme.core.geotools.distanceApprox
 import com.peterlaurence.trekme.core.location.domain.model.Location
@@ -22,6 +23,7 @@ import com.peterlaurence.trekme.features.map.presentation.ui.components.markerCa
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapViewModel
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.positionCallout
+import com.peterlaurence.trekme.util.darkenColor
 import com.peterlaurence.trekme.util.dpToPx
 import com.peterlaurence.trekme.util.map
 import com.peterlaurence.trekme.util.parseColor
@@ -308,16 +310,14 @@ class ExcursionWaypointLayer(
             clickableAreaCenterOffset = Offset(0f, -0.25f),
             clickableAreaScale = Offset(2f, 1f)  // 48dp wide and height
         ) {
-            val color by colorFlow.collectAsState()
+            val trackColor by colorFlow.collectAsState()
+            val wptColor = state.waypoint.color?.let { Color(parseColor(it)) }
+            val color = wptColor ?: trackColor
 
             Marker(
                 isStatic = state.isStatic,
                 backgroundColor = color,
-                strokeColor = Color(
-                    red = color.red * 0.8f,
-                    green = color.green * 0.8f,
-                    blue = color.blue * 0.8f
-                ),
+                strokeColor = Color(darkenColor(color.toArgb(), 0.15f)),
             )
         }
         return state

@@ -19,5 +19,7 @@ data class Waypoint(
     override val elevation: Double?,
     override val comment: String,
     @SerialName("photos")
-    override val photos: List<Photo>
+    override val photos: List<Photo>,
+    @SerialName("color")
+    override val color: String? = null  // this field was added afterwards
 ) : ExcursionWaypoint

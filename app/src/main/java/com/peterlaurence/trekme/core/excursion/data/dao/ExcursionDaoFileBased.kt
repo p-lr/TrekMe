@@ -156,19 +156,20 @@ class ExcursionDaoFileBased(
         name: String?,
         lat: Double?,
         lon: Double?,
-        comment: String?
+        comment: String?,
+        color: String?
     ) = withContext(ioDispatcher) {
         val root = (excursion as? ExcursionFileBased)?.root ?: return@withContext
         val wpt = waypoint as? Waypoint ?: return@withContext
 
-//        println("xxxxx updating flow ${excursion.waypointsFlow}")
         excursion.waypointsFlow.update {
             it.filterNot { p -> p.id == waypoint.id } +
                     wpt.copy(
                         name = name ?: wpt.name,
                         latitude = lat ?: wpt.latitude,
                         longitude = lon ?: wpt.longitude,
-                        comment = comment ?: wpt.comment
+                        comment = comment ?: wpt.comment,
+                        color = color  // no default on purpose
                     )
         }
 

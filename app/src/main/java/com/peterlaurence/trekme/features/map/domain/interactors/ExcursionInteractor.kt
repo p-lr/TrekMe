@@ -55,9 +55,17 @@ class ExcursionInteractor @Inject constructor(
         excursionRepository.updateWaypoint(excursionId, waypoint, lonLat[1], lonLat[0])
     }
 
-    suspend fun updateAndSaveWaypoint(excursionId: String, waypoint: ExcursionWaypoint, name: String, lat: Double?, lon: Double?, comment: String) {
-        if (name != waypoint.name || lat != null || lon != null || comment != waypoint.comment) {
-            excursionRepository.updateWaypoint(excursionId, waypoint, name, lat, lon, comment)
+    suspend fun updateAndSaveWaypoint(
+        excursionId: String,
+        waypoint: ExcursionWaypoint,
+        name: String,
+        lat: Double?,
+        lon: Double?,
+        comment: String,
+        color: String?
+    ) {
+        if (name != waypoint.name || lat != null || lon != null || comment != waypoint.comment || color != waypoint.color) {
+            excursionRepository.updateWaypoint(excursionId, waypoint, name, lat, lon, comment, color)
         }
     }
 

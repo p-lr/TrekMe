@@ -296,6 +296,7 @@
     <string name="marker_edit_screen_title">Marker edit</string>
     <string name="beacon_edit_screen_title">Beacon edit</string>
     <string name="marker_name_label">Name</string>
+    <string name="use_same_color_as_track">Use same color as track</string>
     <string name="beacon_setting_title">Beacon extent</string>
     <string name="beacon_radius_label">Radius</string>
     <string name="beacon_unit_label">Unit</string>
