@@ -51,12 +51,14 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionPhoto
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionWaypoint
 import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
 import com.peterlaurence.trekme.core.map.domain.models.Marker
@@ -65,9 +67,13 @@ import com.peterlaurence.trekme.features.map.presentation.ui.components.Marker
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.MarkersManageViewModel
 import com.peterlaurence.trekme.util.darkenColor
 import com.peterlaurence.trekme.util.parseColor
+import com.peterlaurence.trekme.util.randomString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import java.util.UUID
+import kotlin.random.Random
 
 @Composable
 fun MarkersManageStateful(
@@ -106,13 +112,11 @@ fun MarkersManageStateful(
     ) {
         searchJob2?.cancel()
         searchJob2 = launch(Dispatchers.Default) {
-            val lowerCase = search.lowercase().trim()
             value = if (search.isNotEmpty()) {
-                buildMap {
-                    excursionWaypoints.mapKeys {
-                        it.value.filter { wpt ->
-                            wpt.name.lowercase().contains(lowerCase)
-                        }
+                val lowerCase = search.lowercase().trim()
+                excursionWaypoints.mapValues {
+                    it.value.filter { wpt ->
+                        wpt.name.lowercase().contains(lowerCase)
                     }
                 }
             } else excursionWaypoints
@@ -125,6 +129,7 @@ fun MarkersManageStateful(
         hasMarkers = markers.isNotEmpty(),
         onNewSearch = { search = it },
         onGoToMarker = {},
+        onGoToExcursionWaypoint = {},
         onBackClick = onBackClick
     )
 }
@@ -137,6 +142,7 @@ private fun MarkersManageScreen(
     hasMarkers: Boolean,
     onNewSearch: (String) -> Unit,
     onGoToMarker: (Marker) -> Unit,
+    onGoToExcursionWaypoint: (ExcursionWaypoint) -> Unit,
     onBackClick: () -> Unit
 ) {
 
@@ -160,10 +166,11 @@ private fun MarkersManageScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     items(markers, key = { it.id }) {
-                        MarkerCard(
+                        PinCard(
                             modifier = Modifier.animateItemPlacement(),
-                            marker = it,
-                            onGoToMarker = onGoToMarker
+                            name = it.name,
+                            color = it.color,
+                            onGoToPin = { onGoToMarker(it) }
                         )
                     }
                     for (excursion in excursionWaypoints.keys) {
@@ -171,14 +178,20 @@ private fun MarkersManageScreen(
                         val wpts = excursionWaypoints[excursion]
                         if (wpts.isNullOrEmpty()) continue
                         item(key = excursion.id) {
-                            Text(text = name)
+                            Text(
+                                text = name,
+                                modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
+                                fontWeight = FontWeight.Medium
+                            )
                         }
                         items(wpts, key = { it.id }) {
-//                            MarkerCard(
-//                                modifier = Modifier.animateItemPlacement(),
-//                                marker = it,
-//                                onGoToMarker = onGoToMarker
-//                            )
+                            val excursionColor by excursion.color.collectAsState()
+                            PinCard(
+                                modifier = Modifier.animateItemPlacement(),
+                                name = it.name,
+                                color = it.color ?: excursionColor,
+                                onGoToPin = { onGoToExcursionWaypoint(it) }
+                            )
                         }
                     }
                 }
@@ -329,10 +342,11 @@ private fun SearchBar(
 }
 
 @Composable
-private fun MarkerCard(
+private fun PinCard(
     modifier: Modifier = Modifier,
-    marker: Marker,
-    onGoToMarker: (Marker) -> Unit
+    name: String,
+    color: String,
+    onGoToPin: () -> Unit
 ) {
     var expandedMenu by remember { mutableStateOf(false) }
 
@@ -340,14 +354,14 @@ private fun MarkerCard(
         Row(
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            val backgroundColor = parseColor(marker.color)
+            val backgroundColor = parseColor(color)
             val strokeColor = darkenColor(backgroundColor, 0.15f)
 
             Marker(
                 modifier = Modifier
                     .graphicsLayer {
                         clip = true
-                        translationY = 10.dp.toPx()
+                        translationY = 12.dp.toPx()
                     }
                     .padding(horizontal = 8.dp),
                 backgroundColor = Color(backgroundColor),
@@ -357,8 +371,8 @@ private fun MarkerCard(
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            if (marker.name.isNotEmpty()) {
-                Text(text = marker.name)
+            if (name.isNotEmpty()) {
+                Text(text = name)
             } else {
                 Text(
                     text = stringResource(id = R.string.markers_manage_no_name),
@@ -389,13 +403,13 @@ private fun MarkerCard(
                     DropdownMenuItem(
                         onClick = {
                             expandedMenu = false
-                            onGoToMarker(marker)
+                            onGoToPin()
                         },
                         text = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(stringResource(id = R.string.markers_manage_goto))
                                 Spacer(Modifier.weight(1f))
-                                IconButton(onClick = { onGoToMarker(marker) }) {
+                                IconButton(onClick = onGoToPin ) {
                                     Icon(
                                         painterResource(id = R.drawable.ic_gps_fixed_24dp),
                                         contentDescription = stringResource(id = R.string.open_dialog)
@@ -437,19 +451,47 @@ private fun MarkerCard(
 @Composable
 private fun MarkersManagePreview() {
     TrekMeTheme {
-        val markers = buildList<Marker> {
-            repeat(6) {
+        val markers = buildList {
+            repeat(3) {
                 add(Marker(lat = 12.6, lon = 2.57, name = "marker-$it"))
                 add(Marker(lat = 12.6, lon = 2.57))
             }
         }
 
+        val ref1: ExcursionRef = object : ExcursionRef {
+            override val id: String = "id"
+            override val name: MutableStateFlow<String> = MutableStateFlow("Excursion name")
+            override val visible: MutableStateFlow<Boolean> = MutableStateFlow(true)
+            override val color: MutableStateFlow<String> = MutableStateFlow("#2196f3")
+        }
+
+        fun makeExcursionWaypoint(): ExcursionWaypoint {
+            return object : ExcursionWaypoint {
+                override val id: String = UUID.randomUUID().toString()
+                override val name: String = randomString(6)
+                override val latitude: Double = 0.0
+                override val longitude: Double = 0.0
+                override val elevation: Double? = null
+                override val comment: String = randomString(10)
+                override val photos: List<ExcursionPhoto> = emptyList()
+                override val color: String? = if (Random.nextBoolean()) "#ffffff" else null
+            }
+        }
+        val excursionWaypoints = buildMap {
+            put(ref1, buildList {
+                repeat(5) {
+                    add(makeExcursionWaypoint())
+                }
+            })
+        }
+
         MarkersManageScreen(
             markers = markers,
-            excursionWaypoints = emptyMap(),
+            excursionWaypoints = excursionWaypoints,
             hasMarkers = true,
             onNewSearch = {},
             onGoToMarker = {},
+            onGoToExcursionWaypoint = {},
             onBackClick = {}
         )
     }
