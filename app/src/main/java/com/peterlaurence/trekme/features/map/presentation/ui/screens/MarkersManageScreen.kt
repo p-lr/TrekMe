@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +23,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
@@ -36,6 +38,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -48,6 +51,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
@@ -89,26 +93,35 @@ fun MarkersManageStateful(
     var search by remember { mutableStateOf("") }
 
     var searchJob1: Job? = null
+    var selectedMarkerIds by rememberSaveable(markers) { mutableStateOf<List<String>>(emptyList()) }
 
     val filteredMarkers by produceState(
-        initialValue = markers,
+        initialValue = markers.map { SelectableMarker(it, isSelected = false) },
         key1 = search,
-        key2 = markers
+        key2 = markers,
+        key3 = selectedMarkerIds
     ) {
         searchJob1?.cancel()
         searchJob1 = launch(Dispatchers.Default) {
             val lowerCase = search.lowercase().trim()
             value = markers.filter {
                 it.name.lowercase().contains(lowerCase)
+            }.map {
+                SelectableMarker(it, isSelected = it.id in selectedMarkerIds)
             }
         }
     }
 
     var searchJob2: Job? = null
+    var selectedWaypoints by rememberSaveable(excursionWaypoints) { mutableStateOf<List<String>>(emptyList()) }
+
     val filteredWaypoints by produceState(
-        initialValue = excursionWaypoints,
+        initialValue = excursionWaypoints.mapValues {
+            it.value.map { wpt -> SelectableWaypoint(wpt, isSelected = false) }
+        },
         key1 = search,
-        key2 = excursionWaypoints
+        key2 = excursionWaypoints,
+        key3 = selectedWaypoints
     ) {
         searchJob2?.cancel()
         searchJob2 = launch(Dispatchers.Default) {
@@ -117,19 +130,51 @@ fun MarkersManageStateful(
                 excursionWaypoints.mapValues {
                     it.value.filter { wpt ->
                         wpt.name.lowercase().contains(lowerCase)
+                    }.map { wpt ->
+                        SelectableWaypoint(wpt, isSelected = wpt.id in selectedWaypoints)
                     }
                 }
-            } else excursionWaypoints
+            } else excursionWaypoints.mapValues {
+                it.value.map { wpt ->
+                    SelectableWaypoint(wpt, isSelected = wpt.id in selectedWaypoints)
+                }
+            }
+        }
+    }
+
+    val isSelectionMode by remember {
+        derivedStateOf {
+            filteredMarkers.any { it.isSelected }
+                    || filteredWaypoints.any { it.value.any { it.isSelected } }
+        }
+    }
+
+    fun setMarkerSelection(marker: Marker, selection: Boolean) {
+        if (selection && marker.id !in selectedMarkerIds) {
+            selectedMarkerIds += marker.id
+        } else {
+            selectedMarkerIds -= marker.id
+        }
+    }
+
+    fun setWaypointSelection(waypoint: ExcursionWaypoint, selection: Boolean) {
+        if (selection && waypoint.id !in selectedWaypoints) {
+            selectedWaypoints += waypoint.id
+        } else {
+            selectedWaypoints -= waypoint.id
         }
     }
 
     MarkersManageScreen(
         markers = filteredMarkers,
         excursionWaypoints = filteredWaypoints,
+        isSelectionMode = isSelectionMode,
         hasMarkers = markers.isNotEmpty(),
         onNewSearch = { search = it },
         onGoToMarker = {},
         onGoToExcursionWaypoint = {},
+        onToggleMarkerSelection = { marker, s -> setMarkerSelection(marker, s) },
+        onToggleWaypointSelection = { wpt, s -> setWaypointSelection(wpt, s) },
         onBackClick = onBackClick
     )
 }
@@ -137,12 +182,15 @@ fun MarkersManageStateful(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun MarkersManageScreen(
-    markers: List<Marker>,
-    excursionWaypoints: Map<ExcursionRef, List<ExcursionWaypoint>>,
+    markers: List<SelectableMarker>,
+    excursionWaypoints: Map<ExcursionRef, List<SelectableWaypoint>>,
+    isSelectionMode: Boolean,
     hasMarkers: Boolean,
     onNewSearch: (String) -> Unit,
     onGoToMarker: (Marker) -> Unit,
     onGoToExcursionWaypoint: (ExcursionWaypoint) -> Unit,
+    onToggleMarkerSelection: (Marker, Boolean) -> Unit,
+    onToggleWaypointSelection: (ExcursionWaypoint, Boolean) -> Unit,
     onBackClick: () -> Unit
 ) {
 
@@ -165,12 +213,16 @@ private fun MarkersManageScreen(
                     contentPadding = PaddingValues(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    items(markers, key = { it.id }) {
+                    items(markers, key = { it.marker.id }) {
                         PinCard(
                             modifier = Modifier.animateItemPlacement(),
-                            name = it.name,
-                            color = it.color,
-                            onGoToPin = { onGoToMarker(it) }
+                            name = it.marker.name,
+                            color = it.marker.color,
+                            selected = if (isSelectionMode) it.isSelected else null,
+                            onToggleSelection = { selected ->
+                                onToggleMarkerSelection(it.marker, selected)
+                            },
+                            onGoToPin = { onGoToMarker(it.marker) }
                         )
                     }
                     for (excursion in excursionWaypoints.keys) {
@@ -184,13 +236,17 @@ private fun MarkersManageScreen(
                                 fontWeight = FontWeight.Medium
                             )
                         }
-                        items(wpts, key = { it.id }) {
+                        items(wpts, key = { it.waypoint.id }) {
                             val excursionColor by excursion.color.collectAsState()
                             PinCard(
                                 modifier = Modifier.animateItemPlacement(),
-                                name = it.name,
-                                color = it.color ?: excursionColor,
-                                onGoToPin = { onGoToExcursionWaypoint(it) }
+                                name = it.waypoint.name,
+                                color = it.waypoint.color ?: excursionColor,
+                                selected = if (isSelectionMode) it.isSelected else null,
+                                onToggleSelection = { selected ->
+                                    onToggleWaypointSelection(it.waypoint, selected)
+                                },
+                                onGoToPin = { onGoToExcursionWaypoint(it.waypoint) }
                             )
                         }
                     }
@@ -346,11 +402,27 @@ private fun PinCard(
     modifier: Modifier = Modifier,
     name: String,
     color: String,
+    selected: Boolean?,
+    onToggleSelection: (Boolean) -> Unit,
     onGoToPin: () -> Unit
 ) {
     var expandedMenu by remember { mutableStateOf(false) }
 
-    ElevatedCard(modifier = modifier) {
+    ElevatedCard(
+        modifier = modifier.pointerInput(selected) {
+            detectTapGestures(
+                onLongPress = { onToggleSelection(if (selected == null) true else !selected) },
+                onTap = {
+                    if (selected != null) {
+                        onToggleSelection(!selected)
+                    }
+                }
+            )
+        },
+        elevation = if (selected != null && selected) CardDefaults.elevatedCardElevation(
+            defaultElevation = 3.dp
+        ) else CardDefaults.elevatedCardElevation()
+    ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -382,69 +454,84 @@ private fun PinCard(
             }
             Spacer(modifier = Modifier.weight(1f))
 
-            IconButton(
-                onClick = { expandedMenu = true },
-            ) {
-                Icon(
-                    Icons.Default.MoreVert,
-                    contentDescription = null,
-                )
-            }
-            Box(
-                Modifier
-                    .height(24.dp)
-                    .wrapContentSize(Alignment.BottomEnd, true)
-            ) {
-                DropdownMenu(
-                    expanded = expandedMenu,
-                    onDismissRequest = { expandedMenu = false },
-                    offset = DpOffset(0.dp, 0.dp)
+            if (selected != null) {
+                IconButton(
+                    onClick = { onToggleSelection(!selected) },
                 ) {
-                    DropdownMenuItem(
-                        onClick = {
-                            expandedMenu = false
-                            onGoToPin()
-                        },
-                        text = {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(stringResource(id = R.string.markers_manage_goto))
-                                Spacer(Modifier.weight(1f))
-                                IconButton(onClick = onGoToPin ) {
-                                    Icon(
-                                        painterResource(id = R.drawable.ic_gps_fixed_24dp),
-                                        contentDescription = stringResource(id = R.string.open_dialog)
-                                    )
+                    Icon(
+                        painterResource(id = if (selected) R.drawable.ic_check_circle else R.drawable.ic_circle_outline),
+                        tint = MaterialTheme.colorScheme.primary,
+                        contentDescription = null,
+                    )
+                }
+            } else {
+                IconButton(
+                    onClick = { expandedMenu = true },
+                ) {
+                    Icon(
+                        Icons.Default.MoreVert,
+                        contentDescription = null,
+                    )
+                }
+                Box(
+                    Modifier
+                        .height(24.dp)
+                        .wrapContentSize(Alignment.BottomEnd, true)
+                ) {
+                    DropdownMenu(
+                        expanded = expandedMenu,
+                        onDismissRequest = { expandedMenu = false },
+                        offset = DpOffset(0.dp, 0.dp)
+                    ) {
+                        DropdownMenuItem(
+                            onClick = {
+                                expandedMenu = false
+                                onGoToPin()
+                            },
+                            text = {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(stringResource(id = R.string.markers_manage_goto))
+                                    Spacer(Modifier.weight(1f))
+                                    IconButton(onClick = onGoToPin) {
+                                        Icon(
+                                            painterResource(id = R.drawable.ic_gps_fixed_24dp),
+                                            contentDescription = stringResource(id = R.string.open_dialog)
+                                        )
+                                    }
                                 }
                             }
-                        }
-                    )
+                        )
 
-                    DropdownMenuItem(
-                        onClick = {
-                            expandedMenu = false
-                            // TODO
-                        },
-                        text = {
-                            Text(stringResource(id = R.string.markers_manage_edit))
-                            Spacer(Modifier.weight(1f))
-                        }
-                    )
+                        DropdownMenuItem(
+                            onClick = {
+                                expandedMenu = false
+                                // TODO
+                            },
+                            text = {
+                                Text(stringResource(id = R.string.markers_manage_edit))
+                                Spacer(Modifier.weight(1f))
+                            }
+                        )
 
-                    DropdownMenuItem(
-                        onClick = {
-                            expandedMenu = false
-                            // TODO
-                        },
-                        text = {
-                            Text(stringResource(id = R.string.delete_dialog))
-                            Spacer(Modifier.weight(1f))
-                        }
-                    )
+                        DropdownMenuItem(
+                            onClick = {
+                                expandedMenu = false
+                                // TODO
+                            },
+                            text = {
+                                Text(stringResource(id = R.string.delete_dialog))
+                                Spacer(Modifier.weight(1f))
+                            }
+                        )
+                    }
                 }
             }
         }
     }
 }
+
+private data class SelectableMarker(val marker: Marker, val isSelected: Boolean)
+private data class SelectableWaypoint(val waypoint: ExcursionWaypoint, val isSelected: Boolean)
 
 @Preview
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
@@ -477,6 +564,7 @@ private fun MarkersManagePreview() {
                 override val color: String? = if (Random.nextBoolean()) "#ffffff" else null
             }
         }
+
         val excursionWaypoints = buildMap {
             put(ref1, buildList {
                 repeat(5) {
@@ -486,12 +574,17 @@ private fun MarkersManagePreview() {
         }
 
         MarkersManageScreen(
-            markers = markers,
-            excursionWaypoints = excursionWaypoints,
+            markers = markers.map { SelectableMarker(it, isSelected = true) },
+            excursionWaypoints = excursionWaypoints.mapValues {
+                 it.value.map { wpt -> SelectableWaypoint(wpt, false) }
+            },
+            isSelectionMode = false,
             hasMarkers = true,
             onNewSearch = {},
             onGoToMarker = {},
             onGoToExcursionWaypoint = {},
+            onToggleMarkerSelection = { _, _ -> },
+            onToggleWaypointSelection = { _, _ -> },
             onBackClick = {}
         )
     }
