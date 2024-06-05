@@ -9,6 +9,7 @@ import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
+import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,12 +28,21 @@ import javax.inject.Inject
 class MarkersManageViewModel @Inject constructor(
     private val mapRepository: MapRepository,
     private val excursionRepository: ExcursionRepository,
-    hasOneExtendedOfferInteractor: HasOneExtendedOfferInteractor
+    hasOneExtendedOfferInteractor: HasOneExtendedOfferInteractor,
+    private val mapFeatureEvents: MapFeatureEvents
 ) : ViewModel() {
     val hasExtendedOffer = hasOneExtendedOfferInteractor.getPurchaseFlow(viewModelScope)
 
     private val map: Map?
         get() = mapRepository.getCurrentMap()
+
+    fun goToMarker(marker: Marker) {
+        mapFeatureEvents.postGoToMarker(marker)
+    }
+
+    fun goToExcursionWaypoint(excursionRef: ExcursionRef, excursionWaypoint: ExcursionWaypoint) {
+        mapFeatureEvents.postGoToExcursionWaypoint(excursionRef, excursionWaypoint)
+    }
 
     fun getMarkersFlow(): StateFlow<List<Marker>> {
         return map?.markers ?: MutableStateFlow(emptyList())

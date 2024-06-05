@@ -8,12 +8,10 @@ import com.peterlaurence.trekme.features.map.presentation.ui.screens.MarkersMana
 private const val markersDestination = "markers_dest"
 
 fun NavGraphBuilder.markersManageScreen(
-    onNavigateToMap: () -> Unit,
     onBackClick: () -> Unit
 ) {
     composable(markersDestination) {
         MarkersManageStateful(
-            onNavigateToMap = onNavigateToMap,
             onBackClick = onBackClick
         )
     }

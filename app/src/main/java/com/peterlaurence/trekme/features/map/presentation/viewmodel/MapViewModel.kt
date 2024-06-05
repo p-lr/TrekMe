@@ -144,6 +144,7 @@ class MapViewModel @Inject constructor(
         viewModelScope,
         dataStateFlow,
         markerInteractor,
+        goToMarkerFlow = mapFeatureEvents.goToMarker,
         onMarkerEdit = { marker, mapId ->
             mapFeatureEvents.postPlaceableEvent(MarkerEditEvent(marker, mapId))
         },
@@ -156,6 +157,7 @@ class MapViewModel @Inject constructor(
         viewModelScope,
         dataStateFlow,
         excursionInteractor,
+        goToExcursionWaypointFlow = mapFeatureEvents.goToExcursionWaypoint,
         onWaypointEdit = { waypoint, excursionId ->
             mapFeatureEvents.postPlaceableEvent(ExcursionWaypointEditEvent(waypoint, excursionId))
         },

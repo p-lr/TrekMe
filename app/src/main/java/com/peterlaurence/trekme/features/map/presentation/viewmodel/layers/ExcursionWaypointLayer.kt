@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.addCallout
 import ovh.plrapps.mapcompose.api.addMarker
+import ovh.plrapps.mapcompose.api.centerOnMarker
 import ovh.plrapps.mapcompose.api.enableMarkerDrag
 import ovh.plrapps.mapcompose.api.getMarkerInfo
 import ovh.plrapps.mapcompose.api.moveMarker
@@ -49,6 +50,7 @@ class ExcursionWaypointLayer(
     private val scope: CoroutineScope,
     private val dataStateFlow: Flow<DataState>,
     private val excursionInteractor: ExcursionInteractor,
+    private val goToExcursionWaypointFlow: Flow<Pair<ExcursionRef, ExcursionWaypoint>>,
     private val onWaypointEdit: (ExcursionWaypoint, excursionId: String) -> Unit,
     private val onStartItinerary: (ExcursionWaypoint) -> Unit
 ) : MapViewModel.MarkerTapListener {
@@ -61,8 +63,19 @@ class ExcursionWaypointLayer(
     init {
         scope.launch {
             dataStateFlow.collectLatest { (map, mapState) ->
-                excursionWptListState.clear()
-                onMapUpdate(map, mapState)
+                coroutineScope {
+                    excursionWptListState.clear()
+
+                    launch {
+                        onMapUpdate(map, mapState)
+                    }
+
+                    launch {
+                        goToExcursionWaypointFlow.collect { (ref, wpt) ->
+                            mapState.centerOnMarker(id = makeId(ref.id, wpt.id), destScale = 2f)
+                        }
+                    }
+                }
             }
         }
     }
@@ -298,7 +311,7 @@ class ExcursionWaypointLayer(
         x: Double,
         y: Double
     ): WaypointState {
-        val id = "$excursionWaypointPrefix-$excursionId|${waypoint.id}"
+        val id = makeId(excursionId, waypoint.id)
         val state = WaypointState(id, waypoint)
 
         mapState.addMarker(
@@ -329,6 +342,8 @@ class ExcursionWaypointLayer(
         attachMarkerGrab(waypointState.idOnMap, x, y, mapState, waypointState)
     }
 }
+
+private fun makeId(excursionId: String, waypointId: String) = "$excursionWaypointPrefix-$excursionId|$waypointId"
 
 private const val excursionWaypointPrefix = "excursionWpt"
 private const val calloutPrefix = "callout"

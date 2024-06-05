@@ -82,7 +82,6 @@ import kotlin.random.Random
 @Composable
 fun MarkersManageStateful(
     viewModel: MarkersManageViewModel = hiltViewModel(),
-    onNavigateToMap: () -> Unit,
     onBackClick: () -> Unit
 ) {
     val markers by viewModel.getMarkersFlow().collectAsState()
@@ -171,8 +170,14 @@ fun MarkersManageStateful(
         isSelectionMode = isSelectionMode,
         hasMarkers = markers.isNotEmpty(),
         onNewSearch = { search = it },
-        onGoToMarker = {},
-        onGoToExcursionWaypoint = {},
+        onGoToMarker = {
+            onBackClick()
+            viewModel.goToMarker(it)
+        },
+        onGoToExcursionWaypoint = { excursionRef, wpt ->
+            onBackClick()
+            viewModel.goToExcursionWaypoint(excursionRef, wpt)
+        },
         onToggleMarkerSelection = { marker, s -> setMarkerSelection(marker, s) },
         onToggleWaypointSelection = { wpt, s -> setWaypointSelection(wpt, s) },
         onBackClick = onBackClick
@@ -188,7 +193,7 @@ private fun MarkersManageScreen(
     hasMarkers: Boolean,
     onNewSearch: (String) -> Unit,
     onGoToMarker: (Marker) -> Unit,
-    onGoToExcursionWaypoint: (ExcursionWaypoint) -> Unit,
+    onGoToExcursionWaypoint: (excursionRef: ExcursionRef, ExcursionWaypoint) -> Unit,
     onToggleMarkerSelection: (Marker, Boolean) -> Unit,
     onToggleWaypointSelection: (ExcursionWaypoint, Boolean) -> Unit,
     onBackClick: () -> Unit
@@ -246,7 +251,7 @@ private fun MarkersManageScreen(
                                 onToggleSelection = { selected ->
                                     onToggleWaypointSelection(it.waypoint, selected)
                                 },
-                                onGoToPin = { onGoToExcursionWaypoint(it.waypoint) }
+                                onGoToPin = { onGoToExcursionWaypoint(excursion, it.waypoint) }
                             )
                         }
                     }
@@ -492,13 +497,29 @@ private fun PinCard(
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(stringResource(id = R.string.markers_manage_goto))
                                     Spacer(Modifier.weight(1f))
-                                    IconButton(onClick = onGoToPin) {
+                                    IconButton(
+                                        onClick = {
+                                            expandedMenu = false
+                                            onGoToPin()
+                                        }
+                                    ) {
                                         Icon(
                                             painterResource(id = R.drawable.ic_gps_fixed_24dp),
                                             contentDescription = stringResource(id = R.string.open_dialog)
                                         )
                                     }
                                 }
+                            }
+                        )
+
+                        DropdownMenuItem(
+                            onClick = {
+                                expandedMenu = false
+                                onToggleSelection(true)
+                            },
+                            text = {
+                                Text(stringResource(id = R.string.markers_manage_select))
+                                Spacer(Modifier.weight(1f))
                             }
                         )
 
@@ -582,7 +603,7 @@ private fun MarkersManagePreview() {
             hasMarkers = true,
             onNewSearch = {},
             onGoToMarker = {},
-            onGoToExcursionWaypoint = {},
+            onGoToExcursionWaypoint = { _, _ -> },
             onToggleMarkerSelection = { _, _ -> },
             onToggleWaypointSelection = { _, _ -> },
             onBackClick = {}

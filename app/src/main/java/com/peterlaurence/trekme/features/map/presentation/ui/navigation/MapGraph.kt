@@ -33,7 +33,6 @@ fun NavGraphBuilder.mapGraph(
         )
 
         markersManageScreen(
-            onNavigateToMap = navController::navigateUp,
             onBackClick = navController::navigateUp
         )
 

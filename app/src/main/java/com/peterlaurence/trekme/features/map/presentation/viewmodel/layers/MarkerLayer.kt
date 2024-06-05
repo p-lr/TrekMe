@@ -23,6 +23,7 @@ import com.peterlaurence.trekme.util.darkenColor
 import com.peterlaurence.trekme.util.dpToPx
 import com.peterlaurence.trekme.util.parseColor
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.*
@@ -33,6 +34,7 @@ class MarkerLayer(
     private val scope: CoroutineScope,
     private val dataStateFlow: Flow<DataState>,
     private val markerInteractor: MarkerInteractor,
+    private val goToMarkerFlow: Flow<Marker>,
     private val onMarkerEdit: (Marker, UUID) -> Unit,
     private val onStartItinerary: (Marker) -> Unit
 ) : MapViewModel.MarkerTapListener {
@@ -48,8 +50,17 @@ class MarkerLayer(
     init {
         scope.launch {
             dataStateFlow.collectLatest { (map, mapState) ->
-                markerListState.clear()
-                onMapUpdate(map, mapState)
+                coroutineScope {
+                    markerListState.clear()
+                    launch {
+                        onMapUpdate(map, mapState)
+                    }
+                    launch {
+                        goToMarkerFlow.collect { marker ->
+                            mapState.centerOnMarker(id = makeId(marker), destScale = 2f)
+                        }
+                    }
+                }
             }
         }
     }
@@ -218,7 +229,7 @@ class MarkerLayer(
         x: Double,
         y: Double
     ): MarkerState {
-        val id = "$markerPrefix-${marker.id}"
+        val id = makeId(marker)
         val state = MarkerState(id, marker)
 
         mapState.addMarker(
@@ -248,6 +259,8 @@ class MarkerLayer(
         attachMarkerGrab(markerState.idOnMap, x, y, mapState, markerState)
     }
 }
+
+private fun makeId(marker: Marker): String = "$markerPrefix-${marker.id}"
 
 private const val markerPrefix = "marker"
 private const val calloutPrefix = "callout"

@@ -326,6 +326,7 @@
     <string name="markers_manage_title">Gestion des marqueurs</string>
     <string name="markers_manage_no_name">sans nom</string>
     <string name="markers_manage_edit">Modifier</string>
+    <string name="markers_manage_select">Sélectionner</string>
     <string name="markers_manage_goto">Voir</string>
     <string name="markers_manage_select_all">Tout sélectionner</string>
     <string name="markers_manage_deselect_all">Tout déselectionner</string>
