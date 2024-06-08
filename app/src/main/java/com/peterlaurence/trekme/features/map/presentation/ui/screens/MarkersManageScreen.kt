@@ -67,9 +67,11 @@ import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionWaypoint
 import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.map.presentation.ui.components.ColorPicker
 import com.peterlaurence.trekme.features.map.presentation.ui.components.Marker
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.MarkersManageViewModel
 import com.peterlaurence.trekme.util.darkenColor
+import com.peterlaurence.trekme.util.encodeColor
 import com.peterlaurence.trekme.util.parseColor
 import com.peterlaurence.trekme.util.randomString
 import kotlinx.coroutines.Dispatchers
@@ -112,7 +114,9 @@ fun MarkersManageStateful(
     }
 
     var searchJob2: Job? = null
-    var selectedWaypoints by rememberSaveable(excursionWaypoints) { mutableStateOf<List<String>>(emptyList()) }
+    var selectedWaypoints by rememberSaveable(excursionWaypoints) {
+        mutableStateOf<List<String>>(emptyList())
+    }
 
     val filteredWaypoints by produceState(
         initialValue = excursionWaypoints.mapValues {
@@ -180,6 +184,14 @@ fun MarkersManageStateful(
         },
         onToggleMarkerSelection = { marker, s -> setMarkerSelection(marker, s) },
         onToggleWaypointSelection = { wpt, s -> setWaypointSelection(wpt, s) },
+        onChangeColor = { color ->
+            viewModel.updateMarkersColor(filteredMarkers.filter { it.isSelected }.map { it.marker }, color)
+            filteredWaypoints.forEach { (excursionRef, wpts) ->
+                viewModel.updateWaypointsColor(
+                    excursionRef.id, wpts.filter { it.isSelected }.map { it.waypoint }, color
+                )
+            }
+        },
         onBackClick = onBackClick
     )
 }
@@ -196,14 +208,16 @@ private fun MarkersManageScreen(
     onGoToExcursionWaypoint: (excursionRef: ExcursionRef, ExcursionWaypoint) -> Unit,
     onToggleMarkerSelection: (Marker, Boolean) -> Unit,
     onToggleWaypointSelection: (ExcursionWaypoint, Boolean) -> Unit,
+    onChangeColor: (color: String) -> Unit,
     onBackClick: () -> Unit
 ) {
-
+    var showColorPicker by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             MarkersTopAppBar(
-                hasAtLeastOneNotSelected = true, // TODO
+                isSelectionMode = isSelectionMode,
                 onToggleSelectAll = {}, // TODO
+                onChangeColor = { showColorPicker = true },
                 onBackClick
             )
         }
@@ -266,13 +280,24 @@ private fun MarkersManageScreen(
             )
         }
     }
+
+    if (showColorPicker) {
+        ColorPicker(
+            onColorPicked = {
+                onChangeColor(encodeColor(it))
+                showColorPicker = false
+            },
+            onCancel = { showColorPicker = false }
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MarkersTopAppBar(
-    hasAtLeastOneNotSelected: Boolean,
+    isSelectionMode: Boolean,
     onToggleSelectAll: () -> Unit,
+    onChangeColor: () -> Unit,
     onBackClick: () -> Unit
 ) {
     TopAppBar(
@@ -308,13 +333,19 @@ private fun MarkersTopAppBar(
                     DropdownMenuItem(
                         onClick = onToggleSelectAll,
                         text = {
-                            if (hasAtLeastOneNotSelected) {
+                            if (isSelectionMode) {
                                 Text(stringResource(id = R.string.markers_manage_select_all))
                             } else {
                                 Text(stringResource(id = R.string.markers_manage_deselect_all))
                             }
                         }
                     )
+                    if (isSelectionMode) {
+                        DropdownMenuItem(
+                            onClick = onChangeColor,
+                            text = { Text(stringResource(id = R.string.markers_manage_change_color)) }
+                        )
+                    }
                 }
             }
         }
@@ -606,6 +637,7 @@ private fun MarkersManagePreview() {
             onGoToExcursionWaypoint = { _, _ -> },
             onToggleMarkerSelection = { _, _ -> },
             onToggleWaypointSelection = { _, _ -> },
+            onChangeColor = {},
             onBackClick = {}
         )
     }

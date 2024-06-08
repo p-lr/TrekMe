@@ -246,6 +246,7 @@
     <string name="markers_manage_goto">See on map</string>
     <string name="markers_manage_select_all">Select all</string>
     <string name="markers_manage_deselect_all">Select all</string>
+    <string name="markers_manage_change_color">Change color</string>
 
     <!-- Map feature -->
     <string name="mapview_show_speed">Show speed</string>

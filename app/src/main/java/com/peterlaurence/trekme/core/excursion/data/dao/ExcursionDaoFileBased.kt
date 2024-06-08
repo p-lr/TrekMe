@@ -178,6 +178,27 @@ class ExcursionDaoFileBased(
         FileUtils.writeToFile(json.encodeToString(excursion.waypointsFlow.value), wayPointsFile)
     }
 
+    override suspend fun updateWaypointsColor(
+        excursion: Excursion,
+        waypoints: List<ExcursionWaypoint>,
+        color: String?
+    ) {
+        withContext(ioDispatcher) {
+            val root = (excursion as? ExcursionFileBased)?.root ?: return@withContext
+            val ids = waypoints.map { it.id }
+
+            excursion.waypointsFlow.update { wpts ->
+                wpts.map {
+                    if (it.id in ids) it.copy(color = color) else it
+                }
+            }
+
+            /* Re-write the waypoints file */
+            val wayPointsFile = File(root, WAYPOINTS_FILENAME)
+            FileUtils.writeToFile(json.encodeToString(excursion.waypointsFlow.value), wayPointsFile)
+        }
+    }
+
     override suspend fun deleteWaypoint(
         excursion: Excursion, waypoint: ExcursionWaypoint
     ) = withContext(ioDispatcher) {

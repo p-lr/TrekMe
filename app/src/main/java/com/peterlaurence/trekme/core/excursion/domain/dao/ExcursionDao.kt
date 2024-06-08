@@ -19,5 +19,6 @@ interface ExcursionDao {
     suspend fun initWaypoints(excursion: Excursion)
     suspend fun updateWaypoint(excursion: Excursion, waypoint: ExcursionWaypoint, newLat: Double, newLon: Double)
     suspend fun updateWaypoint(excursion: Excursion, waypoint: ExcursionWaypoint, name: String?, lat: Double?, lon: Double?, comment: String?, color: String?)
+    suspend fun updateWaypointsColor(excursion: Excursion, waypoints: List<ExcursionWaypoint>, color: String?)
     suspend fun deleteWaypoint(excursion: Excursion, waypoint: ExcursionWaypoint)
 }

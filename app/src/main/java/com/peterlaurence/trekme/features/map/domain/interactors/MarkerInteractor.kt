@@ -68,9 +68,24 @@ class MarkerInteractor @Inject constructor(
     }
 
     /**
+     * Update markers now.
+     */
+    fun updateMarkers(markers: List<Marker>, map: Map) = scope.launch {
+        val markersById = markers.associateBy { it.id }
+
+        map.markers.update {
+            it.map { m ->
+                markersById[m.id] ?: m
+            }
+        }
+
+        markersDao.saveMarkers(map)
+    }
+
+    /**
      * Save marker (debounced)
      */
-    fun saveMarker(mapId: UUID, marker: Marker) {
+    fun saveMarkerDebounced(mapId: UUID, marker: Marker) {
         updateMarkerJob?.cancel()
         updateMarkerJob = scope.launch {
             delay(1000)

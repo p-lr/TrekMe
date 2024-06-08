@@ -34,6 +34,11 @@ class ExcursionRepository @Inject constructor(
         dao.updateWaypoint(excursion, waypoint, name, lat, lon, comment, color)
     }
 
+    suspend fun updateWaypointsColor(excursionId: String, waypoints: List<ExcursionWaypoint>, color: String?) {
+        val excursion = getExcursion(excursionId) ?: return
+        dao.updateWaypointsColor(excursion, waypoints, color)
+    }
+
     suspend fun deleteWaypoint(excursionId: String, waypoint: ExcursionWaypoint) {
         val excursion = getExcursion(excursionId) ?: return
         dao.deleteWaypoint(excursion, waypoint)

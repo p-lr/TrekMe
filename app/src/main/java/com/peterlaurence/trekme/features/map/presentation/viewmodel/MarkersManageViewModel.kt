@@ -9,6 +9,7 @@ import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
+import com.peterlaurence.trekme.features.map.domain.interactors.MarkerInteractor
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.coroutineScope
@@ -16,10 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -29,6 +27,7 @@ class MarkersManageViewModel @Inject constructor(
     private val mapRepository: MapRepository,
     private val excursionRepository: ExcursionRepository,
     hasOneExtendedOfferInteractor: HasOneExtendedOfferInteractor,
+    private val markerInteractor: MarkerInteractor,
     private val mapFeatureEvents: MapFeatureEvents
 ) : ViewModel() {
     val hasExtendedOffer = hasOneExtendedOfferInteractor.getPurchaseFlow(viewModelScope)
@@ -64,7 +63,7 @@ class MarkersManageViewModel @Inject constructor(
                                     launch {
                                         excursionRepository.getWaypoints(ref.id)?.collect {
                                             waypointsForExcursion[ref] = it
-                                            send(waypointsForExcursion)
+                                            send(waypointsForExcursion.toMap())
                                         }
                                     }
                                 } else {
@@ -107,5 +106,15 @@ class MarkersManageViewModel @Inject constructor(
                 }
             }
         }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
+    }
+
+    fun updateMarkersColor(markers: List<Marker>, color: String) = viewModelScope.launch {
+        val map = map ?: return@launch
+        val updatedMarkers = markers.map { it.copy(color = color) }
+        markerInteractor.updateMarkers(updatedMarkers, map)
+    }
+
+    fun updateWaypointsColor(excursionId: String, waypoints: List<ExcursionWaypoint>, color: String) = viewModelScope.launch {
+        excursionRepository.updateWaypointsColor(excursionId, waypoints, color)
     }
 }
