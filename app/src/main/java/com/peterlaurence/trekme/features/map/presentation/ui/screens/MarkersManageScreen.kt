@@ -84,6 +84,8 @@ import kotlin.random.Random
 @Composable
 fun MarkersManageStateful(
     viewModel: MarkersManageViewModel = hiltViewModel(),
+    onEditMarker: (markerId: String, mapId: String) -> Unit,
+    onEditWaypoint: (waypointId: String, excursionId: String) -> Unit,
     onBackClick: () -> Unit
 ) {
     val markers by viewModel.getMarkersFlow().collectAsState()
@@ -178,6 +180,13 @@ fun MarkersManageStateful(
             onBackClick()
             viewModel.goToMarker(it)
         },
+        onEditMarker = {
+            val mapId = viewModel.map?.id?.toString() ?: return@MarkersManageScreen
+            onEditMarker(it, mapId)
+        },
+        onEditWaypoint = { wptId, excursionId ->
+            onEditWaypoint(wptId, excursionId)
+        },
         onGoToExcursionWaypoint = { excursionRef, wpt ->
             onBackClick()
             viewModel.goToExcursionWaypoint(excursionRef, wpt)
@@ -226,6 +235,8 @@ private fun MarkersManageScreen(
     hasMarkers: Boolean,
     onNewSearch: (String) -> Unit,
     onGoToMarker: (Marker) -> Unit,
+    onEditMarker: (markerId: String) -> Unit,
+    onEditWaypoint: (waypointId: String, excursionId: String) -> Unit,
     onDeleteMarker: (Marker) -> Unit,
     onDeleteWaypoint: (excursionRef: ExcursionRef, ExcursionWaypoint) -> Unit,
     onGoToExcursionWaypoint: (excursionRef: ExcursionRef, ExcursionWaypoint) -> Unit,
@@ -269,6 +280,7 @@ private fun MarkersManageScreen(
                                 onToggleMarkerSelection(it.marker, selected)
                             },
                             onGoToPin = { onGoToMarker(it.marker) },
+                            onEdit = { onEditMarker(it.marker.id) },
                             onDelete = { onDeleteMarker(it.marker) }
                         )
                     }
@@ -294,6 +306,7 @@ private fun MarkersManageScreen(
                                     onToggleWaypointSelection(it.waypoint, selected)
                                 },
                                 onGoToPin = { onGoToExcursionWaypoint(excursion, it.waypoint) },
+                                onEdit = { onEditWaypoint(it.waypoint.id, excursion.id )},
                                 onDelete = { onDeleteWaypoint(excursion, it.waypoint) }
                             )
                         }
@@ -488,6 +501,7 @@ private fun PinCard(
     selected: Boolean?,
     onToggleSelection: (Boolean) -> Unit,
     onGoToPin: () -> Unit,
+    onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
     var expandedMenu by remember { mutableStateOf(false) }
@@ -605,7 +619,7 @@ private fun PinCard(
                         DropdownMenuItem(
                             onClick = {
                                 expandedMenu = false
-                                // TODO
+                                onEdit()
                             },
                             text = {
                                 Text(stringResource(id = R.string.markers_manage_edit))
@@ -683,6 +697,8 @@ private fun MarkersManagePreview() {
             onNewSearch = {},
             onGoToMarker = {},
             onGoToExcursionWaypoint = { _, _ -> },
+            onEditMarker = {},
+            onEditWaypoint = { _, _ -> },
             onDeleteMarker = {},
             onDeleteWaypoint = { _, _ -> },
             onToggleMarkerSelection = { _, _ -> },

@@ -32,7 +32,7 @@ class MarkersManageViewModel @Inject constructor(
 ) : ViewModel() {
     val hasExtendedOffer = hasOneExtendedOfferInteractor.getPurchaseFlow(viewModelScope)
 
-    private val map: Map?
+    val map: Map?
         get() = mapRepository.getCurrentMap()
 
     fun goToMarker(marker: Marker) {

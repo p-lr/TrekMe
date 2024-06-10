@@ -33,6 +33,12 @@ fun NavGraphBuilder.mapGraph(
         )
 
         markersManageScreen(
+            onEditMarker = { markerId, mapId ->
+                navController.navigateToMarkerEdit(markerId, mapId)
+            },
+            onEditWaypoint = { wptId, excursionId ->
+                navController.navigateToExcursionWaypointEdit(wptId, excursionId)
+            },
             onBackClick = navController::navigateUp
         )
 
