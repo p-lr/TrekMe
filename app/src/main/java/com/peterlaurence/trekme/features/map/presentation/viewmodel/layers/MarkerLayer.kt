@@ -107,7 +107,10 @@ class MarkerLayer(
             val iter = markerListState.iterator()
             val ids = it.map { b -> b.marker.id }
             for (entry in iter) {
-                if (entry.key !in ids && entry.value.isStatic) iter.remove()
+                if (entry.key !in ids && entry.value.isStatic) {
+                    mapState.removeMarker(entry.value.idOnMap)
+                    iter.remove()
+                }
             }
         }
     }

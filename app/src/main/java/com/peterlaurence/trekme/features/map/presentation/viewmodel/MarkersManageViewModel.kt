@@ -117,4 +117,22 @@ class MarkersManageViewModel @Inject constructor(
     fun updateWaypointsColor(excursionId: String, waypoints: List<ExcursionWaypoint>, color: String) = viewModelScope.launch {
         excursionRepository.updateWaypointsColor(excursionId, waypoints, color)
     }
+
+    fun deleteMarker(marker: Marker) = viewModelScope.launch {
+        val map = map ?: return@launch
+        markerInteractor.deleteMarker(marker, map.id)
+    }
+
+    fun deleteMarkers(markers: List<Marker>) = viewModelScope.launch {
+        val map = map ?: return@launch
+        markerInteractor.deleteMarkers(markers.map { it.id }, map)
+    }
+
+    fun deleteWaypoint(excursionId: String, waypoint: ExcursionWaypoint) = viewModelScope.launch {
+        excursionRepository.deleteWaypoint(excursionId, waypoint)
+    }
+
+    fun deleteWaypoints(excursionId: String, waypoints: List<ExcursionWaypoint>) = viewModelScope.launch {
+        excursionRepository.deleteWaypoints(excursionId, waypoints)
+    }
 }

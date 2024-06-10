@@ -44,6 +44,11 @@ class ExcursionRepository @Inject constructor(
         dao.deleteWaypoint(excursion, waypoint)
     }
 
+    suspend fun deleteWaypoints(excursionId: String, waypoints: List<ExcursionWaypoint>) {
+        val excursion = getExcursion(excursionId) ?: return
+        dao.deleteWaypoints(excursion, waypoints)
+    }
+
     suspend fun putExcursion(id: String, title: String, type: ExcursionType, description: String, geoRecord: GeoRecord): PutExcursionResult {
         /* Check for a pending put with the same id */
         if (pendingPut.contains(id)) {

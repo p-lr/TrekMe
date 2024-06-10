@@ -105,5 +105,10 @@ class MarkerInteractor @Inject constructor(
         markersDao.saveMarkers(map)
     }
 
+    fun deleteMarkers(markerIds: List<String>, map: Map) = scope.launch {
+        map.markers.update { it - it.filter { m -> m.id in markerIds}.toSet() }
+        markersDao.saveMarkers(map)
+    }
+
     private var updateMarkerJob: Job? = null
 }

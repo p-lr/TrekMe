@@ -157,7 +157,10 @@ class ExcursionWaypointLayer(
         val iter = excursionWptState.waypointsState.iterator()
         val ids = wpts.map { b -> b.waypoint.id }
         for (entry in iter) {
-            if (entry.key !in ids && entry.value.isStatic) iter.remove()
+            if (entry.key !in ids && entry.value.isStatic) {
+                mapState.removeMarker(entry.value.idOnMap)
+                iter.remove()
+            }
         }
     }
 

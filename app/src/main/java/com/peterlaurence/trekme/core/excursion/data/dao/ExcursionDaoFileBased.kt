@@ -213,6 +213,22 @@ class ExcursionDaoFileBased(
         FileUtils.writeToFile(json.encodeToString(excursion.waypointsFlow.value), wayPointsFile)
     }
 
+    override suspend fun deleteWaypoints(
+        excursion: Excursion,
+        waypoints: List<ExcursionWaypoint>
+    ) = withContext(ioDispatcher) {
+        val root = (excursion as? ExcursionFileBased)?.root ?: return@withContext
+        val ids = waypoints.map { it.id }
+
+        excursion.waypointsFlow.update {
+            it.filterNot { p -> p.id in ids }
+        }
+
+        /* Re-write the waypoints file */
+        val wayPointsFile = File(root, WAYPOINTS_FILENAME)
+        FileUtils.writeToFile(json.encodeToString(excursion.waypointsFlow.value), wayPointsFile)
+    }
+
     /**
      * Beware that this implementation does not provide a stable id for the returned [GeoRecord].
      * Everytime [getGeoRecord] is called, a new [GeoRecord] with a different id is generated.

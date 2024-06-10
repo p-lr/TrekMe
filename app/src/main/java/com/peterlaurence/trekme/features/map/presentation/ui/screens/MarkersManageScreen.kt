@@ -148,7 +148,7 @@ fun MarkersManageStateful(
     val isSelectionMode by remember {
         derivedStateOf {
             filteredMarkers.any { it.isSelected }
-                    || filteredWaypoints.any { it.value.any { it.isSelected } }
+                    || filteredWaypoints.any { it.value.any { wpt -> wpt.isSelected } }
         }
     }
 
@@ -172,7 +172,7 @@ fun MarkersManageStateful(
         markers = filteredMarkers,
         excursionWaypoints = filteredWaypoints,
         isSelectionMode = isSelectionMode,
-        hasMarkers = markers.isNotEmpty(),
+        hasMarkers = markers.isNotEmpty() || excursionWaypoints.any { it.value.isNotEmpty() },
         onNewSearch = { search = it },
         onGoToMarker = {
             onBackClick()
@@ -182,14 +182,35 @@ fun MarkersManageStateful(
             onBackClick()
             viewModel.goToExcursionWaypoint(excursionRef, wpt)
         },
+        onDeleteMarker = {
+            viewModel.deleteMarker(it)
+        },
+        onDeleteWaypoint = { excursionRef, wpt ->
+            viewModel.deleteWaypoint(excursionRef.id, wpt)
+        },
         onToggleMarkerSelection = { marker, s -> setMarkerSelection(marker, s) },
         onToggleWaypointSelection = { wpt, s -> setWaypointSelection(wpt, s) },
+        onToggleSelectAll = {
+            if (isSelectionMode) {
+                selectedMarkerIds = emptyList()
+                selectedWaypoints = emptyList()
+            } else {
+                selectedMarkerIds = filteredMarkers.map { it.marker.id }
+                selectedWaypoints = filteredWaypoints.flatMap { it.value.map { wpt -> wpt.waypoint.id } }
+            }
+        },
         onChangeColor = { color ->
             viewModel.updateMarkersColor(filteredMarkers.filter { it.isSelected }.map { it.marker }, color)
             filteredWaypoints.forEach { (excursionRef, wpts) ->
                 viewModel.updateWaypointsColor(
                     excursionRef.id, wpts.filter { it.isSelected }.map { it.waypoint }, color
                 )
+            }
+        },
+        onDeleteSelected = {
+            viewModel.deleteMarkers(filteredMarkers.filter { it.isSelected }.map { it.marker })
+            filteredWaypoints.forEach { (excursionRef, wpts) ->
+                viewModel.deleteWaypoints(excursionRef.id, wpts.filter { it.isSelected }.map { it.waypoint })
             }
         },
         onBackClick = onBackClick
@@ -205,10 +226,14 @@ private fun MarkersManageScreen(
     hasMarkers: Boolean,
     onNewSearch: (String) -> Unit,
     onGoToMarker: (Marker) -> Unit,
+    onDeleteMarker: (Marker) -> Unit,
+    onDeleteWaypoint: (excursionRef: ExcursionRef, ExcursionWaypoint) -> Unit,
     onGoToExcursionWaypoint: (excursionRef: ExcursionRef, ExcursionWaypoint) -> Unit,
     onToggleMarkerSelection: (Marker, Boolean) -> Unit,
     onToggleWaypointSelection: (ExcursionWaypoint, Boolean) -> Unit,
+    onToggleSelectAll: () -> Unit,
     onChangeColor: (color: String) -> Unit,
+    onDeleteSelected: () -> Unit,
     onBackClick: () -> Unit
 ) {
     var showColorPicker by remember { mutableStateOf(false) }
@@ -216,8 +241,10 @@ private fun MarkersManageScreen(
         topBar = {
             MarkersTopAppBar(
                 isSelectionMode = isSelectionMode,
-                onToggleSelectAll = {}, // TODO
+                hasMarkers = hasMarkers,
+                onToggleSelectAll = onToggleSelectAll,
                 onChangeColor = { showColorPicker = true },
+                onDeleteSelected = onDeleteSelected,
                 onBackClick
             )
         }
@@ -241,7 +268,8 @@ private fun MarkersManageScreen(
                             onToggleSelection = { selected ->
                                 onToggleMarkerSelection(it.marker, selected)
                             },
-                            onGoToPin = { onGoToMarker(it.marker) }
+                            onGoToPin = { onGoToMarker(it.marker) },
+                            onDelete = { onDeleteMarker(it.marker) }
                         )
                     }
                     for (excursion in excursionWaypoints.keys) {
@@ -265,7 +293,8 @@ private fun MarkersManageScreen(
                                 onToggleSelection = { selected ->
                                     onToggleWaypointSelection(it.waypoint, selected)
                                 },
-                                onGoToPin = { onGoToExcursionWaypoint(excursion, it.waypoint) }
+                                onGoToPin = { onGoToExcursionWaypoint(excursion, it.waypoint) },
+                                onDelete = { onDeleteWaypoint(excursion, it.waypoint) }
                             )
                         }
                     }
@@ -296,8 +325,10 @@ private fun MarkersManageScreen(
 @Composable
 private fun MarkersTopAppBar(
     isSelectionMode: Boolean,
+    hasMarkers: Boolean,
     onToggleSelectAll: () -> Unit,
     onChangeColor: () -> Unit,
+    onDeleteSelected: () -> Unit,
     onBackClick: () -> Unit
 ) {
     TopAppBar(
@@ -308,6 +339,7 @@ private fun MarkersTopAppBar(
             }
         },
         actions = {
+            if (!hasMarkers) return@TopAppBar
             var expanded by remember { mutableStateOf(false) }
 
             IconButton(
@@ -331,19 +363,34 @@ private fun MarkersTopAppBar(
                     offset = DpOffset(0.dp, 0.dp)
                 ) {
                     DropdownMenuItem(
-                        onClick = onToggleSelectAll,
+                        onClick = {
+                            if (isSelectionMode) {
+                                expanded = false
+                                onToggleSelectAll()
+                            } else onToggleSelectAll()
+                        },
                         text = {
                             if (isSelectionMode) {
-                                Text(stringResource(id = R.string.markers_manage_select_all))
-                            } else {
                                 Text(stringResource(id = R.string.markers_manage_deselect_all))
+                            } else {
+                                Text(stringResource(id = R.string.markers_manage_select_all))
                             }
                         }
                     )
                     if (isSelectionMode) {
                         DropdownMenuItem(
-                            onClick = onChangeColor,
+                            onClick = {
+                                expanded = false
+                                onChangeColor()
+                            },
                             text = { Text(stringResource(id = R.string.markers_manage_change_color)) }
+                        )
+                        DropdownMenuItem(
+                            onClick = {
+                                expanded = false
+                                onDeleteSelected()
+                            },
+                            text = { Text(stringResource(id = R.string.markers_manage_delete)) }
                         )
                     }
                 }
@@ -440,7 +487,8 @@ private fun PinCard(
     color: String,
     selected: Boolean?,
     onToggleSelection: (Boolean) -> Unit,
-    onGoToPin: () -> Unit
+    onGoToPin: () -> Unit,
+    onDelete: () -> Unit
 ) {
     var expandedMenu by remember { mutableStateOf(false) }
 
@@ -568,7 +616,7 @@ private fun PinCard(
                         DropdownMenuItem(
                             onClick = {
                                 expandedMenu = false
-                                // TODO
+                                onDelete()
                             },
                             text = {
                                 Text(stringResource(id = R.string.delete_dialog))
@@ -635,9 +683,13 @@ private fun MarkersManagePreview() {
             onNewSearch = {},
             onGoToMarker = {},
             onGoToExcursionWaypoint = { _, _ -> },
+            onDeleteMarker = {},
+            onDeleteWaypoint = { _, _ -> },
             onToggleMarkerSelection = { _, _ -> },
             onToggleWaypointSelection = { _, _ -> },
+            onToggleSelectAll = {},
             onChangeColor = {},
+            onDeleteSelected = {},
             onBackClick = {}
         )
     }

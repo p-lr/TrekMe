@@ -331,6 +331,7 @@
     <string name="markers_manage_select_all">Tout sélectionner</string>
     <string name="markers_manage_deselect_all">Tout déselectionner</string>
     <string name="markers_manage_change_color">Changer la couleur</string>
+    <string name="markers_manage_delete">Supprimer</string>
 
     <string name="preference_measurement_system_title">Unités de mesure</string>
     <string name="metric_system">Système métrique</string>
