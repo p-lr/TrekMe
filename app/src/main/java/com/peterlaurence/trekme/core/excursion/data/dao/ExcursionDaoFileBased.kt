@@ -139,10 +139,14 @@ class ExcursionDaoFileBased(
         val wpt = waypoint as? Waypoint ?: return@withContext
 
         excursion.waypointsFlow.update {
-            it.filterNot { p -> p.id == waypoint.id } + wpt.copy(
-                latitude = newLat,
-                longitude = newLon
-            )
+            it.map { p ->
+                if (p.id == waypoint.id) {
+                    wpt.copy(
+                        latitude = newLat,
+                        longitude = newLon
+                    )
+                } else p
+            }
         }
 
         /* Re-write the waypoints file */
@@ -163,7 +167,8 @@ class ExcursionDaoFileBased(
         val wpt = waypoint as? Waypoint ?: return@withContext
 
         excursion.waypointsFlow.update {
-            it.filterNot { p -> p.id == waypoint.id } +
+            it.map { p ->
+                if (p.id == waypoint.id) {
                     wpt.copy(
                         name = name ?: wpt.name,
                         latitude = lat ?: wpt.latitude,
@@ -171,6 +176,8 @@ class ExcursionDaoFileBased(
                         comment = comment ?: wpt.comment,
                         color = color  // no default on purpose
                     )
+                } else p
+            }
         }
 
         /* Re-write the waypoints file */

@@ -61,7 +61,7 @@ class MarkerInteractor @Inject constructor(
 
         val updatedMarker = marker.copy(lat = lonLat[1], lon = lonLat[0])
         map.markers.update {
-            it.filterNot { m -> m.id == marker.id } + updatedMarker
+            it.map { p -> if (p.id == marker.id) updatedMarker else p }
         }
 
         markersDao.saveMarkers(map)
@@ -92,7 +92,9 @@ class MarkerInteractor @Inject constructor(
             val map = mapRepository.getMap(mapId) ?: return@launch
 
             map.markers.update { formerList ->
-                formerList.filter { it.id != marker.id } + marker
+                formerList.map { m ->
+                    if (m.id == marker.id) marker else m
+                }
             }
 
             markersDao.saveMarkers(map)
