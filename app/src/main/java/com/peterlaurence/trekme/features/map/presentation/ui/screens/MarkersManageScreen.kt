@@ -47,11 +47,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
@@ -248,6 +251,8 @@ private fun MarkersManageScreen(
     onBackClick: () -> Unit
 ) {
     var showColorPicker by remember { mutableStateOf(false) }
+    val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
     Scaffold(
         topBar = {
             MarkersTopAppBar(
@@ -264,7 +269,7 @@ private fun MarkersManageScreen(
             Column(
                 Modifier.padding(paddingValues)
             ) {
-                SearchBar(onNewSearch = onNewSearch)
+                SearchBar(onNewSearch = onNewSearch, focusRequester = focusRequester)
 
                 LazyColumn(
                     contentPadding = PaddingValues(8.dp),
@@ -279,7 +284,10 @@ private fun MarkersManageScreen(
                             onToggleSelection = { selected ->
                                 onToggleMarkerSelection(it.marker, selected)
                             },
-                            onGoToPin = { onGoToMarker(it.marker) },
+                            onGoToPin = {
+                                focusManager.clearFocus()
+                                onGoToMarker(it.marker)
+                            },
                             onEdit = { onEditMarker(it.marker.id) },
                             onDelete = { onDeleteMarker(it.marker) }
                         )
@@ -305,7 +313,10 @@ private fun MarkersManageScreen(
                                 onToggleSelection = { selected ->
                                     onToggleWaypointSelection(it.waypoint, selected)
                                 },
-                                onGoToPin = { onGoToExcursionWaypoint(excursion, it.waypoint) },
+                                onGoToPin = {
+                                    focusManager.clearFocus()
+                                    onGoToExcursionWaypoint(excursion, it.waypoint)
+                                },
                                 onEdit = { onEditWaypoint(it.waypoint.id, excursion.id )},
                                 onDelete = { onDeleteWaypoint(excursion, it.waypoint) }
                             )
@@ -415,6 +426,7 @@ private fun MarkersTopAppBar(
 @Composable
 private fun SearchBar(
     modifier: Modifier = Modifier,
+    focusRequester: FocusRequester,
     onNewSearch: (String) -> Unit,
 ) {
     var searchText by rememberSaveable {
@@ -435,6 +447,7 @@ private fun SearchBar(
     ) {
         BasicTextField(
             value = searchText,
+            modifier = Modifier.focusRequester(focusRequester),
             onValueChange = {
                 searchText = it
                 onNewSearch(it)
