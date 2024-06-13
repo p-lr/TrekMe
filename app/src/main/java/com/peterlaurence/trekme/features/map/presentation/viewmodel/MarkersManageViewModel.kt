@@ -2,7 +2,6 @@ package com.peterlaurence.trekme.features.map.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.peterlaurence.trekme.core.billing.domain.interactors.HasOneExtendedOfferInteractor
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionWaypoint
 import com.peterlaurence.trekme.core.excursion.domain.repository.ExcursionRepository
 import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
@@ -26,11 +25,9 @@ import javax.inject.Inject
 class MarkersManageViewModel @Inject constructor(
     private val mapRepository: MapRepository,
     private val excursionRepository: ExcursionRepository,
-    hasOneExtendedOfferInteractor: HasOneExtendedOfferInteractor,
     private val markerInteractor: MarkerInteractor,
     private val mapFeatureEvents: MapFeatureEvents
 ) : ViewModel() {
-    val hasExtendedOffer = hasOneExtendedOfferInteractor.getPurchaseFlow(viewModelScope)
 
     val map: Map?
         get() = mapRepository.getCurrentMap()
@@ -84,7 +81,8 @@ class MarkersManageViewModel @Inject constructor(
     fun getExcursionWaypointsFlow2(): StateFlow<kotlin.collections.Map<ExcursionRef, StateFlow<List<ExcursionWaypoint>>>> {
         return channelFlow {
             launch {
-                val waypointsForExcursion = mutableMapOf<ExcursionRef, StateFlow<List<ExcursionWaypoint>>>()
+                val waypointsForExcursion =
+                    mutableMapOf<ExcursionRef, StateFlow<List<ExcursionWaypoint>>>()
                 map?.excursionRefs?.collectLatest { refs ->
                     coroutineScope {
                         for (ref in refs) {
@@ -114,7 +112,11 @@ class MarkersManageViewModel @Inject constructor(
         markerInteractor.updateMarkers(updatedMarkers, map)
     }
 
-    fun updateWaypointsColor(excursionId: String, waypoints: List<ExcursionWaypoint>, color: String) = viewModelScope.launch {
+    fun updateWaypointsColor(
+        excursionId: String,
+        waypoints: List<ExcursionWaypoint>,
+        color: String
+    ) = viewModelScope.launch {
         excursionRepository.updateWaypointsColor(excursionId, waypoints, color)
     }
 
@@ -132,7 +134,9 @@ class MarkersManageViewModel @Inject constructor(
         excursionRepository.deleteWaypoint(excursionId, waypoint)
     }
 
-    fun deleteWaypoints(excursionId: String, waypoints: List<ExcursionWaypoint>) = viewModelScope.launch {
-        excursionRepository.deleteWaypoints(excursionId, waypoints)
+    fun deleteWaypoints(excursionId: String, waypoints: List<ExcursionWaypoint>) {
+        viewModelScope.launch {
+            excursionRepository.deleteWaypoints(excursionId, waypoints)
+        }
     }
 }

@@ -294,6 +294,7 @@
     <string name="track_follow_help">When following a track, your distance to the track is checked and if you move away from the track, you get notified with a sound and vibration.\n\nThe
         alert threshold can be changed in the settings.
     </string>
+    <string name="manage_markers_help">Search for markers, multi select them for color change or deletion…</string>
     <string name="itinerary_error">Sorry, no itinerary app found</string>
     <!-- Marker, beacon edit screens -->
     <string name="marker_edit_screen_title">Marker edit</string>

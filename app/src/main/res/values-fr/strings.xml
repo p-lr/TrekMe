@@ -450,6 +450,7 @@
     <string name="track_follow_help">Vous choisissez une trace à suivre, et si vous vous éloignez de plus de 50m de la trace, vous êtes alerté par un son et une vibration.\n\nLe
         seuil d\'alerte est de 50m par défaut, et peut être changé dans les réglages.
     </string>
+    <string name="manage_markers_help">Recherchez des marqueurs, sélectionnez-en plusieurs à la fois pour changer leur couleur ou les supprimer, etc.</string>
     <string name="itinerary_error">Désolé, aucune app de navigation trouvée</string>
     <string name="map_delete_landmark">Supprimer le marqueur</string>
     <string name="map_move_landmark">Déplacer le marqueur</string>

@@ -344,17 +344,17 @@ fun MapTopAppBar(
 
     if (isShowingManageMarkersRedirect) {
         AlertDialog(
-            onDismissRequest = { isShowingTrackFollowRedirect = false },
+            onDismissRequest = { isShowingManageMarkersRedirect = false },
             title = {
                 Text(stringResource(id = R.string.map_settings_trekme_extended_title))
             },
             text = {
-                Text(text = stringResource(id = R.string.track_follow_help))
+                Text(text = stringResource(id = R.string.manage_markers_help))
             },
             dismissButton = {
                 TextButton(
                     onClick = {
-                        isShowingTrackFollowRedirect = false
+                        isShowingManageMarkersRedirect = false
                     }
                 ) {
                     Text(text = stringResource(id = R.string.cancel_dialog_string))
@@ -363,7 +363,7 @@ fun MapTopAppBar(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        isShowingTrackFollowRedirect = false
+                        isShowingManageMarkersRedirect = false
                         onNavigateToShop()
                     }
                 ) {
