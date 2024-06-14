@@ -93,9 +93,6 @@ fun MarkersManageStateful(
 ) {
     val markers by viewModel.getMarkersFlow().collectAsState()
     val excursionWaypoints by viewModel.excursionWaypointFlow.collectAsState()
-    // if changing excursion waypoint color causes recomposition of the whole screen and maybe a flicker,
-    // then try observing each excursion using the state below.
-//    val waypoints by viewModel.getExcursionWaypointsFlow2().collectAsState()
     var search by remember { mutableStateOf("") }
 
     var searchJob1: Job? = null

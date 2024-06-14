@@ -88,25 +88,27 @@ class ExcursionWaypointLayer(
         map.excursionRefs.collectLatest { refs ->
             coroutineScope {
                 for (ref in refs) {
-                    ref.visible.collectLatest l@{ visible ->
-                        if (ref !in excursionWptListState.keys) {
-                            excursionWptListState[ref] = ExcursionWaypointsState(ref)
-                        }
-                        val state = excursionWptListState[ref] ?: return@l
-                        if (visible) {
-                            launch {
-                                excursionInteractor.getWaypointsFlow(ref, map).collect { wpts ->
-                                    val colorFlow = ref.color.map {
-                                        Color(parseColor(it))
+                    launch {
+                        ref.visible.collectLatest l@{ visible ->
+                            if (ref !in excursionWptListState.keys) {
+                                excursionWptListState[ref] = ExcursionWaypointsState(ref)
+                            }
+                            val state = excursionWptListState[ref] ?: return@l
+                            if (visible) {
+                                launch {
+                                    excursionInteractor.getWaypointsFlow(ref, map).collect { wpts ->
+                                        val colorFlow = ref.color.map {
+                                            Color(parseColor(it))
+                                        }
+                                        onExcursionMarkersChange(wpts, mapState, state, colorFlow)
                                     }
-                                    onExcursionMarkersChange(wpts, mapState, state, colorFlow)
                                 }
+                            } else {
+                                state.waypointsState.forEach { (_, u) ->
+                                    mapState.removeMarker(u.idOnMap)
+                                }
+                                excursionWptListState.remove(ref)
                             }
-                        } else {
-                            state.waypointsState.forEach { (_, u) ->
-                                mapState.removeMarker(u.idOnMap)
-                            }
-                            excursionWptListState.remove(ref)
                         }
                     }
                 }

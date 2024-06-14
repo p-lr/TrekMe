@@ -55,48 +55,19 @@ class MarkersManageViewModel @Inject constructor(
                 map?.excursionRefs?.collectLatest { refs ->
                     coroutineScope {
                         for (ref in refs) {
-                            ref.visible.collectLatest l@{ visible ->
-                                if (visible) {
-                                    launch {
-                                        excursionRepository.getWaypoints(ref.id)?.collect {
-                                            waypointsForExcursion[ref] = it
-                                            send(waypointsForExcursion.toMap())
+                            launch {
+                                ref.visible.collectLatest l@{ visible ->
+                                    if (visible) {
+                                        launch {
+                                            excursionRepository.getWaypoints(ref.id)?.collect {
+                                                waypointsForExcursion[ref] = it
+                                                send(waypointsForExcursion.toMap())
+                                            }
                                         }
+                                    } else {
+                                        waypointsForExcursion.remove(ref)
+                                        send(waypointsForExcursion)
                                     }
-                                } else {
-                                    waypointsForExcursion.remove(ref)
-                                    send(waypointsForExcursion)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
-    }
-
-    /**
-     * TODO: test if this way of exposing state is better.
-     */
-    fun getExcursionWaypointsFlow2(): StateFlow<kotlin.collections.Map<ExcursionRef, StateFlow<List<ExcursionWaypoint>>>> {
-        return channelFlow {
-            launch {
-                val waypointsForExcursion =
-                    mutableMapOf<ExcursionRef, StateFlow<List<ExcursionWaypoint>>>()
-                map?.excursionRefs?.collectLatest { refs ->
-                    coroutineScope {
-                        for (ref in refs) {
-                            ref.visible.collectLatest l@{ visible ->
-                                if (visible) {
-                                    launch {
-                                        excursionRepository.getWaypoints(ref.id)?.also {
-                                            waypointsForExcursion[ref] = it
-                                            send(waypointsForExcursion)
-                                        }
-                                    }
-                                } else {
-                                    waypointsForExcursion.remove(ref)
-                                    send(waypointsForExcursion)
                                 }
                             }
                         }
