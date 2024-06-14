@@ -6,7 +6,7 @@ buildscript {
         hilt_version= '2.50'
         nav_version = '2.7.7'
         coroutine_version = '1.8.0'
-        compose_compiler_version = '1.5.11'
+        compose_compiler_version = '1.5.13'
     }
 
     repositories {
