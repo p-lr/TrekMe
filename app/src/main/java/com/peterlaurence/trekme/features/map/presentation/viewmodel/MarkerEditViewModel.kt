@@ -31,7 +31,7 @@ class MarkerEditViewModel @Inject constructor(
 
     fun saveMarker(lat: Double?, lon: Double?, name: String, comment: String, color: String?) {
         val marker = makeMarker(lat, lon, name, comment, color) ?: return
-        markerInteractor.saveMarker(mapId, marker)
+        markerInteractor.saveMarkerDebounced(mapId, marker)
     }
 
     private fun makeMarker(lat: Double?, lon: Double?, name: String, comment: String, color: String?): Marker? {

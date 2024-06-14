@@ -62,6 +62,22 @@ class MapFeatureEvents {
 
     fun postTrackFollowStopEvent(event: TrackFollowServiceStopEvent) = _trackFollowStopEvent.tryEmit(event)
     /* endregion */
+
+    /* region manage markers and excursion waypoints */
+    private val _goToMarker = Channel<Marker>(1)
+    val goToMarker = _goToMarker.receiveAsFlow()
+
+    fun postGoToMarker(marker: Marker) {
+        _goToMarker.trySend(marker)
+    }
+
+    private val _goToExcursionWaypoint = Channel<Pair<ExcursionRef, ExcursionWaypoint>>(1)
+    val goToExcursionWaypoint = _goToExcursionWaypoint.receiveAsFlow()
+
+    fun postGoToExcursionWaypoint(excursionRef: ExcursionRef, waypoint: ExcursionWaypoint) {
+        _goToExcursionWaypoint.trySend(excursionRef to waypoint)
+    }
+    /* endregion */
 }
 
 sealed interface PlaceableEvent

@@ -51,6 +51,7 @@
     <string name="cancel_dialog_string">Annuler</string>
     <string name="manage_tracks_menu">Gérer les traces</string>
     <string name="follow_track_menu">Suivre une trace</string>
+    <string name="manage_markers_menu">Gérer les marqueurs</string>
     <string name="import_tracks_menu_title">Traces</string>
     <string name="import_tracks_warning">Le fichier sélectionné a un format inconnu. Les extensions connues sont :</string>
     <string name="mapview_add_marker">Marqueur</string>
@@ -59,6 +60,7 @@
     <string name="marker_edit_screen_title">Modification du marqueur</string>
     <string name="beacon_edit_screen_title">Modification de la balise</string>
     <string name="marker_name_label">Nom</string>
+    <string name="use_same_color_as_track">Même couleur que la trace</string>
     <string name="beacon_setting_title">Taille balise</string>
     <string name="beacon_radius_label">Rayon</string>
     <string name="beacon_unit_label">Unité</string>
@@ -160,6 +162,7 @@
     <string name="track_is_being_added">La trace est en cours d\'import dans la carte</string>
     <string name="track_is_being_restored">Une trace est en cours de récupération</string>
     <string name="no_track_message">Vous n\'avez pas encore importé de trace. Vous pouvez créer votre propre trace en enregistrant votre parcours. Ou bien vous pouvez télécharger des traces au format gpx sur un site internet de randonnée, et l\'importer avec le bouton ci-dessus.</string>
+    <string name="no_markers_message">Il n\'y a pas de marqueurs sur cette carte.</string>
     <string name="track_stats_menu_title">Statistiques enregistrement en cours</string>
     <string name="no_internet">Vous devez être connecté à internet pour créer une carte</string>
     <string name="distance">Distance</string>
@@ -318,6 +321,18 @@
     <string name="color_variant_light">Claire</string>
     <string name="color_variant_dark">Foncée</string>
     <string name="track_remove_question">Confirmez la suppression de la trace</string>
+
+    <!-- Markers manage -->
+    <string name="markers_manage_title">Gestion des marqueurs</string>
+    <string name="markers_manage_no_name">sans nom</string>
+    <string name="markers_manage_edit">Modifier</string>
+    <string name="markers_manage_select">Sélectionner</string>
+    <string name="markers_manage_goto">Voir</string>
+    <string name="markers_manage_select_all">Tout sélectionner</string>
+    <string name="markers_manage_deselect_all">Tout déselectionner</string>
+    <string name="markers_manage_change_color">Changer la couleur</string>
+    <string name="markers_manage_delete">Supprimer</string>
+
     <string name="preference_measurement_system_title">Unités de mesure</string>
     <string name="metric_system">Système métrique</string>
     <string name="imperial_system">Système impérial (miles)</string>
@@ -435,6 +450,7 @@
     <string name="track_follow_help">Vous choisissez une trace à suivre, et si vous vous éloignez de plus de 50m de la trace, vous êtes alerté par un son et une vibration.\n\nLe
         seuil d\'alerte est de 50m par défaut, et peut être changé dans les réglages.
     </string>
+    <string name="manage_markers_help">Recherchez des marqueurs, sélectionnez-en plusieurs à la fois pour changer leur couleur ou les supprimer, etc.</string>
     <string name="itinerary_error">Désolé, aucune app de navigation trouvée</string>
     <string name="map_delete_landmark">Supprimer le marqueur</string>
     <string name="map_move_landmark">Déplacer le marqueur</string>

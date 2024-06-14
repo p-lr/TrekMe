@@ -13,6 +13,7 @@ fun NavGraphBuilder.mapGraph(
     navigation(startDestination = mapDestination, route = mapSubGraph) {
         mapScreen(
             onNavigateToTrackManage = { navController.navigateToTracksManage() },
+            onNavigateToMarkersManage = { navController.navigateToMarkersManage() },
             onNavigateToMarkerEdit = { markerId, mapId ->
                 navController.navigateToMarkerEdit(markerId, mapId.toString())
             },
@@ -28,6 +29,16 @@ fun NavGraphBuilder.mapGraph(
 
         tracksManageScreen(
             onNavigateToMap = navController::navigateUp,
+            onBackClick = navController::navigateUp
+        )
+
+        markersManageScreen(
+            onEditMarker = { markerId, mapId ->
+                navController.navigateToMarkerEdit(markerId, mapId)
+            },
+            onEditWaypoint = { wptId, excursionId ->
+                navController.navigateToExcursionWaypointEdit(wptId, excursionId)
+            },
             onBackClick = navController::navigateUp
         )
 

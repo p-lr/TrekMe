@@ -208,11 +208,12 @@
     <string name="map_import_error">Error: the map format is\'t recognized.</string>
     <string name="import_from_folder_btn_desc" translatable="false">Import from folder button</string>
 
-    <!-- Menu of the map view fragment -->
+    <!-- Menu of the map top app bar -->
     <string name="manage_tracks_menu">Manage tracks</string>
     <string name="follow_track_menu">Follow a track</string>
+    <string name="manage_markers_menu">Manage markers</string>
 
-    <!-- Tracks manage fragment -->
+    <!-- Tracks manage -->
     <string name="tracks_manage_frgmt_title">Tracks manage</string>
     <string name="import_tracks_menu_title">Tracks</string>
     <string name="import_tracks_action_settings">Settings</string>
@@ -236,6 +237,17 @@
     <string name="color_variant_dark">Dark</string>
     <string name="add_track_btn_desc" translatable="false">Add track button</string>
     <string name="track_remove_question">Confirm track removal</string>
+
+    <!-- Markers manage -->
+    <string name="markers_manage_title">Markers manage</string>
+    <string name="markers_manage_no_name">without name</string>
+    <string name="markers_manage_edit">Edit</string>
+    <string name="markers_manage_select">Select</string>
+    <string name="markers_manage_goto">See on map</string>
+    <string name="markers_manage_select_all">Select all</string>
+    <string name="markers_manage_deselect_all">Select all</string>
+    <string name="markers_manage_change_color">Change color</string>
+    <string name="markers_manage_delete">Delete</string>
 
     <!-- Map feature -->
     <string name="mapview_show_speed">Show speed</string>
@@ -263,6 +275,7 @@
     <string name="mile">ml</string>
     <string name="no_track_message">You haven\'t created nor imported any track yet.
         You can import a gpx track downloaded from a website (or a recording of your own) using the import button below.</string>
+    <string name="no_markers_message">There\'s no markers on this map.</string>
     <string name="missing_extended_with_ign">To open this map, your TrekMe Extended subscription with IGN option must be active.</string>
     <string name="missing_extended">To open this map, your TrekMe Extended subscription must be active.</string>
     <string name="empty_map">This map appears to be empty</string>
@@ -281,11 +294,13 @@
     <string name="track_follow_help">When following a track, your distance to the track is checked and if you move away from the track, you get notified with a sound and vibration.\n\nThe
         alert threshold can be changed in the settings.
     </string>
+    <string name="manage_markers_help">Search for markers, multi select them for color change or deletion…</string>
     <string name="itinerary_error">Sorry, no itinerary app found</string>
     <!-- Marker, beacon edit screens -->
     <string name="marker_edit_screen_title">Marker edit</string>
     <string name="beacon_edit_screen_title">Beacon edit</string>
     <string name="marker_name_label">Name</string>
+    <string name="use_same_color_as_track">Use same color as track</string>
     <string name="beacon_setting_title">Beacon extent</string>
     <string name="beacon_radius_label">Radius</string>
     <string name="beacon_unit_label">Unit</string>

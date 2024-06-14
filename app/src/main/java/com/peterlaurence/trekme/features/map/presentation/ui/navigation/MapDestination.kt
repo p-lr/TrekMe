@@ -14,6 +14,7 @@ internal const val mapDestination = "map_dest"
 
 fun NavGraphBuilder.mapScreen(
     onNavigateToTrackManage: () -> Unit,
+    onNavigateToMarkersManage: () -> Unit,
     onNavigateToMarkerEdit: (markerId: String, mapId: UUID) -> Unit,
     onNavigateToExcursionWaypointEdit: (waypointId: String, excursionId: String) -> Unit,
     onNavigateToBeaconEdit: (beaconId: String, mapId: UUID) -> Unit,
@@ -33,6 +34,7 @@ fun NavGraphBuilder.mapScreen(
         ) {
             MapStateful(
                 onNavigateToTracksManage = onNavigateToTrackManage,
+                onNavigateToMarkersManage = onNavigateToMarkersManage,
                 onNavigateToMarkerEdit = onNavigateToMarkerEdit,
                 onNavigateToExcursionWaypointEdit = onNavigateToExcursionWaypointEdit,
                 onNavigateToBeaconEdit = onNavigateToBeaconEdit,

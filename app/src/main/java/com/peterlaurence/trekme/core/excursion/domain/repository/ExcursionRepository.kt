@@ -29,14 +29,24 @@ class ExcursionRepository @Inject constructor(
         dao.updateWaypoint(excursion, waypoint, newLat, newLon)
     }
 
-    suspend fun updateWaypoint(excursionId: String, waypoint: ExcursionWaypoint, name: String?, lat: Double?, lon: Double?, comment: String?) {
+    suspend fun updateWaypoint(excursionId: String, waypoint: ExcursionWaypoint, name: String?, lat: Double?, lon: Double?, comment: String?, color: String?) {
         val excursion = getExcursion(excursionId) ?: return
-        dao.updateWaypoint(excursion, waypoint, name, lat, lon, comment)
+        dao.updateWaypoint(excursion, waypoint, name, lat, lon, comment, color)
+    }
+
+    suspend fun updateWaypointsColor(excursionId: String, waypoints: List<ExcursionWaypoint>, color: String?) {
+        val excursion = getExcursion(excursionId) ?: return
+        dao.updateWaypointsColor(excursion, waypoints, color)
     }
 
     suspend fun deleteWaypoint(excursionId: String, waypoint: ExcursionWaypoint) {
         val excursion = getExcursion(excursionId) ?: return
         dao.deleteWaypoint(excursion, waypoint)
+    }
+
+    suspend fun deleteWaypoints(excursionId: String, waypoints: List<ExcursionWaypoint>) {
+        val excursion = getExcursion(excursionId) ?: return
+        dao.deleteWaypoints(excursion, waypoints)
     }
 
     suspend fun putExcursion(id: String, title: String, type: ExcursionType, description: String, geoRecord: GeoRecord): PutExcursionResult {
