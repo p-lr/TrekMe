@@ -216,7 +216,7 @@ class MarkerLayer(
         val marker = markerState.marker
         scope.launch {
             dataStateFlow.first().also {
-                markerInteractor.updateMarkerPosition(
+                markerInteractor.addMarkerAtPosition(
                     marker,
                     it.map,
                     markerInfo.x,

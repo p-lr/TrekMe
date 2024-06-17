@@ -51,17 +51,17 @@ class MarkerInteractor @Inject constructor(
     }
 
     /**
-     * Update the marker position and save.
+     * Add the marker position and save.
      * [x] and [y] are expected to be normalized coordinates.
      */
-    fun updateMarkerPosition(marker: Marker, map: Map, x: Double, y: Double) = scope.launch {
+    fun addMarkerAtPosition(marker: Marker, map: Map, x: Double, y: Double) = scope.launch {
         val mapBounds = map.mapBounds
 
         val lonLat = getLonLatFromNormalizedCoordinate(x, y, map.projection, mapBounds)
 
         val updatedMarker = marker.copy(lat = lonLat[1], lon = lonLat[0])
         map.markers.update {
-            it.map { p -> if (p.id == marker.id) updatedMarker else p }
+            it.filterNot { m -> m.id == marker.id } + updatedMarker
         }
 
         markersDao.saveMarkers(map)
