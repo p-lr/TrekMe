@@ -317,6 +317,11 @@ Même si vous quittez TrekMe, vous retrouverez la trace en temps réel sur votre
 
 ### Import d'un fichier GPX
 
+Il existe deux manières d'importer un fichier gpx : soit on importe la trace dans une carte (méthode 1),
+soit on importe dans toutes les cartes qui peuvent contenir la trace (méthode 2).
+
+#### Méthode 1 : import gpx dans une carte
+
 Alors que vous visionnez une carte, utilisez le menu en haut à droite, puis sélectionnez "Gérer les traces":
 
 <p align="center">
@@ -332,15 +337,30 @@ La liste des traces disponibles pour votre carte s'affiche alors (à ce stade il
 Vous pouvez alors :
 
 * Importer un fichier gpx avec le bouton d'import en bas à droite
-* Assigner un couleur pour chaque trace
+* Assigner une couleur pour chaque trace
 * Gérer la visibilité des traces déjà importées. Un appui long sur ce bouton change la visibilité de
 toutes les traces.
 * Supprimer des traces en les faisant glisser à droite ou à gauche (cela n'affecte en rien le fichier gpx)
 
-Avec le menu en haut à droite, qui appraît quand vous sélectionnez une trace, vous pouvez :
+Avec le menu en haut à droite, qui apparaît quand vous sélectionnez une trace, vous pouvez :
 
 * Renommer la trace sélectionnée
 * Aller directement sur la trace sélectionnée sur la carte (cette fonctionnalité n'est disponible qu'avec l'offre TrekMe Extended).
+
+#### Méthode 2 : import gpx dans toutes les cartes
+
+Depuis le menu principal > Mes traces, utilisez le menu ci-dessous puis "Importer des fichiers":
+
+<p align="center">
+<img src="doc/images/gpx-import-menu_fr.png" width="300">
+</p>
+
+Sélectionnez alors le ou les fichiers gpx à importer. La trace sera alors importée dans toutes les
+cartes qui peuvent l'afficher.
+
+Noter que les traces importées de cette manière sont communes à toutes les cartes. Par exemple, la
+suppression de la trace depuis cet écran a pour conséquence la suppression de la trace pour toutes
+les cartes.
 
 ### Enregistrement GPX
 

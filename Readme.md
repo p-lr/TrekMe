@@ -292,6 +292,11 @@ Even if you close TrekMe, you will find your live route the next time you open i
 
 ### Import a GPX track
 
+There's two different ways for importing a gpx track. Using the first one, you import a track for a
+specific map, while using the second one you import a track for all maps which can display the track.
+
+#### Import gpx for a specific map
+
 While viewing a map, press the button below on the upper right corner :
 
 <p align="center">
@@ -316,6 +321,20 @@ Using the menu at the top right corner (the three vertical dots), which appears 
 
 * Rename the selected track
 * Center on the selected track on the map (only available with TrekMe Extended)
+
+#### Import gpx for all maps
+
+From the main menu > My trails, click on bellow the button menu, then select "Import files":
+
+<p align="center">
+<img src="doc/images/gpx-import-menu_en.png" width="300">
+</p>
+
+You can then select the file(s) you wish to import. The track(s) will then be imported for all maps
+which can display the track(s).
+
+Note that tracks imported this way are common to all maps. This means that deleting a track from
+this screen deletes the track for all maps.
 
 ### GPX recording
 
