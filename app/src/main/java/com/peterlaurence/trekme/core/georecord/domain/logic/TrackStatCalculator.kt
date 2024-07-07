@@ -18,12 +18,12 @@ import kotlin.math.*
  * Distance and elevation stack are computed using a rolling mean of 5 points and an
  * elevation threshold of 10 meters (if elevation isn't trusted, 3 meters otherwise).
  *
- * Beware, [addTrackPoint] and [addTrackPointList] aren't synchronized.
+ * Beware, [addTrackPoint] isn't synchronized.
  * A safe usage is to have one [TrackStatCalculator] instance per coroutine.
  * Yet, it is acceptable to invoke [addTrackPoint] from one thread before invoking [getStatistics]
  * from another thread.
  *
- * @author P.Laurence on 09/09/18
+ * @since 2018/09/09
  */
 class TrackStatCalculator(private val distanceCalculator: DistanceCalculator) {
     private var elevationUpStack = 0.0
@@ -254,16 +254,17 @@ private class DistanceCalculatorEleNotTrusted : DistanceCalculator {
             val elevations = buffer.filterNot { it.isNaN() }
             if (elevations.isNotEmpty()) {
                 val meanEle = elevations.mean()
+                val snapshot = this.snapshot
                 val diffEle = snapshot?.let { abs(it.elevation - meanEle) }
                 if (diffEle != null && diffEle > eleThreshold) {
-                    distance = snapshot!!.distance + sqrt(
-                        (distance - snapshot!!.distance).pow(2) + diffEle.pow(2)
+                    distance = snapshot.distance + sqrt(
+                        (distance - snapshot.distance).pow(2) + diffEle.pow(2)
                     )
                     this.snapshot = Snapshot(distance, meanEle)
                     onEleSnapShot?.invoke(meanEle)
                 }
                 if (firstSnapshot) {
-                    snapshot = Snapshot(distance, meanEle)
+                    this.snapshot = Snapshot(distance, meanEle)
                 }
             }
         }

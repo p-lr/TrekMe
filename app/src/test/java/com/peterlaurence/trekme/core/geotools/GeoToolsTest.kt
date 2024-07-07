@@ -9,10 +9,17 @@ import org.junit.Test
  */
 class GeoToolsTest {
     @Test
-    fun distanceApprox() {
+    fun distanceApproxTest() {
         val d = distanceApprox(51.510357, -0.116773, 38.889931, -77.009003)
         /* Check the result with 10cm precision */
         Assert.assertEquals(d, 5897658.289, 0.1)
+    }
+
+    @Test
+    fun distanceApproxTest2() {
+        val d = distanceApprox(48.722703, 2.510788, 48.868977, 2.310136)
+        /* Check the result with 2m precision */
+        Assert.assertEquals(d, 21920.0, 2.0)
     }
 
     @Test
