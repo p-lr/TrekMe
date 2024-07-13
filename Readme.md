@@ -26,6 +26,7 @@
   * [GPX recording](#gpx-recording)
   * [Follow a track](#follow-a-track)
   * [Manage trails](#manage-trails)
+  * [Manage markers](#manage-markers)
 5. [Settings](#settings)
   * [Start on the last map](#start-on-the-last-map)
   * [Download folder](#download-folder)
@@ -385,7 +386,7 @@ The track following feature runs as a background service, which only works when 
 
 ### Manage trails
 
-From the main menu > My trails, the list of gpx recordings appear. Four buttons at the bottom-left enable you to:
+From the main menu > Manage trails, the list of gpx recordings appear. Four buttons at the bottom-left enable you to:
 
 * Rename the track,
 * Import the track into an existing map (press the import button at the bottom of the list, then choose the map),
@@ -424,6 +425,22 @@ minimum and maximum elevations.
 
 <p align="center">
 <img src="doc/images/ele-profile-en.jpg" width="300">
+</p>
+
+### Manage markers
+
+From the main menu > Manage markers, the list of markers is shown. From this screen, you can search
+for a specific marker from its name.
+
+<p align="center">
+<img src="doc/images/manage-markers-en.jpg" width="300">
+</p>
+
+For each marker, several actions are possible using the drop-down menu on the right, such as centering
+the map on the marker.
+
+<p align="center">
+<img src="doc/images/manage-markers-edit-en.jpg" width="300">
 </p>
 
 ## Settings

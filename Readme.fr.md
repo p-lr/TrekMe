@@ -26,6 +26,7 @@
   * [S'enregistrer au format GPX](#enregistrement-gpx)
   * [Suivre une trace](#suivre-une-trace)
   * [Gérer les traces](#gérer-les-traces)
+  * [Gérer les marqueurs](#gérer-les-marqueurs)
 5. [Paramètres](#paramètres)
   * [Démarrer sur la dernière carte](#démarrer-sur-la-dernière-carte)
   * [Dossier de téléchargement](#dossier-de-téléchargement)
@@ -411,7 +412,7 @@ si toutes les conditions suivantes sont remplies :
 
 ### Gérer les traces
 
-La liste des enregistrements effectués est accessible depuis le menu > "Mes traces".
+La liste des enregistrements effectués est accessible depuis le menu > "Gérer les traces".
 En sélectionnant un enregistrement, quatre boutons en bas à gauche vous permettent respectivement de :
 
 * Renommer le fichier gpx
@@ -452,6 +453,23 @@ les altitudes min, max, et le dénivelé (non-cumulé).
 <p align="center">
 <img src="doc/images/ele-profile-fr.jpg" width="300">
 </p>
+
+### Gérer les marqueurs
+
+La liste des marqueurs est accessible depuis le menu > "Gérer les marqueurs". Depuis cet écran, 
+vous pouvez chercher un marqueur à partir de son nom.
+
+<p align="center">
+<img src="doc/images/manage-markers-fr.jpg" width="300">
+</p>
+
+Pour chaque marqueur, plusieurs actions sont possibles depuis le menu sur la droite, comme le fait 
+de centrer la carte sur le marqueur.
+
+<p align="center">
+<img src="doc/images/manage-markers-edit-fr.jpg" width="300">
+</p>
+
 
 ## Paramètres
 
