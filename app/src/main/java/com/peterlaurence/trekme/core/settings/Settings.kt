@@ -10,6 +10,8 @@ import com.peterlaurence.trekme.core.location.domain.model.InternalGps
 import com.peterlaurence.trekme.core.location.domain.model.LocationProducerInfo
 import com.peterlaurence.trekme.core.units.DistanceUnit
 import com.peterlaurence.trekme.core.units.MeasurementSystem
+import com.peterlaurence.trekme.util.android.safeData
+import com.peterlaurence.trekme.util.android.safeEdit
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
@@ -66,7 +68,7 @@ class Settings @Inject constructor(
      * It's also a security in the case the application directories change across versions.
      */
     fun getAppDir(): Flow<File?> {
-        return dataStore.data.map { pref ->
+        return dataStore.safeData.map { pref ->
             pref[appDirKey]?.let { if (checkAppPath(it)) File(it) else null }
                 ?: trekMeContext.defaultAppDir.firstOrNull()
         }
@@ -78,7 +80,7 @@ class Settings @Inject constructor(
      */
     suspend fun setAppDir(file: File) {
         if (checkAppPath(file.absolutePath)) {
-            dataStore.edit { settings ->
+            dataStore.safeEdit { settings ->
                 settings[appDirKey] = file.absolutePath
             }
         }
@@ -94,41 +96,41 @@ class Settings @Inject constructor(
      * The [StartOnPolicy] defines whether TrekMe should boot on the map list or on the last map.
      */
     fun getStartOnPolicy(): Flow<StartOnPolicy> {
-        return dataStore.data.map { pref ->
+        return dataStore.safeData.map { pref ->
             pref[startOnPolicy]?.let { StartOnPolicy.valueOf(it) } ?: StartOnPolicy.MAP_LIST
         }
     }
 
     suspend fun setStartOnPolicy(policy: StartOnPolicy) {
-        dataStore.edit { settings ->
+        dataStore.safeEdit { settings ->
             settings[startOnPolicy] = policy.name
         }
     }
 
-    fun getMagnifyingFactor(): Flow<Int> = dataStore.data.map { it[magnifyingFactor] ?: 0 }
+    fun getMagnifyingFactor(): Flow<Int> = dataStore.safeData.map { it[magnifyingFactor] ?: 0 }
 
     suspend fun setMagnifyingFactor(factor: Int) {
-        dataStore.edit {
+        dataStore.safeEdit {
             it[magnifyingFactor] = factor
         }
     }
 
-    fun getMaxScale(): Flow<Float> = dataStore.data.map { it[maxScale] ?: 2f }
+    fun getMaxScale(): Flow<Float> = dataStore.safeData.map { it[maxScale] ?: 2f }
 
     suspend fun setMaxScale(scale: Float) {
-        dataStore.edit {
+        dataStore.safeEdit {
             it[maxScale] = scale
         }
     }
 
     fun getUnitForBeaconRadius(): Flow<DistanceUnit> {
-        return dataStore.data.map { pref ->
+        return dataStore.safeData.map { pref ->
             pref[unitForBeaconRadius]?.let { DistanceUnit.valueOf(it) } ?: DistanceUnit.Meters
         }
     }
 
     suspend fun setUnitForBeaconRadius(unit: DistanceUnit) {
-        dataStore.edit { settings ->
+        dataStore.safeEdit { settings ->
             settings[unitForBeaconRadius] = unit.name
         }
     }
@@ -137,13 +139,13 @@ class Settings @Inject constructor(
      * Get the rotation behavior when viewing a map.
      */
     fun getRotationMode(): Flow<RotationMode> {
-        return dataStore.data.map { pref ->
+        return dataStore.safeData.map { pref ->
             pref[rotationMode]?.let { RotationMode.valueOf(it) } ?: RotationMode.NONE
         }
     }
 
     suspend fun setRotationMode(mode: RotationMode) {
-        dataStore.edit {
+        dataStore.safeEdit {
             it[rotationMode] = mode.name
             if (mode == RotationMode.FOLLOW_ORIENTATION) {
                 it[orientationVisibility] = true
@@ -151,48 +153,48 @@ class Settings @Inject constructor(
         }
     }
 
-    fun getSpeedVisibility(): Flow<Boolean> = dataStore.data.map { it[speedVisibility] ?: false }
+    fun getSpeedVisibility(): Flow<Boolean> = dataStore.safeData.map { it[speedVisibility] ?: false }
 
     suspend fun setSpeedVisibility(v: Boolean) {
-        dataStore.edit {
+        dataStore.safeEdit {
             it[speedVisibility] = v
         }
     }
 
     suspend fun toggleSpeedVisibility() {
-        dataStore.edit {
+        dataStore.safeEdit {
             it[speedVisibility] = !(it[speedVisibility] ?: false)
         }
     }
 
     suspend fun toggleOrientationVisibility() {
-        dataStore.edit {
+        dataStore.safeEdit {
             it[orientationVisibility] = !(it[orientationVisibility] ?: false)
         }
     }
 
     suspend fun setOrientationVisibility(v: Boolean) {
-        dataStore.edit {
+        dataStore.safeEdit {
             it[orientationVisibility] = v
         }
     }
 
-    fun getOrientationVisibility(): Flow<Boolean> = dataStore.data.map {
+    fun getOrientationVisibility(): Flow<Boolean> = dataStore.safeData.map {
         it[orientationVisibility] ?: false
     }
 
-    fun getGpsDataVisibility(): Flow<Boolean> = dataStore.data.map {
+    fun getGpsDataVisibility(): Flow<Boolean> = dataStore.safeData.map {
         it[gpsDataVisibility] ?: false
     }
 
     suspend fun setGpsDataVisibility(v: Boolean) {
-        dataStore.edit {
+        dataStore.safeEdit {
             it[gpsDataVisibility] = v
         }
     }
 
     suspend fun toggleGpsDataVisibility() {
-        dataStore.edit {
+        dataStore.safeEdit {
             it[gpsDataVisibility] = !(it[gpsDataVisibility] ?: false)
         }
     }
@@ -200,22 +202,22 @@ class Settings @Inject constructor(
     /**
      * If `true`, [scaleRatioCentered] is accounted for. Otherwise, [scaleRatioCentered] is ignored.
      */
-    fun getDefineScaleCentered(): Flow<Boolean> = dataStore.data.map {
+    fun getDefineScaleCentered(): Flow<Boolean> = dataStore.safeData.map {
         it[defineScaleWhenCentered] ?: true
     }
 
     suspend fun setDefineScaleCentered(defined: Boolean) {
-        dataStore.edit {
+        dataStore.safeEdit {
             it[defineScaleWhenCentered] = defined
         }
     }
 
-    fun getShowScaleIndicator(): Flow<Boolean> = dataStore.data.map {
+    fun getShowScaleIndicator(): Flow<Boolean> = dataStore.safeData.map {
         it[showScaleIndicator] ?: true
     }
 
     suspend fun setShowScaleIndicator(show: Boolean) {
-        dataStore.edit {
+        dataStore.safeEdit {
             it[showScaleIndicator] = show
         }
     }
@@ -226,19 +228,19 @@ class Settings @Inject constructor(
      * By default, the max scale is 2f and the scale ratio is 50f.
      */
     fun getScaleRatioCentered(): Flow<Float> {
-        return dataStore.data.map {
+        return dataStore.safeData.map {
             it[scaleRatioCentered] ?: 50f
         }
     }
 
     suspend fun setScaleRatioCentered(scale: Float) {
-        dataStore.edit {
+        dataStore.safeEdit {
             it[scaleRatioCentered] = scale
         }
     }
 
     fun getMeasurementSystem(): Flow<MeasurementSystem> {
-        return dataStore.data.map { pref ->
+        return dataStore.safeData.map { pref ->
             pref[measurementSystem]?.let {
                 when (it) {
                     MeasurementSystem.METRIC.name -> MeasurementSystem.METRIC
@@ -250,7 +252,7 @@ class Settings @Inject constructor(
     }
 
     suspend fun setMeasurementSystem(system: MeasurementSystem) {
-        dataStore.edit {
+        dataStore.safeEdit {
             it[measurementSystem] = system.name
         }
     }
@@ -259,7 +261,7 @@ class Settings @Inject constructor(
      * The ids of maps which are marked as favorites.
      */
     fun getFavoriteMapIds(): Flow<List<UUID>> {
-        return dataStore.data.map { pref ->
+        return dataStore.safeData.map { pref ->
             pref[favoriteMaps]?.let {
                 it.mapNotNull { id ->
                     runCatching { UUID.fromString(id) }.getOrNull()
@@ -269,7 +271,7 @@ class Settings @Inject constructor(
     }
 
     suspend fun setFavoriteMapIds(ids: List<UUID>) {
-        dataStore.edit { settings ->
+        dataStore.safeEdit { settings ->
             settings[favoriteMaps] = ids.map { id -> id.toString() }.toSet()
         }
     }
@@ -278,7 +280,7 @@ class Settings @Inject constructor(
      * @return The last map id, or null if it's undefined.
      */
     fun getLastMapId(): Flow<UUID?> {
-        return dataStore.data.map { pref ->
+        return dataStore.safeData.map { pref ->
             runCatching {
                 pref[lastMapId]?.let { id ->
                     if (id != "") UUID.fromString(id) else null
@@ -291,13 +293,13 @@ class Settings @Inject constructor(
      * Set and saves the last map id, for further use.
      */
     suspend fun setLastMapId(id: UUID) {
-        dataStore.edit {
+        dataStore.safeEdit {
             it[lastMapId] = id.toString()
         }
     }
 
     fun getLocationProducerInfo(): Flow<LocationProducerInfo> {
-        return dataStore.data.map { pref ->
+        return dataStore.safeData.map { pref ->
             pref[locationProducerInfo]?.let {
                 runCatching {
                     Json.decodeFromString<LocationProducerInfo>(it)
@@ -310,7 +312,7 @@ class Settings @Inject constructor(
      * Set the active location producer.
      */
     suspend fun setLocationProducerInfo(info: LocationProducerInfo) {
-        dataStore.edit {
+        dataStore.safeEdit {
             it[locationProducerInfo] = Json.encodeToString(info)
         }
     }
@@ -319,11 +321,11 @@ class Settings @Inject constructor(
      * Get the threshold, in meters.
      */
     fun getTrackFollowThreshold(): Flow<Int> {
-        return dataStore.data.map { it[trackFollowThreshold] ?: 50 }
+        return dataStore.safeData.map { it[trackFollowThreshold] ?: 50 }
     }
 
     suspend fun setTrackFollowThreshold(valueInMeters: Int) {
-        dataStore.edit {
+        dataStore.safeEdit {
             it[trackFollowThreshold] = valueInMeters
         }
     }
