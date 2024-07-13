@@ -7,7 +7,6 @@ import androidx.lifecycle.lifecycleScope
 import com.peterlaurence.trekme.core.orientation.model.OrientationSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.*
 import kotlin.math.abs
 
@@ -44,7 +43,7 @@ class OrientationSourceImpl(
                         /* Get the azimuth value (orientation[0]) in radians */
                         val azimuth = orientationAngles[0].toDouble()
 
-                        this@callbackFlow.trySendBlocking(azimuth)
+                        this@callbackFlow.trySend(azimuth)
                     }
                 }
 
