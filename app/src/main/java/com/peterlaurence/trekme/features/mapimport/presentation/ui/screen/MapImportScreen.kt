@@ -33,6 +33,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
@@ -101,7 +102,11 @@ fun MapImportUiStateful(
     val ok = stringResource(id = R.string.ok_dialog)
     LaunchedEffectWithLifecycle(viewModel.importSuccessEvent) {
         scope.launch {
-            val result = snackbarHostState.showSnackbar(message = message, actionLabel = ok)
+            val result = snackbarHostState.showSnackbar(
+                message = message,
+                actionLabel = ok,
+                duration = SnackbarDuration.Short
+            )
             if (result == SnackbarResult.ActionPerformed) {
                 onShowMapList()
             }
