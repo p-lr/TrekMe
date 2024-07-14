@@ -96,6 +96,7 @@
         d\'importation.\n\nLa progression de l\'archivage apparaîtra dans une notification.</string>
     <string name="archive_notification_msg">Sauvegarde de la carte %s en cours</string>
     <string name="archive_snackbar_finished">Sauvegarde terminée</string>
+    <string name="archive_snackbar_error">Une erreur est survenue lors de l\'archivage de la carte</string>
     <string name="archive_notification_title">Archivage</string>
     <string name="download_map_dialog_title">Téléchargement</string>
     <string name="download_map_dialog_msg">Téléchargement de la carte %s…</string>

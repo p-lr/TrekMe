@@ -97,7 +97,7 @@ fun MainStateful(
     var isShowingWarningDialog by remember { mutableStateOf<WarningMessage?>(null) }
     isShowingWarningDialog?.also {
         WarningDialog(
-            title = it.title,
+            title = it.title ?: stringResource(id = R.string.warning_title),
             contentText = it.msg,
             onDismissRequest = { isShowingWarningDialog = null }
         )

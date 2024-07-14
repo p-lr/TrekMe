@@ -138,6 +138,7 @@
         the destination folder of that archive. Later, you can restore a map from an archive using the
         import menu.\n\nThe progress will appear in a notification.</string>
     <string name="archive_snackbar_finished">Map successfully archived</string>
+    <string name="archive_snackbar_error">Error while archiving the map</string>
     <string name="archive_notification_title">Archiving</string>
     <string name="archive_notification_msg" formatted="false">Saving the map %s in progress</string>
 

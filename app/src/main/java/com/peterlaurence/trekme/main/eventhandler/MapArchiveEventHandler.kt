@@ -7,11 +7,14 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Build
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.interactors.ArchiveMapInteractor
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
+import com.peterlaurence.trekme.events.WarningMessage
 import com.peterlaurence.trekme.events.maparchive.MapArchiveEvents
 import com.peterlaurence.trekme.util.android.activity
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
@@ -23,10 +26,14 @@ import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 @Composable
 fun MapArchiveEventHandler(appEventBus: AppEventBus, mapArchiveEvents: MapArchiveEvents) {
     /* Used for notifications */
-    var builder: Notification.Builder? = null
-    var notifyMgr: NotificationManager? = null
+    var builder: Notification.Builder? = remember { null }
+    var notifyMgr: NotificationManager? = remember { null }
 
     val activity = LocalContext.current.activity
+
+    val archiveOkMsg = stringResource(R.string.archive_snackbar_finished)
+    val title = stringResource(R.string.archive_dialog_title)
+    val archiveErrorMsg = stringResource(R.string.archive_snackbar_error)
 
     /**
      * A [Notification] is sent to the user showing the progression in percent. The
@@ -58,8 +65,7 @@ fun MapArchiveEventHandler(appEventBus: AppEventBus, mapArchiveEvents: MapArchiv
                 builder = Notification.Builder(activity)
             }
 
-            builder?.setSmallIcon(R.drawable.ic_map_black_24dp)
-                ?.setContentTitle(activity.getString(R.string.archive_dialog_title))
+            builder?.setSmallIcon(R.drawable.ic_map_black_24dp)?.setContentTitle(title)
             notifyMgr?.notify(event.mapId.hashCode(), builder?.build())
         }
         builder?.setContentText(
@@ -69,11 +75,13 @@ fun MapArchiveEventHandler(appEventBus: AppEventBus, mapArchiveEvents: MapArchiv
             )
         )
         builder?.setProgress(100, event.p, false)
-        notifyMgr?.notify(event.mapId.hashCode(), builder!!.build())
+        val notification = builder?.build()
+        if (notification != null) {
+            notifyMgr?.notify(event.mapId.hashCode(), notification)
+        }
     }
 
     val onZipFinishedEvent = l@{ event: ArchiveMapInteractor.ZipFinishedEvent ->
-        val archiveOkMsg = activity.getString(R.string.archive_snackbar_finished)
         val builder = builder ?: return@l
         /* When the loop is finished, updates the notification */
         builder.setContentText(archiveOkMsg) // Removes the progress bar
@@ -87,7 +95,7 @@ fun MapArchiveEventHandler(appEventBus: AppEventBus, mapArchiveEvents: MapArchiv
             is ArchiveMapInteractor.ZipProgressEvent -> onZipProgressEvent(event)
             is ArchiveMapInteractor.ZipFinishedEvent -> onZipFinishedEvent(event)
             ArchiveMapInteractor.ZipError -> {
-                //TODO: Display a warning
+                appEventBus.postMessage(WarningMessage(msg = archiveErrorMsg))
             }
 
             is ArchiveMapInteractor.ZipCloseEvent -> {
