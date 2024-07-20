@@ -143,7 +143,7 @@ class RouteLayer(
         mapState: MapState
     ) {
         /* React to color change */
-        launch(Dispatchers.Default) {
+        launch {
             ref.color.collect { color ->
                 routes.forEach { route ->
                     route.color.value = color
@@ -156,7 +156,7 @@ class RouteLayer(
         }
 
         /* React to visibility change */
-        launch(Dispatchers.Default) {
+        launch {
             ref.visible.collect { visible ->
                 routes.forEach { route ->
                     val existing = excursionRoutesData.value[route]
