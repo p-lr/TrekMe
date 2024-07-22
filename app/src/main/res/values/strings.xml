@@ -18,6 +18,7 @@
     <string name="shop_menu_title">Shop</string>
     <string name="about">About</string>
     <string name="help_url">https://github.com/p-lr/TrekMe/blob/master/Readme.md#summary</string>
+    <string name="link_error">The link cannot be opened :/</string>
     <string name="confirm_exit">Click BACK again to exit</string>
     <string name="no_internet">You must be connected to internet to create a map</string>
     <string name="no_storage_perm">TrekMe absolutely needs internal storage access, because it stores maps and other data there. Don\'t worry, it will never attempt to access your private data.\n\nYou can give TrekMe this permission in your Android settings, in Applications > TrekMe.</string>

@@ -15,6 +15,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -30,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.settings.privacyPolicyUrl
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
+import kotlinx.coroutines.launch
 
 /**
  * Displays the link on the user manual, and encourages the user to give feedback about the
@@ -42,21 +45,44 @@ fun AboutStateful(
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
     val helpUri = stringResource(id = R.string.help_url)
+    val linkError = stringResource(id = R.string.link_error)
 
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
+
+    val onLinkError = {
+        scope.launch {
+            snackbarHostState.showSnackbar(linkError)
+        }
+        Unit
+    }
+
     AboutScreen(
         scrollState = scrollState,
-        onUserManualClick = { uriHandler.openUri(helpUri) },
+        snackbarHostState = snackbarHostState,
+        onUserManualClick = {
+            runCatching {
+                uriHandler.openUri(helpUri)
+            }.onFailure {
+                onLinkError()
+            }
+        },
         onAppRating = {
             val packageName = context.applicationContext.packageName
             try {
                 uriHandler.openUri("market://details?id=$packageName")
             } catch (e: ActivityNotFoundException) {
-                uriHandler.openUri("http://play.google.com/store/apps/details?id=$packageName")
+                runCatching {
+                    uriHandler.openUri("http://play.google.com/store/apps/details?id=$packageName")
+                }.onFailure {
+                    onLinkError()
+                }
             }
         },
         onSendMail = { sendMail(context) },
-        onMainMenuClick = onMainMenuClick
+        onMainMenuClick = onMainMenuClick,
+        onLinkError = onLinkError
     )
 }
 
@@ -64,10 +90,12 @@ fun AboutStateful(
 @Composable
 fun AboutScreen(
     scrollState: ScrollState,
+    snackbarHostState: SnackbarHostState,
     onUserManualClick: () -> Unit,
     onAppRating: () -> Unit,
     onSendMail: () -> Unit,
-    onMainMenuClick: () -> Unit
+    onMainMenuClick: () -> Unit,
+    onLinkError: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -79,6 +107,9 @@ fun AboutScreen(
                     }
                 }
             )
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
         }
     ) { paddingValues ->
         Surface(Modifier.padding(paddingValues)) {
@@ -94,7 +125,7 @@ fun AboutScreen(
                 Spacer(Modifier.height(16.dp))
                 UserFeedback(onSendMail)
                 Spacer(Modifier.height(16.dp))
-                PrivacyPolicy()
+                PrivacyPolicy(onLinkError = onLinkError)
             }
         }
     }
@@ -190,7 +221,7 @@ private fun ColumnScope.UserFeedback(
 }
 
 @Composable
-private fun PrivacyPolicy() {
+private fun PrivacyPolicy(onLinkError: () -> Unit) {
     Text(
         stringResource(id = R.string.privacy_policy_title),
         fontWeight = FontWeight.Medium,
@@ -238,15 +269,21 @@ private fun PrivacyPolicy() {
             annotatedLinkString
                 .getStringAnnotations("URL", it, it)
                 .firstOrNull()?.let { stringAnnotation ->
-                    uriHandler.openUri(stringAnnotation.item)
+                    runCatching {
+                        uriHandler.openUri(stringAnnotation.item)
+                    }.onFailure {
+                        onLinkError()
+                    }
                 }
         }
     )
 }
 
 private fun sendMail(context: Context) {
-    val emailIntent = Intent(Intent.ACTION_SENDTO,
-        Uri.fromParts("mailto", context.getString(R.string.email_support), null))
+    val emailIntent = Intent(
+        Intent.ACTION_SENDTO,
+        Uri.fromParts("mailto", context.getString(R.string.email_support), null)
+    )
     runCatching {
         context.startActivity(emailIntent)
     }
@@ -261,10 +298,12 @@ fun AboutPreview() {
         Column(Modifier.size(400.dp, 700.dp)) {
             AboutScreen(
                 rememberScrollState(),
+                snackbarHostState = SnackbarHostState(),
                 onUserManualClick = {},
                 onAppRating = {},
                 onSendMail = {},
-                onMainMenuClick = {}
+                onMainMenuClick = {},
+                onLinkError = {}
             )
         }
     }
