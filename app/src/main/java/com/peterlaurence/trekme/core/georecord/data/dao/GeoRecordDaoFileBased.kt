@@ -1,15 +1,22 @@
 package com.peterlaurence.trekme.core.georecord.data.dao
 
+import android.content.Context
 import android.net.Uri
 import android.util.Log
+import androidx.core.net.toUri
 import com.peterlaurence.trekme.core.TrekMeContext
+import com.peterlaurence.trekme.core.common.data.makeGeoJsonUri
 import com.peterlaurence.trekme.core.georecord.app.TrekmeFilesProvider
+import com.peterlaurence.trekme.core.georecord.data.mapper.toGeoJson
 import com.peterlaurence.trekme.core.georecord.data.mapper.toGpx
 import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordDao
 import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordParser
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecordExportFormat
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecordLightWeight
 import com.peterlaurence.trekme.core.georecord.domain.model.supportedGeoRecordFilesExtensions
+import com.peterlaurence.trekme.core.lib.geojson.GEOJSON_FILE_EXT
+import com.peterlaurence.trekme.core.lib.geojson.GeoJsonWriter
 import com.peterlaurence.trekme.core.lib.gpx.writeGpx
 import com.peterlaurence.trekme.di.IoDispatcher
 import com.peterlaurence.trekme.util.FileUtils
@@ -32,7 +39,8 @@ class GeoRecordDaoFileBased(
     private val trekMeContext: TrekMeContext,
     private val geoRecordParser: GeoRecordParser,
     @IoDispatcher
-    private val ioDispatcher: CoroutineDispatcher
+    private val ioDispatcher: CoroutineDispatcher,
+    private val cacheDir: File?
 ) : GeoRecordDao {
     private val supportedFileFilter = filter@{ dir: File, filename: String ->
         /* We only look at files */
@@ -45,6 +53,7 @@ class GeoRecordDaoFileBased(
     private val fileForId = ConcurrentHashMap<UUID, File>()
 
     private val geoRecordFlow = MutableStateFlow<List<GeoRecordLightWeight>>(emptyList())
+    private val geoJsonWriter = GeoJsonWriter()
 
     init {
         initGeoRecords()
@@ -62,9 +71,23 @@ class GeoRecordDaoFileBased(
         return geoRecordFlow
     }
 
-    override fun getUri(id: UUID): Uri? {
-        return fileForId[id]?.let {
-            TrekmeFilesProvider.generateUri(it)
+    override suspend fun getUri(id: UUID, format: GeoRecordExportFormat): Uri? {
+        val file = fileForId[id] ?: return null
+        return when (format) {
+            GeoRecordExportFormat.Gpx -> TrekmeFilesProvider.generateUri(file)
+            GeoRecordExportFormat.GeoJson -> {
+                val cacheDir = this.cacheDir ?: return null
+                val geoRecord = parse(file) ?: return null
+                val geoJson = withContext(Dispatchers.Default) {
+                    geoRecord.toGeoJson()
+                }
+                makeGeoJsonUri(
+                    geoJson,
+                    cacheDir,
+                    destFileName = "${file.nameWithoutExtension}.$GEOJSON_FILE_EXT",
+                    geoJsonWriter
+                )
+            }
         }
     }
 

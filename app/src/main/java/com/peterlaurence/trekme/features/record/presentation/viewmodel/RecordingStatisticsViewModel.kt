@@ -38,8 +38,8 @@ class RecordingStatisticsViewModel @Inject constructor(
 
     val recordingDataFlow: StateFlow<RecordingsState> = recordingDataStateOwner.recordingDataFlow
 
-    private val newRecordingEventChannel = Channel<Unit>(1)
-    val newRecordingEventFlow = newRecordingEventChannel.receiveAsFlow()
+    private val _eventChannel = Channel<RecordingEvent>(1)
+    val eventChannel = _eventChannel.receiveAsFlow()
 
     private val recordingDeletionFailureChannel = Channel<Unit>(1)
     val recordingDeletionFailureFlow = recordingDeletionFailureChannel.receiveAsFlow()
@@ -49,7 +49,7 @@ class RecordingStatisticsViewModel @Inject constructor(
         viewModelScope.launch {
             recordingDataFlow.filterIsInstance<RecordingsAvailable>().scan(0) { s, l ->
                 if (l.recordings.size > s) {
-                    newRecordingEventChannel.send(Unit)
+                    _eventChannel.send(RecordingEvent.NewRecording)
                 }
                 l.recordings.size
             }.collect()
@@ -64,8 +64,16 @@ class RecordingStatisticsViewModel @Inject constructor(
         importRecordingsInteractor.importRecordings(uriList)
     }
 
-    fun getRecordingUri(recordingData: RecordingData): Uri? {
-        return geoRecordInteractor.getRecordUri(recordingData.id)
+    // TODO: set loading state
+    fun shareRecordings(recordingsIds: List<UUID>) = viewModelScope.launch {
+        val uris = recordingsIds.mapNotNull { id ->
+            geoRecordInteractor.getRecordUri(id)
+        }
+        if (uris.isNotEmpty()) {
+            _eventChannel.send(RecordingEvent.ShareRecordings(uris))
+        } else {
+            _eventChannel.send(RecordingEvent.ShareRecordingFailure)
+        }
     }
 
     fun renameRecording(id: UUID, newName: String) {
@@ -99,4 +107,10 @@ class RecordingStatisticsViewModel @Inject constructor(
             removeRouteInteractor.removeRoutesOnMaps(routeIds)
         }
     }
+}
+
+sealed interface RecordingEvent {
+    data object NewRecording : RecordingEvent
+    data class ShareRecordings(val uris: List<Uri>) : RecordingEvent
+    data object ShareRecordingFailure : RecordingEvent
 }

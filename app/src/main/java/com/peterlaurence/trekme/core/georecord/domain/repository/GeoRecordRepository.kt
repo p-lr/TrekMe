@@ -4,7 +4,9 @@ import android.net.Uri
 import com.peterlaurence.trekme.core.excursion.domain.dao.ExcursionDao
 import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordDao
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecordExportFormat
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecordLightWeight
+import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.di.ApplicationScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
@@ -12,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
@@ -37,6 +40,7 @@ import javax.inject.Singleton
 class GeoRecordRepository @Inject constructor(
     private val geoRecordDao: GeoRecordDao,
     private val excursionDao: ExcursionDao,
+    private val settings: Settings,
     @ApplicationScope
     private val applicationScope: CoroutineScope
 ) {
@@ -69,14 +73,15 @@ class GeoRecordRepository @Inject constructor(
         }.stateIn(applicationScope, SharingStarted.Eagerly, geoRecordFlow.value)
     }
 
-    fun getUri(id: UUID): Uri? {
+    suspend fun getUri(id: UUID): Uri? {
         val excursionId = rosetta.entries.firstNotNullOfOrNull {
             if (it.value == id) it.key else null
         }
+        val exportFormat = settings.getRecordingExportFormat().firstOrNull() ?: GeoRecordExportFormat.Gpx
         return if (excursionId != null) {
-            excursionDao.getGeoRecordUri(excursionId)
+            excursionDao.getGeoRecordUri(excursionId, exportFormat)
         } else {
-            geoRecordDao.getUri(id)
+            geoRecordDao.getUri(id, exportFormat)
         }
     }
 

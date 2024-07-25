@@ -3,13 +3,13 @@ package com.peterlaurence.trekme.core.georecord.domain.interactors
 import android.net.Uri
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.georecord.domain.repository.GeoRecordRepository
-import java.util.*
+import java.util.UUID
 import javax.inject.Inject
 
 class GeoRecordInteractor @Inject constructor(
     private val repository: GeoRecordRepository,
 ) {
-    fun getRecordUri(id: UUID): Uri? {
+    suspend fun getRecordUri(id: UUID): Uri? {
         return repository.getUri(id)
     }
 

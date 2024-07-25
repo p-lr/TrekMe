@@ -32,7 +32,8 @@ object ExcursionModule {
             },
             nameReaderUri = { uri ->
                 FileUtils.getFileRealFileNameFromURI(app.contentResolver, uri)
-            }
+            },
+            cacheDir = app.applicationContext.cacheDir
         )
     }
 }

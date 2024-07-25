@@ -56,12 +56,14 @@ public class FileUtils {
     /**
      * Write a {@code String} to a {@code File}.
      */
-    public static void writeToFile(String st, File out) {
+    public static boolean writeToFile(String st, File out) {
         try (PrintWriter pw = new PrintWriter(out)) {
             pw.write(st);
+            return true;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+        return false;
     }
 
     /**

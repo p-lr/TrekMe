@@ -6,6 +6,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import com.peterlaurence.trekme.core.TrekMeContext
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecordExportFormat
 import com.peterlaurence.trekme.core.location.domain.model.InternalGps
 import com.peterlaurence.trekme.core.location.domain.model.LocationProducerInfo
 import com.peterlaurence.trekme.core.units.DistanceUnit
@@ -59,6 +60,7 @@ class Settings @Inject constructor(
     private val measurementSystem = stringPreferencesKey("measurementSystem")
     private val locationProducerInfo = stringPreferencesKey("locationProducerInfo")
     private val trackFollowThreshold = intPreferencesKey("trackFollowThreshold")
+    private val recordingExportFormat = stringPreferencesKey("recordingExportFormat")
 
     /**
      * Get the current application directory as [File].
@@ -327,6 +329,23 @@ class Settings @Inject constructor(
     suspend fun setTrackFollowThreshold(valueInMeters: Int) {
         dataStore.safeEdit {
             it[trackFollowThreshold] = valueInMeters
+        }
+    }
+
+    /**
+     * The [GeoRecordExportFormat] defines which foreign export format is used when exporting
+     * a recording using the share button in the recordings screen.
+     * When `null`, the native format is used (gpx).
+     */
+    fun getRecordingExportFormat(): Flow<GeoRecordExportFormat> {
+        return dataStore.safeData.map { pref ->
+            pref[recordingExportFormat]?.let { GeoRecordExportFormat.valueOf(it) } ?: GeoRecordExportFormat.Gpx
+        }
+    }
+
+    suspend fun setRecordingExportFormat(format: GeoRecordExportFormat) {
+        dataStore.safeEdit { settings ->
+            settings[recordingExportFormat] = format.name
         }
     }
 }

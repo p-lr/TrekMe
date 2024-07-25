@@ -1,5 +1,7 @@
 package com.peterlaurence.trekme.features.record.presentation.ui.components
 
+import android.content.Context
+import android.net.Uri
 import android.os.ParcelUuid
 import android.os.Parcelable
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -39,6 +41,7 @@ import com.peterlaurence.trekme.features.record.domain.model.RecordingData
 import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.MapSelectionDialogStateful
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.RecordingRenameDialog
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordViewModel
+import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordingEvent
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordingStatisticsViewModel
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 import kotlinx.parcelize.Parcelize
@@ -81,11 +84,22 @@ fun GpxRecordListStateful(
 
     val lazyListState = rememberLazyListState()
 
+    val context = LocalContext.current
     LaunchedEffectWithLifecycle(
-        statViewModel.newRecordingEventFlow,
+        statViewModel.eventChannel,
         minActiveState = Lifecycle.State.RESUMED
-    ) {
-        lazyListState.animateScrollToItem(0)
+    ) { event ->
+        when (event) {
+            RecordingEvent.NewRecording -> {
+                lazyListState.animateScrollToItem(0)
+            }
+            is RecordingEvent.ShareRecordings -> {
+                sendShareIntent(context, event.uris)
+            }
+            RecordingEvent.ShareRecordingFailure -> {
+                // TODO
+            }
+        }
     }
 
     /* Don't include this lambda in the actioner, as it would cause all items to be recomposed on
@@ -121,7 +135,6 @@ fun GpxRecordListStateful(
         statViewModel.importRecordings(uriList)
     }
 
-    val context = LocalContext.current
     val actioner: Actioner = { action ->
         when (action) {
             is Action.OnMultiSelectionClick -> {
@@ -148,21 +161,9 @@ fun GpxRecordListStateful(
                     recordingForMapImport = ParcelUuid(selected.id)
                 }
             }
-            is  Action.OnShareClick -> {
+            is Action.OnShareClick -> {
                 val selectedList = getSelectedList(dataById, items)
-                val intentBuilder = ShareCompat.IntentBuilder(context)
-                    .setType("text/plain")
-                selectedList.forEach {
-                    try {
-                        val uri = statViewModel.getRecordingUri(it)
-                        if (uri != null) {
-                            intentBuilder.addStream(uri)
-                        }
-                    } catch (e: IllegalArgumentException) {
-                        e.printStackTrace()
-                    }
-                }
-                intentBuilder.startChooser()
+                statViewModel.shareRecordings(selectedList.map { it.id })
             }
             is Action.OnElevationGraphClick -> {
                 val selected = getSelected(dataById, items)
@@ -409,6 +410,19 @@ private fun LoadingList(modifier: Modifier = Modifier) {
             LinearProgressIndicator(Modifier.fillMaxWidth())
         }
     }
+}
+
+private fun sendShareIntent(context: Context, uris: List<Uri>) {
+    val intentBuilder = ShareCompat.IntentBuilder(context)
+        .setType("text/plain")
+    uris.forEach { uri ->
+        try {
+            intentBuilder.addStream(uri)
+        } catch (e: IllegalArgumentException) {
+            e.printStackTrace()
+        }
+    }
+    intentBuilder.startChooser()
 }
 
 private fun RecordingData.toModel(isSelected: Boolean): SelectableRecordingItem {
