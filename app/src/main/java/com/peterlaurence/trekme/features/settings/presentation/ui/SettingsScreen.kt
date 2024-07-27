@@ -30,9 +30,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecordExportFormat
@@ -42,6 +45,8 @@ import com.peterlaurence.trekme.core.units.MeasurementSystem
 import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.features.common.presentation.ui.settings.HeaderSetting
 import com.peterlaurence.trekme.features.common.presentation.ui.settings.ListSetting
+import com.peterlaurence.trekme.features.common.presentation.ui.settings.ListSetting2
+import com.peterlaurence.trekme.features.common.presentation.ui.settings.ListSettingValue
 import com.peterlaurence.trekme.features.common.presentation.ui.settings.LoadingSetting
 import com.peterlaurence.trekme.features.common.presentation.ui.settings.SettingDivider
 import com.peterlaurence.trekme.features.common.presentation.ui.settings.SliderSetting
@@ -351,7 +356,10 @@ private fun MapSetting(
             values = listOf(
                 Pair(RotationMode.NONE, stringResource(id = R.string.preference_rotate_none)),
                 Pair(RotationMode.FREE, stringResource(id = R.string.preference_rotate_free)),
-                Pair(RotationMode.FOLLOW_ORIENTATION, stringResource(id = R.string.preference_rotate_with_orientation))
+                Pair(
+                    RotationMode.FOLLOW_ORIENTATION,
+                    stringResource(id = R.string.preference_rotate_with_orientation)
+                )
             ),
             selectedValue = rotationMode,
             onValueSelected = { _, v -> onRotationModeChanged(v) }
@@ -383,11 +391,28 @@ private fun TrackSettings(
 ) {
     geoRecordExportFormat ?: return
     HeaderSetting(name = stringResource(id = R.string.tracks_settings_category))
-    ListSetting(
+    ListSetting2(
         name = stringResource(id = R.string.track_export_format),
         values = listOf(
-            Pair(GeoRecordExportFormat.Gpx, stringResource(id = R.string.gpx_format_name)),
-            Pair(GeoRecordExportFormat.GeoJson, stringResource(id = R.string.geojson_format_name)),
+            Pair(
+                GeoRecordExportFormat.Gpx,
+                ListSettingValue(
+                    name = stringResource(id = R.string.gpx_format_name)
+                )
+            ),
+            Pair(
+                GeoRecordExportFormat.GeoJson,
+                ListSettingValue(
+                    name = stringResource(id = R.string.geojson_format_name)
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.geojson_disclaimer),
+                        fontSize = 14.sp,
+                        fontStyle = FontStyle.Italic,
+                        modifier = Modifier.alpha(0.75f)
+                    )
+                }
+            ),
         ),
         selectedValue = geoRecordExportFormat,
         onValueSelected = { _, v -> onGeoRecordExportFormatChange(v) }

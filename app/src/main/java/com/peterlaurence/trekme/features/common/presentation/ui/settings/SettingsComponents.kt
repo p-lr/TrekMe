@@ -26,6 +26,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -239,11 +240,12 @@ fun ToggleSetting(
 
 @Composable
 fun LoadingSetting() {
-    Box(modifier = Modifier
-        .fillMaxWidth()
-        .background(MaterialTheme.colorScheme.background)
-        .padding(vertical = paddingAround)
-        .padding(start = paddingStart, end = 16.dp)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(vertical = paddingAround)
+            .padding(start = paddingStart, end = 16.dp)
     ) {
         LinearProgressIndicator(
             Modifier.fillMaxWidth(),
@@ -330,6 +332,109 @@ fun <T> ListSetting(
         )
     }
 }
+
+/**
+ * A more customizable version of [ListSetting] which allows for custom subtitles.
+ * This function should probably be re-written using ConstraintLayout.
+ */
+@Composable
+fun <T> ListSetting2(
+    name: String,
+    values: List<Pair<T, ListSettingValue>>,
+    selectedValue: T,
+    showSubtitle: Boolean = true,
+    onValueSelected: (index: Int, v: T) -> Unit = { _, _ -> }
+) {
+    var isShowingDialog by rememberSaveable { mutableStateOf(false) }
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(vertical = paddingAround)
+            .clickable { isShowingDialog = true }
+            .padding(start = paddingStart),
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = name,
+            fontSize = mainFontSize,
+            color = MaterialTheme.colorScheme.onBackground,
+            style = nameStyle
+        )
+        if (showSubtitle) {
+            Text(
+                text = (values.firstOrNull { it.first == selectedValue }
+                    ?: values.first()).second.name,
+                fontSize = subtitleFontSize,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                style = subTitleStyle
+            )
+        }
+    }
+
+    if (isShowingDialog) {
+        AlertDialog(
+            title = {
+                Text(
+                    text = name,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            },
+            text = {
+                Column {
+                    values.forEachIndexed { index, pair ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    isShowingDialog = false
+                                    onValueSelected(index, pair.first)
+                                },
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            RadioButton(
+                                selected = pair.first == selectedValue,
+                                onClick = {
+                                    isShowingDialog = false
+                                    onValueSelected(index, pair.first)
+                                }
+                            )
+                            if (pair.second.subTitle != null) {
+                                Box(Modifier.minimumInteractiveComponentSize()) {
+                                    Text(
+                                        modifier = Modifier
+                                            .minimumInteractiveComponentSize()
+                                            .align(Alignment.TopStart),
+                                        text = pair.second.name, fontSize = 18.sp
+                                    )
+                                    Column(Modifier.padding(top = 34.dp)) {
+                                        pair.second.subTitle?.invoke()
+                                    }
+                                }
+                            } else {
+                                Text(
+                                    modifier = Modifier.align(Alignment.CenterVertically),
+                                    text = pair.second.name, fontSize = 18.sp
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            onDismissRequest = { isShowingDialog = false },
+            confirmButton = {
+                TextButton(onClick = { isShowingDialog = false }) {
+                    Text(text = stringResource(id = R.string.cancel_dialog_string))
+                }
+            }
+        )
+    }
+}
+
+data class ListSettingValue(val name: String, val subTitle: (@Composable () -> Unit)? = null)
 
 @Composable
 fun SliderSetting(

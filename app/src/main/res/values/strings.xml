@@ -563,7 +563,8 @@
     <string name="tracks_settings_category">Tracks</string>
     <string name="track_export_format">Track export format</string>
     <string name="gpx_format_name" translatable="false">GPX</string>
-    <string name="geojson_format_name" translatable="false">geojson</string>
+    <string name="geojson_format_name" translatable="false">GeoJSON</string>
+    <string name="geojson_disclaimer">to be used by another app</string>
 
     <!-- WifiP2pFragment -->
     <string name="wifip2p_title">Map sharing</string>

@@ -395,6 +395,7 @@
     <string name="preference_zoom_when_centered_compl">(actuel : %1$s)</string>
     <string name="tracks_settings_category">Traces</string>
     <string name="track_export_format">Format d\'export des traces</string>
+    <string name="geojson_disclaimer">pour d\'autres apps que TrekMe</string>
     <string name="map_size_string">Taille</string>
     <string name="map_size_compute_string">Calcul de la taille</string>
     <string name="map_size_computing">Calcul en cours..</string>

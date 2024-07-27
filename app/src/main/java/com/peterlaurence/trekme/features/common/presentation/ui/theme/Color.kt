@@ -66,6 +66,9 @@ val md_theme_dark_surfaceTint = Color(0xFFFDBA4B)
 val md_theme_dark_outlineVariant = Color(0xFF4F4539)
 val md_theme_dark_scrim = Color(0xFF000000)
 
+// TODO: replace hardcoded instances by this function
+@Composable
+fun green(): Color = if (isSystemInDarkTheme()) dark_accentGreen else accentGreen
 
 val seed = Color(0xFF805600)
 val accentGreen = Color(0xFF4CAF50)
