@@ -560,6 +560,10 @@
     <string name="preference_zoom_when_centered_key" translatable="false">pref_scale_zoom_when_centered</string>
     <string name="preference_zoom_when_centered">Zoom when centered</string>
     <string name="preference_zoom_when_centered_compl">(current: %1$s)</string>
+    <string name="tracks_settings_category">Tracks</string>
+    <string name="track_export_format">Track export format</string>
+    <string name="gpx_format_name" translatable="false">GPX</string>
+    <string name="geojson_format_name" translatable="false">geojson</string>
 
     <!-- WifiP2pFragment -->
     <string name="wifip2p_title">Map sharing</string>

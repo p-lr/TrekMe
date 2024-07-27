@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecordExportFormat
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.StartOnPolicy
 import com.peterlaurence.trekme.core.units.MeasurementSystem
@@ -66,6 +67,7 @@ fun SettingsStateful(
     val magnifyingFactor by viewModel.magnifyingFactorFlow.collectAsState(initial = null)
     val trackFollowThreshold by viewModel.trackFollowThreshold.collectAsState(initial = null)
     val hasExtendedOffer by viewModel.purchaseFlow.collectAsState()
+    val geoRecordExportFormat by viewModel.geoRecordExportFormatFlow.collectAsState(initial = null)
 
     SettingsScreen(
         startOnPolicy = startOnPolicy,
@@ -93,7 +95,9 @@ fun SettingsStateful(
         hasExtendedOffer = hasExtendedOffer,
         onMainMenuClick = onMainMenuClick,
         isShowingAdvancedSettings = showAdvancedSettings,
-        onAdvancedSettingsToggle = { viewModel.setAdvancedSettings(!showAdvancedSettings) }
+        onAdvancedSettingsToggle = { viewModel.setAdvancedSettings(!showAdvancedSettings) },
+        geoRecordExportFormat = geoRecordExportFormat,
+        onGeoRecordExportFormatChange = { viewModel.setGeoRecordExportFormat(it) }
     )
 }
 
@@ -125,7 +129,9 @@ private fun SettingsScreen(
     hasExtendedOffer: Boolean,
     onMainMenuClick: () -> Unit,
     isShowingAdvancedSettings: Boolean,
-    onAdvancedSettingsToggle: () -> Unit
+    onAdvancedSettingsToggle: () -> Unit,
+    geoRecordExportFormat: GeoRecordExportFormat?,
+    onGeoRecordExportFormatChange: (GeoRecordExportFormat) -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -210,8 +216,12 @@ private fun SettingsScreen(
                 onMagnifyingFactorChanged,
                 trackFollowThreshold,
                 onTrackFollowThresholdChanged,
-                hasExtendedOffer
+                hasExtendedOffer,
+                isShowingAdvancedSettings
             )
+            if (isShowingAdvancedSettings) {
+                TrackSettings(geoRecordExportFormat, onGeoRecordExportFormatChange)
+            }
         }
     }
 }
@@ -293,7 +303,8 @@ private fun MapSetting(
     onMagnifyingFactorChanged: (Int) -> Unit,
     trackFollowThreshold: Int?,
     onTrackFollowThresholdChanged: (Int) -> Unit,
-    hasExtendedOffer: Boolean
+    hasExtendedOffer: Boolean,
+    isShowingAdvancedSettings: Boolean
 ) {
     HeaderSetting(name = stringResource(id = R.string.maps_category))
     if (maxScale != null) {
@@ -310,23 +321,26 @@ private fun MapSetting(
         checked = scaleIndicatorChecked,
         onToggle = onScaleIndicatorChange
     )
-    ToggleSetting(
-        name = stringResource(id = R.string.preference_change_scale_when_centering),
-        checked = defineScaleChecked,
-        onToggle = onDefineScaleChanged
-    )
 
-    if (defineScaleChecked && zoomWhenCentered != null) {
-        SliderSetting(
-            name = stringResource(id = R.string.preference_zoom_when_centered).let {
-                if (currentZoom != null) "$it " + stringResource(
-                    id = R.string.preference_zoom_when_centered_compl
-                ).format(currentZoom) else it
-            },
-            valueRange = 0f..100f,
-            current = zoomWhenCentered,
-            onValueChange = onZoomWhenCenteredChanged
+    if (isShowingAdvancedSettings) {
+        ToggleSetting(
+            name = stringResource(id = R.string.preference_change_scale_when_centering),
+            checked = defineScaleChecked,
+            onToggle = onDefineScaleChanged
         )
+
+        if (defineScaleChecked && zoomWhenCentered != null) {
+            SliderSetting(
+                name = stringResource(id = R.string.preference_zoom_when_centered).let {
+                    if (currentZoom != null) "$it " + stringResource(
+                        id = R.string.preference_zoom_when_centered_compl
+                    ).format(currentZoom) else it
+                },
+                valueRange = 0f..100f,
+                current = zoomWhenCentered,
+                onValueChange = onZoomWhenCenteredChanged
+            )
+        }
     }
     if (rotationMode != null) {
         ListSetting(
@@ -357,4 +371,22 @@ private fun MapSetting(
             onValueSelected = { _, v -> onTrackFollowThresholdChanged(v) }
         )
     }
+}
+
+@Composable
+private fun TrackSettings(
+    geoRecordExportFormat: GeoRecordExportFormat?,
+    onGeoRecordExportFormatChange: (GeoRecordExportFormat) -> Unit
+) {
+    geoRecordExportFormat ?: return
+    HeaderSetting(name = stringResource(id = R.string.tracks_settings_category))
+    ListSetting(
+        name = stringResource(id = R.string.track_export_format),
+        values = listOf(
+            Pair(GeoRecordExportFormat.Gpx, stringResource(id = R.string.gpx_format_name)),
+            Pair(GeoRecordExportFormat.GeoJson, stringResource(id = R.string.geojson_format_name)),
+        ),
+        selectedValue = geoRecordExportFormat,
+        onValueSelected = { _, v -> onGeoRecordExportFormatChange(v) }
+    )
 }

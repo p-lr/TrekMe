@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.billing.domain.interactors.HasOneExtendedOfferInteractor
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecordExportFormat
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.settings.StartOnPolicy
@@ -45,6 +46,7 @@ class SettingsViewModel @Inject constructor(
         hasOneExtendedOfferInteractor.getPurchaseFlow(viewModelScope)
     val currentZoom = MutableStateFlow<Int?>(null)
     val showAdvancedSettingsFlow = settings.getAdvancedSettings()
+    val geoRecordExportFormatFlow = settings.getRecordingExportFormat()
 
     init {
         viewModelScope.launch {
@@ -106,5 +108,9 @@ class SettingsViewModel @Inject constructor(
 
     fun setTrackFollowThreshold(valueInMeters: Int) = viewModelScope.launch {
         settings.setTrackFollowThreshold(valueInMeters)
+    }
+
+    fun setGeoRecordExportFormat(format: GeoRecordExportFormat) = viewModelScope.launch {
+        settings.setRecordingExportFormat(format)
     }
 }
