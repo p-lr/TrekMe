@@ -37,6 +37,8 @@ class RecordingStatisticsViewModel @Inject constructor(
 ) : ViewModel() {
 
     val recordingDataFlow: StateFlow<RecordingsState> = recordingDataStateOwner.recordingDataFlow
+    private val _isTrackSharePending = MutableStateFlow(false)
+    val isTrackSharePending = _isTrackSharePending.asStateFlow()
 
     private val _eventChannel = Channel<RecordingEvent>(1)
     val eventChannel = _eventChannel.receiveAsFlow()
@@ -64,11 +66,13 @@ class RecordingStatisticsViewModel @Inject constructor(
         importRecordingsInteractor.importRecordings(uriList)
     }
 
-    // TODO: set loading state
     fun shareRecordings(recordingsIds: List<UUID>) = viewModelScope.launch {
+        _isTrackSharePending.value = true
         val uris = recordingsIds.mapNotNull { id ->
             geoRecordInteractor.getRecordUri(id)
         }
+        _isTrackSharePending.value = false
+
         if (uris.isNotEmpty()) {
             _eventChannel.send(RecordingEvent.ShareRecordings(uris))
         } else {

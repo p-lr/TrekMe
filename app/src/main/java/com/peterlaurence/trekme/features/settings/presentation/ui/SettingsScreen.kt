@@ -169,7 +169,10 @@ private fun SettingsScreen(
                                         Spacer(Modifier.weight(1f))
                                         Checkbox(
                                             checked = isShowingAdvancedSettings,
-                                            onCheckedChange = { onAdvancedSettingsToggle() }
+                                            onCheckedChange = {
+                                                expandedMenu = false
+                                                onAdvancedSettingsToggle()
+                                            }
                                         )
                                     }
                                 }

@@ -56,6 +56,7 @@ fun GpxRecordListStateful(
     onGoToTrailSearchClick: () -> Unit
 ) {
     val state by statViewModel.recordingDataFlow.collectAsState()
+    val isTrackSharePending by statViewModel.isTrackSharePending.collectAsState()
 
     if (state is Loading) {
         LoadingList(modifier)
@@ -184,6 +185,7 @@ fun GpxRecordListStateful(
             items = items,
             isMultiSelectionMode = isMultiSelectionMode,
             lazyListState = lazyListState,
+            isTrackSharePending = isTrackSharePending,
             onItemClick,
             actioner
         )
@@ -221,6 +223,7 @@ private fun GpxRecordList(
     items: List<SelectableRecordingItem>,
     isMultiSelectionMode: Boolean,
     lazyListState: LazyListState,
+    isTrackSharePending: Boolean,
     onItemClick: (SelectableRecordingItem) -> Unit,
     actioner: Actioner,
 ) {
@@ -253,7 +256,7 @@ private fun GpxRecordList(
             }
 
             if (selectionCount > 0) {
-                BottomBarButtons(selectionCount, actioner)
+                BottomBarButtons(selectionCount, isTrackSharePending, actioner)
             }
         }
     }
@@ -323,7 +326,11 @@ private fun RecordingActionBar(
 }
 
 @Composable
-private fun BottomBarButtons(selectionCount: Int, actioner: Actioner) {
+private fun BottomBarButtons(
+    selectionCount: Int,
+    isTrackSharePending: Boolean,
+    actioner: Actioner
+) {
     Row(
         Modifier.padding(horizontal = 8.dp, vertical = 0.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -352,18 +359,27 @@ private fun BottomBarButtons(selectionCount: Int, actioner: Actioner) {
                 )
             )
         }
-        IconButton(
-            onClick = { actioner(Action.OnShareClick) },
-            colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.primary),
-            enabled = selectionCount > 0
-        ) {
-            Icon(
-                painterResource(id = R.drawable.ic_share_black_24dp),
-                contentDescription = stringResource(
-                    id = R.string.recording_share_desc
+        Box {
+            IconButton(
+                onClick = { actioner(Action.OnShareClick) },
+                colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.primary),
+                enabled = selectionCount > 0 && !isTrackSharePending
+            ) {
+                Icon(
+                    painterResource(id = R.drawable.ic_share_black_24dp),
+                    contentDescription = stringResource(
+                        id = R.string.recording_share_desc
+                    )
                 )
-            )
+            }
+            if (isTrackSharePending) {
+                CircularProgressIndicator(
+                    Modifier.align(Alignment.Center).size(20.dp),
+                    strokeWidth = 2.dp
+                )
+            }
         }
+
         IconButton(
             onClick = { actioner(Action.OnElevationGraphClick) },
             colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.primary),
@@ -557,6 +573,7 @@ private fun GpxRecordListPreview() {
             ),
             isMultiSelectionMode = false,
             lazyListState = LazyListState(),
+            isTrackSharePending = false,
             onItemClick = {},
             actioner = {}
         )
