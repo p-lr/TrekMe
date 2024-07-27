@@ -61,6 +61,7 @@ class Settings @Inject constructor(
     private val locationProducerInfo = stringPreferencesKey("locationProducerInfo")
     private val trackFollowThreshold = intPreferencesKey("trackFollowThreshold")
     private val recordingExportFormat = stringPreferencesKey("recordingExportFormat")
+    private val advancedSettings = booleanPreferencesKey("advancedSettings")
 
     /**
      * Get the current application directory as [File].
@@ -329,6 +330,18 @@ class Settings @Inject constructor(
     suspend fun setTrackFollowThreshold(valueInMeters: Int) {
         dataStore.safeEdit {
             it[trackFollowThreshold] = valueInMeters
+        }
+    }
+
+    fun getAdvancedSettings(): Flow<Boolean> {
+        return dataStore.safeData.map { pref ->
+            pref[advancedSettings] ?: false
+        }
+    }
+
+    suspend fun setAdvancedSettings(enabled: Boolean) {
+        dataStore.safeEdit { settings ->
+            settings[advancedSettings] = enabled
         }
     }
 

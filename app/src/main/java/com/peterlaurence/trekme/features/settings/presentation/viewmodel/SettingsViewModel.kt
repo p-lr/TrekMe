@@ -44,6 +44,7 @@ class SettingsViewModel @Inject constructor(
     val purchaseFlow: StateFlow<Boolean> =
         hasOneExtendedOfferInteractor.getPurchaseFlow(viewModelScope)
     val currentZoom = MutableStateFlow<Int?>(null)
+    val showAdvancedSettingsFlow = settings.getAdvancedSettings()
 
     init {
         viewModelScope.launch {
@@ -52,6 +53,10 @@ class SettingsViewModel @Inject constructor(
                 currentZoom.value = if (scale != null) (scale * 100 / maxScale).toInt() else null
             }
         }
+    }
+
+    fun setAdvancedSettings(enabled: Boolean) = viewModelScope.launch {
+        settings.setAdvancedSettings(enabled)
     }
 
     fun setDownloadDirPath(newPath: String) = viewModelScope.launch {

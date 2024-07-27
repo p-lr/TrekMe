@@ -234,7 +234,7 @@ private fun MapSettingsScreen(
                                         text = if (isShowingAdvancedSettings) {
                                             stringResource(id = R.string.map_settings_hide_advanced)
                                         } else {
-                                            stringResource(id = R.string.map_settings_show_advanced)
+                                            stringResource(id = R.string.settings_show_advanced)
                                         }
                                     )
                                 }

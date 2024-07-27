@@ -35,6 +35,7 @@
     <string name="start_dialog_string">Start</string>
     <string name="understood_dialog">I understand</string>
     <string name="new_text">new</string>
+    <string name="settings_show_advanced">Show advanced settings</string>
 
     <!-- Map Creation -->
     <string name="onboarding_map_create">Select a map source.</string>
@@ -111,7 +112,6 @@
 
     <!-- Map Settings fragment -->
     <string name="fragment_settings" translatable="false">SettingsFragment</string>
-    <string name="map_settings_show_advanced">Show advanced settings</string>
     <string name="map_settings_hide_advanced">Hide advanced settings</string>
     <string name="map_settings_frgmt_title">Map settings</string>
     <string name="map_image_import_ok">Image set successfully</string>
