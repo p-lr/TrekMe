@@ -2,16 +2,16 @@ package com.peterlaurence.trekme.core.orientation.app
 
 import android.content.Context
 import android.hardware.*
-import androidx.lifecycle.ProcessLifecycleOwner
-import androidx.lifecycle.lifecycleScope
 import com.peterlaurence.trekme.core.orientation.model.OrientationSource
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
 import kotlin.math.abs
 
 class OrientationSourceImpl(
-    appContext: Context
+    private val scope: CoroutineScope,
+    appContext: Context,
 ) : OrientationSource {
     private val sensorManager: SensorManager =
         appContext.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -67,7 +67,7 @@ class OrientationSourceImpl(
         }.flowOn(
             Dispatchers.Default
         ).shareIn(
-            ProcessLifecycleOwner.get().lifecycleScope,
+            scope,
             SharingStarted.WhileSubscribed()
         )
     }

@@ -1,11 +1,10 @@
 package com.peterlaurence.trekme.features.common.domain.repositories
 
-import androidx.lifecycle.ProcessLifecycleOwner
-import androidx.lifecycle.lifecycleScope
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.georecord.domain.logic.getGeoStatistics
 import com.peterlaurence.trekme.di.IoDispatcher
 import com.peterlaurence.trekme.core.georecord.domain.repository.GeoRecordRepository
+import com.peterlaurence.trekme.di.ApplicationScope
 import com.peterlaurence.trekme.features.common.domain.model.Loading
 import com.peterlaurence.trekme.features.common.domain.model.RecordingDataStateOwner
 import com.peterlaurence.trekme.features.common.domain.model.RecordingsAvailable
@@ -31,13 +30,14 @@ class RecordingDataRepository @Inject constructor(
     private val geoRecordRepository: GeoRecordRepository,
     @IoDispatcher
     private val ioDispatcher: CoroutineDispatcher,
+    @ApplicationScope
+    processScope: CoroutineScope,
 ) : RecordingDataStateOwner {
-    private val primaryScope = ProcessLifecycleOwner.get().lifecycleScope
 
     override val recordingDataFlow = MutableStateFlow<RecordingsState>(Loading)
 
     init {
-        primaryScope.launch {
+        processScope.launch {
             /**
              * When a [RecordingData] already exists, just update the name. Otherwise, make new
              * [RecordingData]s by requesting full [GeoRecord]s.

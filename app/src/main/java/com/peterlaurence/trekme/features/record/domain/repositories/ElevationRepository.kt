@@ -1,7 +1,5 @@
 package com.peterlaurence.trekme.features.record.domain.repositories
 
-import androidx.lifecycle.ProcessLifecycleOwner
-import androidx.lifecycle.lifecycleScope
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.geotools.deltaTwoPoints
 import com.peterlaurence.trekme.core.map.domain.models.Marker
@@ -39,7 +37,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 class ElevationRepository(
     private val dispatcher: CoroutineDispatcher,
     private val ioDispatcher: CoroutineDispatcher,
-    private val elevationDataSource: ElevationDataSource
+    private val elevationDataSource: ElevationDataSource,
+    private val processScope: CoroutineScope,
 ) : ElevationStateOwner {
     private val _elevationRepoState = MutableStateFlow<ElevationState>(Calculating)
     override val elevationState: StateFlow<ElevationState> = _elevationRepoState.asStateFlow()
@@ -54,8 +53,6 @@ class ElevationRepository(
     private var job: Job? = null
     private val sampling = 20
 
-    private val primaryScope = ProcessLifecycleOwner.get().lifecycleScope
-
     /**
      * Computes elevation data for the given [GeoRecord] and updates the exposed
      * [elevationState].
@@ -63,7 +60,7 @@ class ElevationRepository(
     fun update(geoRecord: GeoRecord) {
         if (geoRecord.id != lastId) {
             job?.cancel()
-            job = primaryScope.launch {
+            job = processScope.launch {
                 _elevationRepoState.emit(Calculating)
                 val (segmentElevationsList, eleSource, needsUpdate) = getElevationsSampled(geoRecord)
                 val data =
@@ -79,7 +76,7 @@ class ElevationRepository(
         }
     }
 
-    fun reset() = primaryScope.launch {
+    fun reset() = processScope.launch {
         _elevationRepoState.emit(Calculating)
     }
 

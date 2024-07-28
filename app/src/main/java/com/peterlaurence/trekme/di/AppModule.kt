@@ -133,7 +133,9 @@ object AppModule {
         @ApplicationContext context: Context,
         settings: Settings,
         appEventBus: AppEventBus,
-        gpsProEvents: GpsProEvents
+        gpsProEvents: GpsProEvents,
+        @ApplicationScope
+        appScope: CoroutineScope
     ): LocationSource {
         val modeFlow = settings.getLocationProducerInfo()
         val flowSelector: (LocationProducerInfo) -> Flow<Location> = { mode: LocationProducerInfo ->
@@ -159,14 +161,15 @@ object AppModule {
                 }
             }
         }
-        return LocationSourceImpl(modeFlow, flowSelector)
+        return LocationSourceImpl(modeFlow, flowSelector, appScope)
     }
 
     @Singleton
     @Provides
     fun bindOrientationSource(
+        @ApplicationScope scope: CoroutineScope,
         @ApplicationContext context: Context
-    ): OrientationSource = OrientationSourceImpl(context)
+    ): OrientationSource = OrientationSourceImpl(scope, context)
 }
 
 @Retention(AnnotationRetention.BINARY)

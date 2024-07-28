@@ -19,6 +19,7 @@ import com.peterlaurence.trekme.core.map.domain.models.ValidWmtsLicense
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.core.orientation.model.OrientationSource
 import com.peterlaurence.trekme.core.settings.Settings
+import com.peterlaurence.trekme.di.ApplicationScope
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.features.common.domain.interactors.MapComposeTileStreamProviderInteractor
@@ -53,6 +54,7 @@ import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.Scale
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.TrackFollowLayer
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
@@ -105,6 +107,7 @@ class MapViewModel @Inject constructor(
     hasOneExtendedOfferInteractor: HasOneExtendedOfferInteractor,
     private val elevationFixInteractor: ElevationFixInteractor,
     private val downloadRepository: DownloadRepository,
+    @ApplicationScope processScope: CoroutineScope,
     app: Application
 ) : ViewModel() {
     private val dataStateFlow = MutableSharedFlow<DataState>(1, 0, BufferOverflow.DROP_OLDEST)
@@ -178,12 +181,13 @@ class MapViewModel @Inject constructor(
     )
 
     val trackFollowLayer = TrackFollowLayer(
-        viewModelScope,
-        dataStateFlow,
-        trackFollowRepository,
-        mapFeatureEvents,
-        app.applicationContext,
-        appEventBus,
+        scope = viewModelScope,
+        processScope = processScope,
+        dataStateFlow = dataStateFlow,
+        trackFollowRepository = trackFollowRepository,
+        mapFeatureEvents = mapFeatureEvents,
+        appContext = app.applicationContext,
+        appEventBus = appEventBus,
         onTrackSelected = {
             viewModelScope.launch {
                 _events.send(MapEvent.TRACK_TO_FOLLOW_SELECTED)

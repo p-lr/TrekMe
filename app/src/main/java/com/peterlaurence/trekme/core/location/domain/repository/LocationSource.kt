@@ -1,7 +1,5 @@
 package com.peterlaurence.trekme.core.location.domain.repository
 
-import androidx.lifecycle.ProcessLifecycleOwner
-import androidx.lifecycle.lifecycleScope
 import com.peterlaurence.trekme.core.location.domain.model.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
@@ -15,7 +13,8 @@ import kotlinx.coroutines.flow.*
  */
 class LocationSourceImpl(
     modeFlow: Flow<LocationProducerInfo>,
-    flowSelector: (LocationProducerInfo) -> Flow<Location>
+    flowSelector: (LocationProducerInfo) -> Flow<Location>,
+    processScope: CoroutineScope
 ) : LocationSource {
     /**
      * A [SharedFlow] of [Location]s, with a replay of 1.
@@ -35,7 +34,7 @@ class LocationSourceImpl(
                 producer.stop()
             }
         }.shareIn(
-            ProcessLifecycleOwner.get().lifecycleScope,
+            processScope,
             SharingStarted.WhileSubscribed(),
             1
         )

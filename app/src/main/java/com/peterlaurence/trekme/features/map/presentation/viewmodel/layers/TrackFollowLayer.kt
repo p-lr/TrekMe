@@ -3,8 +3,6 @@ package com.peterlaurence.trekme.features.map.presentation.viewmodel.layers
 import android.content.Context
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ProcessLifecycleOwner
-import androidx.lifecycle.lifecycleScope
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.geotools.distanceApprox
 import com.peterlaurence.trekme.core.map.domain.models.Map
@@ -44,6 +42,7 @@ import ovh.plrapps.mapcompose.ui.state.MapState
 
 class TrackFollowLayer(
     private val scope: CoroutineScope,
+    private val processScope: CoroutineScope,
     private val dataStateFlow: Flow<DataState>,
     private val trackFollowRepository: TrackFollowRepository,
     private val mapFeatureEvents: MapFeatureEvents,
@@ -177,7 +176,7 @@ class TrackFollowLayer(
             var pixelPerMeterThreshold: Double? = null
 
             init {
-                ProcessLifecycleOwner.get().lifecycleScope.launch {
+                processScope.launch {
                     val latLonLeft = getLonLatFromNormalizedCoordinate(0.0, 0.5, map.projection, map.mapBounds)
                     val latLonRight = getLonLatFromNormalizedCoordinate(1.0, 0.5, map.projection, map.mapBounds)
                     val mapWidthInMeters = withContext(Dispatchers.Default) {
