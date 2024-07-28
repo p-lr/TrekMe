@@ -365,7 +365,7 @@ private fun MapSetting(
             onValueSelected = { _, v -> onRotationModeChanged(v) }
         )
     }
-    if (magnifyingFactor != null) {
+    if (magnifyingFactor != null && isShowingAdvancedSettings) {
         ListSetting(
             name = stringResource(id = R.string.preference_magnifying_factor),
             values = listOf(0, 1).map { Pair(it, it.toString()) },
