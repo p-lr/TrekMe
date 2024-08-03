@@ -3,7 +3,7 @@ package com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Text
+import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -97,6 +97,7 @@ class DistanceOnRouteController(
             grabMarker1,
             firstPoint.x,
             firstPoint.y,
+            zIndex = 3f,
             relativeOffset = Offset(-0.5f, -0.5f)
         ) {
             MarkerGrab(morphedIn = true, size = 50.dp)
@@ -106,6 +107,7 @@ class DistanceOnRouteController(
             grabMarker2,
             secondPoint.x,
             secondPoint.y,
+            zIndex = 3f,
             relativeOffset = Offset(-0.5f, -0.5f)
         ) {
             MarkerGrab(morphedIn = true, size = 50.dp)
@@ -117,13 +119,13 @@ class DistanceOnRouteController(
             (firstPoint.y + secondPoint.y) / 2,
             relativeOffset = Offset(-0.5f, -0.5f),
             clickable = false,
-            clipShape = RoundedCornerShape(5.dp)
+            zIndex = 3f
         ) {
             Text(
                 text = distanceText,
                 modifier = Modifier
-                    .background(Color(0x885D4037))
-                    .padding(horizontal = 4.dp),
+                    .background(Color(0x885D4037), RoundedCornerShape(4.dp))
+                    .padding(horizontal = 5.dp),
                 color = Color.White,
                 fontSize = 14.sp
             )
@@ -136,7 +138,7 @@ class DistanceOnRouteController(
             headPath,
             pathData,
             offset = 0,
-            count = min(state.i1, state.i2),
+            count = min(state.i1, state.i2) + 1,
             color = route.color.value.let { colorStr ->
                 Color(parseColor(colorStr))
             }
@@ -147,7 +149,7 @@ class DistanceOnRouteController(
             pathData,
             width = 5.dp,
             offset = min(state.i1, state.i2),
-            count = abs(state.i2 - state.i1),
+            count = abs(state.i2 - state.i1) + 1,
             color = Color(0xFFF50057)
         )
 
@@ -155,7 +157,7 @@ class DistanceOnRouteController(
             tailPath,
             pathData,
             offset = max(state.i1, state.i2),
-            count = routePoints.lastIndex - max(state.i1, state.i2),
+            count = routePoints.lastIndex - max(state.i1, state.i2) + 1,
             color = route.color.value.let { colorStr ->
                 Color(parseColor(colorStr))
             }
@@ -179,19 +181,19 @@ class DistanceOnRouteController(
             mapState.updatePath(
                 headPath,
                 offset = 0,
-                count = min(state.i1, state.i2)
+                count = min(state.i1, state.i2) + 1
             )
 
             mapState.updatePath(
                 mainPath,
                 offset = min(state.i1, state.i2),
-                count = abs(state.i2 - state.i1)
+                count = abs(state.i2 - state.i1) + 1
             )
 
             mapState.updatePath(
                 tailPath,
                 offset = max(state.i1, state.i2),
-                count = routePoints.lastIndex - max(state.i1, state.i2)
+                count = routePoints.lastIndex - max(state.i1, state.i2) + 1
             )
         }
 
