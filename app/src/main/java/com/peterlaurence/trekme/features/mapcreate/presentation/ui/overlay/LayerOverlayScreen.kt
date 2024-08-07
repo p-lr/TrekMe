@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.features.mapcreate.presentation.ui.overlay
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -115,7 +116,7 @@ fun LayerOverlayStateful(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 private fun LayerOverlayScreen(
     layerProperties: List<LayerProperties>,
@@ -144,7 +145,12 @@ private fun LayerOverlayScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 selectedLayerId?.also { id ->
-                    SmallFloatingActionButton(onClick = { onRemove(id) }) {
+                    SmallFloatingActionButton(
+                        onClick = {
+                            onRemove(id)
+                            selectedLayerId = null
+                        }
+                    ) {
                         Icon(
                             Icons.Filled.Clear,
                             contentDescription = null,
@@ -222,6 +228,7 @@ private fun LayerOverlayScreen(
                                 )
                                 .clickable { selectedLayerId = it.layer.id }
                                 .padding(horizontal = 16.dp)
+                                .animateItemPlacement()
                         ) {
                             Text(
                                 text = translateLayerName(it.layer.id) ?: "",
