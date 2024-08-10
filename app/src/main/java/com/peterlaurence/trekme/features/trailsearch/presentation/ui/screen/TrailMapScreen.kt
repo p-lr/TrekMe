@@ -748,7 +748,7 @@ private fun ExcursionMap(
                 Modifier.padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("Search")
+                Text(stringResource(id = R.string.excursion_search_button))
             }
         }
         if (isSearchPending) {
