@@ -61,7 +61,7 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 //    implementation project(":mapcompose-local")  // for dev purposes
-    implementation 'ovh.plrapps:mapcompose:2.12.5'
+    implementation 'ovh.plrapps:mapcompose:2.12.6'
     implementation 'com.android.billingclient:billing:7.0.0'
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
@@ -70,7 +70,7 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-runtime-compose:$lifecycle_version"
     implementation "androidx.navigation:navigation-compose:$nav_version"
     implementation 'androidx.datastore:datastore-preferences:1.1.1'
-    implementation 'androidx.activity:activity-compose:1.9.0'
+    implementation 'androidx.activity:activity-compose:1.9.1'
 
     // Compose // see https://developer.android.com/jetpack/compose/setup#bom-version-mapping
     implementation platform('androidx.compose:compose-bom:2024.06.00')
