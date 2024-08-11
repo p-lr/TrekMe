@@ -1,7 +1,11 @@
 package com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.AnchoredDraggableState
+import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.anchoredDraggable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -18,11 +22,11 @@ import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -127,6 +131,108 @@ fun CollapsibleBottomSheet(
                         maxHeightPx to States.COLLAPSED,
                     )
                 )
+                .nestedScroll(connection)
+        ) {
+            Column(
+                Modifier
+                    .height(this@BoxWithConstraints.maxHeight * expandedRatio)
+                    .clip(BottomSheetDefaults.ExpandedShape)
+                    .background(MaterialTheme.colorScheme.surface)
+            ) {
+                header()
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    state = lazyListState
+                ) {
+                    content()
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@Composable
+fun CollapsibleBottomSheetM3(
+    state: AnchoredDraggableState<States>,
+    lazyListState: LazyListState = rememberLazyListState(),
+    expandedRatio: Float,
+    peakedRatio: Float,
+    header: @Composable () -> Unit = {},
+    content: LazyListScope.() -> Unit
+) {
+    BoxWithConstraints {
+        val maxHeightPx = with(LocalDensity.current) {
+            maxHeight.toPx()
+        }
+
+        val anchors = remember {
+            DraggableAnchors {
+                States.EXPANDED at maxHeightPx * (1 - expandedRatio)
+                States.PEAKED at maxHeightPx * (1 - peakedRatio)
+                States.COLLAPSED at maxHeightPx
+            }
+        }
+
+        SideEffect {
+            state.updateAnchors(anchors)
+        }
+
+        val connection = remember {
+            object : NestedScrollConnection {
+                override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                    val delta = available.y
+                    return if (delta < 0 && source == NestedScrollSource.Drag) {
+                        state.dispatchRawDelta(delta).toOffset()
+                    } else {
+                        Offset.Zero
+                    }
+                }
+
+                override fun onPostScroll(
+                    consumed: Offset,
+                    available: Offset,
+                    source: NestedScrollSource
+                ): Offset {
+                    return if (source == NestedScrollSource.Drag) {
+                        state.dispatchRawDelta(available.y).toOffset()
+                    } else {
+                        Offset.Zero
+                    }
+                }
+
+                override suspend fun onPreFling(available: Velocity): Velocity {
+                    return if (available.y < 0 && lazyListState.firstVisibleItemIndex == 0 && lazyListState.firstVisibleItemScrollOffset == 0) {
+                        state.settle(available.y)
+                        available
+                    } else {
+                        Velocity.Zero
+                    }
+                }
+
+                override suspend fun onPostFling(
+                    consumed: Velocity,
+                    available: Velocity
+                ): Velocity {
+                    state.settle(available.y)
+                    return super.onPostFling(consumed, available)
+                }
+
+                private fun Float.toOffset() = Offset(0f, this)
+            }
+        }
+
+        Box(
+            Modifier
+                .offset {
+                    IntOffset(
+                        0,
+                        state
+                            .requireOffset()
+                            .roundToInt()
+                    )
+                }
+                .anchoredDraggable(state, orientation = Orientation.Vertical)
                 .nestedScroll(connection)
         ) {
             Column(

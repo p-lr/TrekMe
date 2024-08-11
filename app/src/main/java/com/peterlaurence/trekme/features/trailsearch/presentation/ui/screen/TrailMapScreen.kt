@@ -1,11 +1,17 @@
+@file:OptIn(ExperimentalFoundationApi::class)
+
 package com.peterlaurence.trekme.features.trailsearch.presentation.ui.screen
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.AnchoredDraggableState
+import androidx.compose.foundation.gestures.snapTo
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,9 +31,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.LocalTextStyle
-import androidx.compose.material.SwipeableState
-import androidx.compose.material.rememberSwipeableState
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -64,6 +68,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
@@ -93,7 +98,7 @@ import com.peterlaurence.trekme.core.wmts.domain.model.SwissTopoData
 import com.peterlaurence.trekme.core.wmts.domain.model.TILE_SIZE_IN_MO
 import com.peterlaurence.trekme.core.wmts.domain.model.UsgsData
 import com.peterlaurence.trekme.core.wmts.domain.model.WorldStreetMap
-import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.CollapsibleBottomSheet
+import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.CollapsibleBottomSheetM3
 import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.States
 import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.ConfirmDialog
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.ErrorScreen
@@ -147,7 +152,15 @@ fun TrailMapStateful(
     val isShowingHelperTip by viewModel.isShowingHelperTip.collectAsStateWithLifecycle()
     val mapSourceData by viewModel.mapSourceDataFlow.collectAsStateWithLifecycle()
     val hasExtendedOffer by viewModel.extendedOfferFlow.collectAsState(initial = false)
-    val swipeableState = rememberSwipeableState(initialValue = States.COLLAPSED)
+    val density = LocalDensity.current
+    val anchoredDraggableState = remember {
+        AnchoredDraggableState(
+            initialValue = States.COLLAPSED,
+            positionalThreshold = { distance: Float -> distance * 0.2f },
+            velocityThreshold = { with(density) { 125.dp.toPx() } },
+            animationSpec = tween(),
+        )
+    }
     val geoRecordForBottomSheet by viewModel.geoRecordForBottomSheet.collectAsStateWithLifecycle()
     val mapDownloadState by viewModel.mapDownloadStateFlow.collectAsStateWithLifecycle()
     var isDownloadOptionChecked by remember(mapDownloadState) {
@@ -188,11 +201,11 @@ fun TrailMapStateful(
     LaunchedEffectWithLifecycle(flow = viewModel.event) { event ->
         when (event) {
             is Event.OnMarkerClick -> {
-                swipeableState.snapTo(States.EXPANDED)
+                anchoredDraggableState.snapTo(States.EXPANDED)
             }
 
             is Event.OnTrailClick -> {
-                swipeableState.snapTo(States.EXPANDED)
+                anchoredDraggableState.snapTo(States.EXPANDED)
             }
 
             is Event.NoInternet -> {
@@ -226,11 +239,11 @@ fun TrailMapStateful(
     }
 
     /* Handle map padding and center on georecord if bottomsheet is expanded. */
-    LaunchedEffect(swipeableState.currentValue, uiState, geoRecordForBottomSheet) {
+    LaunchedEffect(anchoredDraggableState.currentValue, uiState, geoRecordForBottomSheet) {
         val mapState = (uiState as? MapReady)?.mapState ?: return@LaunchedEffect
         val bb = geoRecordForBottomSheet.getOrNull()?.boundingBoxNormalized ?: return@LaunchedEffect
 
-        val paddingRatio = when (swipeableState.currentValue) {
+        val paddingRatio = when (anchoredDraggableState.currentValue) {
             States.EXPANDED, States.PEAKED -> expandedRatio
             States.COLLAPSED -> {
                 viewModel.resetTrail()
@@ -239,7 +252,7 @@ fun TrailMapStateful(
         }
         launch {
             mapState.setVisibleAreaPadding(bottomRatio = paddingRatio)
-            if (swipeableState.currentValue == States.EXPANDED) {
+            if (anchoredDraggableState.currentValue == States.EXPANDED) {
                 mapState.scrollTo(bb, Offset(0.2f, 0.2f))
             }
         }
@@ -253,7 +266,7 @@ fun TrailMapStateful(
         isGeoPlaceLoading = isGeoPlaceLoading,
         isTrailUpdatePending = isTrailUpdatePending,
         isShowingHelperTip = isShowingHelperTip,
-        swipeableState = swipeableState,
+        anchoredDraggableState = anchoredDraggableState,
         bottomSheetDataState = bottomSheetDataState,
         snackbarHostState = snackbarHostState,
         onLocationSearch = viewModel::onLocationSearch,
@@ -368,7 +381,7 @@ private fun ExcursionMapScreen(
     isGeoPlaceLoading: Boolean,
     isTrailUpdatePending: Boolean,
     isShowingHelperTip: Boolean,
-    swipeableState: SwipeableState<States>,
+    anchoredDraggableState: AnchoredDraggableState<States>,
     bottomSheetDataState: ResultL<BottomSheetData?>,
     snackbarHostState: SnackbarHostState,
     onLocationSearch: (String) -> Unit,
@@ -388,7 +401,7 @@ private fun ExcursionMapScreen(
         bottomBar = {
             val bottomSheetDataSuccess = bottomSheetDataState.getOrNull()
             if (
-                swipeableState.currentValue != States.COLLAPSED
+                anchoredDraggableState.currentValue != States.COLLAPSED
                 && bottomSheetDataSuccess != null
                 && bottomSheetDataSuccess.mapDownloadState != Loading
                 && !isInSearchMode
@@ -523,7 +536,7 @@ private fun ExcursionMapScreen(
                             onLayerSelection = onLayerSelection
                         )
                         BottomSheet(
-                            swipeableState,
+                            anchoredDraggableState,
                             bottomSheetDataState,
                             onCursorMove,
                             onToggleDownloadMapOption
@@ -551,13 +564,13 @@ private fun ExcursionMapScreen(
 
 @Composable
 private fun BottomSheet(
-    swipeableState: SwipeableState<States>,
+    anchoredDraggableState: AnchoredDraggableState<States>,
     bottomSheetDataState: ResultL<BottomSheetData?>,
     onCursorMove: (latLon: LatLon, d: Double, ele: Double) -> Unit = { _, _, _ -> },
     onToggleDownloadMapOption: () -> Unit = {}
 ) {
-    CollapsibleBottomSheet(
-        swipeableState = swipeableState,
+    CollapsibleBottomSheetM3(
+        state = anchoredDraggableState,
         expandedRatio = expandedRatio,
         peakedRatio = peakedRatio,
         content = {
@@ -661,6 +674,7 @@ private fun LazyListScope.downloadSection(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(bottom = 30.dp)
                 .clickable(onClick = onToggleDownloadMapOption)
         ) {
             when (mapDownloadState) {
@@ -1016,7 +1030,15 @@ private suspend fun showSnackbar(snackbarHostState: SnackbarHostState, message: 
 @Preview(showBackground = true)
 @Composable
 private fun ExcursionMapScreenPreview() {
-    val swipeableState = rememberSwipeableState(initialValue = States.PEAKED)
+    val density = LocalDensity.current
+    val anchoredDraggableState = remember {
+        AnchoredDraggableState(
+            initialValue = States.PEAKED,
+            positionalThreshold = { distance: Float -> distance * 0.2f },
+            velocityThreshold = { with(density) { 125.dp.toPx() } },
+            animationSpec = tween(),
+        )
+    }
 
     val mapState = remember {
         MapState(5, 10000, 10000).apply {
@@ -1044,7 +1066,15 @@ private fun ExcursionMapScreenPreview() {
                     id = UUID.randomUUID(),
                     title = "Trail title",
                     geoStatistics = geoStats,
-                    elevationGraphPoints = null,
+                    elevationGraphPoints = listOf(
+                        ElevationGraphPoint(0.0, 0.0, 0.0, 980.0),
+                        ElevationGraphPoint(0.0, 0.0, 10.0, 1043.0),
+                        ElevationGraphPoint(0.0, 0.0, 20.0, 1142.0),
+                        ElevationGraphPoint(0.0, 0.0, 30.0, 1432.0),
+                        ElevationGraphPoint(0.0, 0.0, 40.0, 1352.0),
+                        ElevationGraphPoint(0.0, 0.0, 50.0, 1321.0),
+                        ElevationGraphPoint(0.0, 0.0, 60.0, 1189.0)
+                    ),
                     maybeUnordered = true,
                     mapDownloadState = mapDownloadState,
                     isDownloadOptionChecked = true
@@ -1062,7 +1092,7 @@ private fun ExcursionMapScreenPreview() {
             isGeoPlaceLoading = false,
             isTrailUpdatePending = true,
             isShowingHelperTip = true,
-            swipeableState = swipeableState,
+            anchoredDraggableState = anchoredDraggableState,
             bottomSheetDataState = bottomSheetData,
             snackbarHostState = snackbarHostState,
             onLocationSearch = {},
