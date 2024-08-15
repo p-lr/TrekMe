@@ -23,7 +23,8 @@ class ExcursionDaoFileBasedTest {
         appDirFlow = flowOf(),
         uriReader = { _, _ -> null },
         nameReaderUri = { null },
-        ioDispatcher = testDispatcher
+        ioDispatcher = testDispatcher,
+        cacheDir = null
     )
 
     @Test
