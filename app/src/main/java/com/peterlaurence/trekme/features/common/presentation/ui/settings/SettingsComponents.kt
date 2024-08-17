@@ -226,13 +226,14 @@ fun ToggleSetting(
             .clickable(onClick = onToggle)
             .padding(start = paddingStart, top = 5.dp, end = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
+            modifier = Modifier.weight(1f),
             text = name,
             fontSize = mainFontSize,
             color = MaterialTheme.colorScheme.onBackground,
-            style = nameStyle
+            style = nameStyle,
+            maxLines = 2
         )
         Switch(checked = checked, onCheckedChange = { onToggle() })
     }

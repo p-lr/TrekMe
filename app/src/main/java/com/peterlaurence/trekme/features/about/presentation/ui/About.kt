@@ -112,21 +112,20 @@ fun AboutScreen(
             SnackbarHost(hostState = snackbarHostState)
         }
     ) { paddingValues ->
-        Surface(Modifier.padding(paddingValues)) {
-            Column(
-                Modifier
-                    .verticalScroll(scrollState)
-                    .padding(16.dp)
-                    .fillMaxSize()
-            ) {
-                UserManualSection(onUserManualClick)
-                Spacer(Modifier.height(16.dp))
-                AppRatingSection(onAppRating)
-                Spacer(Modifier.height(16.dp))
-                UserFeedback(onSendMail)
-                Spacer(Modifier.height(16.dp))
-                PrivacyPolicy(onLinkError = onLinkError)
-            }
+        Column(
+            Modifier
+                .padding(paddingValues)
+                .verticalScroll(scrollState)
+                .padding(16.dp)
+                .fillMaxSize()
+        ) {
+            UserManualSection(onUserManualClick)
+            Spacer(Modifier.height(16.dp))
+            AppRatingSection(onAppRating)
+            Spacer(Modifier.height(16.dp))
+            UserFeedback(onSendMail)
+            Spacer(Modifier.height(16.dp))
+            PrivacyPolicy(onLinkError = onLinkError)
         }
     }
 }
