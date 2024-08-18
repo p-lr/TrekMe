@@ -334,9 +334,9 @@ fun TrailMapStateful(
         }
 
         MapSourceDataSelect(
+            /* As of 2024/08/18, remove OpenTopoMap as levels 16 and 17 are no longer available */
             mapSourceDataList = listOf(
                 OsmSourceData(WorldStreetMap),
-                OsmSourceData(OpenTopoMap),
                 IgnSourceData(IgnClassic, overlays = emptyList()),
                 UsgsData,
                 OrdnanceSurveyData,

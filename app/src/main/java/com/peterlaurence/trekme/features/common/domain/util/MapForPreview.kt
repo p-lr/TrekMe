@@ -85,5 +85,6 @@ fun makeMapForComposePreview(name: String = "Example map"): Map {
         override val missingTilesCount: MutableStateFlow<Long?> = MutableStateFlow(15)
         override val lastRepairDate: MutableStateFlow<Long?> = MutableStateFlow(null)
         override val lastUpdateDate: MutableStateFlow<Long?> = MutableStateFlow(null)
+        override val isDownloadPending: MutableStateFlow<Boolean> = MutableStateFlow(false)
     }
 }

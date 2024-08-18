@@ -40,5 +40,6 @@ const val openTopoMap = "openTopoMap"
 const val osmOutdoors = "osmOutdoors"
 const val osmAndHd = "osmAndHd"
 
-/* All supported OSM layers */
-val osmLayersPrimary: List<OsmPrimaryLayer> = listOf(WorldStreetMap, OsmAndHd, WorldTopoMap, OpenTopoMap)
+/* All supported OSM layers
+ * As of 2024/08/18, remove OpenTopoMap as levels 16 and 17 are no longer available */
+val osmLayersPrimary: List<OsmPrimaryLayer> = listOf(WorldStreetMap, OsmAndHd, WorldTopoMap)
