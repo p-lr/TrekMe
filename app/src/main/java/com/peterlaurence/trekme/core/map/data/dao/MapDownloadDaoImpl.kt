@@ -12,6 +12,7 @@ import com.peterlaurence.trekme.core.wmts.domain.model.Tile
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.map.data.models.BitmapProvider
 import com.peterlaurence.trekme.core.map.data.models.makeTag
+import com.peterlaurence.trekme.core.map.domain.utils.createDownloadPendingFile
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnClassic
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnSourceData
@@ -159,6 +160,12 @@ class MapDownloadDaoImpl(
         val map = buildMap(spec, mapSpec, mapOrigin, destDir)
 
         createNomediaFile(destDir)
+
+        /* Setting the "download-pending" flag here. By design, this flag is removed when:
+         * - a download finishes successfully and the MapUpdateDao is invoked.
+         * - an update is performed (repair-only or not), then the MapUpdateDao is invoked. */
+        createDownloadPendingFile(destDir)
+        map.isDownloadPending.value = true
 
         return map
     }

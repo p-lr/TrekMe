@@ -11,6 +11,7 @@ import com.peterlaurence.trekme.core.map.data.models.MapPropertiesKtx
 import com.peterlaurence.trekme.core.map.domain.dao.MapLoaderDao
 import com.peterlaurence.trekme.core.map.domain.dao.MapSaverDao
 import com.peterlaurence.trekme.core.map.domain.models.Map
+import com.peterlaurence.trekme.core.map.domain.utils.hasDownloadPendingFile
 import com.peterlaurence.trekme.util.FileUtils
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -118,6 +119,7 @@ class MapLoaderDaoFileBased(
 
                 /* Some properties can be set right after */
                 map.sizeInBytes.value = getSizeInBytes(rootDir)
+                map.isDownloadPending.value = hasDownloadPendingFile(rootDir)
 
                 /* See above for explanation */
                 if (shouldSaveUUID) {

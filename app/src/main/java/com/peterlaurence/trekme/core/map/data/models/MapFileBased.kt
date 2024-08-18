@@ -44,6 +44,7 @@ class MapFileBased(
     override val missingTilesCount: MutableStateFlow<Long?> = MutableStateFlow(null)
     override val lastRepairDate: MutableStateFlow<Long?> = MutableStateFlow(null)
     override val lastUpdateDate: MutableStateFlow<Long?> = MutableStateFlow(null)
+    override val isDownloadPending: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
     /**
      * The calibration status is either :

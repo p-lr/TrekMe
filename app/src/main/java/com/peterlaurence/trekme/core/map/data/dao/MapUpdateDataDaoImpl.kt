@@ -4,6 +4,7 @@ import com.peterlaurence.trekme.core.map.data.models.MapFileBased
 import com.peterlaurence.trekme.core.map.data.models.MapUpdateKtx
 import com.peterlaurence.trekme.core.map.domain.dao.MapUpdateDataDao
 import com.peterlaurence.trekme.core.map.domain.models.Map
+import com.peterlaurence.trekme.core.map.domain.utils.deleteDownloadPendingFile
 import com.peterlaurence.trekme.util.FileUtils
 import com.peterlaurence.trekme.util.writeToFile
 import kotlinx.coroutines.CoroutineDispatcher
@@ -24,6 +25,7 @@ class MapUpdateDataDaoImpl(
     override suspend fun setNewDownloadData(map: Map, missingTilesCount: Long) {
         val success = withContext(ioDispatcher) {
             val directory = (map as? MapFileBased)?.folder ?: return@withContext false
+            removeDownloadPendingFlag(map)
 
             val updateData = MapUpdateKtx(missingTilesCount = missingTilesCount)
             val str = json.encodeToString(updateData)
@@ -41,6 +43,8 @@ class MapUpdateDataDaoImpl(
     override suspend fun setRepairData(map: Map, missingTilesCount: Long, date: Long) {
         val success = withContext(ioDispatcher) {
             val directory = (map as? MapFileBased)?.folder ?: return@withContext false
+            removeDownloadPendingFlag(map)
+
             val repairFile = File(directory, updateFileName)
 
             val mapUpdateKtx = runCatching<MapUpdateKtx> {
@@ -68,6 +72,8 @@ class MapUpdateDataDaoImpl(
     override suspend fun setUpdateData(map: Map, missingTilesCount: Long, date: Long) {
         val success = withContext(ioDispatcher) {
             val directory = (map as? MapFileBased)?.folder ?: return@withContext false
+            removeDownloadPendingFlag(map)
+
             val updateFile = File(directory, updateFileName)
 
             val mapUpdateKtx = runCatching<MapUpdateKtx> {
@@ -110,6 +116,12 @@ class MapUpdateDataDaoImpl(
             map.lastRepairDate.update { mapUpdateKtx.lastRepairDate }
             map.lastUpdateDate.update { mapUpdateKtx.lastUpdateDate }
         }
+    }
+
+    private suspend fun removeDownloadPendingFlag(map: MapFileBased) {
+        val directory = (map as? MapFileBased)?.folder ?: return
+        deleteDownloadPendingFile(directory)
+        map.isDownloadPending.value = false
     }
 }
 

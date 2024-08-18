@@ -163,7 +163,13 @@ class MapListViewModel @Inject constructor(
     }
 
     private fun Map.toMapItem(isFavorite: Boolean): MapItem {
-        return MapItem(id, titleFlow = name, isFavorite = isFavorite, image = thumbnail)
+        return MapItem(
+            mapId = id,
+            titleFlow = name,
+            isDownloadPending = isDownloadPending,
+            isFavorite = isFavorite,
+            image = thumbnail
+        )
     }
 }
 

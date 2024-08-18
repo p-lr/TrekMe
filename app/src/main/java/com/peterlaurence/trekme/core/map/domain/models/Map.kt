@@ -40,4 +40,5 @@ interface Map {
     val missingTilesCount: MutableStateFlow<Long?> // lazy loaded
     val lastRepairDate: MutableStateFlow<Long?>
     val lastUpdateDate: MutableStateFlow<Long?>
+    val isDownloadPending: MutableStateFlow<Boolean>
 }

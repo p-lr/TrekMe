@@ -435,6 +435,8 @@
     <string name="download_pending_item">Téléchargement en cours</string>
     <string name="choose_map_thumbnail">Vous pouvez choisir une image pour illustrer votre carte.\nContinuer ?</string>
     <string name="show_map_action">Ouvrir</string>
+    <string name="download_aborted_warning">Téléchargement interrompu</string>
+    <string name="download_aborted_explanation">Le téléchargement de cette carte a été interrompu. Cette carte est donc incomplète.\nVeuillez lancer \"%1$s\" pour cette carte.</string>
     <string name="validate_area">Valider</string>
     <string name="search_hint">Recherche…</string>
     <string name="mapcreate_out_of_bounds">Vous êtes hors des limites supportées pour cette carte</string>

@@ -173,7 +173,7 @@ class DownloadService : Service() {
 
         when (spec) {
             is NewDownloadSpec -> {
-                mapDownloadInteractor.processDownloadSpec(
+                mapDownloadInteractor.processNewDownloadSpec(
                     spec,
                     onStart = { id ->
                         repository.setStatus(DownloadRepository.DownloadingNewMap(spec, id))

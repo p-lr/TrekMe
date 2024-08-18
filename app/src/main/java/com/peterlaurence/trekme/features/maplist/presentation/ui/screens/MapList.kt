@@ -176,11 +176,20 @@ interface MapListIntents {
 @Preview(heightDp = 450, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun MapListPreview() {
+    fun makeItem(name: String): MapItem {
+        return MapItem(
+            UUID.randomUUID(),
+            titleFlow = MutableStateFlow("A map 1"),
+            isDownloadPending = MutableStateFlow(false),
+            image = MutableStateFlow(null)
+        )
+    }
+
     val mapList = listOf(
-        MapItem(UUID.randomUUID(), titleFlow = MutableStateFlow("A map 1"), image = MutableStateFlow(null)),
-        MapItem(UUID.randomUUID(), titleFlow = MutableStateFlow("A map 2"), image = MutableStateFlow(null)),
-        MapItem(UUID.randomUUID(), titleFlow = MutableStateFlow("A map 3"), image = MutableStateFlow(null)),
-        MapItem(UUID.randomUUID(), titleFlow = MutableStateFlow("A map 4"), image = MutableStateFlow(null))
+        makeItem("A map 1"),
+        makeItem("A map 2"),
+        makeItem("A map 3"),
+        makeItem("A map 4")
     )
 
     var mapListState by remember {

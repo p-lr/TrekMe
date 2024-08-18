@@ -28,7 +28,7 @@ class MapDownloadInteractor @Inject constructor(
     private val app: Application
 ) {
 
-    suspend fun processDownloadSpec(
+    suspend fun processNewDownloadSpec(
         spec: NewDownloadSpec,
         onStart: (UUID) -> Unit,
         onProgress: (Int) -> Unit

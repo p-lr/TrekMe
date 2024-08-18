@@ -89,7 +89,7 @@
     <string name="map_download_dialog_progress">Progress</string>
     <string name="map_download_dialog_error">An error occurred during map import. The map is most probably not visible or not calibrated.\nTry to download it again.</string>
 
-    <!-- Map list fragment -->
+    <!-- Map list -->
     <string name="fragment_map_list" translatable="false">MapListFragment</string>
     <string name="loading_maps">Loading maps…</string>
     <string name="download_pending_item">Download in progress</string>
@@ -109,6 +109,8 @@
     <string name="map_delete_question">Are you sure to delete this map?</string>
     <string name="choose_map_thumbnail">You can choose a thumbnail image to illustrate your map, it\'ll be prettier!\nContinue?</string>
     <string name="show_map_action">Show</string>
+    <string name="download_aborted_warning">Download aborted</string>
+    <string name="download_aborted_explanation">The download of the map was aborted. Consequently, the map is incomplete.\nPlease perform a \"%1$s\" for this map.</string>
 
     <!-- Map Settings fragment -->
     <string name="fragment_settings" translatable="false">SettingsFragment</string>

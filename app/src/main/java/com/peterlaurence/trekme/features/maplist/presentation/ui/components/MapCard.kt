@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -22,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -49,16 +51,49 @@ internal fun MapCard(
                 .clickable { intents.onMapClicked(mapItem.mapId) }
         ) {
             val title by mapItem.titleFlow.collectAsStateWithLifecycle()
+            val isDownloadPending by mapItem.isDownloadPending.collectAsStateWithLifecycle()
+
+            var isShowingDownloadPendingExplanation by remember { mutableStateOf(false) }
+
             Row {
-                Text(
-                    modifier = Modifier
+                Column(
+                    Modifier
                         .padding(start = 16.dp, top = 16.dp)
-                        .weight(1f),
-                    text = title,
-                    fontSize = 24.sp,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
+                        .weight(1f)
+                ) {
+                    Text(
+                        text = title,
+                        fontSize = 24.sp,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    if (isDownloadPending) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(
+                            Modifier.clickable {
+                                isShowingDownloadPendingExplanation = true
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.warning),
+                                tint = MaterialTheme.colorScheme.error,
+                                contentDescription = null
+                            )
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            Text(
+                                text = stringResource(id = R.string.download_aborted_warning),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+                }
+
                 ImagePlaceHolder(mapItem, intents::onSetMapImage)
             }
             ButtonRow(
@@ -67,6 +102,27 @@ internal fun MapCard(
                 onDelete = { intents::onMapDelete.invoke(mapItem.mapId) },
                 onMapFavorite = { intents::onMapFavorite.invoke(mapItem.mapId) }
             )
+
+            if (isShowingDownloadPendingExplanation) {
+                val content = stringResource(id = R.string.download_aborted_explanation).format(
+                    stringResource(id = R.string.map_analyze_and_repair)
+                )
+                AlertDialog(
+                    text = {
+                        Text(content, fontSize = 16.sp)
+                    },
+                    onDismissRequest = { isShowingDownloadPendingExplanation = false },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                isShowingDownloadPendingExplanation = false
+                            }
+                        ) {
+                            Text(stringResource(id = R.string.ok_dialog))
+                        }
+                    },
+                )
+            }
         }
     }
 }
@@ -224,7 +280,12 @@ private fun MapCardPreview() {
     TrekMeTheme {
         MapCard(
             Modifier.padding(16.dp),
-            mapItem = MapItem(UUID.randomUUID(), titleFlow = MutableStateFlow("Terra Incognita"), image = MutableStateFlow(null)),
+            mapItem = MapItem(
+                UUID.randomUUID(),
+                titleFlow = MutableStateFlow("Terra Incognita with a long name"),
+                isDownloadPending = MutableStateFlow(true),
+                image = MutableStateFlow(null)
+            ),
             intents = intents
         )
     }
