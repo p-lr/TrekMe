@@ -29,6 +29,7 @@ import com.peterlaurence.trekme.features.maplist.presentation.ui.components.Down
 import com.peterlaurence.trekme.features.maplist.presentation.ui.components.WelcomeScreen
 import com.peterlaurence.trekme.features.maplist.presentation.ui.components.MapCard
 import com.peterlaurence.trekme.features.maplist.presentation.ui.components.PendingScreen
+import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.DownloadState
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapListState
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapListViewModel
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapSettingsViewModel
@@ -86,12 +87,18 @@ fun MapListStateful(
     }
 
     val mapListState by mapListViewModel.mapListState.collectAsState()
-    MapListUi(mapListState, intents, onMainMenuClick = onMainMenuClick)
+    val downloadState by mapListViewModel.downloadState.collectAsState()
+    MapListUi(mapListState, downloadState, intents, onMainMenuClick = onMainMenuClick)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MapListUi(state: MapListState, intents: MapListIntents, onMainMenuClick: () -> Unit) {
+private fun MapListUi(
+    state: MapListState,
+    downloadState: DownloadState,
+    intents: MapListIntents,
+    onMainMenuClick: () -> Unit
+) {
     Scaffold(
         topBar = {
             // Prevent the user from accessing the main menu while maps aren't loaded yet.
@@ -110,17 +117,17 @@ private fun MapListUi(state: MapListState, intents: MapListIntents, onMainMenuCl
         Column(
             Modifier.padding(paddingValues)
         ) {
-            if (state.isDownloadPending) {
+            if (downloadState.isDownloadPending) {
                 DownloadCard(
                     Modifier
                         .background(MaterialTheme.colorScheme.background)
                         .padding(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 8.dp),
-                    state.downloadProgress,
+                    downloadState.downloadProgress,
                     intents::onCancelDownload
                 )
             }
 
-            if (state.isMapListInitializing && !state.isDownloadPending) {
+            if (state.isMapListInitializing && !downloadState.isDownloadPending) {
                 PendingScreen()
             } else {
                 val listState = rememberLazyListState()
@@ -178,7 +185,7 @@ private fun MapListPreview() {
 
     var mapListState by remember {
         mutableStateOf(
-            MapListState(mapList, false, downloadProgress = 25, isDownloadPending = true)
+            MapListState(mapList, false)
         )
     }
 
@@ -219,7 +226,12 @@ private fun MapListPreview() {
     }
 
     TrekMeTheme {
-        MapListUi(mapListState, intents, onMainMenuClick = {})
+        MapListUi(
+            state = mapListState,
+            downloadState = DownloadState(25, true),
+            intents = intents,
+            onMainMenuClick = {}
+        )
     }
 }
 

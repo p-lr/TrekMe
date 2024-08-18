@@ -37,7 +37,7 @@
     <string name="map_analyze_and_repair_progress">Réparation en cours</string>
     <string name="map_repair_rationale">Cette fonctionnalité vous permet de réparer la carte en téléchargeant les tuiles manquantes. Ceci requiert TrekMe Extended, et n\'est possible que pour les cartes créées à partir de TrekMe v4 et supérieur.</string>
     <string name="map_no_missing_tile">Carte complète</string>
-    <string name="map_missing_tiles">Tuiles manquantes :</string>
+    <string name="map_missing_tiles">Tuiles manquantes : %1$s</string>
     <string name="map_update">Mettre à jour</string>
     <string name="map_update_progress">Mise à jour en cours</string>
     <string name="map_repair_rationale_subscribed_user">Cette fonctionnalité vous permet de réparer la carte en téléchargeant les tuiles manquantes. C\'est utile après avoir téléchargé une carte avec une connexion instable, ou après avoir recu une carte avec la fonctionnalité de partage de carte.</string>
@@ -156,6 +156,7 @@
     <string name="onboarding_center_on_pos">Centrez sur votre position avec ce boutton</string>
     <string name="onboarding_select_area">Sélectionnez la zone à télécharger</string>
     <string name="download_confirm">Téléchargement lancé. Voir le statut dans les notifications.</string>
+    <string name="repair_confirm">Réparation de carte lancé. Voir le statut dans les notifications.</string>
     <string name="confirm_exit">Appuyez à nouveau sur RETOUR pour quitter TrekMe</string>
     <string name="ign_spain_source">IGN Espagne</string>
     <string name="track_file_name_change">Nom du fichier</string>

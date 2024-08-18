@@ -57,7 +57,7 @@ class MapSettingsViewModel @Inject constructor(
     val mapUpdateStateFlow: StateFlow<MapUpdateState?> = channelFlow {
         downloadRepository.status.collectLatest { status ->
             when(status) {
-                is DownloadRepository.Started -> {
+                is DownloadRepository.UpdatingMap -> {
                     downloadRepository.downloadEvent.collect { event ->
                         val state = if (event is MapUpdatePending) {
                             MapUpdateState(event.mapId, event.progress / 100f, event.repairOnly)
@@ -65,6 +65,7 @@ class MapSettingsViewModel @Inject constructor(
                         send(state)
                     }
                 }
+                is DownloadRepository.DownloadingNewMap -> send(null)
                 DownloadRepository.Stopped -> send(null)
             }
         }

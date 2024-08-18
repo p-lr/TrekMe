@@ -2,8 +2,11 @@ package com.peterlaurence.trekme.features.mapcreate.domain.repository
 
 import com.peterlaurence.trekme.core.map.domain.models.MapDownloadSpec
 import com.peterlaurence.trekme.core.map.domain.models.MapDownloadEvent
+import com.peterlaurence.trekme.core.map.domain.models.NewDownloadSpec
+import com.peterlaurence.trekme.core.map.domain.models.UpdateSpec
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
+import java.util.UUID
 
 class DownloadRepository {
     private val _status = MutableStateFlow<Status>(Stopped)
@@ -18,7 +21,10 @@ class DownloadRepository {
         _status.value = status
     }
 
-    fun isStarted() = _status.value is Started
+    fun isStarted() = when (status.value) {
+        is DownloadingNewMap, is UpdatingMap -> true
+        Stopped -> false
+    }
 
     /* Should only be invoked from the main thread */
     fun postMapDownloadSpec(spec: MapDownloadSpec) {
@@ -31,6 +37,7 @@ class DownloadRepository {
     fun postDownloadEvent(event: MapDownloadEvent) = _downloadEvent.tryEmit(event)
 
     sealed interface Status
-    data class Started(val downloadSpec: MapDownloadSpec): Status
+    data class DownloadingNewMap(val downloadSpec: NewDownloadSpec, val mapId: UUID): Status
+    data class UpdatingMap(val updateSpec: UpdateSpec): Status
     data object Stopped: Status
 }

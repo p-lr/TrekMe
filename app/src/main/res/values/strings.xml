@@ -123,7 +123,7 @@
     <string name="map_analyze_and_repair_progress">Repair in progress</string>
     <string name="map_repair_rationale">This feature allows you to download missing tiles. This feature is only available with TrekMe Extended and for maps created with TrekMe v4 and onwards.</string>
     <string name="map_no_missing_tile">Map complete</string>
-    <string name="map_missing_tiles">Missing tiles:</string>
+    <string name="map_missing_tiles">Missing tiles: %1$s</string>
     <string name="map_update">Update</string>
     <string name="map_update_progress">Update in progress</string>
     <string name="map_repair_rationale_subscribed_user">This feature allows you to download missing tiles, if any. It\'s useful after a downloading a map using an unstable connection, or after receiving a map using the map sharing feature.</string>
@@ -443,6 +443,7 @@
     <string name="buy_btn">Purchase</string>
     <string name="download">Download</string>
     <string name="download_confirm">Download started. See the status in your notifications.</string>
+    <string name="repair_confirm">Map repair started. See the status in your notifications.</string>
     <string name="mapcreate_warning_ign">It looks like there\'s an issue with either IGN servers, which generally solves itself after a few hours.</string>
     <string name="mapcreate_out_of_bounds">Your location is out of supported bounds for this map</string>
     <string name="mapcreate_warning_others">It looks like there\'s a temporary outage of the map provider, which generally solves itself after a few hours.</string>

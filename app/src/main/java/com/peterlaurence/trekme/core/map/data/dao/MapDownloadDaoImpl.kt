@@ -103,12 +103,20 @@ class MapDownloadDaoImpl(
     override suspend fun processNewDownloadSpec(
         spec: NewDownloadSpec,
         tileStreamProvider: TileStreamProvider,
+        onMapCreated: suspend (Map) -> Unit,
         onProgress: (Int) -> Unit
     ): MapDownloadResult = coroutineScope {
         val source = spec.source
         val mapSpec = getMapSpec(spec.minLevel, spec.maxLevel, spec.corner1, spec.corner2, tileSize = spec.tileSize)
         val tileCount = getNumberOfTiles(spec.minLevel, spec.maxLevel, spec.corner1, spec.corner2)
         val tileSequence = mapSpec.tileSequence
+
+        /* Create the destination folder, or else fail-fast */
+        val destDir = createDestDir()
+            ?: return@coroutineScope MapDownloadResult.Error(MapDownloadStorageError)
+
+        val map = postProcess(spec, mapSpec, destDir)
+        onMapCreated(map)
 
         val threadSafeTileIterator =
             ThreadSafeTileIterator(tileSequence.iterator(), tileCount) { p ->
@@ -119,10 +127,6 @@ class MapDownloadDaoImpl(
 
         /* Init the progress bar */
         onProgress(0)
-
-        /* Create the destination folder, or else fail-fast */
-        val destDir = createDestDir()
-            ?: return@coroutineScope MapDownloadResult.Error(MapDownloadStorageError)
 
         val tileWriter = makeTileWriter(destDir, spec.source)
 
@@ -138,7 +142,6 @@ class MapDownloadDaoImpl(
             tileStreamProvider,
             tileSize = spec.tileSize
         )
-        val map = postProcess(spec, mapSpec, destDir)
 
         MapDownloadResult.Success(map, missingTilesCount.get())
     }

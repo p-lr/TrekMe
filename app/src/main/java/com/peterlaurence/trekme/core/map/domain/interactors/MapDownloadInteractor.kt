@@ -11,6 +11,7 @@ import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRep
 import com.peterlaurence.trekme.features.common.domain.interactors.ImportGeoRecordInteractor
 import com.peterlaurence.trekme.features.common.domain.interactors.MapExcursionInteractor
 import java.time.Instant
+import java.util.UUID
 import javax.inject.Inject
 
 /**
@@ -28,32 +29,38 @@ class MapDownloadInteractor @Inject constructor(
 ) {
 
     suspend fun processDownloadSpec(
-        spec: MapDownloadSpec,
+        spec: NewDownloadSpec,
+        onStart: (UUID) -> Unit,
         onProgress: (Int) -> Unit
     ) {
-        val result = when (spec) {
-            is NewDownloadSpec -> processNewDownloadSpec(spec, onProgress)
-            is UpdateSpec -> processUpdateSpec(spec, onProgress)
-        }
+        val result = onNewDownloadSpec(spec, onStart, onProgress)
 
         if (result is MapDownloadResult.Success) {
             val map = result.map
             val missingTilesCount = result.missingTilesCount
-            when (spec) {
-                is NewDownloadSpec -> mapUpdateDataDao.setNewDownloadData(map, missingTilesCount)
-                is UpdateSpec -> {
-                    val date = Instant.now().epochSecond
-                    if (spec.repairOnly) {
-                        mapUpdateDataDao.setRepairData(map, missingTilesCount, date)
-                    } else {
-                        mapUpdateDataDao.setUpdateData(map, missingTilesCount, date)
-                    }
-                }
+            mapUpdateDataDao.setNewDownloadData(map, missingTilesCount)
+        }
+    }
+
+    suspend fun processUpdateSpec(
+        spec: UpdateSpec,
+        onProgress: (Int) -> Unit
+    ) {
+        val result = onUpdateSpec(spec, onProgress)
+
+        if (result is MapDownloadResult.Success) {
+            val map = result.map
+            val missingTilesCount = result.missingTilesCount
+            val date = Instant.now().epochSecond
+            if (spec.repairOnly) {
+                mapUpdateDataDao.setRepairData(map, missingTilesCount, date)
+            } else {
+                mapUpdateDataDao.setUpdateData(map, missingTilesCount, date)
             }
         }
     }
 
-    private suspend fun processUpdateSpec(
+    private suspend fun onUpdateSpec(
         spec: UpdateSpec,
         onProgress: (Int) -> Unit
     ): MapDownloadResult {
@@ -82,8 +89,9 @@ class MapDownloadInteractor @Inject constructor(
         return result
     }
 
-    private suspend fun processNewDownloadSpec(
+    private suspend fun onNewDownloadSpec(
         spec: NewDownloadSpec,
+        onStart: (UUID) -> Unit,
         onProgress: (Int) -> Unit
     ): MapDownloadResult {
         val tileStreamProvider = tileStreamProviderDao.newTileStreamProvider(
@@ -96,6 +104,10 @@ class MapDownloadInteractor @Inject constructor(
         val result = mapDownloadDao.processNewDownloadSpec(
             spec,
             tileStreamProvider,
+            onMapCreated = { map ->
+                onStart(map.id)
+                onMapCreated(map, spec.geoRecordUris, spec.excursionIds)
+            },
             onProgress = {
                 /* Publish an application-wide event */
                 repository.postDownloadEvent(MapDownloadPending(it))
@@ -106,18 +118,18 @@ class MapDownloadInteractor @Inject constructor(
         )
 
         when (result) {
+            is MapDownloadResult.Success -> {
+                postProcess(result.map)
+            }
             is MapDownloadResult.Error -> {
                 repository.postDownloadEvent(MapDownloadStorageError)
-            }
-            is MapDownloadResult.Success -> {
-                postProcess(result.map, spec.geoRecordUris, spec.excursionIds)
             }
         }
 
         return result
     }
 
-    private suspend fun postProcess(map: Map, geoRecordUris: Set<Uri>, excursionIds: Set<String>) {
+    private suspend fun onMapCreated(map: Map, geoRecordUris: Set<Uri>, excursionIds: Set<String>) {
         saveMapInteractor.addAndSaveMap(map)
 
         excursionIds.forEach { id ->
@@ -126,7 +138,9 @@ class MapDownloadInteractor @Inject constructor(
         geoRecordUris.forEach { uri ->
             importGeoRecordInteractor.applyGeoRecordUriToMap(uri, app.contentResolver, map)
         }
+    }
 
+    private fun postProcess(map: Map) {
         /* Notify that the download finished correctly. */
         repository.postDownloadEvent(MapDownloadFinished(map.id))
     }

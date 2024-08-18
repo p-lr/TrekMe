@@ -163,9 +163,6 @@ class DownloadService : Service() {
             processDownloadSpec(spec)
         }
 
-        repository.setStatus(DownloadRepository.Started(spec))
-        appEventBus.postMessage(StandardMessage(getString(R.string.download_confirm)))
-
         return START_NOT_STICKY
     }
 
@@ -174,9 +171,27 @@ class DownloadService : Service() {
             onDownloadProgress(p)
         }
 
-        mapDownloadInteractor.processDownloadSpec(
-            spec, onProgress = { p -> throttledTask.trySend(p) }
-        )
+        when (spec) {
+            is NewDownloadSpec -> {
+                mapDownloadInteractor.processDownloadSpec(
+                    spec,
+                    onStart = { id ->
+                        repository.setStatus(DownloadRepository.DownloadingNewMap(spec, id))
+                        appEventBus.postMessage(StandardMessage(getString(R.string.download_confirm)))
+                    },
+                    onProgress = { p -> throttledTask.trySend(p) }
+                )
+            }
+            is UpdateSpec -> {
+                repository.setStatus(DownloadRepository.UpdatingMap(spec))
+                appEventBus.postMessage(StandardMessage(getString(R.string.repair_confirm)))
+                mapDownloadInteractor.processUpdateSpec(
+                    spec,
+                    onProgress = { p -> throttledTask.trySend(p) }
+                )
+            }
+        }
+
         onDownloadFinished(spec)
 
         /* Whatever the outcome, stop the service. Don't attempt to send more notifications, they

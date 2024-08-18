@@ -18,7 +18,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
@@ -41,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -165,7 +165,7 @@ private fun MapSettingsErrorScreen(onBackClick: () -> Unit = {}) {
                 title = { Text(stringResource(id = R.string.map_settings_frgmt_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "")
                     }
                 }
             )
@@ -487,18 +487,18 @@ private fun MapRepairSetting(
     val creationData = map.creationData
     if (creationData != null) {
         val missingTilesCount by map.missingTilesCount.collectAsStateWithLifecycle()
-        val mapUpdateState by mapUpdateState.collectAsStateWithLifecycle()
+        val updateState by mapUpdateState.collectAsStateWithLifecycle()
         HeaderSetting(name = stringResource(id = R.string.map_update_category))
         AnalyseAndRepair(
             missingTilesCount = missingTilesCount,
-            progress = mapUpdateState?.let { if (it.mapId == map.id && it.repairOnly) it.progress else null },
+            progress = updateState?.let { if (it.mapId == map.id && it.repairOnly) it.progress else null },
             hasExtendedOffer = hasExtendedOffer,
             onNavigateToShop = onNavigateToShop,
             onStartRepair = onStartRepair
         )
         UpdateButton(
             map = map,
-            progress = mapUpdateState?.let { if (it.mapId == map.id && !it.repairOnly) it.progress else null },
+            progress = updateState?.let { if (it.mapId == map.id && !it.repairOnly) it.progress else null },
             creationData = creationData,
             hasExtendedOffer = hasExtendedOffer,
             onNavigateToShop = onNavigateToShop,
@@ -519,26 +519,29 @@ private fun AnalyseAndRepair(
 
     ButtonSettingWithLock(
         title = {
-            if (missingTilesCount != null && missingTilesCount > 0) {
-                if (progress == null) {
-                    Text(stringResource(id = R.string.map_analyze_and_repair))
-                } else {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(stringResource(id = R.string.map_analyze_and_repair_progress))
-                        Spacer(modifier = Modifier.width(24.dp))
-                        LinearProgressIndicator(
-                            progress = { progress },
-                            Modifier
-                                .weight(1f)
-                                .padding(end = 16.dp)
-                        )
-                    }
+            if (progress != null) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(stringResource(id = R.string.map_analyze_and_repair_progress))
+                    Spacer(modifier = Modifier.width(24.dp))
+                    LinearProgressIndicator(
+                        progress = { progress },
+                        Modifier
+                            .weight(1f)
+                            .padding(end = 16.dp),
+                        strokeCap = StrokeCap.Round
+                    )
                 }
             } else {
-                Text(stringResource(id = R.string.map_no_missing_tile))
+                if (missingTilesCount == 0L) {
+                    Text(stringResource(id = R.string.map_no_missing_tile))
+                } else {
+                    Text(stringResource(id = R.string.map_analyze_and_repair))
+                }
             }
         },
-        subTitle = "${stringResource(id = R.string.map_missing_tiles)} ${missingTilesCount ?: 0}",
+        subTitle = if (missingTilesCount != null) {
+            stringResource(id = R.string.map_missing_tiles).format(missingTilesCount)
+        } else null,
         enabled = progress == null,
         isLocked = !hasExtendedOffer,
         lockedRationale = stringResource(id = R.string.map_repair_rationale),
@@ -599,7 +602,8 @@ private fun UpdateButton(
                         progress = { progress },
                         Modifier
                             .weight(1f)
-                            .padding(end = 16.dp)
+                            .padding(end = 16.dp),
+                        strokeCap = StrokeCap.Round
                     )
                 }
             }
