@@ -56,6 +56,7 @@ import com.peterlaurence.trekme.features.wifip2p.app.service.Started
 import com.peterlaurence.trekme.features.wifip2p.app.service.StopReason
 import com.peterlaurence.trekme.features.wifip2p.app.service.Stopped
 import com.peterlaurence.trekme.features.wifip2p.app.service.Stopping
+import com.peterlaurence.trekme.features.wifip2p.app.service.Timeout
 import com.peterlaurence.trekme.features.wifip2p.app.service.WifiP2pService
 import com.peterlaurence.trekme.features.wifip2p.app.service.WifiP2pServiceErrors
 import com.peterlaurence.trekme.features.wifip2p.app.service.WifiP2pState
@@ -280,7 +281,7 @@ private fun StoppedCase(
                 )
             }
 
-            null, ByUser -> {} // nothing to show
+            null, ByUser, Timeout -> {} // nothing to show
         }
 
         Spacer(modifier = Modifier.weight(0.5f))

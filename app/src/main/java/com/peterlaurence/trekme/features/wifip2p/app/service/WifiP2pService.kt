@@ -270,6 +270,17 @@ class WifiP2pService : Service() {
         return START_NOT_STICKY
     }
 
+    /**
+     * As per api 35 specification, stop the service on timeout.
+     */
+    override fun onTimeout(startId: Int) {
+        super.onTimeout(startId)
+
+        scope.launch {
+            exitWithReason(Timeout, resetConnection = false)
+        }
+    }
+
     private suspend fun initialize() {
         channel = manager?.initialize(this.applicationContext, mainLooper) {
             Log.e(TAG, "Lost wifip2p connection")
@@ -646,6 +657,7 @@ data class Stopped(val stopReason: StopReason? = null) : WifiP2pState() {
 
 sealed class StopReason
 data object ByUser : StopReason()
+data object Timeout : StopReason()
 data class WithError(val error: WifiP2pServiceErrors) : StopReason()
 data class MapSuccessfullyLoaded(val name: String) : StopReason()
 

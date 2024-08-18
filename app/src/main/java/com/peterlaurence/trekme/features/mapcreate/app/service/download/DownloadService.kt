@@ -166,6 +166,15 @@ class DownloadService : Service() {
         return START_NOT_STICKY
     }
 
+    /**
+     * As per api 35 specification, stop the service on timeout.
+     */
+    override fun onTimeout(startId: Int) {
+        super.onTimeout(startId)
+
+        stopService()
+    }
+
     private suspend fun processDownloadSpec(spec: MapDownloadSpec) {
         val throttledTask = scope.throttle(1000) { p: Int ->
             onDownloadProgress(p)
