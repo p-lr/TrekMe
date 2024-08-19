@@ -129,7 +129,8 @@ A l'exception de l'IGN France, qui nécessite un abonnement annuel, le menu suiv
 
 Les fournisseurs de carte proposent différents niveaux de zoom, allant de 1 (niveau globe) à 18 
 (carte très détaillée).
-Dans la plupart des cas, vous ne voulez pas des niveaux 1 à 10, et le niveau 18 n'est pas nécessaire. 
+Dans la plupart des cas, vous ne voulez pas des niveaux 1 à 10, et le niveau 17 est rarement
+nécessaire. 
 C'est la raison pour laquelle le réglage par défaut est de 12 pour le zoom minimum, et 16 pour le maximum.
 Ces réglages par défaut conviennent pour la plupart des usages, et il est conseillé de ne pas les
 changer sauf si vous savez ce que vous faites.
@@ -137,33 +138,40 @@ changer sauf si vous savez ce que vous faites.
 La quantité d'images qui devront être téléchargées dépend directement du choix des niveaux de zoom 
 min et max. Plus le niveau de zoom min est petit et plus le niveau max est grand, plus la quantité à
  télécharger est importante.
-Ceci est indiqué par les nombre de transactions. Mais aussi plus simplement l'estimation de la taille
- de la carte en Mo est indiquée.
+Ceci est indiqué par l'estimation de la taille de la carte en Mo.
 Il est important de noter que télécharger plusieurs centaines de Mo peut prendre des heures... Il est
  donc fortement recommandé de ne sélectionner que la zone dont vous avez besoin.
 
-Quand tout est ok, utilisez le bouton "Telecharger". Un service est alors lancé, et une notification 
+Quand tout est ok, utilisez le bouton "Télécharger". Un service est alors lancé, et une notification 
 vous en informe. Depuis le gestionnaire de notifications de votre téléphone, vous pouvez :
 
 * Voir la progressoin du téléchargement
 * Annuler le téléchargement
 
 Quand le service a fini le téléchargement, vous recevez une notification et une nouvelle carte est 
-disponible dans la liste des cartes. Cette carte est déjà calibrée et prête à l'emploi.
+disponible dans la liste des cartes.
 Vous pouvez la personnaliser en lui associant une image de présentation qui apparaîtra à côté de son
  nom dans la liste des cartes. Pour ce faire, utilisez le bouton d'édition en dessous du nom de la 
  carte, sur la gauche.
 Vous accédez alors à la configuration de la carte, où vous pouvez :
 
 * Changer l'image de présentation
-* Changer la projection de la carte (seulement si vous savez ce que vous faites)
-* Changer les points de calibration (seulement si vous savez ce que vous faites)
 * Changer le nom de la carte
 * Sauvegarder la carte
 
-Attention, il ne faut pas changer la projection ni les points de calibration d'une carte que vous 
-avez téléchargé. Il s'agit d'options pour les utilisateurs avertis. Une erreur à ce niveau 
-introduirait un biais dans votre positionnement sur la carte.
+#### Reprendre un téléchargement interrompu
+
+Lorsqu'un téléchargement de carte est interrompu (soit manuellement, ou par extinction de l'appareil
+par ex), la carte est incomplète. Ceci est indiqué sur la carte :
+
+<p align="center">
+<img src="doc/images/download-abort-fr.jpg" width="300">
+</p>
+
+Il est alors possible, si vous avec TrekMe Extended, de poursuivre le téléchargement en allant dans
+"MODIFIER" puis "Analyser & réparer". Les parties manquantes de la carte vont être téléchargées.
+Si vous n'avez pas l'offre premium de TrekMe, la réparation de carte n'est pas disponible. Il vous
+est alors conseillé de supprimer la carte incomplète.
 
 ### Depuis une archive
 
@@ -377,10 +385,10 @@ Un enregistrement GPX peut être lancé depuis n'importe quelle carte, à l'aide
 Un enregistrement peut être démarré, arrêté ou mis en pause.
 Quand un enregistrement est en cours, un service spécifique est démarré et fonctionne même si TrekMe 
 est arrêté.
-Si vous avez Android 10 ou plus, vous devez vous assurer :
+Si vous avez Android 10 ou plus, vous devez vous assurer que :
 
-- que TrekMe a l'autorisation de localisation en mode "Toujours autoriser", et pas seulement si l'application est en cours d'utilisation. 
-- que l'optimisation de la batterie est désactivée pour TrekMe.
+- TrekMe a l'autorisation de localisation en mode "Toujours autoriser", et pas seulement si l'application est en cours d'utilisation. 
+- l'optimisation de la batterie est désactivée pour TrekMe.
 
 Sinon, l'enregistrement n'enregistrera parfois pas de points et des lignes droites apparaîtront.
 

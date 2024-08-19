@@ -129,7 +129,7 @@ have the minimum and maximum levels to 12 and 17 respectively.
 
 The number of tiles that will be downloaded depends on your choice of minimum and maximum levels.
 The lower the minimum zoom, and the higher the maximum zoom, the greater is number of tiles. This
-is indicated by the "number of transactions". Downloading thousands of transactions may take hours..
+is indicated by the estimated size in Mb. Downloading hundreds of Mb may take hours..
 so choose carefully your area and levels to only download the tiles you actually need.
 
 Finally, press the download button. A download service is launched and you get a notification. From
@@ -139,17 +139,27 @@ the notification center of your Android device, you can either:
 * Cancel the download
 
 When the service finishes the download, you get a notification and a new map is available in the map
-list. It is already calibrated and ready to be used. You can set a presentation image so you can
-easily identify it in the map list. To do so, press the edit button at the bottom left of the map
-card (in the map list menu). 
+list. You can set a presentation image so you can easily identify it in the map list. To do so, 
+press the edit button at the bottom left of the map card (in the map list menu). 
 
 From the map configuration view, you can:
 
 * Change the thumbnail image,
-* Change the projection (only if you know what you're doing),
-* Change the calibration points (only if you know what you're doing),
 * Change the name,
 * Save the map
+
+#### Resume a stopped download
+
+When a map download was stopped (either manually or e.g when shutting down the device), the map is
+now incomplete. You can tell that by the warning bellow:
+
+<p align="center">
+<img src="doc/images/download-abort-en.jpg" width="300">
+</p>
+
+You can resume the download by using EDIT > "Analyze & repair". The map repair will fetch the 
+missing tiles. This is possible if you have TrekMe Extended. Otherwise, it's advised to delete the 
+incomplete map.
 
 ### Import from an archive
 
