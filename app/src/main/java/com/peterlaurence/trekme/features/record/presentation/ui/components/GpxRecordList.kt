@@ -200,7 +200,7 @@ private fun GpxRecordList(
         }
     }
 
-    ElevatedCard(modifier) {
+    Column(modifier) {
         LazyColumn(
             Modifier
                 .drawVerticalScrollbar(lazyListState)
@@ -276,7 +276,9 @@ private fun BottomBarButtons(
             }
             if (isTrackSharePending) {
                 CircularProgressIndicator(
-                    Modifier.align(Alignment.Center).size(20.dp),
+                    Modifier
+                        .align(Alignment.Center)
+                        .size(20.dp),
                     strokeWidth = 2.dp
                 )
             }
@@ -453,7 +455,7 @@ private fun ClickableCard(
     }
 }
 
-@Preview(heightDp = 500)
+@Preview(heightDp = 500, showBackground = true)
 @Composable
 private fun GpxRecordListPreview() {
     TrekMeTheme {

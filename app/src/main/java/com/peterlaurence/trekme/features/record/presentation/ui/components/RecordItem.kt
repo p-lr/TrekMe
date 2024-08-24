@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,7 +36,11 @@ fun RecordItem(
     val background = if (item.isSelected) {
         MaterialTheme.colorScheme.tertiaryContainer
     } else {
-        if (index % 2 == 1) Color.Transparent else MaterialTheme.colorScheme.surface
+        if (index % 2 == 1) {
+            MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
+        } else {
+            MaterialTheme.colorScheme.surface
+        }
     }
 
     Column(

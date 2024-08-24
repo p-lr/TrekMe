@@ -106,7 +106,6 @@ fun RecordStateful(
                 .padding(paddingValues)
         ) {
             GpxRecordListStateful(
-                modifier = Modifier.padding(8.dp),
                 statViewModel = statViewModel,
                 recordViewModel = recordViewModel,
                 isMultiSelectionMode = isMultiSelectionMode,
