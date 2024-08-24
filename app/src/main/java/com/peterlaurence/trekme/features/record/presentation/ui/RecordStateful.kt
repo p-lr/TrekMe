@@ -1,9 +1,15 @@
 package com.peterlaurence.trekme.features.record.presentation.ui
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -32,6 +38,10 @@ fun RecordStateful(
     val geoRecordOutOfBoundsMsg = stringResource(id = R.string.import_result_out_of_bounds)
     val geoRecordAdErrorMsg = stringResource(id = R.string.track_add_error)
     val geoRecordRecover = stringResource(id = R.string.track_is_being_restored)
+
+    var isMultiSelectionMode by rememberSaveable {
+        mutableStateOf(false)
+    }
 
     LaunchedEffectWithLifecycle(flow = statViewModel.recordingDeletionFailureFlow) {
         snackbarHostState.showSnackbar(message = deletionFailedMsg)
@@ -66,9 +76,27 @@ fun RecordStateful(
         }
     }
 
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetMultipleContents()
+    ) { uriList ->
+        statViewModel.importRecordings(uriList)
+    }
+
+    val onImportFiles = {
+        /* Search for all documents available via installed storage providers */
+        launcher.launch("*/*")
+    }
+
     Scaffold(
         topBar = {
-            RecordTopAppbar(onMainMenuClick = onMainMenuClick)
+            RecordTopAppbar(
+                isMultiSelectionMode = isMultiSelectionMode,
+                onMainMenuClick = onMainMenuClick,
+                onMultiSelectionClick = {
+                    isMultiSelectionMode = !isMultiSelectionMode
+                },
+                onImportClick = onImportFiles
+            )
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { paddingValues ->
@@ -81,8 +109,10 @@ fun RecordStateful(
                 modifier = Modifier.padding(8.dp),
                 statViewModel = statViewModel,
                 recordViewModel = recordViewModel,
+                isMultiSelectionMode = isMultiSelectionMode,
                 onElevationGraphClick = onElevationGraphClick,
-                onGoToTrailSearchClick = onGoToTrailSearchClick
+                onGoToTrailSearchClick = onGoToTrailSearchClick,
+                onImport = onImportFiles
             )
         }
     }

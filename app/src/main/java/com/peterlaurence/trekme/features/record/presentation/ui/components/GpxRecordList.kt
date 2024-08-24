@@ -4,8 +4,6 @@ import android.content.Context
 import android.net.Uri
 import android.os.ParcelUuid
 import android.os.Parcelable
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -13,8 +11,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -26,7 +22,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ShareCompat
@@ -52,8 +47,10 @@ fun GpxRecordListStateful(
     modifier: Modifier = Modifier,
     statViewModel: RecordingStatisticsViewModel,
     recordViewModel: RecordViewModel,
+    isMultiSelectionMode: Boolean,
     onElevationGraphClick: (RecordingData) -> Unit,
-    onGoToTrailSearchClick: () -> Unit
+    onGoToTrailSearchClick: () -> Unit,
+    onImport: () -> Unit
 ) {
     val state by statViewModel.recordingDataFlow.collectAsState()
     val isTrackSharePending by statViewModel.isTrackSharePending.collectAsState()
@@ -66,10 +63,6 @@ fun GpxRecordListStateful(
     val data = (state as RecordingsAvailable).recordings
     val dataById = data.associateBy { it.id }
 
-    var isMultiSelectionMode by rememberSaveable {
-        mutableStateOf(false)
-    }
-
     var itemById by rememberSaveable {
         mutableStateOf(mapOf<UUID, SelectableRecordingItem>())
     }
@@ -79,7 +72,9 @@ fun GpxRecordListStateful(
             val existing = itemById[it.id]
             it.toModel(existing?.isSelected ?: false)
         }.also {
-            itemById = it.associateBy { item -> item.id }
+            itemById = it.associate { item ->
+                item.id to if (!isMultiSelectionMode) item.copy(isSelected = false) else item
+            }
         }
     }
 
@@ -109,14 +104,6 @@ fun GpxRecordListStateful(
         val copy = itemById.toMutableMap()
         if (isMultiSelectionMode) {
             copy[selectable.id] = selectable.copy(isSelected = !selectable.isSelected)
-        } else {
-            copy.forEach { (id, value) ->
-                copy[id] = if (id == selectable.id) {
-                    value.copy(isSelected = !selectable.isSelected)
-                } else {
-                    value.copy(isSelected = false)
-                }
-            }
         }
 
         itemById = copy
@@ -130,26 +117,8 @@ fun GpxRecordListStateful(
         mutableStateOf<ParcelUuid?>(null)
     }
 
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetMultipleContents()
-    ) { uriList ->
-        statViewModel.importRecordings(uriList)
-    }
-
     val actioner: Actioner = { action ->
         when (action) {
-            is Action.OnMultiSelectionClick -> {
-                isMultiSelectionMode = !isMultiSelectionMode
-                if (!isMultiSelectionMode) {
-                    itemById = itemById.mapValues {
-                        it.value.copy(isSelected = false)
-                    }
-                }
-            }
-            is Action.OnImportMenuClick -> {
-                /* Search for all documents available via installed storage providers */
-                launcher.launch("*/*")
-            }
             is Action.OnEditClick -> {
                 val selected = getSelected(dataById, items)
                 if (selected != null) {
@@ -183,7 +152,6 @@ fun GpxRecordListStateful(
         GpxRecordList(
             modifier = modifier,
             items = items,
-            isMultiSelectionMode = isMultiSelectionMode,
             lazyListState = lazyListState,
             isTrackSharePending = isTrackSharePending,
             onItemClick,
@@ -191,7 +159,7 @@ fun GpxRecordListStateful(
         )
     } else {
         NoTrails(
-            onImport = { actioner(Action.OnImportMenuClick) },
+            onImport = onImport,
             onSearch = onGoToTrailSearchClick
         )
     }
@@ -221,7 +189,6 @@ fun GpxRecordListStateful(
 private fun GpxRecordList(
     modifier: Modifier = Modifier,
     items: List<SelectableRecordingItem>,
-    isMultiSelectionMode: Boolean,
     lazyListState: LazyListState,
     isTrackSharePending: Boolean,
     onItemClick: (SelectableRecordingItem) -> Unit,
@@ -234,96 +201,31 @@ private fun GpxRecordList(
     }
 
     ElevatedCard(modifier) {
-        Column {
-            RecordingActionBar(isMultiSelectionMode, actioner)
-            LazyColumn(
-                Modifier
-                    .drawVerticalScrollbar(lazyListState)
-                    .weight(1f),
-                state = lazyListState
-            ) {
-                itemsIndexed(
-                    items = items,
-                    key = { _, it -> it.id }
-                ) { index, item ->
-                    RecordItem(
-                        modifierProvider = { Modifier.animateItemPlacement() },
-                        item = item,
-                        index = index,
-                        onClick = { onItemClick(item) }
-                    )
-                }
+        LazyColumn(
+            Modifier
+                .drawVerticalScrollbar(lazyListState)
+                .weight(1f),
+            state = lazyListState
+        ) {
+            itemsIndexed(
+                items = items,
+                key = { _, it -> it.id }
+            ) { index, item ->
+                RecordItem(
+                    modifierProvider = { Modifier.animateItemPlacement() },
+                    item = item,
+                    index = index,
+                    onClick = { onItemClick(item) }
+                )
             }
+        }
 
-            if (selectionCount > 0) {
-                BottomBarButtons(selectionCount, isTrackSharePending, actioner)
-            }
+        if (selectionCount > 0) {
+            BottomBarButtons(selectionCount, isTrackSharePending, actioner)
         }
     }
 }
 
-@Composable
-private fun RecordingActionBar(
-    isMultiSelectionMode: Boolean,
-    actioner: Actioner
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .height(54.dp)
-            .padding(start = 16.dp, end = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Text(
-            stringResource(id = R.string.recordings_list_title),
-            fontSize = 17.sp
-        )
-        Row {
-            IconButton(
-                onClick = { actioner(Action.OnMultiSelectionClick) },
-                colors = IconButtonDefaults.iconButtonColors(
-                    contentColor = if (isMultiSelectionMode) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurface
-                ),
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.check_multiple),
-                    contentDescription = stringResource(id = R.string.multi_selection_desc),
-                )
-            }
-            IconButton(
-                onClick = { expanded = true },
-                modifier = Modifier.width(36.dp),
-            ) {
-                Icon(
-                    Icons.Default.MoreVert,
-                    contentDescription = null,
-                )
-            }
-            Box(
-                Modifier
-                    .height(24.dp)
-                    .wrapContentSize(Alignment.BottomEnd, true)
-            ) {
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                    offset = DpOffset(0.dp, 0.dp)
-                ) {
-                    DropdownMenuItem(
-                        onClick = { actioner(Action.OnImportMenuClick) },
-                        text = {
-                            Text(stringResource(id = R.string.recordings_menu_import))
-                            Spacer(Modifier.weight(1f))
-                        }
-                    )
-                }
-            }
-        }
-    }
-}
 
 @Composable
 private fun BottomBarButtons(
@@ -478,8 +380,6 @@ private fun getSelectedList(
 private typealias Actioner = (Action) -> Unit
 
 private sealed interface Action {
-    data object OnMultiSelectionClick : Action
-    data object OnImportMenuClick : Action
     data object OnEditClick : Action
     data object OnChooseMapClick : Action
     data object OnShareClick : Action
@@ -571,7 +471,6 @@ private fun GpxRecordListPreview() {
                 SelectableRecordingItem(id = UUID.randomUUID(), name = "Track 2", isSelected = true, stats = stats),
                 SelectableRecordingItem(id = UUID.randomUUID(), name = "Track 3", isSelected = false, stats = stats)
             ),
-            isMultiSelectionMode = false,
             lazyListState = LazyListState(),
             isTrackSharePending = false,
             onItemClick = {},
