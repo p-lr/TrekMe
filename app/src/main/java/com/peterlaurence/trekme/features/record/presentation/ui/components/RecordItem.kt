@@ -1,27 +1,40 @@
+@file:OptIn(ExperimentalFoundationApi::class)
+
 package com.peterlaurence.trekme.features.record.presentation.ui.components
 
 import android.os.Parcelable
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.flowlayout.FlowMainAxisAlignment
 import com.peterlaurence.trekme.features.common.presentation.ui.flowlayout.FlowRow
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.record.presentation.ui.SelectableRecordingItem
 import kotlinx.parcelize.Parcelize
 import java.util.*
 
@@ -31,7 +44,9 @@ fun RecordItem(
     modifierProvider: () -> Modifier = { Modifier },
     item: SelectableRecordingItem,
     index: Int,
-    onClick: () -> Unit = {}
+    isMultiSelectionMode: Boolean,
+    onClick: () -> Unit = {},
+    onLongClick: () -> Unit = {}
 ) {
     val background = if (item.isSelected) {
         MaterialTheme.colorScheme.tertiaryContainer
@@ -43,46 +58,71 @@ fun RecordItem(
         }
     }
 
-    Column(
+    val paddingEnd = 62.dp
+    var expanded by remember { mutableStateOf(false) }
+
+    Box(
         modifierProvider()
             .background(background)
-            .clickable(onClick = onClick)
+            .combinedClickable(
+                onLongClick = onLongClick,
+                onClick = onClick
+            )
             .padding(vertical = 8.dp)
             .fillMaxWidth()
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (item.isSelected) {
-                Image(
-                    painter = painterResource(id = R.drawable.check),
+        Column {
+            Text(
+                text = item.name,
+                modifier = Modifier.padding(start = 16.dp, end = paddingEnd),
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            if (item.stats != null) {
+                FlowRow(
                     modifier = Modifier
-                        .padding(horizontal = 4.dp)
-                        .size(14.dp),
-                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onTertiaryContainer),
-                    contentDescription = null
-                )
-            } else {
-                Spacer(modifier = Modifier.width(16.dp))
+                        .padding(start = 16.dp, end = paddingEnd, top = 8.dp)
+                        .fillMaxWidth()
+                    ,
+                    mainAxisAlignment = FlowMainAxisAlignment.SpaceBetween,
+                    mainAxisSpacing = 20.dp,
+                    crossAxisSpacing = 8.dp,
+                    tryAlign = true
+                ) {
+                    DistanceItem(item.stats.distance)
+                    ElevationUpStack(item.stats.elevationUpStack)
+                    ElevationDownStack(item.stats.elevationDownStack)
+                    ChronoItem(item.stats.duration)
+                    SpeedItem(item.stats.speed)
+                }
             }
-            Text(text = item.name, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
 
-        if (item.stats != null) {
-            FlowRow(
-                modifier = Modifier
-                    .padding(start = 24.dp, end = 24.dp, top = 8.dp)
-                    .fillMaxWidth(),
-                mainAxisAlignment = FlowMainAxisAlignment.SpaceBetween,
-                mainAxisSpacing = 20.dp,
-                crossAxisSpacing = 8.dp,
-                tryAlign = true
+        if (isMultiSelectionMode) {
+            IconButton(
+                onClick = onClick,
+                modifier = Modifier.padding(end = 8.dp).align(Alignment.CenterEnd),
             ) {
-                DistanceItem(item.stats.distance)
-                ElevationUpStack(item.stats.elevationUpStack)
-                ElevationDownStack(item.stats.elevationDownStack)
-                ChronoItem(item.stats.duration)
-                SpeedItem(item.stats.speed)
+                Icon(
+                    painter = if (item.isSelected) {
+                        painterResource(id = R.drawable.check)
+                    } else {
+                        painterResource(id = R.drawable.check_circle_outline)
+                    },
+                    tint = MaterialTheme.colorScheme.tertiary,
+                    contentDescription = null,
+                )
+            }
+        } else {
+            IconButton(
+                onClick = { expanded = true },
+                modifier = Modifier.padding(end = 8.dp).align(Alignment.CenterEnd),
+            ) {
+                Icon(
+                    Icons.Default.MoreVert,
+                    contentDescription = null,
+                )
             }
         }
     }
@@ -183,9 +223,33 @@ private fun RecordItemPreview() {
                     "2h46",
                     "8.2 km/h"
                 ),
+                isSelected = true,
+                id = UUID.randomUUID()
+            ),
+            isMultiSelectionMode = true,
+            index = 0
+        )
+    }
+}
+
+@Preview(widthDp = 404, showBackground = true, backgroundColor = 0xFFFFFFFF)
+@Composable
+private fun RecordItemPreview2() {
+    TrekMeTheme {
+        RecordItem(
+            item = SelectableRecordingItem(
+                "Track name",
+                stats = RecordStats(
+                    "11.51 km",
+                    "+127 m",
+                    "-655 m",
+                    "2h46",
+                    "8.2 km/h"
+                ),
                 isSelected = false,
                 id = UUID.randomUUID()
             ),
+            isMultiSelectionMode = false,
             index = 0
         )
     }

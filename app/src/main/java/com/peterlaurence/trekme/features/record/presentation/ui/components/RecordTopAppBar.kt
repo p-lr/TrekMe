@@ -16,7 +16,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
@@ -25,9 +24,7 @@ import com.peterlaurence.trekme.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecordTopAppbar(
-    isMultiSelectionMode: Boolean,
     onMainMenuClick: () -> Unit,
-    onMultiSelectionClick: () -> Unit,
     onImportClick: () -> Unit
 ) {
     TopAppBar(
@@ -38,18 +35,6 @@ fun RecordTopAppbar(
             }
         },
         actions = {
-            IconButton(
-                onClick = onMultiSelectionClick,
-                colors = IconButtonDefaults.iconButtonColors(
-                    contentColor = if (isMultiSelectionMode) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurface
-                ),
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.check_multiple),
-                    contentDescription = stringResource(id = R.string.multi_selection_desc),
-                )
-            }
-
             var expanded by remember { mutableStateOf(false) }
             IconButton(
                 onClick = { expanded = true },

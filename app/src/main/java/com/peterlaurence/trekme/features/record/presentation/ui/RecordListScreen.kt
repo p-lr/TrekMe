@@ -1,9 +1,11 @@
-package com.peterlaurence.trekme.features.record.presentation.ui.components
+package com.peterlaurence.trekme.features.record.presentation.ui
 
 import android.content.Context
 import android.net.Uri
 import android.os.ParcelUuid
 import android.os.Parcelable
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -12,8 +14,15 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
@@ -28,53 +37,150 @@ import androidx.core.app.ShareCompat
 import androidx.lifecycle.Lifecycle
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.units.UnitFormatter
+import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.features.common.domain.model.Loading
 import com.peterlaurence.trekme.features.common.domain.model.RecordingsAvailable
+import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.MapSelectionDialogStateful
 import com.peterlaurence.trekme.features.common.presentation.ui.scrollbar.drawVerticalScrollbar
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.record.domain.model.RecordingData
-import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.MapSelectionDialogStateful
+import com.peterlaurence.trekme.features.record.presentation.ui.components.RecordItem
+import com.peterlaurence.trekme.features.record.presentation.ui.components.RecordStats
+import com.peterlaurence.trekme.features.record.presentation.ui.components.RecordTopAppbar
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.RecordingRenameDialog
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordViewModel
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordingEvent
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordingStatisticsViewModel
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 import kotlinx.parcelize.Parcelize
-import java.util.*
+import java.util.UUID
+
 
 @Composable
-fun GpxRecordListStateful(
-    modifier: Modifier = Modifier,
+fun RecordListStateful(
     statViewModel: RecordingStatisticsViewModel,
     recordViewModel: RecordViewModel,
-    isMultiSelectionMode: Boolean,
     onElevationGraphClick: (RecordingData) -> Unit,
     onGoToTrailSearchClick: () -> Unit,
-    onImport: () -> Unit
+    onMainMenuClick: () -> Unit,
+    onRecordClick: (UUID) -> Unit
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    val deletionFailedMsg = stringResource(id = R.string.files_could_not_be_deleted)
+    val geoRecordAddMsg = stringResource(id = R.string.track_is_being_added)
+    val geoRecordOutOfBoundsMsg = stringResource(id = R.string.import_result_out_of_bounds)
+    val geoRecordAdErrorMsg = stringResource(id = R.string.track_add_error)
+    val geoRecordRecover = stringResource(id = R.string.track_is_being_restored)
+
+    LaunchedEffectWithLifecycle(flow = statViewModel.recordingDeletionFailureFlow) {
+        snackbarHostState.showSnackbar(message = deletionFailedMsg)
+    }
+
+    LaunchedEffectWithLifecycle(recordViewModel.geoRecordImportResultFlow) { result ->
+        when (result) {
+            is GeoRecordImportResult.GeoRecordImportOk ->
+                /* Tell the user that the track will be shortly available in the map */
+                snackbarHostState.showSnackbar(geoRecordAddMsg)
+
+            GeoRecordImportResult.GeoRecordImportError ->
+                /* Tell the user that an error occurred */
+                snackbarHostState.showSnackbar(geoRecordAdErrorMsg)
+
+            GeoRecordImportResult.GeoRecordOutOfBounds ->
+                /* Tell the user that the tracks is out of bounds */
+                snackbarHostState.showSnackbar(geoRecordOutOfBoundsMsg)
+        }
+    }
+
+    LaunchedEffectWithLifecycle(recordViewModel.geoRecordRecoverEventFlow) {
+        /* Tell the user that a track is being recovered */
+        snackbarHostState.showSnackbar(geoRecordRecover)
+    }
+
+    LaunchedEffectWithLifecycle(recordViewModel.excursionImportEventFlow) { success ->
+        if (success) {
+            snackbarHostState.showSnackbar(geoRecordAddMsg)
+        } else {
+            snackbarHostState.showSnackbar(geoRecordAdErrorMsg)
+        }
+    }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetMultipleContents()
+    ) { uriList ->
+        statViewModel.importRecordings(uriList)
+    }
+
+    val onImportFiles = {
+        /* Search for all documents available via installed storage providers */
+        launcher.launch("*/*")
+    }
+
     val state by statViewModel.recordingDataFlow.collectAsState()
     val isTrackSharePending by statViewModel.isTrackSharePending.collectAsState()
 
-    if (state is Loading) {
-        LoadingList(modifier)
-        return
+    when (state) {
+        Loading -> {
+            LoadingScreen()
+        }
+        is RecordingsAvailable -> {
+            RecordListAvailableScreen(
+                snackbarHostState = snackbarHostState,
+                state = state as RecordingsAvailable,
+                statViewModel = statViewModel,
+                recordViewModel = recordViewModel,
+                isTrackSharePending = isTrackSharePending,
+                onMainMenuClick = onMainMenuClick,
+                onGoToTrailSearchClick = onGoToTrailSearchClick,
+                onElevationGraphClick = onElevationGraphClick,
+                onImportFiles = onImportFiles,
+                onRecordClick = onRecordClick
+            )
+        }
     }
+}
 
-    val data = (state as RecordingsAvailable).recordings
+@Composable
+private fun RecordListAvailableScreen(
+    snackbarHostState: SnackbarHostState,
+    state: RecordingsAvailable,
+    statViewModel: RecordingStatisticsViewModel,
+    recordViewModel: RecordViewModel,
+    isTrackSharePending: Boolean,
+    onMainMenuClick: () -> Unit,
+    onGoToTrailSearchClick: () -> Unit,
+    onElevationGraphClick: (RecordingData) -> Unit,
+    onImportFiles: () -> Unit,
+    onRecordClick: (UUID) -> Unit
+) {
+    val data = state.recordings
     val dataById = data.associateBy { it.id }
 
     var itemById by rememberSaveable {
         mutableStateOf(mapOf<UUID, SelectableRecordingItem>())
     }
 
-    val items: List<SelectableRecordingItem> = remember(data, itemById, isMultiSelectionMode) {
+    val isMultiSelectionMode by remember {
+        derivedStateOf {
+            itemById.values.any { it.isSelected }
+        }
+    }
+
+    val items: List<SelectableRecordingItem> = remember(data, itemById) {
         data.map {
             val existing = itemById[it.id]
             it.toModel(existing?.isSelected ?: false)
         }.also {
-            itemById = it.associate { item ->
-                item.id to if (!isMultiSelectionMode) item.copy(isSelected = false) else item
+            itemById = it.associateBy { item ->
+                item.id
             }
+        }
+    }
+
+    val selectionCount by remember(items) {
+        derivedStateOf {
+            items.count { it.isSelected }
         }
     }
 
@@ -104,8 +210,18 @@ fun GpxRecordListStateful(
         val copy = itemById.toMutableMap()
         if (isMultiSelectionMode) {
             copy[selectable.id] = selectable.copy(isSelected = !selectable.isSelected)
+        } else {
+            onRecordClick(selectable.id)
         }
 
+        itemById = copy
+    }
+
+    /* Don't include this lambda in the actioner, as it would cause all items to be recomposed on
+     * selection change. */
+    val onItemLongClick = { selectable: SelectableRecordingItem ->
+        val copy = itemById.toMutableMap()
+        copy[selectable.id] = selectable.copy(isSelected = !selectable.isSelected)
         itemById = copy
     }
 
@@ -148,22 +264,6 @@ fun GpxRecordListStateful(
         }
     }
 
-    if (items.isNotEmpty()) {
-        GpxRecordList(
-            modifier = modifier,
-            items = items,
-            lazyListState = lazyListState,
-            isTrackSharePending = isTrackSharePending,
-            onItemClick,
-            actioner
-        )
-    } else {
-        NoTrails(
-            onImport = onImport,
-            onSearch = onGoToTrailSearchClick
-        )
-    }
-
     recordingRenameDialogData?.also {
         RecordingRenameDialog(
             id = it.id,
@@ -182,24 +282,55 @@ fun GpxRecordListStateful(
             onDismissRequest = { recordingForMapImport = null }
         )
     }
+
+    Scaffold(
+        topBar = {
+            RecordTopAppbar(
+                onMainMenuClick = onMainMenuClick,
+                onImportClick = onImportFiles
+            )
+        },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+    ) { paddingValues ->
+        val modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+
+        if (items.isNotEmpty()) {
+            RecordListAvailable(
+                modifier = modifier,
+                lazyListState = lazyListState,
+                items = items,
+                selectionCount = selectionCount,
+                isTrackSharePending = isTrackSharePending,
+                isMultiSelectionMode = isMultiSelectionMode,
+                onItemClick = onItemClick,
+                onItemLongClick = onItemLongClick,
+                actioner = actioner
+            )
+        } else {
+            NoTrails(
+                modifier = modifier,
+                onImport = onImportFiles,
+                onSearch = onGoToTrailSearchClick
+            )
+        }
+    }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun GpxRecordList(
+private fun RecordListAvailable(
     modifier: Modifier = Modifier,
     items: List<SelectableRecordingItem>,
+    selectionCount: Int,
+    isMultiSelectionMode: Boolean,
     lazyListState: LazyListState,
     isTrackSharePending: Boolean,
     onItemClick: (SelectableRecordingItem) -> Unit,
+    onItemLongClick: (SelectableRecordingItem) -> Unit,
     actioner: Actioner,
 ) {
-    val selectionCount by remember(items) {
-        derivedStateOf {
-            items.count { it.isSelected }
-        }
-    }
-
     Column(modifier) {
         LazyColumn(
             Modifier
@@ -215,7 +346,9 @@ private fun GpxRecordList(
                     modifierProvider = { Modifier.animateItemPlacement() },
                     item = item,
                     index = index,
-                    onClick = { onItemClick(item) }
+                    isMultiSelectionMode = isMultiSelectionMode,
+                    onClick = { onItemClick(item) },
+                    onLongClick = { onItemLongClick(item) }
                 )
             }
         }
@@ -313,21 +446,23 @@ private fun BottomBarButtons(
 }
 
 @Composable
-private fun LoadingList(modifier: Modifier = Modifier) {
-    ElevatedCard(modifier.fillMaxSize()) {
-        Column {
-            Row(
-                modifier = Modifier
-                    .height(54.dp)
-                    .padding(start = 16.dp, end = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    stringResource(id = R.string.recordings_list_title),
-                    fontSize = 17.sp
-                )
+private fun LoadingScreen() {
+    Scaffold { paddingValues ->
+        ElevatedCard(Modifier.padding(paddingValues).fillMaxSize()) {
+            Column {
+                Row(
+                    modifier = Modifier
+                        .height(54.dp)
+                        .padding(start = 16.dp, end = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        stringResource(id = R.string.recordings_list_title),
+                        fontSize = 17.sp
+                    )
+                }
+                LinearProgressIndicator(Modifier.fillMaxWidth())
             }
-            LinearProgressIndicator(Modifier.fillMaxWidth())
         }
     }
 }
@@ -403,10 +538,11 @@ data class RecordingRenameData(val id: UUID, val name: String) : Parcelable
 
 @Composable
 private fun NoTrails(
+    modifier: Modifier = Modifier,
     onImport: () -> Unit = {},
     onSearch: () -> Unit = {}
 ) {
-    Column(Modifier.padding(horizontal = 16.dp)) {
+    Column(modifier.padding(horizontal = 16.dp)) {
         Spacer(modifier = Modifier.height(16.dp))
         Text(text = stringResource(id = R.string.no_recording_tutorial))
         Row(
@@ -466,16 +602,48 @@ private fun GpxRecordListPreview() {
             "2h46",
             "8.2 km/h"
         )
-        GpxRecordList(
+        RecordListAvailable(
             items = listOf(
                 SelectableRecordingItem(
                     id = UUID.randomUUID(), name = "Track 1", isSelected = false, stats = stats),
                 SelectableRecordingItem(id = UUID.randomUUID(), name = "Track 2", isSelected = true, stats = stats),
                 SelectableRecordingItem(id = UUID.randomUUID(), name = "Track 3", isSelected = false, stats = stats)
             ),
+            selectionCount = 0,
+            isMultiSelectionMode = false,
             lazyListState = LazyListState(),
             isTrackSharePending = false,
             onItemClick = {},
+            onItemLongClick = {},
+            actioner = {}
+        )
+    }
+}
+
+@Preview(heightDp = 500, showBackground = true)
+@Composable
+private fun GpxRecordListPreview2() {
+    TrekMeTheme {
+        val stats = RecordStats(
+            "11.51 km",
+            "+127 m",
+            "-655 m",
+            "2h46",
+            "8.2 km/h"
+        )
+        RecordListAvailable(
+            items = listOf(
+                SelectableRecordingItem(
+                    id = UUID.randomUUID(), name = "Track 1", isSelected = false, stats = stats),
+                SelectableRecordingItem(id = UUID.randomUUID(), name = "Track 2", isSelected = true, stats = stats),
+                SelectableRecordingItem(id = UUID.randomUUID(), name = "Track 3", isSelected = true, stats = stats)
+            ),
+            selectionCount = 2,
+            isMultiSelectionMode = true,
+            lazyListState = LazyListState(),
+            isTrackSharePending = false,
+            onItemClick = {},
+            onItemLongClick = {},
             actioner = {}
         )
     }

@@ -10,7 +10,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import com.peterlaurence.trekme.features.record.domain.model.RecordingData
-import com.peterlaurence.trekme.features.record.presentation.ui.RecordStateful
+import com.peterlaurence.trekme.features.record.presentation.ui.RecordListStateful
 import com.peterlaurence.trekme.features.record.presentation.ui.components.elevationgraph.ElevationStateful
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.ElevationViewModel
 import com.peterlaurence.trekme.util.android.activity
@@ -43,12 +43,13 @@ private fun NavGraphBuilder.recordListDestination(
     onMainMenuClick: () -> Unit
 ) {
     composable(route = recordListDestination) {
-        RecordStateful(
+        RecordListStateful(
             statViewModel = hiltViewModel(LocalContext.current.activity),
             recordViewModel = hiltViewModel(LocalContext.current.activity),
             onElevationGraphClick = onNavigateToElevationGraph,
             onGoToTrailSearchClick = onNavigateToTrailSearch,
-            onMainMenuClick = onMainMenuClick
+            onMainMenuClick = onMainMenuClick,
+            onRecordClick = {} // TODO
         )
     }
 }
