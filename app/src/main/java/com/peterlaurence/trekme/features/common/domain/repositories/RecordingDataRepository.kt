@@ -2,6 +2,8 @@ package com.peterlaurence.trekme.features.common.domain.repositories
 
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.georecord.domain.logic.getGeoStatistics
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecordLightWeightState
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecordLightWeightState.GeoRecordLightWeightList
 import com.peterlaurence.trekme.di.IoDispatcher
 import com.peterlaurence.trekme.core.georecord.domain.repository.GeoRecordRepository
 import com.peterlaurence.trekme.di.ApplicationScope
@@ -42,7 +44,11 @@ class RecordingDataRepository @Inject constructor(
              * When a [RecordingData] already exists, just update the name. Otherwise, make new
              * [RecordingData]s by requesting full [GeoRecord]s.
              */
-            geoRecordRepository.getGeoRecordsFlow().collect { geoRecordList ->
+            geoRecordRepository.getGeoRecordsFlow().collect { state ->
+                val geoRecordList = when (state) {
+                    is GeoRecordLightWeightList -> state.geoRecords
+                    GeoRecordLightWeightState.Loading -> return@collect
+                }
                 val newIds = mutableListOf<UUID>()
                 val recordingDataList = geoRecordList.mapNotNull { (id, name) ->
                     val recordingsState = recordingDataFlow.value

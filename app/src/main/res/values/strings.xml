@@ -320,9 +320,10 @@
         The beacon radius is 100m by default, but can be changed.\nThe alert is a sonar sound effect and a vibration.
         \n\nWhen a map has beacons, a service runs in the background. The purpose of this service is to alert you when you get close to a beacon.
     </string>
-    <!-- Record GPX fragment -->
+    <!-- Record list -->
     <string name="fragment_recording" translatable="false">FragmentRecording</string>
     <string name="my_trails_title">My trails</string>
+    <string name="trails_loading">Loading trails</string>
     <string name="location_disabled_warning">Location is currently disabled. Please enable it on your device.</string>
     <string name="recordings_list_title">GPX recordings</string>
     <string name="recordings_menu_import">Import files</string>

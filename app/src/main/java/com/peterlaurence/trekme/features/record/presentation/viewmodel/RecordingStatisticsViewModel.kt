@@ -37,6 +37,7 @@ class RecordingStatisticsViewModel @Inject constructor(
 ) : ViewModel() {
 
     val recordingDataFlow: StateFlow<RecordingsState> = recordingDataStateOwner.recordingDataFlow
+
     private val _isTrackSharePending = MutableStateFlow(false)
     val isTrackSharePending = _isTrackSharePending.asStateFlow()
 

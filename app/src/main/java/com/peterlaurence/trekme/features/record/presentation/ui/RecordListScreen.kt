@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.peterlaurence.trekme.features.record.presentation.ui
 
 import android.content.Context
@@ -13,6 +15,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -32,7 +36,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.app.ShareCompat
 import androidx.lifecycle.Lifecycle
 import com.peterlaurence.trekme.R
@@ -41,6 +44,7 @@ import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResu
 import com.peterlaurence.trekme.features.common.domain.model.Loading
 import com.peterlaurence.trekme.features.common.domain.model.RecordingsAvailable
 import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.MapSelectionDialogStateful
+import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingScreen as LoadingScreenCommon
 import com.peterlaurence.trekme.features.common.presentation.ui.scrollbar.drawVerticalScrollbar
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.record.domain.model.RecordingData
@@ -122,7 +126,7 @@ fun RecordListStateful(
 
     when (state) {
         Loading -> {
-            LoadingScreen()
+            LoadingScreen(onMainMenuClick)
         }
         is RecordingsAvailable -> {
             RecordListAvailableScreen(
@@ -446,24 +450,23 @@ private fun BottomBarButtons(
 }
 
 @Composable
-private fun LoadingScreen() {
-    Scaffold { paddingValues ->
-        ElevatedCard(Modifier.padding(paddingValues).fillMaxSize()) {
-            Column {
-                Row(
-                    modifier = Modifier
-                        .height(54.dp)
-                        .padding(start = 16.dp, end = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        stringResource(id = R.string.recordings_list_title),
-                        fontSize = 17.sp
-                    )
-                }
-                LinearProgressIndicator(Modifier.fillMaxWidth())
-            }
+private fun LoadingScreen(onMainMenuClick: () -> Unit) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(text = stringResource(id = R.string.my_trails_title)) },
+                navigationIcon = {
+                    IconButton(onClick = onMainMenuClick) {
+                        Icon(Icons.Filled.Menu, contentDescription = "")
+                    }
+                },
+            )
         }
+    ) { paddingValues ->
+        LoadingScreenCommon(
+            Modifier.padding(paddingValues),
+            stringResource(id = R.string.trails_loading)
+        )
     }
 }
 

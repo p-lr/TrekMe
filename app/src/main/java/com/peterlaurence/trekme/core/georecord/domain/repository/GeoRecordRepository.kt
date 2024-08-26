@@ -6,6 +6,9 @@ import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordDao
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecordExportFormat
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecordLightWeight
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecordLightWeightState
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecordLightWeightState.GeoRecordLightWeightList as GeoRecordLightWeightList
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecordLightWeightState.Loading as Loading
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.di.ApplicationScope
 import kotlinx.coroutines.CoroutineScope
@@ -44,7 +47,7 @@ class GeoRecordRepository @Inject constructor(
     @ApplicationScope
     private val applicationScope: CoroutineScope
 ) {
-    private val mappedGeoRecordsFlow = MutableStateFlow<List<GeoRecordLightWeight>>(emptyList())
+    private val mappedGeoRecordsFlow = MutableStateFlow<GeoRecordLightWeightState>(Loading)
     private val rosetta = mutableMapOf<String, UUID>()
     private val reversedRosetta: Map<UUID, String>
         get() = rosetta.entries.associate { (k, v) -> v to k }
@@ -60,17 +63,20 @@ class GeoRecordRepository @Inject constructor(
                     }
                     GeoRecordLightWeight(uuid, name = exc.title)
                 }
-                mappedGeoRecordsFlow.value = mappedGeoRecords
+                mappedGeoRecordsFlow.value = GeoRecordLightWeightList(mappedGeoRecords)
             }
         }
     }
 
     /* For the moment, the repository only exposes the flow from the file-based source */
-    fun getGeoRecordsFlow(): StateFlow<List<GeoRecordLightWeight>> {
+    fun getGeoRecordsFlow(): StateFlow<GeoRecordLightWeightState> {
         val geoRecordFlow = geoRecordDao.getGeoRecordsFlow()
         return combine(geoRecordFlow, mappedGeoRecordsFlow) { x, y ->
-            x + y
-        }.stateIn(applicationScope, SharingStarted.Eagerly, geoRecordFlow.value)
+            when (y) {
+                is GeoRecordLightWeightList -> GeoRecordLightWeightList(x + y.geoRecords)
+                Loading -> Loading
+            }
+        }.stateIn(applicationScope, SharingStarted.Eagerly, Loading)
     }
 
     suspend fun getUri(id: UUID): Uri? {

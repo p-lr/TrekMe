@@ -404,7 +404,9 @@
     <string name="previously_connected_bt_devices">APPAREILS CONNECTÉS PRÉCÉDEMMENT</string>
     <string name="wifip2p_title">Partage de carte</string>
     <string name="mapcreate_title">Création de carte</string>
+    <!-- Record list -->
     <string name="my_trails_title">Mes traces</string>
+    <string name="trails_loading">Chargement des traces</string>
     <string name="select_bt_devices_title">Sélection du GPS actif</string>
     <string name="internal_gps">GPS interne</string>
     <string name="connection_bt_lost_msg">Connection au GPS Bluetooth perdue, tentative de re-connection…</string>

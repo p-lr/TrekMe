@@ -423,7 +423,10 @@ private fun ExcursionMapScreen(
             }
 
             AwaitingLocation -> {
-                LoadingScreen(stringResource(id = R.string.awaiting_location))
+                LoadingScreen(
+                    modifier,
+                    message = stringResource(id = R.string.awaiting_location)
+                )
             }
 
             is MapReady -> {
@@ -539,7 +542,10 @@ private fun ExcursionMapScreen(
             }
 
             LoadingLayer -> {
-                LoadingScreen(stringResource(id = R.string.loading_layer))
+                LoadingScreen(
+                    modifier,
+                    message = stringResource(id = R.string.loading_layer)
+                )
             }
         }
     }
