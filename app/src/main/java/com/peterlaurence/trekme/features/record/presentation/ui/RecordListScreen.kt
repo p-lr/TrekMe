@@ -64,7 +64,7 @@ import java.util.UUID
 fun RecordListStateful(
     statViewModel: RecordingStatisticsViewModel,
     recordViewModel: RecordViewModel,
-    onElevationGraphClick: (RecordingData) -> Unit,
+    onElevationGraphClick: (UUID) -> Unit,
     onGoToTrailSearchClick: () -> Unit,
     onMainMenuClick: () -> Unit,
     onRecordClick: (UUID) -> Unit
@@ -154,7 +154,7 @@ private fun RecordListAvailableScreen(
     isTrackSharePending: Boolean,
     onMainMenuClick: () -> Unit,
     onGoToTrailSearchClick: () -> Unit,
-    onElevationGraphClick: (RecordingData) -> Unit,
+    onElevationGraphClick: (UUID) -> Unit,
     onImportFiles: () -> Unit,
     onRecordClick: (UUID) -> Unit
 ) {
@@ -240,30 +240,22 @@ private fun RecordListAvailableScreen(
     val actioner: Actioner = { action ->
         when (action) {
             is Action.OnEditClick -> {
-                val selected = getSelected(dataById, items)
-                if (selected != null) {
-                    recordingRenameDialogData = RecordingRenameData(selected.id, selected.name)
-                }
+                recordingRenameDialogData = RecordingRenameData(action.item.id, action.item.name)
             }
             is Action.OnChooseMapClick -> {
-                val selected = getSelected(dataById, items)
-                if (selected != null) {
-                    recordingForMapImport = ParcelUuid(selected.id)
-                }
+                recordingForMapImport = ParcelUuid(action.item.id)
             }
             is Action.OnShareClick -> {
-                val selectedList = getSelectedList(dataById, items)
-                statViewModel.shareRecordings(selectedList.map { it.id })
+                statViewModel.shareRecordings(listOf(action.item.id))
             }
             is Action.OnElevationGraphClick -> {
-                val selected = getSelected(dataById, items)
-                if (selected != null) {
-                    onElevationGraphClick(selected)
-                }
+                onElevationGraphClick(action.item.id)
             }
             is Action.OnRemoveClick -> {
-                val selectedList = getSelectedList(dataById, items)
-                statViewModel.onRequestDeleteRecordings(selectedList)
+                val recordingData = dataById[action.item.id]
+                if (recordingData != null) {
+                    statViewModel.onRequestDeleteRecordings(listOf(recordingData))
+                }
             }
         }
     }
@@ -290,8 +282,35 @@ private fun RecordListAvailableScreen(
     Scaffold(
         topBar = {
             RecordTopAppbar(
+                selectionCount = selectionCount,
                 onMainMenuClick = onMainMenuClick,
-                onImportClick = onImportFiles
+                onImportClick = onImportFiles,
+                onRename = {
+                    val selected = getSelected(dataById, items)
+                    if (selected != null) {
+                        recordingRenameDialogData = RecordingRenameData(selected.id, selected.name)
+                    }
+                },
+                onChooseMap = {
+                    val selected = getSelected(dataById, items)
+                    if (selected != null) {
+                        recordingForMapImport = ParcelUuid(selected.id)
+                    }
+                },
+                onShare = {
+                    val selectedList = getSelectedList(dataById, items)
+                    statViewModel.shareRecordings(selectedList.map { it.id })
+                },
+                onShowElevationGraph = {
+                    val selected = getSelected(dataById, items)
+                    if (selected != null) {
+                        onElevationGraphClick(selected.id)
+                    }
+                },
+                onRemove = {
+                    val selectedList = getSelectedList(dataById, items)
+                    statViewModel.onRequestDeleteRecordings(selectedList)
+                }
             )
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
@@ -352,7 +371,12 @@ private fun RecordListAvailable(
                     index = index,
                     isMultiSelectionMode = isMultiSelectionMode,
                     onClick = { onItemClick(item) },
-                    onLongClick = { onItemLongClick(item) }
+                    onLongClick = { onItemLongClick(item) },
+                    onRename = { actioner(Action.OnEditClick(item)) },
+                    onChooseMap = { actioner(Action.OnChooseMapClick(item)) },
+                    onShare = { actioner(Action.OnShareClick(item)) },
+                    onShowElevationGraph = { actioner(Action.OnElevationGraphClick(item)) },
+                    onRemove = { actioner(Action.OnRemoveClick(item)) }
                 )
             }
         }
@@ -375,7 +399,7 @@ private fun BottomBarButtons(
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(
-            onClick = { actioner(Action.OnEditClick) },
+            onClick = { },
             colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.primary),
             enabled = selectionCount == 1
         ) {
@@ -387,7 +411,7 @@ private fun BottomBarButtons(
             )
         }
         IconButton(
-            onClick = { actioner(Action.OnChooseMapClick) },
+            onClick = { },
             colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.primary),
             enabled = selectionCount == 1
         ) {
@@ -400,7 +424,7 @@ private fun BottomBarButtons(
         }
         Box {
             IconButton(
-                onClick = { actioner(Action.OnShareClick) },
+                onClick = { },
                 colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.primary),
                 enabled = selectionCount > 0 && !isTrackSharePending
             ) {
@@ -422,7 +446,7 @@ private fun BottomBarButtons(
         }
 
         IconButton(
-            onClick = { actioner(Action.OnElevationGraphClick) },
+            onClick = { },
             colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.primary),
             enabled = selectionCount == 1
         ) {
@@ -435,7 +459,7 @@ private fun BottomBarButtons(
         }
         Spacer(modifier = Modifier.weight(1f))
         IconButton(
-            onClick = { actioner(Action.OnRemoveClick) },
+            onClick = { },
             colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.primary),
             enabled = selectionCount > 0
         ) {
@@ -520,11 +544,11 @@ private fun getSelectedList(
 private typealias Actioner = (Action) -> Unit
 
 private sealed interface Action {
-    data object OnEditClick : Action
-    data object OnChooseMapClick : Action
-    data object OnShareClick : Action
-    data object OnElevationGraphClick : Action
-    data object OnRemoveClick : Action
+    data class OnEditClick(val item: SelectableRecordingItem): Action
+    data class OnChooseMapClick(val item: SelectableRecordingItem) : Action
+    data class OnShareClick(val item: SelectableRecordingItem) : Action
+    data class OnElevationGraphClick(val item: SelectableRecordingItem) : Action
+    data class OnRemoveClick(val item: SelectableRecordingItem) : Action
 }
 
 @Stable

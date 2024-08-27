@@ -522,6 +522,10 @@
     <string name="no_recording_tutorial">Ici apparaîtront vos traces. Pour commencer, vous pouvez vous enregistrer depuis n\'importe qu\'elle carte, ou :</string>
     <string name="no_recording_import_trails">Importer une trace</string>
     <string name="no_recording_search_trail">Rechercher une trace</string>
+    <string name="track_rename">Renommer</string>
+    <string name="track_choose_map">Ajouter à …</string>
+    <string name="track_share">Partager</string>
+    <string name="track_elevation_profile">Voir le profil</string>
     <string name="manage_subscription_btn">GÉRER L\'ABONNEMENT</string>
 
     <!-- Trail search -->

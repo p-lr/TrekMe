@@ -9,7 +9,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
-import com.peterlaurence.trekme.features.record.domain.model.RecordingData
 import com.peterlaurence.trekme.features.record.presentation.ui.RecordListStateful
 import com.peterlaurence.trekme.features.record.presentation.ui.components.elevationgraph.ElevationStateful
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.ElevationViewModel
@@ -25,7 +24,7 @@ fun NavGraphBuilder.recordGraph(
     navigation(startDestination = recordListDestination, route = recordGraph) {
         recordListDestination(
             onNavigateToElevationGraph = {
-                navController.navigateToElevationGraph(it.id.toString())
+                navController.navigateToElevationGraph(it.toString())
             },
             onNavigateToTrailSearch = onNavigateToTrailSearch,
             onMainMenuClick = onMainMenuClick
@@ -38,7 +37,7 @@ fun NavGraphBuilder.recordGraph(
 }
 
 private fun NavGraphBuilder.recordListDestination(
-    onNavigateToElevationGraph: (RecordingData) -> Unit,
+    onNavigateToElevationGraph: (UUID) -> Unit,
     onNavigateToTrailSearch: () -> Unit,
     onMainMenuClick: () -> Unit
 ) {

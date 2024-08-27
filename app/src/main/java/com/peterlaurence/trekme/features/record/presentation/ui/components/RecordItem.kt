@@ -46,7 +46,12 @@ fun RecordItem(
     index: Int,
     isMultiSelectionMode: Boolean,
     onClick: () -> Unit = {},
-    onLongClick: () -> Unit = {}
+    onLongClick: () -> Unit = {},
+    onRename: () -> Unit = {},
+    onChooseMap: () -> Unit = {},
+    onShowElevationGraph: () -> Unit = {},
+    onRemove: () -> Unit = {},
+    onShare: () -> Unit = {}
 ) {
     val background = if (item.isSelected) {
         MaterialTheme.colorScheme.tertiaryContainer
@@ -59,7 +64,6 @@ fun RecordItem(
     }
 
     val paddingEnd = 62.dp
-    var expanded by remember { mutableStateOf(false) }
 
     Box(
         modifierProvider()
@@ -102,7 +106,9 @@ fun RecordItem(
         if (isMultiSelectionMode) {
             IconButton(
                 onClick = onClick,
-                modifier = Modifier.padding(end = 8.dp).align(Alignment.CenterEnd),
+                modifier = Modifier
+                    .padding(end = 8.dp)
+                    .align(Alignment.CenterEnd),
             ) {
                 Icon(
                     painter = if (item.isSelected) {
@@ -115,13 +121,31 @@ fun RecordItem(
                 )
             }
         } else {
-            IconButton(
-                onClick = { expanded = true },
-                modifier = Modifier.padding(end = 8.dp).align(Alignment.CenterEnd),
+            var expanded by remember { mutableStateOf(false) }
+            Box(
+                Modifier.fillMaxWidth()
+                    .align(Alignment.CenterEnd)
+                    .wrapContentSize(Alignment.CenterEnd, true)
             ) {
-                Icon(
-                    Icons.Default.MoreVert,
-                    contentDescription = null,
+                IconButton(
+                    onClick = { expanded = true },
+                    modifier = Modifier
+                        .padding(end = 8.dp)
+                        .align(Alignment.CenterEnd),
+                ) {
+                    Icon(
+                        Icons.Default.MoreVert,
+                        contentDescription = null,
+                    )
+                }
+                RecordDropDownMenu(
+                    expanded = expanded,
+                    onRename = onRename,
+                    onChooseMap = onChooseMap,
+                    onShare = onShare,
+                    onShowElevationGraph = onShowElevationGraph,
+                    onRemove = onRemove,
+                    onDismiss = { expanded = false }
                 )
             }
         }

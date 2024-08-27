@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
@@ -24,8 +25,14 @@ import com.peterlaurence.trekme.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecordTopAppbar(
+    selectionCount: Int,
     onMainMenuClick: () -> Unit,
-    onImportClick: () -> Unit
+    onImportClick: () -> Unit,
+    onRename: () -> Unit,
+    onChooseMap: () -> Unit,
+    onShare: () -> Unit,
+    onShowElevationGraph: () -> Unit,
+    onRemove: () -> Unit
 ) {
     TopAppBar(
         title = { Text(text = stringResource(id = R.string.my_trails_title)) },
@@ -35,6 +42,18 @@ fun RecordTopAppbar(
             }
         },
         actions = {
+            if (selectionCount == 1) {
+                IconButton(
+                    onClick = onRename,
+                    modifier = Modifier.width(36.dp),
+                ) {
+                    Icon(
+                        painterResource(id = R.drawable.ic_edit_black_24dp),
+                        contentDescription = null,
+                    )
+                }
+            }
+
             var expanded by remember { mutableStateOf(false) }
             IconButton(
                 onClick = { expanded = true },
@@ -56,12 +75,61 @@ fun RecordTopAppbar(
                     offset = DpOffset(0.dp, 0.dp)
                 ) {
                     DropdownMenuItem(
-                        onClick = onImportClick,
+                        onClick = {
+                            onImportClick()
+                            expanded = false
+                        },
                         text = {
                             Text(stringResource(id = R.string.recordings_menu_import))
                             Spacer(Modifier.weight(1f))
-                        }
+                        },
                     )
+
+                    if (selectionCount == 1) {
+                        DropdownMenuItem(
+                            onClick = onChooseMap,
+                            text = {
+                                Text(stringResource(id = R.string.track_choose_map))
+                                Spacer(Modifier.weight(1f))
+                            }
+                        )
+                    }
+
+                    if (selectionCount > 0) {
+                        DropdownMenuItem(
+                            onClick = {
+                                onShare()
+                                expanded = false
+                            },
+                            text = {
+                                Text(stringResource(id = R.string.track_share))
+                                Spacer(Modifier.weight(1f))
+                            }
+                        )
+                    }
+
+                    if (selectionCount == 1) {
+                        DropdownMenuItem(
+                            onClick = onShowElevationGraph,
+                            text = {
+                                Text(stringResource(id = R.string.track_elevation_profile))
+                                Spacer(Modifier.weight(1f))
+                            }
+                        )
+                    }
+
+                    if (selectionCount > 0) {
+                        DropdownMenuItem(
+                            onClick = {
+                                onRemove()
+                                expanded = false
+                            },
+                            text = {
+                                Text(stringResource(id = R.string.delete_dialog))
+                                Spacer(Modifier.weight(1f))
+                            }
+                        )
+                    }
                 }
             }
         }

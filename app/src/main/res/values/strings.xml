@@ -320,6 +320,7 @@
         The beacon radius is 100m by default, but can be changed.\nThe alert is a sonar sound effect and a vibration.
         \n\nWhen a map has beacons, a service runs in the background. The purpose of this service is to alert you when you get close to a beacon.
     </string>
+
     <!-- Record list -->
     <string name="fragment_recording" translatable="false">FragmentRecording</string>
     <string name="my_trails_title">My trails</string>
@@ -377,6 +378,10 @@
     <string name="no_recording_tutorial">You have no trails yet. To get started, you can record yourself from any map, or:</string>
     <string name="no_recording_import_trails">Import an existing trail</string>
     <string name="no_recording_search_trail">Look for a trail</string>
+    <string name="track_rename">Rename</string>
+    <string name="track_choose_map">Add to map</string>
+    <string name="track_share">Share</string>
+    <string name="track_elevation_profile">Show elevation</string>
 
     <!-- Elevation fragment -->
     <string name="no_elevations">This GPX file contains no elevations. TrekMe can\'t show the elevation profile.</string>
