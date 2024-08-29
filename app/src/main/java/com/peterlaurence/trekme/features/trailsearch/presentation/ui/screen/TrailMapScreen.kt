@@ -85,7 +85,6 @@ import com.peterlaurence.trekme.core.wmts.domain.model.IgnClassic
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnSpainData
 import com.peterlaurence.trekme.core.wmts.domain.model.MapSourceData
-import com.peterlaurence.trekme.core.wmts.domain.model.OpenTopoMap
 import com.peterlaurence.trekme.core.wmts.domain.model.OrdnanceSurveyData
 import com.peterlaurence.trekme.core.wmts.domain.model.OsmSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.SwissTopoData
@@ -461,10 +460,7 @@ private fun ExcursionMapScreen(
                                 textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp),
                                 cursorBrush = SolidColor(MaterialTheme.colorScheme.primary)
                             ) { innerTextField ->
-                                Row(
-                                    modifier,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
                                     // Leading icon
                                     IconButton(onClick = { isInSearchMode = false }) {
                                         Image(
@@ -973,7 +969,7 @@ private fun EscapeHatchScreen(
                 .fillMaxWidth()
         )
         Text(
-            text = stringResource(id = R.string.no_excursion_found),
+            text = stringResource(id = R.string.no_trails_found),
             fontWeight = FontWeight.Bold
         )
         Spacer(modifier = Modifier.height(48.dp))

@@ -518,7 +518,7 @@
     <string name="loading_layer">Loading layer</string>
     <string name="no_internet_excursions">You must be connected to internet to search for excursions</string>
     <string name="provider_issue">The map provider is having a temporary outage</string>
-    <string name="no_excursion_found">No excursions published at this location yet.</string>
+    <string name="no_trails_found">No trails published at this location yet.</string>
     <string name="no_excursion_recommendation">You can search at another location or create map.</string>
     <string name="no_excursion_create_map">Create a map</string>
     <string name="excursion_download_start">The excursion will be imported into relevant maps.</string>
