@@ -283,6 +283,7 @@ private fun RecordListAvailableScreen(
         topBar = {
             RecordTopAppbar(
                 selectionCount = selectionCount,
+                isTrackSharePending = isTrackSharePending,
                 onMainMenuClick = onMainMenuClick,
                 onImportClick = onImportFiles,
                 onRename = {
@@ -324,9 +325,8 @@ private fun RecordListAvailableScreen(
                 modifier = modifier,
                 lazyListState = lazyListState,
                 items = items,
-                selectionCount = selectionCount,
-                isTrackSharePending = isTrackSharePending,
                 isMultiSelectionMode = isMultiSelectionMode,
+                isTrackSharePending = isTrackSharePending,
                 onItemClick = onItemClick,
                 onItemLongClick = onItemLongClick,
                 actioner = actioner
@@ -346,7 +346,6 @@ private fun RecordListAvailableScreen(
 private fun RecordListAvailable(
     modifier: Modifier = Modifier,
     items: List<SelectableRecordingItem>,
-    selectionCount: Int,
     isMultiSelectionMode: Boolean,
     lazyListState: LazyListState,
     isTrackSharePending: Boolean,
@@ -370,6 +369,7 @@ private fun RecordListAvailable(
                     item = item,
                     index = index,
                     isMultiSelectionMode = isMultiSelectionMode,
+                    isTrackSharePending = isTrackSharePending,
                     onClick = { onItemClick(item) },
                     onLongClick = { onItemLongClick(item) },
                     onRename = { actioner(Action.OnEditClick(item)) },
@@ -379,96 +379,6 @@ private fun RecordListAvailable(
                     onRemove = { actioner(Action.OnRemoveClick(item)) }
                 )
             }
-        }
-
-        if (selectionCount > 0) {
-            BottomBarButtons(selectionCount, isTrackSharePending, actioner)
-        }
-    }
-}
-
-
-@Composable
-private fun BottomBarButtons(
-    selectionCount: Int,
-    isTrackSharePending: Boolean,
-    actioner: Actioner
-) {
-    Row(
-        Modifier.padding(horizontal = 8.dp, vertical = 0.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        IconButton(
-            onClick = { },
-            colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.primary),
-            enabled = selectionCount == 1
-        ) {
-            Icon(
-                painterResource(id = R.drawable.ic_edit_black_30dp),
-                contentDescription = stringResource(
-                    id = R.string.recording_edit_name_desc
-                )
-            )
-        }
-        IconButton(
-            onClick = { },
-            colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.primary),
-            enabled = selectionCount == 1
-        ) {
-            Icon(
-                painterResource(id = R.drawable.import_24dp),
-                contentDescription = stringResource(
-                    id = R.string.recording_import_desc
-                )
-            )
-        }
-        Box {
-            IconButton(
-                onClick = { },
-                colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.primary),
-                enabled = selectionCount > 0 && !isTrackSharePending
-            ) {
-                Icon(
-                    painterResource(id = R.drawable.ic_share_black_24dp),
-                    contentDescription = stringResource(
-                        id = R.string.recording_share_desc
-                    )
-                )
-            }
-            if (isTrackSharePending) {
-                CircularProgressIndicator(
-                    Modifier
-                        .align(Alignment.Center)
-                        .size(20.dp),
-                    strokeWidth = 2.dp
-                )
-            }
-        }
-
-        IconButton(
-            onClick = { },
-            colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.primary),
-            enabled = selectionCount == 1
-        ) {
-            Icon(
-                painterResource(id = R.drawable.elevation_graph),
-                contentDescription = stringResource(
-                    id = R.string.recording_show_elevations_desc
-                )
-            )
-        }
-        Spacer(modifier = Modifier.weight(1f))
-        IconButton(
-            onClick = { },
-            colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.primary),
-            enabled = selectionCount > 0
-        ) {
-            Icon(
-                painterResource(id = R.drawable.ic_delete_forever_black_30dp),
-                contentDescription = stringResource(
-                    id = R.string.recording_delete_desc
-                )
-            )
         }
     }
 }
@@ -636,7 +546,6 @@ private fun GpxRecordListPreview() {
                 SelectableRecordingItem(id = UUID.randomUUID(), name = "Track 2", isSelected = true, stats = stats),
                 SelectableRecordingItem(id = UUID.randomUUID(), name = "Track 3", isSelected = false, stats = stats)
             ),
-            selectionCount = 0,
             isMultiSelectionMode = false,
             lazyListState = LazyListState(),
             isTrackSharePending = false,
@@ -665,7 +574,6 @@ private fun GpxRecordListPreview2() {
                 SelectableRecordingItem(id = UUID.randomUUID(), name = "Track 2", isSelected = true, stats = stats),
                 SelectableRecordingItem(id = UUID.randomUUID(), name = "Track 3", isSelected = true, stats = stats)
             ),
-            selectionCount = 2,
             isMultiSelectionMode = true,
             lazyListState = LazyListState(),
             isTrackSharePending = false,

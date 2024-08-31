@@ -26,6 +26,7 @@ import com.peterlaurence.trekme.R
 @Composable
 fun RecordTopAppbar(
     selectionCount: Int,
+    isTrackSharePending: Boolean,
     onMainMenuClick: () -> Unit,
     onImportClick: () -> Unit,
     onRename: () -> Unit,
@@ -97,6 +98,7 @@ fun RecordTopAppbar(
 
                     if (selectionCount > 0) {
                         DropdownMenuItem(
+                            enabled = !isTrackSharePending,
                             onClick = {
                                 onShare()
                                 expanded = false

@@ -45,6 +45,7 @@ fun RecordItem(
     item: SelectableRecordingItem,
     index: Int,
     isMultiSelectionMode: Boolean,
+    isTrackSharePending: Boolean,
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = {},
     onRename: () -> Unit = {},
@@ -140,6 +141,7 @@ fun RecordItem(
                 }
                 RecordDropDownMenu(
                     expanded = expanded,
+                    isTrackSharePending = isTrackSharePending,
                     onRename = onRename,
                     onChooseMap = onChooseMap,
                     onShare = onShare,
@@ -251,6 +253,7 @@ private fun RecordItemPreview() {
                 id = UUID.randomUUID()
             ),
             isMultiSelectionMode = true,
+            isTrackSharePending = false,
             index = 0
         )
     }
@@ -274,6 +277,7 @@ private fun RecordItemPreview2() {
                 id = UUID.randomUUID()
             ),
             isMultiSelectionMode = false,
+            isTrackSharePending = false,
             index = 0
         )
     }

@@ -18,6 +18,7 @@ import com.peterlaurence.trekme.R
 @Composable
 fun RecordDropDownMenu(
     expanded: Boolean,
+    isTrackSharePending: Boolean,
     onRename: () -> Unit,
     onChooseMap: () -> Unit,
     onShare: () -> Unit,
@@ -70,6 +71,7 @@ fun RecordDropDownMenu(
         )
 
         DropdownMenuItem(
+            enabled = !isTrackSharePending,
             onClick = {
                 onDismiss()
                 onShare()
