@@ -20,8 +20,8 @@ import com.peterlaurence.trekme.core.units.UnitFormatter
 
 @Composable
 fun StatsPanel(
+    modifier: Modifier = Modifier,
     stats: GeoStatistics,
-    modifier: Modifier = Modifier
 ) {
     FlowRow(
         modifier = modifier.fillMaxWidth(),

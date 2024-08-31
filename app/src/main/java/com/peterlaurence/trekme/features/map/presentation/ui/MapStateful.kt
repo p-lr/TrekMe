@@ -26,6 +26,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
 import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingScreen
@@ -184,52 +185,46 @@ fun MapStateful(
             /* Always use the light theme background (dark theme or not). Done this way, it
              * doesn't add a GPU overdraw. */
             TrekMeTheme(darkThemeBackground = md_theme_light_background) {
-                Column {
-                    MapScaffold(
-                        Modifier.weight(1f, true),
-                        mapUiState,
-                        name,
-                        snackbarHostState,
-                        isShowingOrientation,
-                        isShowingDistance,
-                        isShowingDistanceOnTrack,
-                        isShowingSpeed,
-                        isLockedOnpPosition,
-                        isShowingGpsData,
-                        isShowingScaleIndicator,
-                        rotationMode,
-                        locationFlow,
-                        elevationFix,
-                        hasElevationFix = purchased,
-                        hasBeacons = purchased,
-                        hasTrackFollow = purchased,
-                        hasMarkerManage = purchased,
-                        onMainMenuClick = onMainMenuClick,
-                        onManageTracks = onNavigateToTracksManage,
-                        onManageMarkers = onNavigateToMarkersManage,
-                        onToggleShowOrientation = viewModel::toggleShowOrientation,
-                        onAddMarker = viewModel.markerLayer::addMarker,
-                        onAddLandmark = viewModel.landmarkLayer::addLandmark,
-                        onAddBeacon = viewModel.beaconLayer::addBeacon,
-                        onShowDistance = viewModel.distanceLayer::toggleDistance,
-                        onToggleDistanceOnTrack = viewModel.routeLayer::toggleDistanceOnTrack,
-                        onToggleSpeed = viewModel::toggleSpeed,
-                        onToggleLockOnPosition = viewModel.locationOrientationLayer::toggleLockedOnPosition,
-                        onToggleShowGpsData = viewModel::toggleShowGpsData,
-                        onFollowTrack = { viewModel.initiateTrackFollow() },
-                        onPositionFabClick = viewModel.locationOrientationLayer::centerOnPosition,
-                        onCompassClick = viewModel::alignToNorth,
-                        onElevationFixUpdate = viewModel::onElevationFixUpdate,
-                        onNavigateToShop = onNavigateToShop,
-                        recordingButtons = {
-                            RecordingFabStateful(gpxRecordServiceViewModel)
-                        }
-                    )
-
-                    stats?.also {
-                        StatsPanel(it)
+                MapScaffold(
+                    mapUiState,
+                    name,
+                    snackbarHostState,
+                    isShowingOrientation,
+                    isShowingDistance,
+                    isShowingDistanceOnTrack,
+                    isShowingSpeed,
+                    isLockedOnpPosition,
+                    isShowingGpsData,
+                    isShowingScaleIndicator,
+                    rotationMode,
+                    locationFlow,
+                    elevationFix,
+                    geoStatistics = stats,
+                    hasElevationFix = purchased,
+                    hasBeacons = purchased,
+                    hasTrackFollow = purchased,
+                    hasMarkerManage = purchased,
+                    onMainMenuClick = onMainMenuClick,
+                    onManageTracks = onNavigateToTracksManage,
+                    onManageMarkers = onNavigateToMarkersManage,
+                    onToggleShowOrientation = viewModel::toggleShowOrientation,
+                    onAddMarker = viewModel.markerLayer::addMarker,
+                    onAddLandmark = viewModel.landmarkLayer::addLandmark,
+                    onAddBeacon = viewModel.beaconLayer::addBeacon,
+                    onShowDistance = viewModel.distanceLayer::toggleDistance,
+                    onToggleDistanceOnTrack = viewModel.routeLayer::toggleDistanceOnTrack,
+                    onToggleSpeed = viewModel::toggleSpeed,
+                    onToggleLockOnPosition = viewModel.locationOrientationLayer::toggleLockedOnPosition,
+                    onToggleShowGpsData = viewModel::toggleShowGpsData,
+                    onFollowTrack = { viewModel.initiateTrackFollow() },
+                    onPositionFabClick = viewModel.locationOrientationLayer::centerOnPosition,
+                    onCompassClick = viewModel::alignToNorth,
+                    onElevationFixUpdate = viewModel::onElevationFixUpdate,
+                    onNavigateToShop = onNavigateToShop,
+                    recordingButtons = {
+                        RecordingFabStateful(gpxRecordServiceViewModel)
                     }
-                }
+                )
             }
         }
 
@@ -313,7 +308,6 @@ fun MapStateful(
 
 @Composable
 private fun MapScaffold(
-    modifier: Modifier = Modifier,
     uiState: MapUiState,
     name: String,
     snackbarHostState: SnackbarHostState,
@@ -327,6 +321,7 @@ private fun MapScaffold(
     rotationMode: RotationMode,
     locationFlow: Flow<Location>,
     elevationFix: Int,
+    geoStatistics: GeoStatistics?,
     hasElevationFix: Boolean,
     hasBeacons: Boolean,
     hasTrackFollow: Boolean,
@@ -351,7 +346,6 @@ private fun MapScaffold(
     recordingButtons: @Composable () -> Unit
 ) {
     Scaffold(
-        modifier,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             MapTopAppBar(
@@ -382,7 +376,7 @@ private fun MapScaffold(
             )
         },
         floatingActionButton = {
-            Column {
+            Column(Modifier.padding(bottom = if (geoStatistics != null) 30.dp else 0.dp)) {
                 if (rotationMode != RotationMode.NONE) {
                     CompassFab(
                         degrees = uiState.mapState.rotation,
@@ -406,19 +400,24 @@ private fun MapScaffold(
             }
         }
     ) { paddingValues ->
-        MapScreen(
-            Modifier.padding(paddingValues),
-            uiState,
-            isShowingDistance,
-            isShowingSpeed,
-            isShowingGpsData,
-            isShowingScaleIndicator,
-            locationFlow,
-            elevationFix,
-            hasElevationFix,
-            onElevationFixUpdate,
-            recordingButtons = recordingButtons
-        )
+        Column(Modifier.padding(paddingValues)) {
+            MapScreen(
+                modifier = Modifier.weight(1f, true),
+                mapUiState = uiState,
+                isShowingDistance = isShowingDistance,
+                isShowingSpeed = isShowingSpeed,
+                isShowingGpsData = isShowingGpsData,
+                isShowingScaleIndicator = isShowingScaleIndicator,
+                locationFlow = locationFlow,
+                elevationFix = elevationFix,
+                hasElevationFix = hasElevationFix,
+                onElevationFixUpdate = onElevationFixUpdate,
+                recordingButtons = recordingButtons
+            )
+            if (geoStatistics != null) {
+                StatsPanel(stats = geoStatistics)
+            }
+        }
     }
 }
 
