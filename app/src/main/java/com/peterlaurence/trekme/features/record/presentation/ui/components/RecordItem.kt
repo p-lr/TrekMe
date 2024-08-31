@@ -31,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.features.common.presentation.ui.buttons.CustomIconButton
 import com.peterlaurence.trekme.features.common.presentation.ui.flowlayout.FlowMainAxisAlignment
 import com.peterlaurence.trekme.features.common.presentation.ui.flowlayout.FlowRow
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
@@ -124,15 +125,16 @@ fun RecordItem(
         } else {
             var expanded by remember { mutableStateOf(false) }
             Box(
-                Modifier.fillMaxWidth()
+                Modifier
+                    .fillMaxWidth()
                     .align(Alignment.CenterEnd)
                     .wrapContentSize(Alignment.CenterEnd, true)
             ) {
-                IconButton(
+                /* Since IconButton doesn't allow for a custom click size, we're using a custom
+                 * button. */
+                CustomIconButton(
                     onClick = { expanded = true },
-                    modifier = Modifier
-                        .padding(end = 8.dp)
-                        .align(Alignment.CenterEnd),
+                    size = 64.dp
                 ) {
                     Icon(
                         Icons.Default.MoreVert,
