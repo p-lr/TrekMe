@@ -1,7 +1,6 @@
 package com.peterlaurence.trekme.core.georecord.domain.model
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
+import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
 
 /**
  * Container for statistics of a track.
@@ -14,9 +13,9 @@ import kotlinx.parcelize.Parcelize
  * @param durationInSecond The total time in seconds
  * @param avgSpeed The average speed in meters per seconds
  */
-@Parcelize
 data class GeoStatistics(
     val distance: Double, var elevationMax: Double?, var elevationMin: Double?,
     val elevationUpStack: Double, val elevationDownStack: Double,
-    val durationInSecond: Long? = null, val avgSpeed: Double? = null
-) : Parcelable
+    val durationInSecond: Long? = null, val avgSpeed: Double? = null,
+    val boundingBox: BoundingBox? = null
+)

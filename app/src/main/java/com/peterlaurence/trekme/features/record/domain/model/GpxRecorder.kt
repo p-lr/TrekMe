@@ -6,9 +6,9 @@ import com.peterlaurence.trekme.core.excursion.domain.repository.ExcursionReposi
 import com.peterlaurence.trekme.core.georecord.data.mapper.gpxToDomain
 import com.peterlaurence.trekme.core.georecord.domain.logic.TrackStatCalculator
 import com.peterlaurence.trekme.core.georecord.domain.logic.distanceCalculatorFactory
-import com.peterlaurence.trekme.core.georecord.domain.logic.mergeBounds
 import com.peterlaurence.trekme.core.georecord.domain.logic.mergeStats
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
+import com.peterlaurence.trekme.core.lib.gpx.model.Bounds
 import com.peterlaurence.trekme.core.lib.gpx.model.GPX_VERSION
 import com.peterlaurence.trekme.core.lib.gpx.model.Gpx
 import com.peterlaurence.trekme.core.lib.gpx.model.GpxElevationSource
@@ -133,7 +133,7 @@ class GpxRecorder(
             val id = generateTrackId(trackName)
 
             val track = Track(trkSegList, trackName, id = id)
-            val bounds = trackStatCalculatorList.mergeBounds()
+            val boundingBox = trackStatCalculatorList.mergeStats().boundingBox
 
             /* Make the metadata. We indicate the source of elevation is the GPS, regardless of the
              * actual source (which might be wifi, etc), with a sampling of 1 since each point has
@@ -141,7 +141,7 @@ class GpxRecorder(
             val metadata = Metadata(
                 trackName,
                 date.time,
-                bounds, // This isn't mandatory to put this into the metadata
+                boundingBox?.toBounds(), // This isn't mandatory to put this into the metadata
                 elevationSourceInfo = GpxElevationSourceInfo(GpxElevationSource.GPS, 1)
             )
 
@@ -152,9 +152,6 @@ class GpxRecorder(
 
             val gpx = Gpx(metadata, trkList, wayPoints, appName, GPX_VERSION)
             runCatching {
-                val boundingBox = bounds?.let {
-                    BoundingBox(it.minLat, it.maxLat, it.minLon, it.maxLon)
-                }
                 val geoRecord = gpxToDomain(gpx, name = trackName)
 
                 val excursionId = UUID.randomUUID().toString()
@@ -211,4 +208,11 @@ class GpxRecorder(
     private fun createNewTrackSegment() {
         trackStatCalculatorList.add(makeTrackStatCalculator())
     }
+
+    private fun BoundingBox.toBounds(): Bounds = Bounds(
+        minLat = minLat,
+        minLon = minLon,
+        maxLat = maxLat,
+        maxLon = maxLon
+    )
 }
