@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -15,7 +14,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -32,7 +30,7 @@ fun PrimaryLayerDialogStateful(
     onDismiss: () -> Unit
 ) {
     var selectedIndex by rememberSaveable {
-        mutableStateOf(layerIdsAndAvailability.indexOfFirst { it.first == initialActiveLayerId })
+        mutableIntStateOf(layerIdsAndAvailability.indexOfFirst { it.first == initialActiveLayerId })
     }
 
     AlertDialog(
@@ -101,6 +99,7 @@ private val layerIdToResId = mapOf(
     osmTopo to R.string.layer_osm_topo,
     osmStreet to R.string.layer_osm_street,
     openTopoMap to R.string.layer_osm_opentopo,
+    cyclOSM to R.string.layer_osm_cyclosm,
     osmAndHd to R.string.layer_osm_street_hd
 )
 
@@ -108,7 +107,7 @@ private val layerIdToResId = mapOf(
 @Composable
 fun PrimaryLayerDialogPreview() {
     TrekMeTheme {
-        var indexSelected by remember { mutableStateOf(0) }
+        var indexSelected by remember { mutableIntStateOf(0) }
         PrimaryLayerDialog(
             listOf(
                 "Layer 1" to true,

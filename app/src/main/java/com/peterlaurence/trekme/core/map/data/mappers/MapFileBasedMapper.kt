@@ -38,6 +38,7 @@ import com.peterlaurence.trekme.core.wmts.domain.model.IgnSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnSpainData
 import com.peterlaurence.trekme.core.wmts.domain.model.LayerPropertiesIgn
 import com.peterlaurence.trekme.core.wmts.domain.model.MapSourceData
+import com.peterlaurence.trekme.core.wmts.domain.model.CyclOSM
 import com.peterlaurence.trekme.core.wmts.domain.model.OpenTopoMap
 import com.peterlaurence.trekme.core.wmts.domain.model.OrdnanceSurveyData
 import com.peterlaurence.trekme.core.wmts.domain.model.OsmAndHd
@@ -157,6 +158,7 @@ private fun LayerDataKtx.toDomain(): MapSourceData {
             OsmSourceData(
                 layer = when (this.primaryLayerId) {
                     OsmPrimaryLayerIdKtx.OpenTopoMap -> OpenTopoMap
+                    OsmPrimaryLayerIdKtx.CyclOSM -> CyclOSM
                     OsmPrimaryLayerIdKtx.OsmandHd -> OsmAndHd
                     OsmPrimaryLayerIdKtx.CustomOutdoors -> Outdoors
                     OsmPrimaryLayerIdKtx.OpenStreetMap -> WorldStreetMap
@@ -256,6 +258,7 @@ private fun MapSourceData.toData(): LayerDataKtx {
             OsmLayerDataKtx(
                 primaryLayerId = when (layer) {
                     OpenTopoMap -> OsmPrimaryLayerIdKtx.OpenTopoMap
+                    CyclOSM -> OsmPrimaryLayerIdKtx.CyclOSM
                     OsmAndHd -> OsmPrimaryLayerIdKtx.OsmandHd
                     Outdoors -> OsmPrimaryLayerIdKtx.CustomOutdoors
                     WorldStreetMap -> OsmPrimaryLayerIdKtx.OpenStreetMap

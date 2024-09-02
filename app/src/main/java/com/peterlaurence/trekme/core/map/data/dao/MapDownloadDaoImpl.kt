@@ -19,6 +19,7 @@ import com.peterlaurence.trekme.core.wmts.domain.model.IgnSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnSpainData
 import com.peterlaurence.trekme.core.wmts.domain.model.MapSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.MapSpec
+import com.peterlaurence.trekme.core.wmts.domain.model.CyclOSM
 import com.peterlaurence.trekme.core.wmts.domain.model.OpenTopoMap
 import com.peterlaurence.trekme.core.wmts.domain.model.OrdnanceSurveyData
 import com.peterlaurence.trekme.core.wmts.domain.model.OsmAndHd
@@ -152,7 +153,7 @@ class MapDownloadDaoImpl(
             is IgnSourceData -> Ign(licensed = spec.source.layer == IgnClassic)
             IgnSpainData, OrdnanceSurveyData, SwissTopoData, UsgsData -> Wmts(licensed = false)
             is OsmSourceData -> when (spec.source.layer) {
-                OpenTopoMap, WorldStreetMap, WorldTopoMap -> Wmts(licensed = false)
+                CyclOSM, OpenTopoMap, WorldStreetMap, WorldTopoMap -> Wmts(licensed = false)
                 OsmAndHd, Outdoors -> Wmts(licensed = true)
             }
         }

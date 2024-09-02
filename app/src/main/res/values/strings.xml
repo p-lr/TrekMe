@@ -461,6 +461,7 @@
     <string name="layer_osm_street">OpenStreetMap</string>
     <string name="layer_osm_street_hd">OpenStreetMap HD</string>
     <string name="layer_osm_opentopo">OpenTopoMap</string>
+    <string name="layer_osm_cyclosm">CyclOSM</string>
     <string name="layer_osm_outdoors">Outdoors</string>
     <string name="place_search_hint">Search a place</string>
     <string name="add_layer">Add a layer</string>

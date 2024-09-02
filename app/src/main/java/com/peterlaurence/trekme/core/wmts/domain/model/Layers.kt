@@ -31,15 +31,17 @@ sealed class OsmPrimaryLayer(override val id: String) : Layer(id), OsmLayer
 data object WorldTopoMap : OsmPrimaryLayer(osmTopo)
 data object WorldStreetMap : OsmPrimaryLayer(osmStreet)
 data object OpenTopoMap : OsmPrimaryLayer(openTopoMap)
+data object CyclOSM : OsmPrimaryLayer(cyclOSM)
 data object Outdoors : OsmPrimaryLayer(osmOutdoors)
 data object OsmAndHd : OsmPrimaryLayer(osmAndHd)
 
 const val osmTopo = "osmTopo"
 const val osmStreet = "osmStreet"
 const val openTopoMap = "openTopoMap"
+const val cyclOSM = "cyclOSM"
 const val osmOutdoors = "osmOutdoors"
 const val osmAndHd = "osmAndHd"
 
 /* All supported OSM layers
  * As of 2024/08/18, remove OpenTopoMap as levels 16 and 17 are no longer available */
-val osmLayersPrimary: List<OsmPrimaryLayer> = listOf(WorldStreetMap, OsmAndHd, WorldTopoMap)
+val osmLayersPrimary: List<OsmPrimaryLayer> = listOf(WorldStreetMap, OsmAndHd, CyclOSM, WorldTopoMap)

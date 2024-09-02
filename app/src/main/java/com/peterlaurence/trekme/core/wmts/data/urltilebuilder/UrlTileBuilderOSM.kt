@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.core.wmts.data.urltilebuilder
 
 import com.peterlaurence.trekme.core.wmts.data.model.UrlTileBuilder
+import com.peterlaurence.trekme.core.wmts.domain.model.CyclOSM
 import com.peterlaurence.trekme.core.wmts.domain.model.OpenTopoMap
 import com.peterlaurence.trekme.core.wmts.domain.model.OsmAndHd
 import com.peterlaurence.trekme.core.wmts.domain.model.OsmLayer
@@ -26,6 +27,10 @@ class UrlTileBuilderOSM(private val layer: OsmLayer) : UrlTileBuilder {
             OpenTopoMap -> {
                 val server = serverList.random()
                 "https://$server.tile.opentopomap.org/$level/$col/$row.png"
+            }
+            CyclOSM -> {
+                val server = serverList.random()
+                "https://$server.tile-cyclosm.openstreetmap.fr/cyclosm/$level/$col/$row.png"
             }
             WorldStreetMap -> "https://tile.openstreetmap.org/$level/$col/$row.png"
             WorldTopoMap -> "https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/WMTS/tile/1.0.0/World_Topo_Map/default/GoogleMapsCompatible/$level/$row/$col.jpg"

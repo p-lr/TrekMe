@@ -25,6 +25,7 @@ fun MapSourceData.getNameResId(): Int {
         is OsmSourceData -> {
             when (this.layer) {
                 OpenTopoMap -> R.string.layer_osm_opentopo
+                CyclOSM -> R.string.layer_osm_cyclosm
                 Outdoors -> R.string.layer_osm_outdoors
                 WorldStreetMap -> R.string.layer_osm_street
                 OsmAndHd -> R.string.layer_osm_street_hd

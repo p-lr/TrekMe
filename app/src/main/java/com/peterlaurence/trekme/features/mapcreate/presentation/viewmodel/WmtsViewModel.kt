@@ -433,6 +433,7 @@ class WmtsViewModel @Inject constructor(
             osmTopo -> WorldTopoMap
             osmStreet -> WorldStreetMap
             openTopoMap -> OpenTopoMap
+            cyclOSM -> CyclOSM
             osmAndHd -> OsmAndHd
             else -> null
         }

@@ -196,6 +196,9 @@ enum class OsmPrimaryLayerIdKtx {
     @SerialName("opentopomap")
     OpenTopoMap,
 
+    @SerialName("cyclosm")
+    CyclOSM,
+
     @SerialName("osmand-hd")
     OsmandHd,
 
