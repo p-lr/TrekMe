@@ -54,6 +54,7 @@ class GeoRecordRepository @Inject constructor(
 
     init {
         applicationScope.launch {
+            excursionDao.migrateLegacyRecordingsToExcursions()
             excursionDao.getExcursionsFlow().collect { excursions ->
                 val mappedGeoRecords = excursions.map { exc ->
                     val uuid = rosetta[exc.id] ?: run {

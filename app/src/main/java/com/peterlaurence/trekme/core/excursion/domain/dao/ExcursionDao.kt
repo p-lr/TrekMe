@@ -17,6 +17,7 @@ interface ExcursionDao {
     suspend fun deleteExcursions(ids: List<String>): Boolean
     suspend fun rename(id: String, newName: String): Boolean
     suspend fun updateGeoRecord(id: String, geoRecord: GeoRecord): Boolean
+    suspend fun migrateLegacyRecordingsToExcursions() // For migration only
     suspend fun initWaypoints(excursion: Excursion)
     suspend fun updateWaypoint(excursion: Excursion, waypoint: ExcursionWaypoint, newLat: Double, newLon: Double)
     suspend fun updateWaypoint(excursion: Excursion, waypoint: ExcursionWaypoint, name: String?, lat: Double?, lon: Double?, comment: String?, color: String?)
