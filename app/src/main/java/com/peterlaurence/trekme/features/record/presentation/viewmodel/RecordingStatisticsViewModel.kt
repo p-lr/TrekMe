@@ -5,19 +5,18 @@ package com.peterlaurence.trekme.features.record.presentation.viewmodel
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.peterlaurence.trekme.core.georecord.domain.interactors.GeoRecordInteractor
 import com.peterlaurence.trekme.features.common.domain.interactors.MapExcursionInteractor
 import com.peterlaurence.trekme.features.common.domain.interactors.RemoveRouteInteractor
 import com.peterlaurence.trekme.features.common.domain.model.RecordingDataStateOwner
 import com.peterlaurence.trekme.features.common.domain.model.RecordingsAvailable
 import com.peterlaurence.trekme.features.common.domain.model.RecordingsState
 import com.peterlaurence.trekme.features.common.domain.interactors.ImportRecordingsInteractor
+import com.peterlaurence.trekme.features.record.domain.interactors.RecordingInteractor
 import com.peterlaurence.trekme.features.record.domain.model.RecordingData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.util.*
 import javax.inject.Inject
 
 
@@ -31,7 +30,7 @@ import javax.inject.Inject
 class RecordingStatisticsViewModel @Inject constructor(
     private val removeRouteInteractor: RemoveRouteInteractor,
     recordingDataStateOwner: RecordingDataStateOwner,
-    private val geoRecordInteractor: GeoRecordInteractor,
+    private val recordingInteractor: RecordingInteractor,
     private val importRecordingsInteractor: ImportRecordingsInteractor,
     private val mapExcursionInteractor: MapExcursionInteractor
 ) : ViewModel() {
@@ -67,10 +66,10 @@ class RecordingStatisticsViewModel @Inject constructor(
         importRecordingsInteractor.importRecordings(uriList)
     }
 
-    fun shareRecordings(recordingsIds: List<UUID>) = viewModelScope.launch {
+    fun shareRecordings(recordingsIds: List<String>) = viewModelScope.launch {
         _isTrackSharePending.value = true
         val uris = recordingsIds.mapNotNull { id ->
-            geoRecordInteractor.getRecordUri(id)
+            recordingInteractor.getGeoRecordUri(id)
         }
         _isTrackSharePending.value = false
 
@@ -81,9 +80,9 @@ class RecordingStatisticsViewModel @Inject constructor(
         }
     }
 
-    fun renameRecording(id: UUID, newName: String) {
+    fun renameRecording(id: String, newName: String) {
         viewModelScope.launch {
-            geoRecordInteractor.rename(id, newName)
+            recordingInteractor.rename(id, newName)
         }
     }
 
@@ -91,14 +90,14 @@ class RecordingStatisticsViewModel @Inject constructor(
         val ids = recordingDataList.map { it.id }
         /* Remove recordings */
         launch {
-            val success = geoRecordInteractor.delete(ids)
+            val success = recordingInteractor.delete(ids)
             /* If only one removal failed, notify the user */
             if (!success) {
                 recordingDeletionFailureChannel.send(Unit)
             }
         }
 
-        val excursionIds = geoRecordInteractor.getExcursionIds(ids)
+        val excursionIds = recordingDataList.map { it.id }
         /* Remove corresponding excursions on existing maps */
         launch {
             excursionIds.forEach { id ->

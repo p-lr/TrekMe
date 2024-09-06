@@ -4,7 +4,6 @@ package com.peterlaurence.trekme.features.record.presentation.ui
 
 import android.content.Context
 import android.net.Uri
-import android.os.ParcelUuid
 import android.os.Parcelable
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -64,10 +63,10 @@ import java.util.UUID
 fun RecordListStateful(
     statViewModel: RecordingStatisticsViewModel,
     recordViewModel: RecordViewModel,
-    onElevationGraphClick: (UUID) -> Unit,
+    onElevationGraphClick: (String) -> Unit,
     onGoToTrailSearchClick: () -> Unit,
     onMainMenuClick: () -> Unit,
-    onRecordClick: (UUID) -> Unit
+    onRecordClick: (String) -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -154,15 +153,15 @@ private fun RecordListAvailableScreen(
     isTrackSharePending: Boolean,
     onMainMenuClick: () -> Unit,
     onGoToTrailSearchClick: () -> Unit,
-    onElevationGraphClick: (UUID) -> Unit,
+    onElevationGraphClick: (String) -> Unit,
     onImportFiles: () -> Unit,
-    onRecordClick: (UUID) -> Unit
+    onRecordClick: (String) -> Unit
 ) {
     val data = state.recordings
     val dataById = data.associateBy { it.id }
 
     var itemById by rememberSaveable {
-        mutableStateOf(mapOf<UUID, SelectableRecordingItem>())
+        mutableStateOf(mapOf<String, SelectableRecordingItem>())
     }
 
     val isMultiSelectionMode by remember {
@@ -234,7 +233,7 @@ private fun RecordListAvailableScreen(
     }
 
     var recordingForMapImport by rememberSaveable {
-        mutableStateOf<ParcelUuid?>(null)
+        mutableStateOf<String?>(null)
     }
 
     val actioner: Actioner = { action ->
@@ -243,7 +242,7 @@ private fun RecordListAvailableScreen(
                 recordingRenameDialogData = RecordingRenameData(action.item.id, action.item.name)
             }
             is Action.OnChooseMapClick -> {
-                recordingForMapImport = ParcelUuid(action.item.id)
+                recordingForMapImport = action.item.id
             }
             is Action.OnShareClick -> {
                 statViewModel.shareRecordings(listOf(action.item.id))
@@ -274,7 +273,7 @@ private fun RecordListAvailableScreen(
 
     recordingForMapImport?.also {
         MapSelectionDialogStateful(
-            onMapSelected = { map -> recordViewModel.importRecordInMap(map.id, it.uuid) },
+            onMapSelected = { map -> recordViewModel.importRecordInMap(map.id, it) },
             onDismissRequest = { recordingForMapImport = null }
         )
     }
@@ -295,7 +294,7 @@ private fun RecordListAvailableScreen(
                 onChooseMap = {
                     val selected = getSelected(dataById, items)
                     if (selected != null) {
-                        recordingForMapImport = ParcelUuid(selected.id)
+                        recordingForMapImport = selected.id
                     }
                 },
                 onShare = {
@@ -436,7 +435,7 @@ private fun RecordingData.toModel(isSelected: Boolean): SelectableRecordingItem 
 }
 
 private fun getSelected(
-    dataById: Map<UUID, RecordingData>,
+    dataById: Map<String, RecordingData>,
     items: List<SelectableRecordingItem>
 ): RecordingData? {
     val selectedId = items.firstOrNull { it.isSelected }?.id ?: return null
@@ -444,7 +443,7 @@ private fun getSelected(
 }
 
 private fun getSelectedList(
-    dataById: Map<UUID, RecordingData>,
+    dataById: Map<String, RecordingData>,
     items: List<SelectableRecordingItem>
 ): List<RecordingData> {
     val selectedIds = items.filter { it.isSelected }
@@ -466,12 +465,12 @@ private sealed interface Action {
 data class SelectableRecordingItem(
     val name: String, val stats: RecordStats?,
     val isSelected: Boolean,
-    val id: UUID
+    val id: String
 ) : Parcelable
 
 @Stable
 @Parcelize
-data class RecordingRenameData(val id: UUID, val name: String) : Parcelable
+data class RecordingRenameData(val id: String, val name: String) : Parcelable
 
 @Composable
 private fun NoTrails(
@@ -542,9 +541,9 @@ private fun GpxRecordListPreview() {
         RecordListAvailable(
             items = listOf(
                 SelectableRecordingItem(
-                    id = UUID.randomUUID(), name = "Track 1", isSelected = false, stats = stats),
-                SelectableRecordingItem(id = UUID.randomUUID(), name = "Track 2", isSelected = true, stats = stats),
-                SelectableRecordingItem(id = UUID.randomUUID(), name = "Track 3", isSelected = false, stats = stats)
+                    id = UUID.randomUUID().toString(), name = "Track 1", isSelected = false, stats = stats),
+                SelectableRecordingItem(id = UUID.randomUUID().toString(), name = "Track 2", isSelected = true, stats = stats),
+                SelectableRecordingItem(id = UUID.randomUUID().toString(), name = "Track 3", isSelected = false, stats = stats)
             ),
             isMultiSelectionMode = false,
             lazyListState = LazyListState(),
@@ -570,9 +569,9 @@ private fun GpxRecordListPreview2() {
         RecordListAvailable(
             items = listOf(
                 SelectableRecordingItem(
-                    id = UUID.randomUUID(), name = "Track 1", isSelected = false, stats = stats),
-                SelectableRecordingItem(id = UUID.randomUUID(), name = "Track 2", isSelected = true, stats = stats),
-                SelectableRecordingItem(id = UUID.randomUUID(), name = "Track 3", isSelected = true, stats = stats)
+                    id = UUID.randomUUID().toString(), name = "Track 1", isSelected = false, stats = stats),
+                SelectableRecordingItem(id = UUID.randomUUID().toString(), name = "Track 2", isSelected = true, stats = stats),
+                SelectableRecordingItem(id = UUID.randomUUID().toString(), name = "Track 3", isSelected = true, stats = stats)
             ),
             isMultiSelectionMode = true,
             lazyListState = LazyListState(),

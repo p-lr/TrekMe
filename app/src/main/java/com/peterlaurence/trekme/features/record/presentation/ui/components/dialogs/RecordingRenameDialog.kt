@@ -5,14 +5,12 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.res.stringResource
 import com.peterlaurence.trekme.R
-import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecordingRenameDialog(
-    id: UUID,
+    id: String,
     name: String,
-    onRename: (id: UUID, newName: String) -> Unit,
+    onRename: (id: String, newName: String) -> Unit,
     onDismissRequest: () -> Unit
 ) {
     var currentName by rememberSaveable { mutableStateOf(name) }

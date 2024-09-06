@@ -252,7 +252,7 @@ private fun RecordItemPreview() {
                     "8.2 km/h"
                 ),
                 isSelected = true,
-                id = UUID.randomUUID()
+                id = UUID.randomUUID().toString()
             ),
             isMultiSelectionMode = true,
             isTrackSharePending = false,
@@ -276,7 +276,7 @@ private fun RecordItemPreview2() {
                     "8.2 km/h"
                 ),
                 isSelected = false,
-                id = UUID.randomUUID()
+                id = UUID.randomUUID().toString()
             ),
             isMultiSelectionMode = false,
             isTrackSharePending = false,

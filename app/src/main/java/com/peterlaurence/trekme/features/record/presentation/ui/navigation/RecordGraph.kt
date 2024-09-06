@@ -13,7 +13,6 @@ import com.peterlaurence.trekme.features.record.presentation.ui.RecordListStatef
 import com.peterlaurence.trekme.features.record.presentation.ui.components.elevationgraph.ElevationStateful
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.ElevationViewModel
 import com.peterlaurence.trekme.util.android.activity
-import java.util.UUID
 
 
 fun NavGraphBuilder.recordGraph(
@@ -24,7 +23,7 @@ fun NavGraphBuilder.recordGraph(
     navigation(startDestination = recordListDestination, route = recordGraph) {
         recordListDestination(
             onNavigateToElevationGraph = {
-                navController.navigateToElevationGraph(it.toString())
+                navController.navigateToElevationGraph(it)
             },
             onNavigateToTrailSearch = onNavigateToTrailSearch,
             onMainMenuClick = onMainMenuClick
@@ -37,7 +36,7 @@ fun NavGraphBuilder.recordGraph(
 }
 
 private fun NavGraphBuilder.recordListDestination(
-    onNavigateToElevationGraph: (UUID) -> Unit,
+    onNavigateToElevationGraph: (String) -> Unit,
     onNavigateToTrailSearch: () -> Unit,
     onMainMenuClick: () -> Unit
 ) {
@@ -63,7 +62,7 @@ private fun NavGraphBuilder.elevationGraphDestination(onBack: () -> Unit) {
         val id = it.arguments?.getString(recordingDataId) ?: return@composable
         val viewModel = hiltViewModel<ElevationViewModel>()
         remember(viewModel) {
-            viewModel.onUpdateGraph(UUID.fromString(id))
+            viewModel.onUpdateGraph(id)
         }
 
         ElevationStateful(

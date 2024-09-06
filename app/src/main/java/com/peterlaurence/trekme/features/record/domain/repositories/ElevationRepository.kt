@@ -57,14 +57,14 @@ class ElevationRepository(
      * Computes elevation data for the given [GeoRecord] and updates the exposed
      * [elevationState].
      */
-    fun update(geoRecord: GeoRecord) {
+    fun update(id: String, geoRecord: GeoRecord) {
         if (geoRecord.id != lastId) {
             job?.cancel()
             job = processScope.launch {
                 _elevationRepoState.emit(Calculating)
                 val (segmentElevationsList, eleSource, needsUpdate) = getElevationsSampled(geoRecord)
                 val data =
-                    makeElevationData(geoRecord, segmentElevationsList, eleSource, needsUpdate)
+                    makeElevationData(id, geoRecord, segmentElevationsList, eleSource, needsUpdate)
                 _elevationRepoState.emit(data)
             }
 
@@ -194,6 +194,7 @@ class ElevationRepository(
     }
 
     private fun makeElevationData(
+        id: String,
         geoRecord: GeoRecord,
         segmentElevationList: List<SegmentElevationsSubSampled>,
         eleSource: ElevationSource,
@@ -222,13 +223,14 @@ class ElevationRepository(
         val maxEle = subSampledPoints.maxByOrNull { it.ele }?.ele ?: 0.0
 
         return ElevationData(
-            geoRecord,
-            segmentElePoints,
-            minEle,
-            maxEle,
-            eleSource,
-            needsUpdate,
-            sampling
+            id = id,
+            geoRecord = geoRecord,
+            segmentElePoints = segmentElePoints,
+            eleMin = minEle,
+            eleMax = maxEle,
+            elevationSource = eleSource,
+            needsUpdate = needsUpdate,
+            sampling = sampling
         )
     }
 
