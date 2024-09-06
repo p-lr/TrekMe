@@ -104,12 +104,6 @@ class RecordingStatisticsViewModel @Inject constructor(
                 mapExcursionInteractor.removeExcursionOnMaps(id)
             }
         }
-
-        /* Remove corresponding routes on existing maps */
-        launch {
-            val routeIds = recordingDataList.flatMap { it.routeIds }
-            removeRouteInteractor.removeRoutesOnMaps(routeIds)
-        }
     }
 }
 

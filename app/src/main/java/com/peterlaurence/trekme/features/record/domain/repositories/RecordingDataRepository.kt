@@ -87,15 +87,13 @@ class RecordingDataRepository @Inject constructor(
     private suspend fun makeRecordingData(excursion: Excursion): RecordingData? {
         val geoRecord = excursionDao.getGeoRecord(excursion) ?: return null
         return withContext(ioDispatcher) {
-            val routeIds: List<String> = geoRecord.routeGroups.flatMap { it.routes }.map { it.id }
             val statistics = getGeoStatistics(geoRecord)
 
             RecordingData(
-                excursion.id,
-                excursion.title,
-                statistics,
-                routeIds,
-                geoRecord.time
+                id = excursion.id,
+                name = excursion.title,
+                statistics = statistics,
+                time = geoRecord.time
             )
         }
     }
