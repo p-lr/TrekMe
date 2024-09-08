@@ -54,6 +54,11 @@ class MapExcursionInteractor @Inject constructor(
         excursionRefDao.saveExcursionRef(map, ref)
     }
 
+    suspend fun setVisibility(map: Map, ref: ExcursionRef, visibility: Boolean) {
+        ref.visible.update { visibility }
+        excursionRefDao.saveExcursionRef(map, ref)
+    }
+
     suspend fun createExcursionRef(map: Map, excursionId: String) {
         val excursion = excursionRepository.getExcursion(excursionId)
         if (excursion != null) {

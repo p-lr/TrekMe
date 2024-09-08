@@ -61,8 +61,10 @@ class TrackStatCalculator(private val distanceCalculator: DistanceCalculator) {
 
     private fun getBounds(): BoundingBox? {
         return BoundingBox(
-            minLat ?: return null, minLon ?: return null,
-            maxLat ?: return null, maxLon ?: return null
+            minLat = minLat ?: return null,
+            minLon = minLon ?: return null,
+            maxLat = maxLat ?: return null,
+            maxLon = maxLon ?: return null
         )
     }
 

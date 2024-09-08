@@ -337,6 +337,7 @@
     <string name="track_is_being_added">The track is being imported into the map</string>
     <string name="track_is_being_restored">A track is being restored</string>
     <string name="track_add_error">An error occurred while importing the track</string>
+    <string name="track_no_map">Couldn\'t find a map containing this track :/</string>
     <string name="battery_warn_message_gpx_recording">The GPX recording will probably be interrupted, because battery optimization is
         enabled for TrekMe.\nA GPX recording is actually an Android service which runs in the background.
         However, some devices put a hard limit on the number of background services allowed to run.\nIt\'s common

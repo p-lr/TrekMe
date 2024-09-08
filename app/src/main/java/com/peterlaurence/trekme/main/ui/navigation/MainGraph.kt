@@ -62,6 +62,7 @@ fun MainGraph(
         recordGraph(
             navController = navController,
             onMainMenuClick = onMainMenuClick,
+            onNavigateToMap = { navController.navigateToMap() },
             onNavigateToTrailSearch = { navController.navigateToTrailSearch() },
         )
         trailSearchGraph(

@@ -53,6 +53,7 @@ import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.Scale
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.ScaleIndicatorState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.TrackFollowLayer
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
+import com.peterlaurence.trekme.util.map as mapStateFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
@@ -133,6 +134,11 @@ class MapViewModel @Inject constructor(
         viewModelScope,
         settings,
         dataStateFlow,
+        goToBoundingBoxFlow = mapFeatureEvents.goToBoundingBox.mapStateFlow {
+            it?.let {
+                it.mapId to it.boundingBoxConsumable
+            }
+        },
         mapInteractor,
         onOutOfBounds = {
             viewModelScope.launch {
@@ -206,13 +212,13 @@ class MapViewModel @Inject constructor(
     )
 
     val routeLayer = RouteLayer(
-        viewModelScope,
-        dataStateFlow,
-        mapFeatureEvents.goToRoute,
-        mapFeatureEvents.goToExcursion,
-        routeInteractor,
-        excursionInteractor,
-        mapExcursionInteractor
+        scope = viewModelScope,
+        dataStateFlow = dataStateFlow,
+        goToRouteFlow = mapFeatureEvents.goToRoute,
+        goToExcursionFlow = mapFeatureEvents.goToExcursion,
+        routeInteractor = routeInteractor,
+        excursionInteractor = excursionInteractor,
+        mapExcursionInteractor = mapExcursionInteractor
     )
 
     val liveRouteLayer = LiveRouteLayer(dataStateFlow, routeInteractor, gpxRecordEvents)

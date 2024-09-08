@@ -42,6 +42,7 @@ import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.features.common.domain.model.Loading
 import com.peterlaurence.trekme.features.common.domain.model.RecordingsAvailable
+import com.peterlaurence.trekme.features.common.domain.model.RecordingsState
 import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.MapSelectionDialogStateful
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingScreen as LoadingScreenCommon
 import com.peterlaurence.trekme.features.common.presentation.ui.scrollbar.drawVerticalScrollbar
@@ -51,6 +52,7 @@ import com.peterlaurence.trekme.features.record.presentation.ui.components.Recor
 import com.peterlaurence.trekme.features.record.presentation.ui.components.RecordStats
 import com.peterlaurence.trekme.features.record.presentation.ui.components.RecordTopAppbar
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.RecordingRenameDialog
+import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordListEvent
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordViewModel
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordingEvent
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordingStatisticsViewModel
@@ -66,7 +68,7 @@ fun RecordListStateful(
     onElevationGraphClick: (String) -> Unit,
     onGoToTrailSearchClick: () -> Unit,
     onMainMenuClick: () -> Unit,
-    onRecordClick: (String) -> Unit
+    onNavigateToMap: () -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -78,6 +80,19 @@ fun RecordListStateful(
 
     LaunchedEffectWithLifecycle(flow = statViewModel.recordingDeletionFailureFlow) {
         snackbarHostState.showSnackbar(message = deletionFailedMsg)
+    }
+
+    val context = LocalContext.current
+    LaunchedEffectWithLifecycle(recordViewModel.events) { event ->
+        when (event) {
+            RecordListEvent.RecordImport -> TODO()
+            RecordListEvent.RecordRecover -> TODO()
+            RecordListEvent.ShowCurrentMap -> onNavigateToMap()
+            RecordListEvent.NoMapContainingRecord -> {
+                val msg = context.getString(R.string.track_no_map)
+                snackbarHostState.showSnackbar(msg)
+            }
+        }
     }
 
     LaunchedEffectWithLifecycle(recordViewModel.geoRecordImportResultFlow) { result ->
@@ -138,7 +153,11 @@ fun RecordListStateful(
                 onGoToTrailSearchClick = onGoToTrailSearchClick,
                 onElevationGraphClick = onElevationGraphClick,
                 onImportFiles = onImportFiles,
-                onRecordClick = onRecordClick
+                onRecordClick = { id ->
+                    val recordings = state as? RecordingsAvailable ?: return@RecordListAvailableScreen
+                    val bb = recordings.recordings.firstOrNull { it.id == id }?.statistics?.boundingBox ?: return@RecordListAvailableScreen
+                    recordViewModel.openMapForBoundingBox(bb, id)
+                }
             )
         }
     }

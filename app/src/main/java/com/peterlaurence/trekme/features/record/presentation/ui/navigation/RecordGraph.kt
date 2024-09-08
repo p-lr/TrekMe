@@ -18,6 +18,7 @@ import com.peterlaurence.trekme.util.android.activity
 fun NavGraphBuilder.recordGraph(
     navController: NavController,
     onNavigateToTrailSearch: () -> Unit,
+    onNavigateToMap: () -> Unit,
     onMainMenuClick: () -> Unit
 ) {
     navigation(startDestination = recordListDestination, route = recordGraph) {
@@ -26,6 +27,7 @@ fun NavGraphBuilder.recordGraph(
                 navController.navigateToElevationGraph(it)
             },
             onNavigateToTrailSearch = onNavigateToTrailSearch,
+            onNavigateToMap = onNavigateToMap,
             onMainMenuClick = onMainMenuClick
         )
 
@@ -38,6 +40,7 @@ fun NavGraphBuilder.recordGraph(
 private fun NavGraphBuilder.recordListDestination(
     onNavigateToElevationGraph: (String) -> Unit,
     onNavigateToTrailSearch: () -> Unit,
+    onNavigateToMap: () -> Unit,
     onMainMenuClick: () -> Unit
 ) {
     composable(route = recordListDestination) {
@@ -47,7 +50,7 @@ private fun NavGraphBuilder.recordListDestination(
             onElevationGraphClick = onNavigateToElevationGraph,
             onGoToTrailSearchClick = onNavigateToTrailSearch,
             onMainMenuClick = onMainMenuClick,
-            onRecordClick = {} // TODO
+            onNavigateToMap = onNavigateToMap
         )
     }
 }

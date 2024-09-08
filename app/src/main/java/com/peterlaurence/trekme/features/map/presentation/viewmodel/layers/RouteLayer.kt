@@ -41,7 +41,7 @@ class RouteLayer(
             dataStateFlow.collectLatest { (_, mapState) ->
                 goToRouteFlow.collectLatest event@{ route ->
                     val routeData = staticRoutesData.value[route] ?: return@event
-                    mapState.scrollTo(routeData.boundingBox, padding = Offset(0.2f, 0.2f))
+                    mapState.scrollToBoundingBox(routeData.boundingBox)
                 }
             }
         }
@@ -107,8 +107,12 @@ class RouteLayer(
             }.reduceOrNull { acc, b ->
                 acc + b
             } ?: return@event
-            mapState.scrollTo(boundingBox, padding = Offset(0.2f, 0.2f))
+            mapState.scrollToBoundingBox(boundingBox)
         }
+    }
+
+    private suspend fun MapState.scrollToBoundingBox(boundingBox: BoundingBox) {
+        scrollTo(boundingBox, padding = Offset(0.2f, 0.2f))
     }
 
     fun toggleDistanceOnTrack() {

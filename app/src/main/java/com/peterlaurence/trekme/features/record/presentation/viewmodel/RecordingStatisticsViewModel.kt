@@ -6,7 +6,6 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.features.common.domain.interactors.MapExcursionInteractor
-import com.peterlaurence.trekme.features.common.domain.interactors.RemoveRouteInteractor
 import com.peterlaurence.trekme.features.common.domain.model.RecordingDataStateOwner
 import com.peterlaurence.trekme.features.common.domain.model.RecordingsAvailable
 import com.peterlaurence.trekme.features.common.domain.model.RecordingsState
@@ -28,7 +27,6 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class RecordingStatisticsViewModel @Inject constructor(
-    private val removeRouteInteractor: RemoveRouteInteractor,
     recordingDataStateOwner: RecordingDataStateOwner,
     private val recordingInteractor: RecordingInteractor,
     private val importRecordingsInteractor: ImportRecordingsInteractor,
