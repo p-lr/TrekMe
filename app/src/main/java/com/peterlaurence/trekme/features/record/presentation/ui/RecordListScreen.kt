@@ -59,6 +59,8 @@ import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordVie
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordingEvent
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordingStatisticsViewModel
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import java.util.UUID
@@ -164,8 +166,12 @@ private fun RecordListAvailableScreen(
     val data = state.recordings
     val dataById = data.associateBy { it.id }
 
-    var itemById by rememberSaveable {
+    var itemById by remember {
         mutableStateOf(mapOf<String, SelectableRecordingItem>())
+    }
+
+    var selectedIds by rememberSaveable {
+        mutableStateOf(setOf<String>())
     }
 
     val isMultiSelectionMode by remember {
@@ -174,10 +180,9 @@ private fun RecordListAvailableScreen(
         }
     }
 
-    val items: List<SelectableRecordingItem> = remember(data, itemById) {
+    val items: List<SelectableRecordingItem> = remember(data, itemById, selectedIds) {
         data.map {
-            val existing = itemById[it.id]
-            it.toModel(existing?.isSelected ?: false)
+            it.toModel(selectedIds.contains(it.id))
         }.also {
             itemById = it.associateBy { item ->
                 item.id
@@ -211,25 +216,28 @@ private fun RecordListAvailableScreen(
         }
     }
 
+    fun toggleSelected(id: String, isSelected: Boolean) {
+        selectedIds = if (isSelected) {
+            selectedIds.toMutableSet().apply { remove(id) }
+        } else {
+            selectedIds.toMutableSet().apply { add(id) }
+        }
+    }
+
     /* Don't include this lambda in the actioner, as it would cause all items to be recomposed on
      * selection change. */
     val onItemClick = { selectable: SelectableRecordingItem ->
-        val copy = itemById.toMutableMap()
         if (isMultiSelectionMode) {
-            copy[selectable.id] = selectable.copy(isSelected = !selectable.isSelected)
+            toggleSelected(selectable.id, selectable.isSelected)
         } else {
             onRecordClick(selectable.id)
         }
-
-        itemById = copy
     }
 
     /* Don't include this lambda in the actioner, as it would cause all items to be recomposed on
      * selection change. */
     val onItemLongClick = { selectable: SelectableRecordingItem ->
-        val copy = itemById.toMutableMap()
-        copy[selectable.id] = selectable.copy(isSelected = !selectable.isSelected)
-        itemById = copy
+        toggleSelected(selectable.id, selectable.isSelected)
     }
 
     var recordingRenameDialogData by rememberSaveable {
@@ -258,7 +266,7 @@ private fun RecordListAvailableScreen(
     val actioner: Actioner = { action ->
         when (action) {
             is Action.OnEditClick -> {
-                recordingRenameDialogData = RecordingRenameData(action.item.id, action.item.name)
+                recordingRenameDialogData = RecordingRenameData(action.item.id, action.item.name.value)
             }
             is Action.OnChooseMapClick -> {
                 onChooseMap(action.item.id)
@@ -310,7 +318,7 @@ private fun RecordListAvailableScreen(
                 onRename = {
                     val selected = getSelected(dataById, items)
                     if (selected != null) {
-                        recordingRenameDialogData = RecordingRenameData(selected.id, selected.name)
+                        recordingRenameDialogData = RecordingRenameData(selected.id, selected.name.value)
                     }
                 },
                 onChooseMap = {
@@ -482,13 +490,11 @@ private sealed interface Action {
     data class OnRemoveClick(val item: SelectableRecordingItem) : Action
 }
 
-@Stable
-@Parcelize
 data class SelectableRecordingItem(
-    val name: String, val stats: RecordStats?,
+    val name: StateFlow<String>, val stats: RecordStats?,
     val isSelected: Boolean,
     val id: String
-) : Parcelable
+)
 
 @Stable
 @Parcelize
@@ -563,9 +569,9 @@ private fun GpxRecordListPreview() {
         RecordListAvailable(
             items = listOf(
                 SelectableRecordingItem(
-                    id = UUID.randomUUID().toString(), name = "Track 1", isSelected = false, stats = stats),
-                SelectableRecordingItem(id = UUID.randomUUID().toString(), name = "Track 2", isSelected = true, stats = stats),
-                SelectableRecordingItem(id = UUID.randomUUID().toString(), name = "Track 3", isSelected = false, stats = stats)
+                    id = UUID.randomUUID().toString(), name = MutableStateFlow("Track 1"), isSelected = false, stats = stats),
+                SelectableRecordingItem(id = UUID.randomUUID().toString(), name = MutableStateFlow("Track 2"), isSelected = true, stats = stats),
+                SelectableRecordingItem(id = UUID.randomUUID().toString(), name = MutableStateFlow("Track 3"), isSelected = false, stats = stats)
             ),
             isMultiSelectionMode = false,
             lazyListState = LazyListState(),
@@ -591,9 +597,23 @@ private fun GpxRecordListPreview2() {
         RecordListAvailable(
             items = listOf(
                 SelectableRecordingItem(
-                    id = UUID.randomUUID().toString(), name = "Track 1", isSelected = false, stats = stats),
-                SelectableRecordingItem(id = UUID.randomUUID().toString(), name = "Track 2", isSelected = true, stats = stats),
-                SelectableRecordingItem(id = UUID.randomUUID().toString(), name = "Track 3", isSelected = true, stats = stats)
+                    id = UUID.randomUUID().toString(),
+                    name = MutableStateFlow("Track 1"),
+                    isSelected = false,
+                    stats = stats
+                ),
+                SelectableRecordingItem(
+                    id = UUID.randomUUID().toString(),
+                    name = MutableStateFlow("Track 2"),
+                    isSelected = true,
+                    stats = stats
+                ),
+                SelectableRecordingItem(
+                    id = UUID.randomUUID().toString(),
+                    name = MutableStateFlow("Track 3"),
+                    isSelected = true,
+                    stats = stats
+                )
             ),
             isMultiSelectionMode = true,
             lazyListState = LazyListState(),

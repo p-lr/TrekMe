@@ -5,7 +5,7 @@ import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
 import com.peterlaurence.trekme.core.map.domain.models.Map
 
 interface ExcursionRefDao {
-    suspend fun importExcursionRefs(map: Map)
+    suspend fun importExcursionRefs(map: Map, excursionProvider: suspend (String) -> Excursion?)
     suspend fun saveExcursionRef(map: Map, ref: ExcursionRef)
     suspend fun removeExcursionRef(map: Map, ref: ExcursionRef)
     suspend fun removeExcursionRef(map: Map, excursionRefId: String)

@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.features.common.domain.interactors
 
+import com.peterlaurence.trekme.core.excursion.domain.dao.ExcursionDao
 import com.peterlaurence.trekme.core.excursion.domain.repository.ExcursionRepository
 import com.peterlaurence.trekme.core.map.domain.dao.ExcursionRefDao
 import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
@@ -16,11 +17,12 @@ import javax.inject.Inject
  */
 class MapExcursionInteractor @Inject constructor(
     private val excursionRefDao: ExcursionRefDao,
+    private val excursionDao: ExcursionDao,
     private val excursionRepository: ExcursionRepository,
     private val mapRepository: MapRepository,
 ) {
     suspend fun importExcursions(map: Map) {
-        excursionRefDao.importExcursionRefs(map)
+        excursionRefDao.importExcursionRefs(map, excursionProvider = excursionRepository::getExcursion)
     }
 
     /**
@@ -31,9 +33,8 @@ class MapExcursionInteractor @Inject constructor(
         excursionRefDao.saveExcursionRef(map, ref)
     }
 
-    suspend fun rename(map: Map, ref: ExcursionRef, newName: String) {
-        ref.name.value = newName
-        excursionRefDao.saveExcursionRef(map, ref)
+    suspend fun rename(ref: ExcursionRef, newName: String) {
+        excursionDao.rename(ref.id, newName)
     }
 
     suspend fun removeExcursionOnMap(map: Map, ref: ExcursionRef) {

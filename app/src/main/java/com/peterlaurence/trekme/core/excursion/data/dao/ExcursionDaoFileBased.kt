@@ -416,9 +416,7 @@ class ExcursionDaoFileBased(
                 val str = json.encodeToString(newConfig)
                 FileUtils.writeToFile(str, configFile)
 
-                excursions.update {
-                    it - excursionToRename + ExcursionFileBased(excursionToRename.root, newConfig)
-                }
+                excursionToRename.title.value = newName
             }
         }.isSuccess
     }

@@ -40,8 +40,7 @@ class RecordingDataRepository @Inject constructor(
     init {
         processScope.launch {
             /**
-             * When a [RecordingData] already exists, just update the name. Otherwise, make new
-             * [RecordingData]s by requesting full [GeoRecord]s.
+             * TODO: remove this migration step on 09/2025
              */
             excursionDao.migrateLegacyRecordingsToExcursions()
             excursionDao.getExcursionsFlow().collect { excursions ->

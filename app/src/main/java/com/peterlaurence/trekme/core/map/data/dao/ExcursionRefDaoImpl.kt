@@ -1,8 +1,8 @@
 package com.peterlaurence.trekme.core.map.data.dao
 
 import com.peterlaurence.trekme.core.excursion.domain.model.Excursion
+import com.peterlaurence.trekme.core.map.data.mappers.makeDomainExcursionRef
 import com.peterlaurence.trekme.core.map.data.mappers.toData
-import com.peterlaurence.trekme.core.map.data.mappers.toDomain
 import com.peterlaurence.trekme.core.map.data.models.ExcursionRefFileBased
 import com.peterlaurence.trekme.core.map.data.models.ExcursionRefKtx
 import com.peterlaurence.trekme.core.map.data.models.MapFileBased
@@ -21,7 +21,10 @@ class ExcursionRefDaoImpl(
     private val ioDispatcher: CoroutineDispatcher,
     private val json: Json
 ) : ExcursionRefDao {
-    override suspend fun importExcursionRefs(map: Map) = withContext(ioDispatcher) {
+    override suspend fun importExcursionRefs(
+        map: Map,
+        excursionProvider: suspend (String) -> Excursion?
+    ) = withContext(ioDispatcher) {
         val directory = (map as? MapFileBased)?.folder ?: return@withContext
         val refsDir = File(directory, excursionRefsDir)
         runCatching {
@@ -37,7 +40,12 @@ class ExcursionRefDaoImpl(
                 it.first.id
             }
 
-            map.excursionRefs.update { refs.map { it.toDomain() } }
+            map.excursionRefs.update {
+                refs.mapNotNull { (refKtx, file) ->
+                    val excursion = excursionProvider(refKtx.id) ?: return@mapNotNull null
+                    makeDomainExcursionRef(refKtx, file, excursion)
+                }
+            }
         }
         Unit
     }
@@ -57,11 +65,11 @@ class ExcursionRefDaoImpl(
 
         runCatching {
             val newRefFile = File(refsDir, "${excursion.id}.json")
-            val data = ExcursionRefKtx(id = excursion.id, name = excursion.title, visible = true)
+            val data = ExcursionRefKtx(id = excursion.id, visible = true)
             val st = json.encodeToString(data)
             FileUtils.writeToFile(st, newRefFile)
 
-            val newRef = Pair(data, newRefFile).toDomain()
+            val newRef = makeDomainExcursionRef(data, newRefFile, excursion)
             map.excursionRefs.update {
                 it + newRef
             }

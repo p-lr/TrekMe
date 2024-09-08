@@ -19,8 +19,7 @@ class ExcursionFileBased(
 
     override val id: String
         get() = config.id
-    override val title: String
-        get() = config.title
+    override val title = MutableStateFlow(config.title)
     override val type: ExcursionType
         get() = config.type.toDomain()
     override val description: String

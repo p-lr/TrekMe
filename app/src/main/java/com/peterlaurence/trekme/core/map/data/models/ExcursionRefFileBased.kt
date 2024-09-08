@@ -2,16 +2,17 @@ package com.peterlaurence.trekme.core.map.data.models
 
 import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import java.io.File
 
 class ExcursionRefFileBased(
     override val id: String,
     val file: File,
-    initialName: String,
+    nameState: StateFlow<String>,
     initialVisibility: Boolean = true,
     initialColor: String? = null, // In the format "#AARRGGBB"
 ) : ExcursionRef {
-    override val name: MutableStateFlow<String> = MutableStateFlow(initialName)
+    override val name: StateFlow<String> = nameState
     override val visible: MutableStateFlow<Boolean> = MutableStateFlow(initialVisibility)
     override val color: MutableStateFlow<String> = MutableStateFlow(
         initialColor ?: colorRoute

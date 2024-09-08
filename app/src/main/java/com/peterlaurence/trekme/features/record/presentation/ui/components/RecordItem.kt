@@ -17,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,6 +37,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.flowlayout.FlowM
 import com.peterlaurence.trekme.features.common.presentation.ui.flowlayout.FlowRow
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.record.presentation.ui.SelectableRecordingItem
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.parcelize.Parcelize
 import java.util.*
 
@@ -78,8 +80,9 @@ fun RecordItem(
             .fillMaxWidth()
     ) {
         Column {
+            val title by item.name.collectAsState()
             Text(
-                text = item.name,
+                text = title,
                 modifier = Modifier.padding(start = 16.dp, end = paddingEnd),
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -243,7 +246,7 @@ private fun RecordItemPreview() {
     TrekMeTheme {
         RecordItem(
             item = SelectableRecordingItem(
-                "Track name",
+                name = MutableStateFlow("Track name"),
                 stats = RecordStats(
                     "11.51 km",
                     "+127 m",
@@ -267,7 +270,7 @@ private fun RecordItemPreview2() {
     TrekMeTheme {
         RecordItem(
             item = SelectableRecordingItem(
-                "Track name",
+                name = MutableStateFlow("Track name"),
                 stats = RecordStats(
                     "11.51 km",
                     "+127 m",
