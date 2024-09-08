@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -39,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.ShareCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
 import com.peterlaurence.trekme.core.units.UnitFormatter
@@ -83,7 +85,13 @@ fun RecordListStateful(
         snackbarHostState.showSnackbar(message = deletionFailedMsg)
     }
 
+    LifecycleResumeEffect(key1 = LocalLifecycleOwner.current) {
+        recordViewModel.onResumed()
+        onPauseOrDispose {  }
+    }
+
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     LaunchedEffectWithLifecycle(recordViewModel.events) { event ->
         when (event) {
             is RecordListEvent.RecordImport -> {
@@ -101,12 +109,16 @@ fun RecordListStateful(
             }
             RecordListEvent.RecordRecover -> {
                 val msg = context.getString(R.string.track_is_being_restored)
-                snackbarHostState.showSnackbar(msg)
+                scope.launch {
+                    snackbarHostState.showSnackbar(msg)
+                }
             }
             RecordListEvent.ShowCurrentMap -> onNavigateToMap()
             RecordListEvent.NoMapContainingRecord -> {
                 val msg = context.getString(R.string.track_no_map)
-                snackbarHostState.showSnackbar(msg)
+                scope.launch {
+                    snackbarHostState.showSnackbar(msg)
+                }
             }
         }
     }
