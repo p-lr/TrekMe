@@ -45,6 +45,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.MapSelectionDialogStateful
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.common.presentation.viewmodel.MapSelectionDialogViewModel
 import com.peterlaurence.trekme.features.wifip2p.app.service.AwaitingP2pConnection
 import com.peterlaurence.trekme.features.wifip2p.app.service.AwaitingSocketConnection
 import com.peterlaurence.trekme.features.wifip2p.app.service.ByUser
@@ -288,7 +289,10 @@ private fun StoppedCase(
     }
 
     if (isShowingMapChoice) {
+        val mapSelectionDialogViewModel: MapSelectionDialogViewModel = hiltViewModel()
+        mapSelectionDialogViewModel.init(boundingBox = null)
         MapSelectionDialogStateful(
+            viewModel = mapSelectionDialogViewModel,
             onMapSelected = { map -> onSend(map.id) },
             onDismissRequest = { isShowingMapChoice = false }
         )

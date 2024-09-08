@@ -334,7 +334,7 @@
     <string name="recording_status_stopped">Stopped</string>
     <string name="recording_status_paused">Paused</string>
     <string name="choose_a_map">Choose a map</string>
-    <string name="track_is_being_added">The track is being imported into the map</string>
+    <string name="track_is_imported">The track is imported. Open the map?</string>
     <string name="track_is_being_restored">A track is being restored</string>
     <string name="track_add_error">An error occurred while importing the track</string>
     <string name="track_no_map">Couldn\'t find a map containing this track :/</string>

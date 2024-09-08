@@ -8,7 +8,6 @@ import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
 import com.peterlaurence.trekme.core.map.domain.models.contains
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.features.common.domain.interactors.MapExcursionInteractor
-import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.record.domain.interactors.RestoreRecordInteractor
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordListEvent.*
@@ -28,33 +27,34 @@ class RecordViewModel @Inject constructor(
     private val mapFeatureEvents: MapFeatureEvents,
     private val mapRepository: MapRepository
 ) : ViewModel() {
-
-    private val geoRecordImportResultChannel = Channel<GeoRecordImportResult>(1)
-    val geoRecordImportResultFlow = geoRecordImportResultChannel.receiveAsFlow()
-
-    private val _excursionImportEvent = Channel<Boolean>(1)
-    val excursionImportEventFlow = _excursionImportEvent.receiveAsFlow()
-
-    private val _geoRecordRecoverChannel = Channel<Unit>(1)
-    val geoRecordRecoverEventFlow = _geoRecordRecoverChannel.receiveAsFlow()
-
     private val _events = Channel<RecordListEvent>(1)
     val events = _events.receiveAsFlow()
 
     init {
         viewModelScope.launch {
             if (restoreRecordInteractor.hasRecordToRestore()) {
-                _geoRecordRecoverChannel.send(Unit)
+                _events.send(RecordRecover)
                 restoreRecordInteractor.recoverRecord()
             }
         }
     }
 
-    fun importRecordInMap(mapId: UUID, recordId: String) = viewModelScope.launch {
+    fun importRecordInMap(mapId: UUID, recordId: String, boundingBox: BoundingBox) = viewModelScope.launch {
         val map = getMapInteractor.getMap(mapId) ?: return@launch
 
-        mapExcursionInteractor.createExcursionRef(map, recordId)
-        _excursionImportEvent.send(true)
+        val ref = map.excursionRefs.value.firstOrNull { it.id == recordId }
+        if (ref != null) {
+            mapExcursionInteractor.setVisibility(map, ref, visibility = true)
+        } else {
+            mapExcursionInteractor.createExcursionRef(map, recordId)
+        }
+
+        _events.send(RecordImport(recordId, boundingBox))
+    }
+
+    suspend fun hasContainingMap(boundingBox: BoundingBox): Boolean {
+        val mapList = getMapInteractor.getMapList()
+        return mapList.any { it.contains(boundingBox) }
     }
 
     fun openMapForBoundingBox(boundingBox: BoundingBox, recordId: String) = viewModelScope.launch {
@@ -91,7 +91,7 @@ class RecordViewModel @Inject constructor(
 }
 
 sealed interface RecordListEvent {
-    data object RecordImport : RecordListEvent
+    data class RecordImport(val recordId: String, val boundingBox: BoundingBox) : RecordListEvent
     data object RecordRecover : RecordListEvent
     data object ShowCurrentMap : RecordListEvent
     data object NoMapContainingRecord : RecordListEvent

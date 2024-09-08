@@ -161,7 +161,7 @@
     <string name="ign_spain_source">IGN Espagne</string>
     <string name="track_file_name_change">Nom du fichier</string>
     <string name="choose_a_map">Choisissez une carte</string>
-    <string name="track_is_being_added">La trace est en cours d\'import dans la carte</string>
+    <string name="track_is_imported">La trace est importée. Ouvrir la carte ?</string>
     <string name="track_is_being_restored">Une trace est en cours de récupération</string>
     <string name="no_track_message">Vous n\'avez pas encore importé de trace. Vous pouvez créer votre propre trace en enregistrant votre parcours. Ou bien vous pouvez télécharger des traces au format gpx sur un site internet de randonnée, et l\'importer avec le bouton ci-dessus.</string>
     <string name="no_markers_message">Il n\'y a pas de marqueurs sur cette carte.</string>

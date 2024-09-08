@@ -24,6 +24,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -36,17 +37,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ShareCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
 import com.peterlaurence.trekme.core.units.UnitFormatter
-import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.features.common.domain.model.Loading
 import com.peterlaurence.trekme.features.common.domain.model.RecordingsAvailable
-import com.peterlaurence.trekme.features.common.domain.model.RecordingsState
 import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.MapSelectionDialogStateful
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingScreen as LoadingScreenCommon
 import com.peterlaurence.trekme.features.common.presentation.ui.scrollbar.drawVerticalScrollbar
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.common.presentation.viewmodel.MapSelectionDialogViewModel
 import com.peterlaurence.trekme.features.record.domain.model.RecordingData
 import com.peterlaurence.trekme.features.record.presentation.ui.components.RecordItem
 import com.peterlaurence.trekme.features.record.presentation.ui.components.RecordStats
@@ -57,6 +59,7 @@ import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordVie
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordingEvent
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordingStatisticsViewModel
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
+import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import java.util.UUID
 
@@ -73,10 +76,6 @@ fun RecordListStateful(
     val snackbarHostState = remember { SnackbarHostState() }
 
     val deletionFailedMsg = stringResource(id = R.string.files_could_not_be_deleted)
-    val geoRecordAddMsg = stringResource(id = R.string.track_is_being_added)
-    val geoRecordOutOfBoundsMsg = stringResource(id = R.string.import_result_out_of_bounds)
-    val geoRecordAdErrorMsg = stringResource(id = R.string.track_add_error)
-    val geoRecordRecover = stringResource(id = R.string.track_is_being_restored)
 
     LaunchedEffectWithLifecycle(flow = statViewModel.recordingDeletionFailureFlow) {
         snackbarHostState.showSnackbar(message = deletionFailedMsg)
@@ -85,42 +84,28 @@ fun RecordListStateful(
     val context = LocalContext.current
     LaunchedEffectWithLifecycle(recordViewModel.events) { event ->
         when (event) {
-            RecordListEvent.RecordImport -> TODO()
-            RecordListEvent.RecordRecover -> TODO()
+            is RecordListEvent.RecordImport -> {
+                val msg = context.getString(R.string.track_is_imported)
+                val result = snackbarHostState.showSnackbar(
+                    msg,
+                    actionLabel = context.getString(R.string.ok_dialog)
+                )
+                if (result == SnackbarResult.ActionPerformed) {
+                    recordViewModel.openMapForBoundingBox(
+                        boundingBox = event.boundingBox,
+                        recordId = event.recordId
+                    )
+                }
+            }
+            RecordListEvent.RecordRecover -> {
+                val msg = context.getString(R.string.track_is_being_restored)
+                snackbarHostState.showSnackbar(msg)
+            }
             RecordListEvent.ShowCurrentMap -> onNavigateToMap()
             RecordListEvent.NoMapContainingRecord -> {
                 val msg = context.getString(R.string.track_no_map)
                 snackbarHostState.showSnackbar(msg)
             }
-        }
-    }
-
-    LaunchedEffectWithLifecycle(recordViewModel.geoRecordImportResultFlow) { result ->
-        when (result) {
-            is GeoRecordImportResult.GeoRecordImportOk ->
-                /* Tell the user that the track will be shortly available in the map */
-                snackbarHostState.showSnackbar(geoRecordAddMsg)
-
-            GeoRecordImportResult.GeoRecordImportError ->
-                /* Tell the user that an error occurred */
-                snackbarHostState.showSnackbar(geoRecordAdErrorMsg)
-
-            GeoRecordImportResult.GeoRecordOutOfBounds ->
-                /* Tell the user that the tracks is out of bounds */
-                snackbarHostState.showSnackbar(geoRecordOutOfBoundsMsg)
-        }
-    }
-
-    LaunchedEffectWithLifecycle(recordViewModel.geoRecordRecoverEventFlow) {
-        /* Tell the user that a track is being recovered */
-        snackbarHostState.showSnackbar(geoRecordRecover)
-    }
-
-    LaunchedEffectWithLifecycle(recordViewModel.excursionImportEventFlow) { success ->
-        if (success) {
-            snackbarHostState.showSnackbar(geoRecordAddMsg)
-        } else {
-            snackbarHostState.showSnackbar(geoRecordAdErrorMsg)
         }
     }
 
@@ -252,7 +237,22 @@ private fun RecordListAvailableScreen(
     }
 
     var recordingForMapImport by rememberSaveable {
-        mutableStateOf<String?>(null)
+        mutableStateOf<Pair<String, BoundingBox>?>(null)
+    }
+
+    val scope = rememberCoroutineScope()
+    val onChooseMap = { id: String ->
+        val bb = state.recordings.firstOrNull { it.id == id }?.statistics?.boundingBox
+        if (bb != null) {
+            scope.launch {
+                if (recordViewModel.hasContainingMap(bb)) {
+                    recordingForMapImport = id to bb
+                } else {
+                    val msg = context.getString(R.string.track_no_map)
+                    snackbarHostState.showSnackbar(msg)
+                }
+            }
+        }
     }
 
     val actioner: Actioner = { action ->
@@ -261,7 +261,7 @@ private fun RecordListAvailableScreen(
                 recordingRenameDialogData = RecordingRenameData(action.item.id, action.item.name)
             }
             is Action.OnChooseMapClick -> {
-                recordingForMapImport = action.item.id
+                onChooseMap(action.item.id)
             }
             is Action.OnShareClick -> {
                 statViewModel.shareRecordings(listOf(action.item.id))
@@ -290,9 +290,12 @@ private fun RecordListAvailableScreen(
         )
     }
 
-    recordingForMapImport?.also {
+    recordingForMapImport?.also { (mapId, bb) ->
+        val mapSelectionDialogViewModel: MapSelectionDialogViewModel = hiltViewModel()
+        mapSelectionDialogViewModel.init(bb)
         MapSelectionDialogStateful(
-            onMapSelected = { map -> recordViewModel.importRecordInMap(map.id, it) },
+            viewModel = mapSelectionDialogViewModel,
+            onMapSelected = { map -> recordViewModel.importRecordInMap(map.id, mapId, bb) },
             onDismissRequest = { recordingForMapImport = null }
         )
     }
@@ -313,7 +316,7 @@ private fun RecordListAvailableScreen(
                 onChooseMap = {
                     val selected = getSelected(dataById, items)
                     if (selected != null) {
-                        recordingForMapImport = selected.id
+                        onChooseMap(selected.id)
                     }
                 },
                 onShare = {
