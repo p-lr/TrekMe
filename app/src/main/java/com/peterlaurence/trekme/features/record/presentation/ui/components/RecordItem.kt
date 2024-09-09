@@ -147,6 +147,7 @@ fun RecordItem(
                 RecordDropDownMenu(
                     expanded = expanded,
                     isTrackSharePending = isTrackSharePending,
+                    onSelect = onLongClick,  // Same action as long-click in this context
                     onRename = onRename,
                     onChooseMap = onChooseMap,
                     onShare = onShare,

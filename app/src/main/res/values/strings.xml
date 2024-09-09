@@ -379,6 +379,7 @@
     <string name="no_recording_tutorial">You have no trails yet. To get started, you can record yourself from any map, or:</string>
     <string name="no_recording_import_trails">Import an existing trail</string>
     <string name="no_recording_search_trail">Look for a trail</string>
+    <string name="track_select">Select</string>
     <string name="track_rename">Rename</string>
     <string name="track_choose_map">Add to map</string>
     <string name="track_share">Share</string>

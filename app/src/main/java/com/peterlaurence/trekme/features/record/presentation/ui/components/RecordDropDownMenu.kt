@@ -19,6 +19,7 @@ import com.peterlaurence.trekme.R
 fun RecordDropDownMenu(
     expanded: Boolean,
     isTrackSharePending: Boolean,
+    onSelect: () -> Unit,
     onRename: () -> Unit,
     onChooseMap: () -> Unit,
     onShare: () -> Unit,
@@ -31,6 +32,25 @@ fun RecordDropDownMenu(
         onDismissRequest = onDismiss,
         offset = DpOffset((-16).dp, 0.dp)
     ) {
+        DropdownMenuItem(
+            onClick = {
+                onDismiss()
+                onSelect()
+            },
+            text = {
+                Text(stringResource(id = R.string.track_select))
+                Spacer(Modifier.weight(1f))
+            },
+            leadingIcon = {
+                Icon(
+                    painterResource(id = R.drawable.selection_ellipse),
+                    modifier = Modifier.size(24.dp),
+                    contentDescription = stringResource(
+                        id = R.string.recording_edit_name_desc
+                    )
+                )
+            }
+        )
         DropdownMenuItem(
             onClick = {
                 onDismiss()
