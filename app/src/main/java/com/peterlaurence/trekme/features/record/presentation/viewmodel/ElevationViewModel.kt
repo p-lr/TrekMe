@@ -83,7 +83,7 @@ class ElevationViewModel @Inject constructor(
         }
     }
 
-    fun onUpdateGraph(id: UUID) = viewModelScope.launch {
+    fun onUpdateGraph(id: String) = viewModelScope.launch {
         updateElevationGraphInteractor.updateElevationGraph(id)
     }
 }

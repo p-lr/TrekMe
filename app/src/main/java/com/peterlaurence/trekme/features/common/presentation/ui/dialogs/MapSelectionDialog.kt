@@ -21,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.models.Map
@@ -29,11 +28,11 @@ import com.peterlaurence.trekme.features.common.presentation.viewmodel.MapSelect
 
 @Composable
 fun MapSelectionDialogStateful(
-    viewModel: MapSelectionDialogViewModel = hiltViewModel(),
+    viewModel: MapSelectionDialogViewModel,
     onMapSelected: (map: Map) -> Unit,
     onDismissRequest: () -> Unit
 ) {
-    val mapList = remember { viewModel.getMapList() }
+    val mapList by viewModel.mapList.collectAsState()
     var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
     val lazyListState = rememberLazyListState()
 

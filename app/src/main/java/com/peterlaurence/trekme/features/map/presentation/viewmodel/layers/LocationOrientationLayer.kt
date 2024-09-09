@@ -4,23 +4,30 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import com.peterlaurence.trekme.core.location.domain.model.Location
+import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.PositionOrientationMarker
+import com.peterlaurence.trekme.features.map.domain.core.getNormalizedCoordinates
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.state.MapState
+import java.util.UUID
+import kotlin.math.max
+import kotlin.math.min
 
 class LocationOrientationLayer(
     private val scope: CoroutineScope,
     private val settings: Settings,
     private val dataStateFlow: Flow<DataState>,
+    private val goToBoundingBoxFlow: StateFlow<Pair<UUID, Channel<BoundingBox>>?>,
     private val mapInteractor: MapInteractor,
     private val onOutOfBounds: () -> Unit
 ) {
@@ -77,6 +84,21 @@ class LocationOrientationLayer(
         dataStateFlow.map {
             hasCenteredOnFirstLocation = false
         }.launchIn(scope)
+
+        scope.launch {
+            dataStateFlow.collectLatest { (map, mapState) ->
+                goToBoundingBoxFlow.collectLatest l@{
+                    if (it == null || it.first != map.id) return@l
+                    it.second.receiveAsFlow().collectLatest { bb ->
+                        // We're about to center on a bounding box. So we don't want to center on
+                        // the current position right after.
+                        hasCenteredOnFirstLocation = true
+
+                        mapState.scrollToBoundingBox(bb.toMapComposeBoundingBox(map))
+                    }
+                }
+            }
+        }
     }
 
     fun onLocation(location: Location) {
@@ -191,6 +213,27 @@ class LocationOrientationLayer(
     }
 
     private fun isInMap(x: Double, y: Double) = x in 0.0..1.0 && y in 0.0..1.0
+
+    private suspend fun MapState.scrollToBoundingBox(boundingBox: ovh.plrapps.mapcompose.api.BoundingBox) {
+        scrollTo(boundingBox, padding = Offset(0.2f, 0.2f))
+    }
+
+    private suspend fun BoundingBox.toMapComposeBoundingBox(map: Map): ovh.plrapps.mapcompose.api.BoundingBox {
+        val (x1, y1) = getNormalizedCoordinates(
+            minLat, minLon, map.mapBounds, map.projection,
+        )
+
+        val (x2, y2) = getNormalizedCoordinates(
+            maxLat, maxLon, map.mapBounds, map.projection,
+        )
+
+        return BoundingBox(
+            xLeft = min(x1, x2),
+            yTop = min(y1, y2),
+            xRight = max(x1, x2),
+            yBottom = max(y1, y2)
+        )
+    }
 }
 
 const val positionMarkerId = "position"

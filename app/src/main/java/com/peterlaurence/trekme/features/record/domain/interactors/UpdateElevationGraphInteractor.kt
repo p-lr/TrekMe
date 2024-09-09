@@ -1,18 +1,17 @@
 package com.peterlaurence.trekme.features.record.domain.interactors
 
-import com.peterlaurence.trekme.core.georecord.domain.interactors.GeoRecordInteractor
+import com.peterlaurence.trekme.core.excursion.domain.repository.ExcursionRepository
 import com.peterlaurence.trekme.features.record.domain.repositories.ElevationRepository
-import java.util.*
 import javax.inject.Inject
 
 class UpdateElevationGraphInteractor @Inject constructor(
     private val repository: ElevationRepository,
-    private val geoRecordInteractor: GeoRecordInteractor
+    private val excursionRepository: ExcursionRepository
 ) {
-    suspend fun updateElevationGraph(id: UUID) {
-        val geoRecord = geoRecordInteractor.getRecord(id)
+    suspend fun updateElevationGraph(id: String) {
+        val geoRecord = excursionRepository.getGeoRecord(id)
         if (geoRecord != null) {
-            repository.update(geoRecord)
+            repository.update(id, geoRecord)
         } else {
             repository.reset()
         }

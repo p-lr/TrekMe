@@ -6,6 +6,7 @@ import com.peterlaurence.trekme.features.common.domain.model.ElevationSource
 sealed interface ElevationState
 object Calculating : ElevationState
 data class ElevationData(
+    val id: String,
     val geoRecord: GeoRecord,
     val segmentElePoints: List<SegmentElePoints> = listOf(),
     val eleMin: Double = 0.0,

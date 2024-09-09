@@ -161,7 +161,7 @@
     <string name="ign_spain_source">IGN Espagne</string>
     <string name="track_file_name_change">Nom du fichier</string>
     <string name="choose_a_map">Choisissez une carte</string>
-    <string name="track_is_being_added">La trace est en cours d\'import dans la carte</string>
+    <string name="track_is_imported">La trace est importée. Ouvrir la carte ?</string>
     <string name="track_is_being_restored">Une trace est en cours de récupération</string>
     <string name="no_track_message">Vous n\'avez pas encore importé de trace. Vous pouvez créer votre propre trace en enregistrant votre parcours. Ou bien vous pouvez télécharger des traces au format gpx sur un site internet de randonnée, et l\'importer avec le bouton ci-dessus.</string>
     <string name="no_markers_message">Il n\'y a pas de marqueurs sur cette carte.</string>
@@ -282,6 +282,7 @@
         Il faut alors désactiver l\'optimisation (sans restriction).
     </string>
     <string name="track_add_error">Une erreur est survenue lors de l\'import de la trace</string>
+    <string name="track_no_map">Pas de carte pouvant afficher cette trace :/</string>
     <string name="automatic_import_feedback">Trace importée dans %1$d carte(s)</string>
     <string name="user_manual_title">Manuel utilisateur</string>
     <string name="user_manual_desc">Tout ce que vous devez savoir est expliqué dans le manuel utilisateur. Par exemple,
@@ -405,7 +406,9 @@
     <string name="previously_connected_bt_devices">APPAREILS CONNECTÉS PRÉCÉDEMMENT</string>
     <string name="wifip2p_title">Partage de carte</string>
     <string name="mapcreate_title">Création de carte</string>
+    <!-- Record list -->
     <string name="my_trails_title">Mes traces</string>
+    <string name="trails_loading">Chargement des traces</string>
     <string name="select_bt_devices_title">Sélection du GPS actif</string>
     <string name="internal_gps">GPS interne</string>
     <string name="connection_bt_lost_msg">Connection au GPS Bluetooth perdue, tentative de re-connection…</string>
@@ -521,6 +524,11 @@
     <string name="no_recording_tutorial">Ici apparaîtront vos traces. Pour commencer, vous pouvez vous enregistrer depuis n\'importe qu\'elle carte, ou :</string>
     <string name="no_recording_import_trails">Importer une trace</string>
     <string name="no_recording_search_trail">Rechercher une trace</string>
+    <string name="track_select">Sélectionner</string>
+    <string name="track_rename">Renommer</string>
+    <string name="track_choose_map">Ajouter à …</string>
+    <string name="track_share">Partager</string>
+    <string name="track_elevation_profile">Voir le profil</string>
     <string name="manage_subscription_btn">GÉRER L\'ABONNEMENT</string>
 
     <!-- Trail search -->

@@ -3,6 +3,7 @@ package com.peterlaurence.trekme.features.map.presentation.events
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionWaypoint
 import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
 import com.peterlaurence.trekme.core.map.domain.models.Beacon
+import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.features.map.domain.models.TrackFollowServiceStopEvent
@@ -38,6 +39,15 @@ class MapFeatureEvents {
     val goToExcursion = _goToExcursion.asSharedFlow()
 
     fun postGoToExcursion(ref: ExcursionRef) = _goToExcursion.tryEmit(ref)
+
+    private val _goToBoundingBox = MutableStateFlow<GoToBoundingBox?>(null)
+    val goToBoundingBox = _goToBoundingBox.asStateFlow()
+
+    fun postGoToBoundingBox(mapId: UUID, bb: BoundingBox) {
+        val channel = Channel<BoundingBox>(1)
+        channel.trySend(bb)
+        _goToBoundingBox.value = GoToBoundingBox(mapId, channel)
+    }
     /* endregion */
 
     /* region public properties */
@@ -79,6 +89,8 @@ class MapFeatureEvents {
     }
     /* endregion */
 }
+
+data class GoToBoundingBox(val mapId: UUID, val boundingBoxConsumable: Channel<BoundingBox>)
 
 sealed interface PlaceableEvent
 data class MarkerEditEvent(val marker: Marker, val mapId: UUID): PlaceableEvent

@@ -9,25 +9,25 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
-import com.peterlaurence.trekme.features.record.domain.model.RecordingData
-import com.peterlaurence.trekme.features.record.presentation.ui.RecordStateful
+import com.peterlaurence.trekme.features.record.presentation.ui.RecordListStateful
 import com.peterlaurence.trekme.features.record.presentation.ui.components.elevationgraph.ElevationStateful
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.ElevationViewModel
 import com.peterlaurence.trekme.util.android.activity
-import java.util.UUID
 
 
 fun NavGraphBuilder.recordGraph(
     navController: NavController,
     onNavigateToTrailSearch: () -> Unit,
+    onNavigateToMap: () -> Unit,
     onMainMenuClick: () -> Unit
 ) {
     navigation(startDestination = recordListDestination, route = recordGraph) {
         recordListDestination(
             onNavigateToElevationGraph = {
-                navController.navigateToElevationGraph(it.id.toString())
+                navController.navigateToElevationGraph(it)
             },
             onNavigateToTrailSearch = onNavigateToTrailSearch,
+            onNavigateToMap = onNavigateToMap,
             onMainMenuClick = onMainMenuClick
         )
 
@@ -38,17 +38,19 @@ fun NavGraphBuilder.recordGraph(
 }
 
 private fun NavGraphBuilder.recordListDestination(
-    onNavigateToElevationGraph: (RecordingData) -> Unit,
+    onNavigateToElevationGraph: (String) -> Unit,
     onNavigateToTrailSearch: () -> Unit,
+    onNavigateToMap: () -> Unit,
     onMainMenuClick: () -> Unit
 ) {
     composable(route = recordListDestination) {
-        RecordStateful(
+        RecordListStateful(
             statViewModel = hiltViewModel(LocalContext.current.activity),
             recordViewModel = hiltViewModel(LocalContext.current.activity),
             onElevationGraphClick = onNavigateToElevationGraph,
             onGoToTrailSearchClick = onNavigateToTrailSearch,
-            onMainMenuClick = onMainMenuClick
+            onMainMenuClick = onMainMenuClick,
+            onNavigateToMap = onNavigateToMap
         )
     }
 }
@@ -63,7 +65,7 @@ private fun NavGraphBuilder.elevationGraphDestination(onBack: () -> Unit) {
         val id = it.arguments?.getString(recordingDataId) ?: return@composable
         val viewModel = hiltViewModel<ElevationViewModel>()
         remember(viewModel) {
-            viewModel.onUpdateGraph(UUID.fromString(id))
+            viewModel.onUpdateGraph(id)
         }
 
         ElevationStateful(

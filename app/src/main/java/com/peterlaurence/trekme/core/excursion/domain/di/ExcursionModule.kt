@@ -26,6 +26,7 @@ object ExcursionModule {
     ): ExcursionDao {
         return ExcursionDaoFileBased(
             rootFolders = trekMeContext.rootDirListFlow,
+            geoRecordFolder = trekMeContext.recordingsDirFlow,
             appDirFlow = settings.getAppDir().filterNotNull(),
             uriReader = { uri, reader ->
                 readUri(uri, app.contentResolver, reader)

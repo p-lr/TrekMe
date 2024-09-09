@@ -40,10 +40,12 @@ import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 
 class ExcursionDaoFileBased(
     private val rootFolders: StateFlow<List<File>>,
+    private val geoRecordFolder: StateFlow<File?>, // TODO: remove (see migrateLegacyRecordingsToExcursions)
     private val appDirFlow: Flow<File>,
     private val uriReader: suspend (uri: Uri, reader: suspend (FileInputStream) -> Excursion?) -> Excursion?,
     private val nameReaderUri: (Uri) -> String?,
@@ -269,7 +271,12 @@ class ExcursionDaoFileBased(
                 val geoJson = withContext(Dispatchers.Default) {
                     geoRecord.toGeoJson()
                 }
-                makeGeoJsonUri(geoJson, cacheDir, destFileName = "track-${id.substringAfterLast('-')}.$GEOJSON_FILE_EXT", geoJsonWriter)
+                makeGeoJsonUri(
+                    geoJson = geoJson,
+                    cacheDir = cacheDir,
+                    destFileName = "track-${id.substringAfterLast('-')}.$GEOJSON_FILE_EXT",
+                    geoJsonWriter = geoJsonWriter
+                )
             }
         }
     }
@@ -409,9 +416,7 @@ class ExcursionDaoFileBased(
                 val str = json.encodeToString(newConfig)
                 FileUtils.writeToFile(str, configFile)
 
-                excursions.update {
-                    it - excursionToRename + ExcursionFileBased(excursionToRename.root, newConfig)
-                }
+                excursionToRename.title.value = newName
             }
         }.isSuccess
     }
@@ -429,6 +434,60 @@ class ExcursionDaoFileBased(
                 writeGpx(gpx, FileOutputStream(file))
             }
         }.isSuccess
+    }
+
+    /**
+     * For migration only.
+     * TODO: Remove this after about one year, so around 09/2025
+     */
+    override suspend fun migrateLegacyRecordingsToExcursions() {
+        val folder = geoRecordFolder.first { it != null } ?: return
+        val gpxFiles = withContext(ioDispatcher) {
+            folder.listFiles { it -> it.isFile && it.extension.lowercase() == "gpx" }
+        } ?: return
+        val root = appDirFlow.firstOrNull() ?: return
+        val excursionsFolder = File(root, DIR_NAME)
+
+        for (file in gpxFiles) {
+            putExcursionFromGpxFile(file, excursionsFolder)
+        }
+    }
+
+    private suspend fun putExcursionFromGpxFile(gpxFile: File, excursionsFolder: File): Boolean {
+        return withContext(ioDispatcher) {
+            runCatching {
+                val destFolder = File(excursionsFolder, gpxFile.nameWithoutExtension).apply {
+                    if (!mkdir()) return@withContext false
+                }
+
+                /* Config File */
+                val configFile = File(destFolder, CONFIG_FILENAME).also {
+                    it.createNewFile()
+                }
+
+                val config = ExcursionConfig(
+                    id = UUID.randomUUID().toString(),
+                    title = gpxFile.nameWithoutExtension,
+                    description = "",
+                    type = Type.Hike,
+                    photos = emptyList()
+                )
+                val str = json.encodeToString(config)
+                FileUtils.writeToFile(str, configFile)
+
+                /* Gpx file */
+                val gpxFileDest = File(destFolder, GPX_FILENAME)
+                gpxFile.copyTo(gpxFileDest)
+
+                /* Update the state */
+                excursions.update {
+                    it + ExcursionFileBased(destFolder, config)
+                }
+
+                /* Now that the excursion is created, delete the gpx file */
+                gpxFile.delete()
+            }.getOrElse { false }
+        }
     }
 
     private fun File.getGpxFile(): File? = runCatching {

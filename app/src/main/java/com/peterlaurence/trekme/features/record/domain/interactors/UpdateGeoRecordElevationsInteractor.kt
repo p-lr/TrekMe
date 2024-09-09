@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.features.record.domain.interactors
 
+import com.peterlaurence.trekme.core.excursion.domain.dao.ExcursionDao
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
-import com.peterlaurence.trekme.core.georecord.domain.repository.GeoRecordRepository
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.di.DefaultDispatcher
 import com.peterlaurence.trekme.features.common.domain.model.ElevationSource
@@ -12,13 +12,13 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class UpdateGeoRecordElevationsInteractor @Inject constructor(
-    private val geoRecordRepository: GeoRecordRepository,
+    private val excursionDao: ExcursionDao,
     @DefaultDispatcher
     private val defaultDispatcher: CoroutineDispatcher
 ) {
     suspend fun updateElevations(elevationData: ElevationData) {
         val updatedGeoRecord = updateGpxFileWithTrustedElevations(elevationData) ?: return
-        geoRecordRepository.updateGeoRecord(updatedGeoRecord)
+        excursionDao.updateGeoRecord(elevationData.id, updatedGeoRecord)
     }
 
     private suspend fun updateGpxFileWithTrustedElevations(eleData: ElevationData): GeoRecord? {

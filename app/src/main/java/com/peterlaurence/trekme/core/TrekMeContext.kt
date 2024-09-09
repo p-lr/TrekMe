@@ -8,6 +8,7 @@ import com.peterlaurence.trekme.core.map.data.CREDENTIALS_FOLDER_NAME
 import com.peterlaurence.trekme.core.map.data.MAP_FOLDER_NAME
 import com.peterlaurence.trekme.core.map.data.MAP_IMPORTED_FOLDER_NAME
 import com.peterlaurence.trekme.core.map.data.RECORDINGS_FOLDER_NAME
+import com.peterlaurence.trekme.util.map
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,6 +34,7 @@ interface TrekMeContext {
     val defaultMapsDownloadDir: File?
     val importedDir: File?
     val recordingsDir: File?
+    val recordingsDirFlow: StateFlow<File?>
     val rootDirListFlow: StateFlow<List<File>>
     val credentialsDir: File
     suspend fun isAppDirReadOnly(): Boolean
@@ -64,6 +66,10 @@ class TrekMeContextAndroid : TrekMeContext {
         defaultAppDir.value?.let {
             File(it, RECORDINGS_FOLDER_NAME)
         }
+    }
+
+    override val recordingsDirFlow: StateFlow<File?> = defaultAppDir.map {
+        File(it, RECORDINGS_FOLDER_NAME)
     }
 
     private val TAG = "TrekMeContextAndroid"

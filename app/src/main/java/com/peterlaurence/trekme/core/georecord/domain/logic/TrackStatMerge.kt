@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.core.georecord.domain.logic
 
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
-import com.peterlaurence.trekme.core.lib.gpx.model.Bounds
+import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
 
 fun List<TrackStatCalculator>.mergeStats(): GeoStatistics {
     return filterNot { it.isEmpty() }.map {
@@ -15,14 +15,15 @@ fun List<TrackStatCalculator>.mergeStats(): GeoStatistics {
             elevationDownStack = it.sumOf { stat -> stat.elevationDownStack },
             durationInSecond = it.mapNotNull { stat -> stat.durationInSecond }
                 .takeIf { durations -> durations.isNotEmpty() }?.sum(),
-            avgSpeed = it.computeAvgSpeed()
+            avgSpeed = it.computeAvgSpeed(),
+            boundingBox = it.mergeBounds()
         )
     }
 }
 
-fun List<TrackStatCalculator>.mergeBounds(): Bounds? {
-    return mapNotNull { it.getBounds() }.takeIf { it.isNotEmpty() }?.let {
-        Bounds(
+private fun List<GeoStatistics>.mergeBounds(): BoundingBox? {
+    return mapNotNull { it.boundingBox }.takeIf { it.isNotEmpty() }?.let {
+        BoundingBox(
             minLat = it.minOf { b -> b.minLat },
             minLon = it.minOf { b -> b.minLon },
             maxLat = it.maxOf { b -> b.maxLat },

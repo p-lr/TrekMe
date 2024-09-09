@@ -74,8 +74,7 @@ class TracksManageViewModel @Inject constructor(
     }
 
     fun onRenameExcursion(ref: ExcursionRef, newName: String) = viewModelScope.launch {
-        val map = map ?: return@launch
-        mapExcursionInteractor.rename(map, ref, newName)
+        mapExcursionInteractor.rename(ref, newName)
     }
 
     fun onRenameRoute(route: Route, newName: String) = viewModelScope.launch {

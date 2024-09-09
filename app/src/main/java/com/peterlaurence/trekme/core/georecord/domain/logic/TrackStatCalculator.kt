@@ -3,7 +3,7 @@ package com.peterlaurence.trekme.core.georecord.domain.logic
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
 import com.peterlaurence.trekme.core.geotools.deltaTwoPoints
 import com.peterlaurence.trekme.util.statistics.mean
-import com.peterlaurence.trekme.core.lib.gpx.model.Bounds
+import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
 import java.util.*
 import kotlin.math.*
 
@@ -48,15 +48,23 @@ class TrackStatCalculator(private val distanceCalculator: DistanceCalculator) {
 
     fun getStatistics(): GeoStatistics {
         return GeoStatistics(
-            distanceCalculator.getDistance(), highestElevation, lowestElevation,
-            elevationUpStack, elevationDownStack, durationInSecond, avgSpeed
+            distance = distanceCalculator.getDistance(),
+            elevationMax = highestElevation,
+            elevationMin = lowestElevation,
+            elevationUpStack = elevationUpStack,
+            elevationDownStack = elevationDownStack,
+            durationInSecond = durationInSecond,
+            avgSpeed = avgSpeed,
+            boundingBox = getBounds()
         )
     }
 
-    fun getBounds(): Bounds? {
-        return Bounds(
-            minLat ?: return null, minLon ?: return null,
-            maxLat ?: return null, maxLon ?: return null
+    private fun getBounds(): BoundingBox? {
+        return BoundingBox(
+            minLat = minLat ?: return null,
+            minLon = minLon ?: return null,
+            maxLat = maxLat ?: return null,
+            maxLon = maxLon ?: return null
         )
     }
 
