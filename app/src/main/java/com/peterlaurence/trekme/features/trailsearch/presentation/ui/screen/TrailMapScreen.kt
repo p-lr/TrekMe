@@ -616,7 +616,7 @@ private fun LazyListScope.headerSection(title: String) {
 }
 
 private fun LazyListScope.statisticsSection(data: BottomSheetData) {
-    item(key = data.geoStatistics) {
+    item(key = "geostatistics") {
         TrackStats(data.geoStatistics)
     }
 }
