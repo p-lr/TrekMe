@@ -30,7 +30,6 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -56,7 +55,7 @@ import kotlin.math.floor
  * end padding.
  * @param onCursorMove A callback invoked when the user scrolls the graph horizontally.
  */
-@OptIn(ExperimentalTextApi::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ElevationGraph(
     modifier: Modifier = Modifier,
