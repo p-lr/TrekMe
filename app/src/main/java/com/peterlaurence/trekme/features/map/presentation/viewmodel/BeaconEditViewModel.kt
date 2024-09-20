@@ -3,12 +3,13 @@ package com.peterlaurence.trekme.features.map.presentation.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
 import com.peterlaurence.trekme.core.map.domain.models.Beacon
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.units.DistanceUnit
 import com.peterlaurence.trekme.features.map.domain.interactors.BeaconInteractor
-import com.peterlaurence.trekme.features.map.presentation.ui.navigation.BeaconEditArgs
+import com.peterlaurence.trekme.features.map.presentation.ui.navigation.BeaconEditScreenArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,7 +24,7 @@ class BeaconEditViewModel @Inject constructor(
     mapRepository: MapRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
-    private val args = BeaconEditArgs(savedStateHandle)
+    private val args = savedStateHandle.toRoute<BeaconEditScreenArgs>()
     private val mapId = UUID.fromString(args.mapId)
     private val map = mapRepository.getMap(mapId)
 

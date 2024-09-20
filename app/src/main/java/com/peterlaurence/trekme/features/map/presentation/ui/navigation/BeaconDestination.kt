@@ -1,37 +1,22 @@
 package com.peterlaurence.trekme.features.map.presentation.ui.navigation
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavType
 import androidx.navigation.compose.composable
-import androidx.navigation.navArgument
 import com.peterlaurence.trekme.features.map.presentation.ui.screens.BeaconEditStateful
-
-private const val beaconEditDestination = "beacon_edit_dest"
-private const val beaconArgId = "beacon_arg"
-private const val mapArgId = "map_arg"
+import kotlinx.serialization.Serializable
 
 fun NavGraphBuilder.beaconEditScreen(
     onBack: () -> Unit
 ) {
-    composable(
-        route = "$beaconEditDestination/{$beaconArgId}/{$mapArgId}",
-        arguments = listOf(
-            navArgument(beaconArgId) { type = NavType.StringType },
-            navArgument(mapArgId) { type = NavType.StringType },
-        )
-    ) {
+    composable<BeaconEditScreenArgs> {
         BeaconEditStateful(onBackAction = onBack)
     }
 }
 
 fun NavController.navigateToBeaconEdit(beaconId: String, mapId: String) {
-    navigate("$beaconEditDestination/$beaconId/$mapId")
+    navigate(BeaconEditScreenArgs(beaconId, mapId))
 }
 
-internal class BeaconEditArgs(val beaconId: String, val mapId: String) {
-    constructor(savedStateHandle: SavedStateHandle) : this(
-        checkNotNull(savedStateHandle[beaconArgId]), checkNotNull(savedStateHandle[mapArgId])
-    )
-}
+@Serializable
+internal data class BeaconEditScreenArgs(val beaconId: String, val mapId: String)

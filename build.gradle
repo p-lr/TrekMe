@@ -4,7 +4,7 @@ buildscript {
     ext {
         kotlin_version = '1.9.24'
         hilt_version= '2.50'
-        nav_version = '2.7.7'
+        nav_version = '2.8.1'
         coroutine_version = '1.8.1'
         compose_compiler_version = '1.5.14'
     }
