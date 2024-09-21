@@ -135,10 +135,10 @@ class TrackStatCalculator(private val distanceCalculator: DistanceCalculator) {
     }
 
     private fun updateBounds(latitude: Double, longitude: Double) {
-        minLat = min(latitude, minLat ?: Double.MAX_VALUE)
-        minLon = min(longitude, minLon ?: Double.MAX_VALUE)
-        maxLat = max(latitude, maxLat ?: Double.MIN_VALUE)
-        maxLon = max(longitude, maxLon ?: Double.MIN_VALUE)
+        minLat = min(latitude, minLat ?: MAX_LAT)
+        minLon = min(longitude, minLon ?: MAX_LON)
+        maxLat = max(latitude, maxLat ?: MIN_LAT)
+        maxLon = max(longitude, maxLon ?: MIN_LON)
     }
 }
 
@@ -292,5 +292,10 @@ private class DistanceCalculatorEleNotTrusted : DistanceCalculator {
         previousLon = lon
     }
 }
+
+private const val MIN_LAT = -90.0
+private const val MAX_LAT = 90.0
+private const val MIN_LON = -180.0
+private const val MAX_LON = 180.0
 
 private data class Snapshot(val distance: Double, val elevation: Double)

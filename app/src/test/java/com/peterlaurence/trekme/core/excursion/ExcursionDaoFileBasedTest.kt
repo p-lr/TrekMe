@@ -20,6 +20,7 @@ class ExcursionDaoFileBasedTest {
 
     private val dao = ExcursionDaoFileBased(
         rootFolders = MutableStateFlow(listOfNotNull(excursionDir)),
+        geoRecordFolder = MutableStateFlow(null),
         appDirFlow = flowOf(),
         uriReader = { _, _ -> null },
         nameReaderUri = { null },
@@ -33,7 +34,7 @@ class ExcursionDaoFileBasedTest {
 
         assertEquals(1, excursions.value.size)
         val excursion = excursions.value.first()
-        assertEquals("Excursion 1", excursion.title)
+        assertEquals("Excursion 1", excursion.title.value)
         assertEquals("This the description for excursion 1", excursion.description)
         assertEquals(2, excursion.photos.size)
         assertEquals("photo_id_2", excursion.photos.last().id)

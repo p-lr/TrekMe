@@ -6,6 +6,7 @@ import com.peterlaurence.trekme.core.map.domain.interactors.GetMapInteractor
 import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.contains
+import com.peterlaurence.trekme.core.map.domain.models.getBoundingBox
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.features.common.domain.interactors.MapExcursionInteractor
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
