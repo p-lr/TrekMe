@@ -153,7 +153,10 @@ fun MapStateful(
         }
         when (event) {
             MapEvent.CURRENT_LOCATION_OUT_OF_BOUNDS -> showSnackbar(scope, snackbarHostState, outOfBounds, ok)
-
+            MapEvent.AWAITING_LOCATION -> {
+                val awaitingLocation = context.getString(R.string.awaiting_location)
+                showSnackbar(scope, snackbarHostState, awaitingLocation, ok)
+            }
             MapEvent.TRACK_TO_FOLLOW_SELECTED -> dismissSnackbar()
             MapEvent.TRACK_TO_FOLLOW_ALREADY_RUNNING -> {
                 showTrackFollowDialog = true

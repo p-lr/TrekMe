@@ -144,6 +144,11 @@ class MapViewModel @Inject constructor(
             viewModelScope.launch {
                 _events.send(MapEvent.CURRENT_LOCATION_OUT_OF_BOUNDS)
             }
+        },
+        onNoLocation = {
+            viewModelScope.launch {
+                _events.send(MapEvent.AWAITING_LOCATION)
+            }
         }
     )
 
@@ -408,5 +413,8 @@ enum class Error : UiState {
 }
 
 enum class MapEvent {
-    CURRENT_LOCATION_OUT_OF_BOUNDS, TRACK_TO_FOLLOW_SELECTED, TRACK_TO_FOLLOW_ALREADY_RUNNING
+    CURRENT_LOCATION_OUT_OF_BOUNDS,
+    AWAITING_LOCATION,
+    TRACK_TO_FOLLOW_SELECTED,
+    TRACK_TO_FOLLOW_ALREADY_RUNNING
 }

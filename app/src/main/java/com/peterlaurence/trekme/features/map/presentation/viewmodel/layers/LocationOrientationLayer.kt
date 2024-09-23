@@ -29,7 +29,8 @@ class LocationOrientationLayer(
     private val dataStateFlow: Flow<DataState>,
     private val goToBoundingBoxFlow: StateFlow<Pair<UUID, Channel<BoundingBox>>?>,
     private val mapInteractor: MapInteractor,
-    private val onOutOfBounds: () -> Unit
+    private val onOutOfBounds: () -> Unit,
+    private val onNoLocation: () -> Unit
 ) {
     private var hasCenteredOnFirstLocation = false
     val locationFlow = MutableSharedFlow<Location>(1, 0, BufferOverflow.DROP_OLDEST)
@@ -117,12 +118,15 @@ class LocationOrientationLayer(
     fun centerOnPosition() = scope.launch {
         val mapState = dataStateFlow.first().mapState
 
-        mapState.getMarkerInfo(positionMarkerId)?.also {
-            if (isInMap(it.x, it.y)) {
+        val posMarker = mapState.getMarkerInfo(positionMarkerId)
+        if (posMarker != null) {
+            if (isInMap(posMarker.x, posMarker.y)) {
                 centerOnPosMarker(mapState)
             } else {
                 onOutOfBounds()
             }
+        } else {
+            onNoLocation()
         }
     }
 
