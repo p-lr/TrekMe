@@ -447,7 +447,6 @@
     <string name="map_too_big">Map too big</string>
     <string name="map_too_big_explanation">It is advised to download only the area that you need, or to adapt zoom levels.</string>
     <string name="module_check_pending">Checking module..</string>
-    <string name="offer_suggestion">Available with TrekMe Extended 1 year, 7d free trial</string>
     <string name="ign_buy_license_pending">Please wait a few minutes, payment is pending</string>
     <string name="module_check_unknown">Unable to check your module</string>
     <string name="buy_btn">Purchase</string>
@@ -649,7 +648,6 @@
     <!-- Shop UI -->
     <string name="fragment_shop" translatable="false">ShopFragment</string>
     <string name="trekme_extended_offer" translatable="false">TrekMe Extended</string>
-    <string name="trekme_extended_trial">7d of free trial</string>
     <string name="trekme_extended_maps_title">Maps</string>
     <string name="trekme_extended_osm_hd_desc">Download OSM HD maps, with a twice better resolution than standard and better readable texts.</string>
     <string name="trekme_extended_activate_ign">With IGN option</string>
@@ -672,8 +670,8 @@
     <string name="module_purchase_pending">Purchase pending…</string>
     <string name="module_error">Temporary unavailable</string>
     <string name="free_trial">%1$dd of free trial</string>
-    <string name="one_year">1 year</string>
-    <string name="one_month">1 month</string>
+    <string name="one_year">per year</string>
+    <string name="one_month">per month</string>
     <string name="ign_caution">The IGN map server is sometimes slow. During IGN map creation, tiles appear slowly or not
     at all. When this happens, it is advised to retry later in the day.</string>
     <string name="nb">PS</string>

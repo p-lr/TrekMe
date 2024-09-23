@@ -471,7 +471,6 @@
     <string name="beacon_default_name">Balise</string>
     <string name="preference_show_scale_indicator">Afficher l\'indicateur d\'échelle</string>
     <string name="shop_menu_title">Boutique</string>
-    <string name="trekme_extended_trial">Essai gratuit de 7j</string>
     <string name="trekme_extended_maps_title">Cartes</string>
     <string name="trekme_extended_osm_hd_desc">Téléchargez des cartes OSM HD, avec une résolution deux fois meilleure et des textes plus lisibles.</string>
     <string name="trekme_extended_activate_ign">Avec option IGN</string>
@@ -486,13 +485,12 @@
     <string name="add_beacons">Ajoutez des balises pour vous alerter quand vous vous rapprochez de lieux précis sur la carte.</string>
     <string name="no_ads">Pas de publicité</string>
     <string name="new_features">Des fonctionnalités exclusives seront ajoutées</string>
-    <string name="offer_suggestion">Disponible avec TrekMe Extended 1 an, 7j d\'essai gratuit</string>
     <string name="module_owned">Vous possédez ce module</string>
     <string name="module_purchase_pending">Achat en cours…</string>
     <string name="module_error">Temporarairement indisponible</string>
     <string name="free_trial">Essai gratuit de %1$dj</string>
-    <string name="one_year">1 an</string>
-    <string name="one_month">1 mois</string>
+    <string name="one_year">par an</string>
+    <string name="one_month">par mois</string>
     <string name="offer_gateway_suggest_navigation">Les cartes IGN sont accessibles avec TrekMe Extended + IGN</string>
     <string name="offer_gateway_free_trial">Période d\'essai gratuite</string>
     <string name="offer_gateway_navigation_button">Voir les offres</string>

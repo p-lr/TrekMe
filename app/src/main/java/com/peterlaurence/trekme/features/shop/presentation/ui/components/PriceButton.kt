@@ -31,8 +31,8 @@ fun PriceButton(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(duration)
             Text(price)
+            Text(duration)
         }
     }
 }
