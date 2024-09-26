@@ -21,7 +21,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
@@ -81,7 +81,7 @@ import java.util.UUID
 fun MapImportUiStateful(
     viewModel: MapImportViewModel = hiltViewModel(),
     onShowMapList: () -> Unit,
-    onMainMenuClick: () -> Unit
+    onBackClick: () -> Unit
 ) {
     val isImporting by viewModel.isImporting.collectAsState()
     val archives by viewModel.archivesUiState.collectAsState()
@@ -118,7 +118,7 @@ fun MapImportUiStateful(
             SnackbarHost(hostState = snackbarHostState)
         },
         topBar = {
-            MapImportTopBar(onMainMenuClick, onImportClicked = { launcher.launch(null) })
+            MapImportTopBar(onBackClick, onImportClicked = { launcher.launch(null) })
         },
         floatingActionButton = {
             selection?.also {
@@ -265,7 +265,7 @@ fun StatusLine(success: Boolean, message: String) {
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun MapImportTopBar(
-    onMainMenuClick: () -> Unit,
+    onBackClick: () -> Unit,
     onImportClicked: () -> Unit
 ) {
     var expandedMenu by remember { mutableStateOf(false) }
@@ -273,8 +273,8 @@ private fun MapImportTopBar(
     TopAppBar(
         title = { Text(text = stringResource(id = R.string.import_title)) },
         navigationIcon = {
-            IconButton(onClick = onMainMenuClick) {
-                Icon(Icons.Filled.Menu, contentDescription = "")
+            IconButton(onClick = onBackClick) {
+                Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "")
             }
         },
         actions = {

@@ -5,11 +5,11 @@ import androidx.navigation.compose.composable
 import com.peterlaurence.trekme.features.settings.presentation.ui.SettingsStateful
 
 fun NavGraphBuilder.settings(
-    onMainMenuClick: () -> Unit
+    onBackClick: () -> Unit
 ) {
     composable(route = settingsDestination) {
         SettingsStateful(
-            onMainMenuClick = onMainMenuClick
+            onBackClick = onBackClick
         )
     }
 }

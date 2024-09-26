@@ -9,10 +9,9 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -23,6 +22,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -40,7 +40,7 @@ import kotlinx.coroutines.launch
  */
 @Composable
 fun AboutStateful(
-    onMainMenuClick: () -> Unit
+    onBackClick: () -> Unit
 ) {
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
@@ -81,7 +81,7 @@ fun AboutStateful(
             }
         },
         onSendMail = { sendMail(context) },
-        onMainMenuClick = onMainMenuClick,
+        onBackClick = onBackClick,
         onLinkError = onLinkError
     )
 }
@@ -94,7 +94,7 @@ fun AboutScreen(
     onUserManualClick: () -> Unit,
     onAppRating: () -> Unit,
     onSendMail: () -> Unit,
-    onMainMenuClick: () -> Unit,
+    onBackClick: () -> Unit,
     onLinkError: () -> Unit
 ) {
     Scaffold(
@@ -102,8 +102,8 @@ fun AboutScreen(
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.about)) },
                 navigationIcon = {
-                    IconButton(onClick = onMainMenuClick) {
-                        Icon(Icons.Filled.Menu, contentDescription = "")
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "")
                     }
                 }
             )
@@ -233,6 +233,7 @@ private fun PrivacyPolicy(onLinkError: () -> Unit) {
         fontWeight = FontWeight.Light,
     )
 
+    val uriHandler = LocalUriHandler.current
     val annotatedLinkString = buildAnnotatedString {
         val str = stringResource(id = R.string.privacy_policy_link)
         val placeHolderStr = stringResource(id = R.string.privacy_policy)
@@ -252,30 +253,23 @@ private fun PrivacyPolicy(onLinkError: () -> Unit) {
             ), start = startIndex, end = endIndex
         )
 
-        addStringAnnotation(
-            tag = "URL",
-            annotation = privacyPolicyUrl,
+        addLink(
+            LinkAnnotation.Clickable(
+                tag = "TAG",
+                linkInteractionListener = {
+                    runCatching {
+                        uriHandler.openUri(privacyPolicyUrl)
+                    }.onFailure {
+                        onLinkError()
+                    }
+                },
+            ),
             start = startIndex,
             end = endIndex
         )
     }
 
-    val uriHandler = LocalUriHandler.current
-
-    ClickableText(
-        text = annotatedLinkString,
-        onClick = {
-            annotatedLinkString
-                .getStringAnnotations("URL", it, it)
-                .firstOrNull()?.let { stringAnnotation ->
-                    runCatching {
-                        uriHandler.openUri(stringAnnotation.item)
-                    }.onFailure {
-                        onLinkError()
-                    }
-                }
-        }
-    )
+    Text(text = annotatedLinkString)
 }
 
 private fun sendMail(context: Context) {
@@ -301,7 +295,7 @@ fun AboutPreview() {
                 onUserManualClick = {},
                 onAppRating = {},
                 onSendMail = {},
-                onMainMenuClick = {},
+                onBackClick = {},
                 onLinkError = {}
             )
         }

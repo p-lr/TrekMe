@@ -6,12 +6,12 @@ import com.peterlaurence.trekme.features.mapimport.presentation.ui.screen.MapImp
 
 fun NavGraphBuilder.mapImport(
     onNavigateToMapList: () -> Unit,
-    onMainMenuClick: () -> Unit
+    onBackClick: () -> Unit
 ) {
     composable(mapImportDestination) {
         MapImportUiStateful(
             onShowMapList = onNavigateToMapList,
-            onMainMenuClick = onMainMenuClick
+            onBackClick = onBackClick
         )
     }
 }

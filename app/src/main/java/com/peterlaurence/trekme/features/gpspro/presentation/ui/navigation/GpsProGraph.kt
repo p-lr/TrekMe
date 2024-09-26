@@ -13,11 +13,11 @@ import com.peterlaurence.trekme.util.android.activity
 
 fun NavGraphBuilder.gpsProGraph(
     navController: NavController,
-    onMainMenuClick: () -> Unit
+    onBackClick: () -> Unit
 ) {
     navigation(startDestination = gpsProMainDest, route = gpsProGraph) {
         gpsProMainDestination(
-            onMainMenuClick = onMainMenuClick,
+            onBackClick = onBackClick,
             onShowBtDeviceSettings = { navController.navigate(btDeviceSettingsDest) }
         )
         btDeviceSettingsDestination(
@@ -31,13 +31,13 @@ const val gpsProMainDest = "gpsProMainDestination"
 private const val btDeviceSettingsDest = "btDeviceSettingsDestination"
 
 private fun NavGraphBuilder.gpsProMainDestination(
-    onMainMenuClick: () -> Unit,
+    onBackClick: () -> Unit,
     onShowBtDeviceSettings: () -> Unit,
 ) {
     composable(route = gpsProMainDest) {
         GpsProStateful(
             viewModel = hiltViewModel(viewModelStoreOwner = LocalContext.current.activity),
-            onMainMenuClick = onMainMenuClick,
+            onBackClick = onBackClick,
             onShowBtDeviceSettings = onShowBtDeviceSettings
         )
     }

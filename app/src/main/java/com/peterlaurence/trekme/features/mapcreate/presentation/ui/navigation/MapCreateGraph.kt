@@ -18,12 +18,12 @@ import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.MapSou
 
 fun NavGraphBuilder.mapCreateGraph(
     navController: NavController,
-    onMenuClick: () -> Unit,
+    onBackClick: () -> Unit,
     onNavigateToShop: () -> Unit,
 ) {
     navigation(startDestination = mapSourceListDestination, route = mapCreateGraph) {
         mapSourceListDestination(
-            onMenuClick,
+            onBackClick,
             onNavigateToWmtsScreen = { navController.navigate(wmtsDestination) },
             onNavigateToOfferGateway = { navController.navigate(ignGatewayDestination) }
         )
@@ -48,7 +48,7 @@ fun NavGraphBuilder.mapCreateGraph(
 }
 
 fun NavGraphBuilder.mapSourceListDestination(
-    onMenuClick: () -> Unit,
+    onBackClick: () -> Unit,
     onNavigateToWmtsScreen: () -> Unit,
     onNavigateToOfferGateway: () -> Unit
 ) {
@@ -64,7 +64,7 @@ fun NavGraphBuilder.mapSourceListDestination(
                     onNavigateToWmtsScreen()
                 }
             },
-            onMainMenuClick = onMenuClick
+            onBackClick = onBackClick
         )
     }
 }

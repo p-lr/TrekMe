@@ -15,7 +15,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -74,7 +74,7 @@ fun RecordListStateful(
     recordViewModel: RecordViewModel,
     onElevationGraphClick: (String) -> Unit,
     onGoToTrailSearchClick: () -> Unit,
-    onMainMenuClick: () -> Unit,
+    onBackClick: () -> Unit,
     onNavigateToMap: () -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -139,7 +139,7 @@ fun RecordListStateful(
 
     when (state) {
         Loading -> {
-            LoadingScreen(onMainMenuClick)
+            LoadingScreen(onBackClick)
         }
         is RecordingsAvailable -> {
             RecordListAvailableScreen(
@@ -148,7 +148,7 @@ fun RecordListStateful(
                 statViewModel = statViewModel,
                 recordViewModel = recordViewModel,
                 isTrackSharePending = isTrackSharePending,
-                onMainMenuClick = onMainMenuClick,
+                onBackClick = onBackClick,
                 onGoToTrailSearchClick = onGoToTrailSearchClick,
                 onElevationGraphClick = onElevationGraphClick,
                 onImportFiles = onImportFiles,
@@ -169,7 +169,7 @@ private fun RecordListAvailableScreen(
     statViewModel: RecordingStatisticsViewModel,
     recordViewModel: RecordViewModel,
     isTrackSharePending: Boolean,
-    onMainMenuClick: () -> Unit,
+    onBackClick: () -> Unit,
     onGoToTrailSearchClick: () -> Unit,
     onElevationGraphClick: (String) -> Unit,
     onImportFiles: () -> Unit,
@@ -325,7 +325,7 @@ private fun RecordListAvailableScreen(
             RecordTopAppbar(
                 selectionCount = selectionCount,
                 isTrackSharePending = isTrackSharePending,
-                onMainMenuClick = onMainMenuClick,
+                onBackClick = onBackClick,
                 onImportClick = onImportFiles,
                 onRename = {
                     val selected = getSelected(dataById, items)
@@ -425,14 +425,14 @@ private fun RecordListAvailable(
 }
 
 @Composable
-private fun LoadingScreen(onMainMenuClick: () -> Unit) {
+private fun LoadingScreen(onBackClick: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.my_trails_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onMainMenuClick) {
-                        Icon(Icons.Filled.Menu, contentDescription = "")
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "")
                     }
                 },
             )

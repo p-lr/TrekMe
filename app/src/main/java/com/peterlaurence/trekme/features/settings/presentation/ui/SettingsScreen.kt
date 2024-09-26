@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
@@ -58,7 +58,7 @@ import com.peterlaurence.trekme.features.settings.presentation.viewmodel.Setting
 @Composable
 fun SettingsStateful(
     viewModel: SettingsViewModel = hiltViewModel(),
-    onMainMenuClick: () -> Unit
+    onBackClick: () -> Unit
 ) {
     val showAdvancedSettings by viewModel.showAdvancedSettingsFlow.collectAsState(initial = false)
     val startOnPolicy by viewModel.startOnPolicyFlow.collectAsState(null)
@@ -100,7 +100,7 @@ fun SettingsStateful(
         trackFollowThreshold = trackFollowThreshold,
         onTrackFollowThresholdChanged = { viewModel.setTrackFollowThreshold(it) },
         hasExtendedOffer = hasExtendedOffer,
-        onMainMenuClick = onMainMenuClick,
+        onBackClick = onBackClick,
         isShowingAdvancedSettings = showAdvancedSettings,
         onAdvancedSettingsToggle = { viewModel.setAdvancedSettings(!showAdvancedSettings) },
         geoRecordExportFormat = geoRecordExportFormat,
@@ -134,7 +134,7 @@ private fun SettingsScreen(
     trackFollowThreshold: Int?,
     onTrackFollowThresholdChanged: (Int) -> Unit,
     hasExtendedOffer: Boolean,
-    onMainMenuClick: () -> Unit,
+    onBackClick: () -> Unit,
     isShowingAdvancedSettings: Boolean,
     onAdvancedSettingsToggle: () -> Unit,
     geoRecordExportFormat: GeoRecordExportFormat?,
@@ -188,8 +188,8 @@ private fun SettingsScreen(
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = onMainMenuClick) {
-                        Icon(Icons.Filled.Menu, contentDescription = "")
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "")
                     }
                 }
             )

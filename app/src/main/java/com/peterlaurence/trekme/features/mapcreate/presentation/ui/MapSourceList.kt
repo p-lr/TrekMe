@@ -4,9 +4,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,10 +13,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
@@ -33,15 +34,15 @@ import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.MapSou
 private fun MapSourceListUi(
     sources: List<WmtsSource>,
     onSourceClick: (WmtsSource) -> Unit,
-    onMainMenuClick: () -> Unit
+    onBackClick: () -> Unit
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.mapcreate_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onMainMenuClick) {
-                        Icon(Icons.Filled.Menu, contentDescription = "")
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "")
                     }
                 }
             )
@@ -85,9 +86,10 @@ private fun SourceRow(source: WmtsSource, onSourceClick: (WmtsSource) -> Unit) {
                 )
 
                 if (source == WmtsSource.IGN) {
+                    val openDialog = remember { mutableStateOf(false) }
                     val annotatedString = buildAnnotatedString {
                         val text = stringResource(id = R.string.ign_legal_notice_btn)
-                        append(text)
+
                         addStyle(
                             style = SpanStyle(
                                 color = MaterialTheme.colorScheme.onSurface,
@@ -95,8 +97,18 @@ private fun SourceRow(source: WmtsSource, onSourceClick: (WmtsSource) -> Unit) {
                                 textDecoration = TextDecoration.Underline
                             ), start = 0, end = text.length
                         )
+
+                        withLink(
+                            LinkAnnotation.Clickable (
+                                tag = "TAG",
+                                linkInteractionListener = {
+                                    openDialog.value = true
+                                },
+                            )
+                        ) {
+                            append(text)
+                        }
                     }
-                    val openDialog = remember { mutableStateOf(false) }
 
                     if (openDialog.value) {
                         AlertDialog(
@@ -114,10 +126,9 @@ private fun SourceRow(source: WmtsSource, onSourceClick: (WmtsSource) -> Unit) {
                         )
                     }
 
-                    ClickableText(
+                    Text(
                         text = annotatedString,
-                        modifier = Modifier.padding(top = 8.dp),
-                        onClick = { openDialog.value = true }
+                        modifier = Modifier.padding(top = 8.dp)
                     )
                 }
             }
@@ -172,13 +183,13 @@ private fun getImageForSource(source: WmtsSource): Painter {
 fun MapSourceListStateful(
     viewModel: MapSourceListViewModel,
     onSourceClick: (WmtsSource) -> Unit,
-    onMainMenuClick: () -> Unit
+    onBackClick: () -> Unit
 ) {
     val sourceList by viewModel.sourceList
     var showOnBoarding by viewModel.showOnBoarding
 
     BoxWithConstraints {
-        MapSourceListUi(sourceList, onSourceClick, onMainMenuClick = onMainMenuClick)
+        MapSourceListUi(sourceList, onSourceClick, onBackClick = onBackClick)
         if (showOnBoarding) {
             OnBoardingTip(
                 modifier = Modifier

@@ -19,7 +19,7 @@ fun NavGraphBuilder.recordGraph(
     navController: NavController,
     onNavigateToTrailSearch: () -> Unit,
     onNavigateToMap: () -> Unit,
-    onMainMenuClick: () -> Unit
+    onBackClick: () -> Unit
 ) {
     navigation(startDestination = recordListDestination, route = recordGraph) {
         recordListDestination(
@@ -28,7 +28,7 @@ fun NavGraphBuilder.recordGraph(
             },
             onNavigateToTrailSearch = onNavigateToTrailSearch,
             onNavigateToMap = onNavigateToMap,
-            onMainMenuClick = onMainMenuClick
+            onBackClick = onBackClick
         )
 
         elevationGraphDestination(
@@ -41,7 +41,7 @@ private fun NavGraphBuilder.recordListDestination(
     onNavigateToElevationGraph: (String) -> Unit,
     onNavigateToTrailSearch: () -> Unit,
     onNavigateToMap: () -> Unit,
-    onMainMenuClick: () -> Unit
+    onBackClick: () -> Unit
 ) {
     composable(route = recordListDestination) {
         RecordListStateful(
@@ -49,7 +49,7 @@ private fun NavGraphBuilder.recordListDestination(
             recordViewModel = hiltViewModel(LocalContext.current.activity),
             onElevationGraphClick = onNavigateToElevationGraph,
             onGoToTrailSearchClick = onNavigateToTrailSearch,
-            onMainMenuClick = onMainMenuClick,
+            onBackClick = onBackClick,
             onNavigateToMap = onNavigateToMap
         )
     }

@@ -4,10 +4,10 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.peterlaurence.trekme.features.wifip2p.presentation.ui.WifiP2pStateful
 
-fun NavGraphBuilder.wifiP2p(onMainMenuClick: () -> Unit) {
+fun NavGraphBuilder.wifiP2p(onBackClick: () -> Unit) {
     composable(wifiP2pDestination) {
         WifiP2pStateful(
-            onMainMenuClick = onMainMenuClick
+            onBackClick = onBackClick
         )
     }
 }

@@ -56,12 +56,12 @@ fun MainGraph(
         )
         mapCreateGraph(
             navController = navController,
-            onMenuClick = onMainMenuClick,
+            onBackClick = navController::popBackStack,
             onNavigateToShop = { navController.navigateToShop() }
         )
         recordGraph(
             navController = navController,
-            onMainMenuClick = onMainMenuClick,
+            onBackClick = navController::popBackStack,
             onNavigateToMap = { navController.navigateToMap() },
             onNavigateToTrailSearch = { navController.navigateToTrailSearch() },
         )
@@ -72,23 +72,23 @@ fun MainGraph(
         )
         gpsProGraph(
             navController = navController,
-            onMainMenuClick = onMainMenuClick
+            onBackClick = navController::popBackStack
         )
         mapImport(
             onNavigateToMapList = { navController.navigateToMapList() },
-            onMainMenuClick = onMainMenuClick
+            onBackClick = navController::popBackStack
         )
         wifiP2p(
-            onMainMenuClick = onMainMenuClick
+            onBackClick = navController::popBackStack
         )
         settings(
-            onMainMenuClick = onMainMenuClick
+            onBackClick = navController::popBackStack
         )
         shop(
-            onMainMenuClick = onMainMenuClick
+            onBackClick = navController::popBackStack
         )
         about(
-            onMainMenuClick = onMainMenuClick
+            onBackClick = navController::popBackStack
         )
     }
 }

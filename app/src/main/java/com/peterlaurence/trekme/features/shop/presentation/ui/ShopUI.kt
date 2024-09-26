@@ -1,8 +1,5 @@
-@file:OptIn(ExperimentalFoundationApi::class)
-
 package com.peterlaurence.trekme.features.shop.presentation.ui
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
@@ -12,7 +9,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -45,7 +42,7 @@ fun ShopStateful(
     extendedWithIgnViewModel: ExtendedWithIgnViewModel = hiltViewModel(),
     extendedOfferViewModel: ExtendedOfferViewModel = hiltViewModel(),
     gpsProPurchaseViewModel: GpsProPurchaseViewModel = hiltViewModel(),
-    onMainMenuClick: () -> Unit
+    onBackClick: () -> Unit
 ) {
     val extendedOfferWithIgnPurchaseState by extendedWithIgnViewModel.purchaseFlow.collectAsState()
     val monthlySubDetailsIgn by extendedWithIgnViewModel.monthlySubscriptionDetailsFlow.collectAsState()
@@ -120,7 +117,7 @@ fun ShopStateful(
         },
         onIgnSelectionChanged = { withIgn = it },
         onGpsProPurchase = gpsProPurchaseViewModel::buy,
-        onMainMenuClick = onMainMenuClick
+        onBackClick = onBackClick
     )
 }
 
@@ -145,15 +142,15 @@ private fun ShopUi(
     onExtendedYearlyPurchase: () -> Unit,
     onIgnSelectionChanged: (Boolean) -> Unit,
     onGpsProPurchase: () -> Unit,
-    onMainMenuClick: () -> Unit
+    onBackClick: () -> Unit
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.shop_menu_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onMainMenuClick) {
-                        Icon(Icons.Filled.Menu, contentDescription = "")
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "")
                     }
                 }
             )

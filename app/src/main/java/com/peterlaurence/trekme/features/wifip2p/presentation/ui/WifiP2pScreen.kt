@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -77,7 +77,7 @@ import java.util.UUID
 @Composable
 fun WifiP2pStateful(
     viewModel: WifiP2pViewModel = hiltViewModel(),
-    onMainMenuClick: () -> Unit
+    onBackClick: () -> Unit
 ) {
 
     val state by viewModel.state.collectAsState()
@@ -104,7 +104,7 @@ fun WifiP2pStateful(
     WifiP2pScreen(
         state = state,
         snackbarHostState = snackbarHostState,
-        onMainMenuClick = onMainMenuClick,
+        onBackClick = onBackClick,
         onShowHelp = {
             uriHandler.openUri(helpUri)
         },
@@ -119,7 +119,7 @@ fun WifiP2pStateful(
 private fun WifiP2pScreen(
     state: WifiP2pState,
     snackbarHostState: SnackbarHostState,
-    onMainMenuClick: () -> Unit,
+    onBackClick: () -> Unit,
     onShowHelp: () -> Unit,
     onReceive: () -> Unit,
     onSend: (UUID) -> Unit,
@@ -130,8 +130,8 @@ private fun WifiP2pScreen(
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.wifip2p_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onMainMenuClick) {
-                        Icon(Icons.Filled.Menu, contentDescription = "")
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "")
                     }
                 },
                 actions = {

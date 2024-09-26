@@ -4,9 +4,9 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.peterlaurence.trekme.features.shop.presentation.ui.ShopStateful
 
-fun NavGraphBuilder.shop(onMainMenuClick: () -> Unit) {
+fun NavGraphBuilder.shop(onBackClick: () -> Unit) {
     composable(shopDestination) {
-        ShopStateful(onMainMenuClick = onMainMenuClick)
+        ShopStateful(onBackClick = onBackClick)
     }
 }
 

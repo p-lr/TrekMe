@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -27,7 +27,7 @@ import com.peterlaurence.trekme.R
 fun RecordTopAppbar(
     selectionCount: Int,
     isTrackSharePending: Boolean,
-    onMainMenuClick: () -> Unit,
+    onBackClick: () -> Unit,
     onImportClick: () -> Unit,
     onRename: () -> Unit,
     onChooseMap: () -> Unit,
@@ -38,8 +38,8 @@ fun RecordTopAppbar(
     TopAppBar(
         title = { Text(text = stringResource(id = R.string.my_trails_title)) },
         navigationIcon = {
-            IconButton(onClick = onMainMenuClick) {
-                Icon(Icons.Filled.Menu, contentDescription = "")
+            IconButton(onClick = onBackClick) {
+                Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "")
             }
         },
         actions = {

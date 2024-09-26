@@ -20,7 +20,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -34,7 +34,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -43,7 +42,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextIndent
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.ErrorScreen
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentGreen
@@ -57,12 +55,11 @@ import com.peterlaurence.trekme.features.gpspro.presentation.viewmodel.BtNotSupp
 import com.peterlaurence.trekme.features.gpspro.presentation.viewmodel.GpsProViewModel
 import com.peterlaurence.trekme.features.gpspro.presentation.viewmodel.PairedDeviceList
 import com.peterlaurence.trekme.features.gpspro.presentation.viewmodel.Searching
-import com.peterlaurence.trekme.util.android.activity
 
 @Composable
 fun GpsProStateful(
     viewModel: GpsProViewModel,
-    onMainMenuClick: () -> Unit,
+    onBackClick: () -> Unit,
     onShowBtDeviceSettings: () -> Unit
 ) {
     val uriHandler = LocalUriHandler.current
@@ -74,7 +71,7 @@ fun GpsProStateful(
         onHostSelection = viewModel::onHostSelected,
         onBtDeviceSelection = viewModel::onBtDeviceSelection,
         onShowSettings = onShowBtDeviceSettings,
-        onMainMenuClick = onMainMenuClick,
+        onBackClick = onBackClick,
         onShowHelp = {
             uriHandler.openUri(helpUri)
         }
@@ -89,7 +86,7 @@ private fun GpsProUI(
     onHostSelection: () -> Unit,
     onBtDeviceSelection: (BluetoothDeviceStub) -> Unit,
     onShowSettings: () -> Unit,
-    onMainMenuClick: () -> Unit,
+    onBackClick: () -> Unit,
     onShowHelp: () -> Unit
 ) {
     Scaffold(
@@ -97,8 +94,8 @@ private fun GpsProUI(
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.select_bt_devices_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onMainMenuClick) {
-                        Icon(Icons.Filled.Menu, contentDescription = "")
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "")
                     }
                 },
                 actions = {
