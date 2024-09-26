@@ -46,7 +46,9 @@ import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.features.common.presentation.ui.settings.HeaderSetting
 import com.peterlaurence.trekme.features.common.presentation.ui.settings.ListSetting
 import com.peterlaurence.trekme.features.common.presentation.ui.settings.ListSetting2
+import com.peterlaurence.trekme.features.common.presentation.ui.settings.ListSettingItem
 import com.peterlaurence.trekme.features.common.presentation.ui.settings.ListSettingValue
+import com.peterlaurence.trekme.features.common.presentation.ui.settings.ListSettingWithLabel
 import com.peterlaurence.trekme.features.common.presentation.ui.settings.LoadingSetting
 import com.peterlaurence.trekme.features.common.presentation.ui.settings.SettingDivider
 import com.peterlaurence.trekme.features.common.presentation.ui.settings.SliderSetting
@@ -206,8 +208,6 @@ private fun SettingsScreen(
                 onMeasurementSystemChange = onMeasurementSystemChange
             )
             SettingDivider()
-            RootFolderSetting(appDirList, appDir, onAppDirChange)
-            SettingDivider()
             MapSetting(
                 maxScale,
                 onMaxScaleChange,
@@ -227,6 +227,8 @@ private fun SettingsScreen(
                 hasExtendedOffer,
                 isShowingAdvancedSettings
             )
+            SettingDivider()
+            RootFolderSetting(appDirList, appDir, onAppDirChange)
             if (isShowingAdvancedSettings) {
                 TrackSettings(geoRecordExportFormat, onGeoRecordExportFormatChange)
             }
@@ -283,9 +285,19 @@ private fun RootFolderSetting(
     val selected = appDir ?: appDirList.firstOrNull()
     val settingName = stringResource(id = R.string.preference_root_location_title)
     if (selected != null) {
-        ListSetting(
+        ListSettingWithLabel(
             name = settingName,
-            values = appDirList.map { Pair(it, it) },
+            items = appDirList.mapIndexed { index, dir ->
+                ListSettingItem(
+                    value = dir,
+                    label = if (index == 0) {
+                        stringResource(id = R.string.preference_root_location_internal)
+                    } else {
+                        stringResource(id = R.string.preference_root_location_external)
+                    },
+                    item = dir
+                )
+            },
             selectedValue = selected,
             onValueSelected = { _, v -> onAppDirChange(v) }
         )

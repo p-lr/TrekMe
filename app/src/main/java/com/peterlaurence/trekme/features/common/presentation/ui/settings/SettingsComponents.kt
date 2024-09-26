@@ -334,6 +334,97 @@ fun <T> ListSetting(
     }
 }
 
+data class ListSettingItem<T>(val value: T, val label: String, val item: String)
+
+@Composable
+fun <T> ListSettingWithLabel(
+    name: String,
+    items: List<ListSettingItem<T>>,
+    selectedValue: T,
+    showSubtitle: Boolean = true,
+    onValueSelected: (index: Int, v: T) -> Unit = { _, _ -> }
+) {
+    var isShowingDialog by rememberSaveable { mutableStateOf(false) }
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(vertical = paddingAround)
+            .clickable { isShowingDialog = true }
+            .padding(start = paddingStart),
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = name,
+            fontSize = mainFontSize,
+            color = MaterialTheme.colorScheme.onBackground,
+            style = nameStyle
+        )
+        if (showSubtitle) {
+            Text(
+                text = (items.firstOrNull { it.value == selectedValue } ?: items.first()).label,
+                fontSize = subtitleFontSize,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                style = subTitleStyle
+            )
+        }
+    }
+
+    if (isShowingDialog) {
+        AlertDialog(
+            title = {
+                Text(
+                    text = name,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            },
+            text = {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items.forEachIndexed { index, item ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    isShowingDialog = false
+                                    onValueSelected(index, item.value)
+                                },
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            RadioButton(
+                                selected = item.value == selectedValue,
+                                onClick = {
+                                    isShowingDialog = false
+                                    onValueSelected(index, item.value)
+                                }
+                            )
+                            Column {
+                                Text(text = item.label, fontSize = 18.sp)
+                                Text(
+                                    text = item.item,
+                                    fontSize = subtitleFontSize,
+                                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                                    style = subTitleStyle
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            onDismissRequest = { isShowingDialog = false },
+            confirmButton = {
+                TextButton(onClick = { isShowingDialog = false }) {
+                    Text(text = stringResource(id = R.string.cancel_dialog_string))
+                }
+            }
+        )
+    }
+}
+
 /**
  * A more customizable version of [ListSetting] which allows for custom subtitles.
  * This function should probably be re-written using ConstraintLayout.
