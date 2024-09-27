@@ -60,7 +60,6 @@ import com.peterlaurence.trekme.core.wmts.domain.model.Cadastre
 import com.peterlaurence.trekme.core.wmts.domain.model.LayerProperties
 import com.peterlaurence.trekme.core.wmts.domain.model.LayerPropertiesIgn
 import com.peterlaurence.trekme.core.wmts.domain.model.Road
-import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
 import com.peterlaurence.trekme.core.wmts.domain.model.ignCadastre
 import com.peterlaurence.trekme.core.wmts.domain.model.ignRoad
 import com.peterlaurence.trekme.core.wmts.domain.model.ignSlopes
@@ -220,6 +219,7 @@ private fun LayerOverlayScreen(
                         var opacity by remember(it.layer.id) { mutableFloatStateOf(it.opacity) }
                         BoxWithConstraints(
                             Modifier
+                                .animateItem()
                                 .fillMaxWidth()
                                 .background(
                                     if (it.layer.id == selectedLayerId) MaterialTheme.colorScheme.tertiary.copy(
@@ -228,7 +228,6 @@ private fun LayerOverlayScreen(
                                 )
                                 .clickable { selectedLayerId = it.layer.id }
                                 .padding(horizontal = 16.dp)
-                                .animateItemPlacement()
                         ) {
                             Text(
                                 text = translateLayerName(it.layer.id) ?: "",

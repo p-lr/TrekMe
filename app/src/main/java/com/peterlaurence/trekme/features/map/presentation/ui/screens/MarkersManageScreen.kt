@@ -274,7 +274,7 @@ private fun MarkersManageScreen(
                 ) {
                     items(markers, key = { it.marker.id }) {
                         PinCard(
-                            modifier = Modifier.animateItemPlacement(),
+                            modifier = Modifier.animateItem(),
                             name = it.marker.name,
                             color = it.marker.color,
                             selected = if (isSelectionMode) it.isSelected else null,
@@ -303,7 +303,7 @@ private fun MarkersManageScreen(
                         items(wpts, key = { it.waypoint.id }) {
                             val excursionColor by excursion.color.collectAsState()
                             PinCard(
-                                modifier = Modifier.animateItemPlacement(),
+                                modifier = Modifier.animateItem(),
                                 name = it.waypoint.name,
                                 color = it.waypoint.color ?: excursionColor,
                                 selected = if (isSelectionMode) it.isSelected else null,

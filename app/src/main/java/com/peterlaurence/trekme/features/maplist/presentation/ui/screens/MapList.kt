@@ -2,7 +2,6 @@ package com.peterlaurence.trekme.features.maplist.presentation.ui.screens
 
 import android.content.res.Configuration
 import android.net.Uri
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -155,10 +154,9 @@ private fun MapListUi(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun LazyItemScope.AnimatedMapCard(mapItem: MapItem, intents: MapListIntents) {
-    MapCard(Modifier.animateItemPlacement(), mapItem, intents)
+    MapCard(Modifier.animateItem(), mapItem, intents)
 }
 
 interface MapListIntents {
@@ -179,7 +177,7 @@ private fun MapListPreview() {
     fun makeItem(name: String): MapItem {
         return MapItem(
             UUID.randomUUID(),
-            titleFlow = MutableStateFlow("A map 1"),
+            titleFlow = MutableStateFlow(name),
             isDownloadPending = MutableStateFlow(false),
             image = MutableStateFlow(null)
         )

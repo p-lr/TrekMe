@@ -406,7 +406,7 @@ private fun RecordListAvailable(
                 key = { _, it -> it.id }
             ) { index, item ->
                 RecordItem(
-                    modifierProvider = { Modifier.animateItemPlacement() },
+                    modifierProvider = { Modifier.animateItem() },
                     item = item,
                     index = index,
                     isMultiSelectionMode = isMultiSelectionMode,

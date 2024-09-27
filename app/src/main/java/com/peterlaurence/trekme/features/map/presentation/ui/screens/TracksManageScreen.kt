@@ -364,7 +364,6 @@ private fun TrackTopAppbar(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun TrackList(
     modifier: Modifier = Modifier,
@@ -391,7 +390,7 @@ private fun TrackList(
             )
             SwipeToDismiss(
                 state = dismissState,
-                modifier = Modifier.animateItemPlacement(),
+                modifier = Modifier.animateItem(),
                 directions = setOf(StartToEnd, EndToStart),
                 background = {
                     val direction = dismissState.dismissDirection ?: return@SwipeToDismiss
