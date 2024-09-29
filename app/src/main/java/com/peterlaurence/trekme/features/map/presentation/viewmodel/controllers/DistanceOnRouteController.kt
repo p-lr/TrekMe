@@ -79,8 +79,9 @@ class DistanceOnRouteController(
         val routePoints = getRoutePoints(route)
         val chunkSize = min(25, routePoints.size)
         val chunks = routePoints.chunked(chunkSize)
+        var i = 0
         val chunksByBarycenter = chunks.filter { it.isNotEmpty() }.associateBy {
-            getBarycenter(it)
+            makeBarycenter(i++, it)
         }
         val distanceComputeFlow = MutableSharedFlow<Unit>(1, 0, BufferOverflow.DROP_OLDEST)
         var distanceText by mutableStateOf("")
@@ -150,7 +151,8 @@ class DistanceOnRouteController(
             width = 5.dp,
             offset = min(state.i1, state.i2),
             count = abs(state.i2 - state.i1) + 1,
-            color = Color(0xFFF50057)
+            color = Color(0xFFF50057),
+            zIndex = 3f
         )
 
         mapState.addPath(
@@ -163,10 +165,29 @@ class DistanceOnRouteController(
             }
         )
 
-        fun moveMarker(id: String, px: Double, py: Double): Int? {
-            val bary = chunksByBarycenter.keys.minByOrNull {
-                (it.x - px).pow(2) + (it.y - py).pow(2)
-            } ?: return null
+        /**
+         * Instead of picking the nearest barycenter and return the index of the nearest point, we
+         * compare the nearest two barycenter. If the second nearest barycenter has a lower index,
+         * then we consider that we're in a case where the track has a turnaround and we select the
+         * barycenter with the lowest index.
+         * This technique isn't perfect but performs well enough without incurring more computations.
+         */
+        fun getNearestPointIndex(id: String, px: Double, py: Double): Int? {
+            val sorted = chunksByBarycenter.keys.sortedBy {
+                (it.barycenter.x - px).pow(2) + (it.barycenter.y - py).pow(2)
+            }
+
+            val bary = if (sorted.size >= 2) {
+                val first = sorted[0]
+                val second = sorted[1]
+                if (first.index > second.index && abs(first.index - second.index) > 1) {
+                    second
+                } else {
+                    first
+                }
+            } else {
+                sorted.firstOrNull() ?: return null
+            }
 
             val chunk = chunksByBarycenter[bary] ?: return null
             return chunk.minByOrNull {
@@ -209,7 +230,7 @@ class DistanceOnRouteController(
         }
 
         mapState.enableMarkerDrag(grabMarker1) { _, _, _, _, _, px, py ->
-            val index = moveMarker(grabMarker1, px, py)
+            val index = getNearestPointIndex(grabMarker1, px, py)
             if (index != null) {
                 state.i1 = index
                 updatePaths()
@@ -218,7 +239,7 @@ class DistanceOnRouteController(
         }
 
         mapState.enableMarkerDrag(grabMarker2) { _, _, _, _, _, px, py ->
-            val index = moveMarker(grabMarker2, px, py)
+            val index = getNearestPointIndex(grabMarker2, px, py)
             if (index != null) {
                 state.i2 = index
                 updatePaths()
@@ -253,14 +274,14 @@ class DistanceOnRouteController(
         }.toList()
     }
 
-    private fun getBarycenter(chunk: List<PointIndexed>): Barycenter {
+    private fun makeBarycenter(index: Int, chunk: List<PointIndexed>): BaryCenterIndexed {
         var sumX = 0.0
         var sumY = 0.0
         for (pt in chunk) {
             sumX += pt.x
             sumY += pt.y
         }
-        return Barycenter(sumX / chunk.size, sumY / chunk.size)
+        return BaryCenterIndexed(index, Barycenter(sumX / chunk.size, sumY / chunk.size))
     }
 
     private suspend fun computeDistance(route: Route, i1: Int, i2: Int): Double {
@@ -281,6 +302,7 @@ class DistanceOnRouteController(
     }
 
     private data class PointIndexed(val index: Int, val x: Double, val y: Double)
+    private data class BaryCenterIndexed(val index: Int, val barycenter: Barycenter)
 
     data class DistanceOnRouteControllerRestoreState(val states: MutableList<DistanceOnRouteState>)
     data class DistanceOnRouteState(val route: Route, var i1: Int, var i2: Int)
