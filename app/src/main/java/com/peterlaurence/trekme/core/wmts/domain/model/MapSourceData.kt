@@ -10,6 +10,7 @@ data class OsmSourceData(val layer: OsmLayer) : MapSourceData
 data object UsgsData : MapSourceData
 data object IgnSpainData : MapSourceData
 data object OrdnanceSurveyData : MapSourceData
+data object IgnBelgiumData : MapSourceData
 
 fun MapSourceData.getNameResId(): Int {
     return when (this) {
@@ -34,5 +35,6 @@ fun MapSourceData.getNameResId(): Int {
         }
         is SwissTopoData -> R.string.swiss_topo_source
         is UsgsData -> R.string.usgs_map_source
+        is IgnBelgiumData -> R.string.ign_be_source
     }
 }

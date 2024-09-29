@@ -138,6 +138,13 @@ data class IgnSpainLayerDataKtx(
     val primaryLayerId: IgnSpainPrimaryLayerIdKtx,
 ) : LayerDataKtx
 
+@SerialName("ign-belgium-layer-data")
+@Serializable
+data class IgnBelgiumLayerDataKtx(
+    @SerialName("primary-layer-id")
+    val primaryLayerId: IgnBelgiumPrimaryLayerIdKtx
+) : LayerDataKtx
+
 @SerialName("ordnance-survey-layer-data")
 @Serializable
 data class OrdnanceSurveyLayerDataKtx(
@@ -216,6 +223,12 @@ enum class OsmPrimaryLayerIdKtx {
 enum class IgnSpainPrimaryLayerIdKtx {
     @SerialName("ign-spain")
     IgnSpain,
+}
+
+@Serializable
+enum class IgnBelgiumPrimaryLayerIdKtx {
+    @SerialName("ign-belgium-topo")
+    IgnBelgiumTopo
 }
 
 @Serializable

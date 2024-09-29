@@ -152,6 +152,7 @@ fun getTitleForSource(source: WmtsSource): String {
         WmtsSource.USGS -> stringResource(R.string.usgs_map_source)
         WmtsSource.IGN_SPAIN -> stringResource(R.string.ign_spain_source)
         WmtsSource.ORDNANCE_SURVEY -> stringResource(R.string.ordnance_survey_source)
+        WmtsSource.IGN_BE -> stringResource(id = R.string.ign_be_source)
     }
 }
 
@@ -164,6 +165,7 @@ private fun getSubtitleForSource(source: WmtsSource): String {
         WmtsSource.USGS -> stringResource(R.string.usgs_map_source_description)
         WmtsSource.IGN_SPAIN -> stringResource(R.string.ign_spain_source_description)
         WmtsSource.ORDNANCE_SURVEY -> stringResource(R.string.ordnance_survey_source_description)
+        WmtsSource.IGN_BE -> stringResource(R.string.ign_be_description)
     }
 }
 
@@ -176,6 +178,7 @@ private fun getImageForSource(source: WmtsSource): Painter {
         WmtsSource.USGS -> painterResource(R.drawable.usgs_logo)
         WmtsSource.IGN_SPAIN -> painterResource(R.drawable.ign_spain_logo)
         WmtsSource.ORDNANCE_SURVEY -> painterResource(R.drawable.ordnance_survey_logo)
+        WmtsSource.IGN_BE -> painterResource(id = R.drawable.ngi_be)
     }
 }
 

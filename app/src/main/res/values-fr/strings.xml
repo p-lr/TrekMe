@@ -260,6 +260,8 @@
     <string name="import_title">Importer depuis des archives</string>
     <string name="import_desc">Importer des cartes préalablement sauvegardées depuis la liste des cartes > MODIFIER > Sauvegarder</string>
     <string name="ordnance_survey_source_description">Carte de Grande-Bretagne</string>
+    <string name="ign_be_source">IGN Belgique</string>
+    <string name="ign_be_description">Belgique uniquement</string>
     <string name="map_import_error">Erreur: le format de la carte n\'est pas reconnu.</string>
     <string name="storage_perm_denied">Veuillez activer la permission de stockage</string>
     <string name="map_image_import_ok">Image changée</string>

@@ -49,6 +49,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.usgsC
 import com.peterlaurence.trekme.features.mapcreate.domain.interactors.ParseGeoRecordInteractor
 import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToMercatorInteractor
 import com.peterlaurence.trekme.core.wmts.domain.tools.getNumberOfTiles
+import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.ignBelgiumConfig
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.osmHdConfig
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.toDomain
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.toModel
@@ -346,6 +347,7 @@ class WmtsViewModel @Inject constructor(
             WmtsSource.USGS -> usgsConfig
             WmtsSource.IGN_SPAIN -> ignSpainConfig
             WmtsSource.ORDNANCE_SURVEY -> ordnanceSurveyConfig
+            WmtsSource.IGN_BE -> ignBelgiumConfig
         }
     }
 
@@ -472,6 +474,7 @@ class WmtsViewModel @Inject constructor(
             WmtsSource.SWISS_TOPO -> flow { emit(SwissTopoData) }
             WmtsSource.USGS -> flow { emit(UsgsData) }
             WmtsSource.IGN_SPAIN -> flow { emit(IgnSpainData) }
+            WmtsSource.IGN_BE -> flow { emit(IgnBelgiumData) }
         }
     }
 

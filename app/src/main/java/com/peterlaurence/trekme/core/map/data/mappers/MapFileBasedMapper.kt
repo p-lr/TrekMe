@@ -5,6 +5,8 @@ import com.peterlaurence.trekme.core.map.data.THUMBNAIL_NAME
 import com.peterlaurence.trekme.core.map.data.models.BoundaryKtx
 import com.peterlaurence.trekme.core.map.data.models.CalibrationPointKtx
 import com.peterlaurence.trekme.core.map.data.models.CreationDataKtx
+import com.peterlaurence.trekme.core.map.data.models.IgnBelgiumLayerDataKtx
+import com.peterlaurence.trekme.core.map.data.models.IgnBelgiumPrimaryLayerIdKtx
 import com.peterlaurence.trekme.core.map.data.models.IgnLayerDataKtx
 import com.peterlaurence.trekme.core.map.data.models.IgnOverlayLayerIdKtx
 import com.peterlaurence.trekme.core.map.data.models.IgnPrimaryLayerIdKtx
@@ -39,6 +41,7 @@ import com.peterlaurence.trekme.core.wmts.domain.model.IgnSpainData
 import com.peterlaurence.trekme.core.wmts.domain.model.LayerPropertiesIgn
 import com.peterlaurence.trekme.core.wmts.domain.model.MapSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.CyclOSM
+import com.peterlaurence.trekme.core.wmts.domain.model.IgnBelgiumData
 import com.peterlaurence.trekme.core.wmts.domain.model.OpenTopoMap
 import com.peterlaurence.trekme.core.wmts.domain.model.OrdnanceSurveyData
 import com.peterlaurence.trekme.core.wmts.domain.model.OsmAndHd
@@ -171,6 +174,7 @@ private fun LayerDataKtx.toDomain(): MapSourceData {
         is OrdnanceSurveyLayerDataKtx -> OrdnanceSurveyData
         is SwissLayerDataKtx -> SwissTopoData
         is UsgsLayerDataKtx -> UsgsData
+        is IgnBelgiumLayerDataKtx -> IgnBelgiumData
     }
 }
 
@@ -269,6 +273,7 @@ private fun MapSourceData.toData(): LayerDataKtx {
 
         is SwissTopoData -> SwissLayerDataKtx(primaryLayerId = SwissPrimaryLayerIdKtx.SwissTopo)
         is UsgsData -> UsgsLayerDataKtx(primaryLayerId = UsgsPrimaryLayerIdKtx.UsgsTopo)
+        is IgnBelgiumData -> IgnBelgiumLayerDataKtx(primaryLayerId = IgnBelgiumPrimaryLayerIdKtx.IgnBelgiumTopo)
     }
 }
 

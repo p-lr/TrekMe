@@ -2,6 +2,7 @@ package com.peterlaurence.trekme.core.wmts.data.dao
 
 import com.peterlaurence.trekme.core.map.domain.models.TileStreamProvider
 import com.peterlaurence.trekme.core.wmts.data.provider.TileStreamProviderIgn
+import com.peterlaurence.trekme.core.wmts.data.provider.TileStreamProviderIgnBelgium
 import com.peterlaurence.trekme.core.wmts.data.provider.TileStreamProviderIgnSpain
 import com.peterlaurence.trekme.core.wmts.data.provider.TileStreamProviderOSM
 import com.peterlaurence.trekme.core.wmts.data.provider.TileStreamProviderOrdnanceSurvey
@@ -10,6 +11,7 @@ import com.peterlaurence.trekme.core.wmts.data.provider.TileStreamProviderSwiss
 import com.peterlaurence.trekme.core.wmts.data.provider.TileStreamProviderUSGS
 import com.peterlaurence.trekme.core.wmts.data.provider.TileStreamWithAlpha
 import com.peterlaurence.trekme.core.wmts.data.urltilebuilder.UrlTileBuilderIgn
+import com.peterlaurence.trekme.core.wmts.data.urltilebuilder.UrlTileBuilderIgnBelgium
 import com.peterlaurence.trekme.core.wmts.data.urltilebuilder.UrlTileBuilderIgnSpain
 import com.peterlaurence.trekme.core.wmts.data.urltilebuilder.UrlTileBuilderOSM
 import com.peterlaurence.trekme.core.wmts.data.urltilebuilder.UrlTileBuilderOrdnanceSurvey
@@ -18,6 +20,7 @@ import com.peterlaurence.trekme.core.wmts.data.urltilebuilder.UrlTileBuilderUSGS
 import com.peterlaurence.trekme.core.wmts.domain.dao.ApiDao
 import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamProviderDao
 import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamReporter
+import com.peterlaurence.trekme.core.wmts.domain.model.IgnBelgiumData
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnSpainData
 import com.peterlaurence.trekme.core.wmts.domain.model.MapSourceData
@@ -74,6 +77,11 @@ class TileStreamProviderDaoImpl(
                 val api = apiDao.getOrdnanceSurveyApi() ?: return Result.failure(Exception("Ordnance survey Api fetch error"))
                 val urlTileBuilder = UrlTileBuilderOrdnanceSurvey(api)
                 TileStreamProviderOrdnanceSurvey(urlTileBuilder)
+            }
+
+            is IgnBelgiumData -> {
+                val urlTileBuilder = UrlTileBuilderIgnBelgium()
+                TileStreamProviderIgnBelgium(urlTileBuilder)
             }
         }
 

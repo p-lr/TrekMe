@@ -95,3 +95,20 @@ val ordnanceSurveyConfig = listOf(
         )
     )
 )
+
+val ignBelgiumConfig = listOf(
+    InitScaleAndScrollConfig(0.016787738f, 287963, 188014),
+    ScaleLimitsConfig(minScale = 0.002f, maxScale = 4f),
+    LevelLimitsConfig(7, 17),
+    ScaleForZoomOnPositionConfig(scale = 1f),
+    BoundariesConfig(
+        listOf(
+            BoundingBox(
+                minLat = 49.4542277635,
+                maxLat = 51.5056073315,
+                minLon = 2.51141671277,
+                maxLon = 6.57174320725
+            )
+        )
+    )
+)

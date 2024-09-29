@@ -37,6 +37,7 @@ import com.peterlaurence.trekme.core.map.domain.models.intersects
 import com.peterlaurence.trekme.core.settings.FlagSettings
 import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamProviderDao
 import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamReporter
+import com.peterlaurence.trekme.core.wmts.domain.model.IgnBelgiumData
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnClassic
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnSpainData
@@ -74,6 +75,7 @@ import com.peterlaurence.trekme.features.mapcreate.app.service.download.Download
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
 import com.peterlaurence.trekme.features.common.presentation.ui.component.PlaceMarker
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.BoundariesConfig
+import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.ignBelgiumConfig
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.contains
 import com.peterlaurence.trekme.util.ResultL
 import com.peterlaurence.trekme.util.checkInternet
@@ -675,6 +677,7 @@ class TrailMapViewModel @Inject constructor(
             is OsmSourceData -> osmConfig
             SwissTopoData -> swissTopoConfig
             UsgsData -> usgsConfig
+            IgnBelgiumData -> ignBelgiumConfig
         }
     }
 

@@ -20,6 +20,7 @@ import com.peterlaurence.trekme.core.wmts.domain.model.IgnSpainData
 import com.peterlaurence.trekme.core.wmts.domain.model.MapSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.MapSpec
 import com.peterlaurence.trekme.core.wmts.domain.model.CyclOSM
+import com.peterlaurence.trekme.core.wmts.domain.model.IgnBelgiumData
 import com.peterlaurence.trekme.core.wmts.domain.model.OpenTopoMap
 import com.peterlaurence.trekme.core.wmts.domain.model.OrdnanceSurveyData
 import com.peterlaurence.trekme.core.wmts.domain.model.OsmAndHd
@@ -151,7 +152,7 @@ class MapDownloadDaoImpl(
     private suspend fun postProcess(spec: NewDownloadSpec, mapSpec: MapSpec, destDir: File): Map {
         val mapOrigin = when (spec.source) {
             is IgnSourceData -> Ign(licensed = spec.source.layer == IgnClassic)
-            IgnSpainData, OrdnanceSurveyData, SwissTopoData, UsgsData -> Wmts(licensed = false)
+            IgnSpainData, OrdnanceSurveyData, SwissTopoData, UsgsData, IgnBelgiumData -> Wmts(licensed = false)
             is OsmSourceData -> when (spec.source.layer) {
                 CyclOSM, OpenTopoMap, WorldStreetMap, WorldTopoMap -> Wmts(licensed = false)
                 OsmAndHd, Outdoors -> Wmts(licensed = true)

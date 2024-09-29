@@ -15,6 +15,7 @@ class CheckTileStreamProviderDaoImpl : CheckTileStreamProviderDao {
             WmtsSource.USGS -> bitmapProvider.getBitmap(1, 1, 1) != null
             WmtsSource.IGN_SPAIN -> bitmapProvider.getBitmap(24, 31, 6) != null
             WmtsSource.ORDNANCE_SURVEY -> bitmapProvider.getBitmap(40, 61, 7) != null
+            WmtsSource.IGN_BE -> bitmapProvider.getBitmap(172, 262, 9) != null
         }
     }
 }
