@@ -72,9 +72,13 @@ private fun SourceRow(source: WmtsSource, onSourceClick: (WmtsSource) -> Unit) {
         ) {
             Column(
                 Modifier
-                    .padding(start = 16.dp, top = 24.dp, end = 8.dp)
+                    .padding(start = 16.dp, end = 8.dp)
                     .weight(1f)
             ) {
+                if (source == WmtsSource.IGN) {
+                    Spacer(Modifier.height(24.dp))
+                }
+
                 Text(
                     text = getTitleForSource(source),
                     fontSize = 24.sp,
