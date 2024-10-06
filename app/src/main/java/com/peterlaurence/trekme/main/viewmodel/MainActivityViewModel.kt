@@ -10,7 +10,6 @@ import com.peterlaurence.trekme.core.billing.domain.interactors.TrekmeExtendedIn
 import com.peterlaurence.trekme.core.billing.domain.interactors.TrekmeExtendedWithIgnInteractor
 import com.peterlaurence.trekme.core.billing.domain.model.GpsProStateOwner
 import com.peterlaurence.trekme.core.location.domain.model.InternalGps
-import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.core.map.domain.interactors.SetMapInteractor
 import com.peterlaurence.trekme.core.map.domain.interactors.UpdateMapsInteractor
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
@@ -22,7 +21,6 @@ import com.peterlaurence.trekme.events.FatalMessage
 import com.peterlaurence.trekme.events.WarningMessage
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
 import com.peterlaurence.trekme.main.shortcut.Shortcut
-import com.peterlaurence.trekme.util.android.hasLocationPermission
 import com.peterlaurence.trekme.util.map
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -56,7 +54,6 @@ class MainActivityViewModel @Inject constructor(
     private val updateMapsInteractor: UpdateMapsInteractor,
     private val downloadRepository: DownloadRepository,
     private val setMapInteractor: SetMapInteractor,
-    private val locationSource: LocationSource
 ) : ViewModel() {
     private var attemptedAtLeastOnce = false
 
@@ -89,13 +86,6 @@ class MainActivityViewModel @Inject constructor(
         viewModelScope.launch {
             if (attemptedAtLeastOnce) return@launch
             attemptedAtLeastOnce = true // remember that we tried once
-
-            /* Prefetch location now - useful to reduce wait time */
-            launch {
-                if (hasLocationPermission(app.applicationContext)) {
-                    locationSource.locationFlow.first()
-                }
-            }
 
             initTrekMeContext()
 
