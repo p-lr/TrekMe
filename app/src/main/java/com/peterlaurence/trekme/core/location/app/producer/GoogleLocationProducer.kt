@@ -27,9 +27,15 @@ import kotlin.time.TimeSource
 class GoogleLocationProducer(private val applicationContext: Context) : LocationProducer {
     private val fusedLocationClient: FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(applicationContext)
-    private val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 2000).apply {
-        setMaxUpdateDelayMillis(5000)
-    }.build()
+    private val locationRequest =
+        LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 2000).apply {
+            setMaxUpdateDelayMillis(5000)
+        }.build()
+    private val currentLocationRequest = CurrentLocationRequest.Builder()
+        .setMaxUpdateAgeMillis(30000)  // 30s
+        .setPriority(
+            Priority.PRIORITY_HIGH_ACCURACY
+        ).build()
     private val looper = Looper.getMainLooper()
 
     override val locationFlow: Flow<Location> by lazy {
@@ -38,21 +44,33 @@ class GoogleLocationProducer(private val applicationContext: Context) : Location
 
     private fun makeFlow(context: Context): Flow<Location> {
         val permission = ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.ACCESS_FINE_LOCATION
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
 
-        return callbackFlow {
-            val callback = object : LocationCallback() {
-                val timeSource = TimeSource.Monotonic
+        val timeSource = TimeSource.Monotonic
 
+        return callbackFlow {
+            fun onLocationReceived(loc: android.location.Location) {
+                val speed = if (loc.speed != 0f) loc.speed else null
+                val altitude = if (loc.altitude != 0.0) loc.altitude else null
+                trySend(
+                    Location(
+                        latitude = loc.latitude,
+                        longitude = loc.longitude,
+                        speed = speed,
+                        altitude = altitude,
+                        time = loc.time,
+                        markedTime = timeSource.markNow(),
+                        locationProducerInfo = InternalGps
+                    )
+                )
+            }
+
+            val callback = object : LocationCallback() {
                 override fun onLocationResult(locationResult: LocationResult) {
                     for (loc in locationResult.locations) {
-                        val speed = if (loc.speed != 0f) loc.speed else null
-                        val altitude = if (loc.altitude != 0.0) loc.altitude else null
-                        trySend(
-                            Location(loc.latitude, loc.longitude, speed, altitude, loc.time, timeSource.markNow(), InternalGps)
-                        )
+                        onLocationReceived(loc)
                     }
                 }
             }
@@ -76,6 +94,11 @@ class GoogleLocationProducer(private val applicationContext: Context) : Location
                     }
                 }
             }
+
+            /* Getting the current location right before requesting location updates. In some
+             * circumstances, this allows for less waiting time. */
+            fusedLocationClient.getCurrentLocation(currentLocationRequest, null)
+                .addOnSuccessListener(::onLocationReceived)
 
             requestLocationUpdates()
 
