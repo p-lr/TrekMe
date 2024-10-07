@@ -52,8 +52,8 @@ class GoogleLocationProducer(private val applicationContext: Context) : Location
 
         return callbackFlow {
             fun onLocationReceived(loc: android.location.Location) {
-                val speed = if (loc.speed != 0f) loc.speed else null
-                val altitude = if (loc.altitude != 0.0) loc.altitude else null
+                val speed = if (loc.hasSpeed()) loc.speed else null
+                val altitude = if (loc.hasAltitude()) loc.altitude else null
                 trySend(
                     Location(
                         latitude = loc.latitude,
@@ -75,9 +75,20 @@ class GoogleLocationProducer(private val applicationContext: Context) : Location
                 }
             }
 
-            /* Request location updates, with a retry in case of failure */
-            fun requestLocationUpdates(): Result<Unit> = runCatching {
-                if (permission) {
+            fun requestLocationUpdates() {
+                if (!permission) return
+
+                /* Getting the current location right before requesting location updates. In some
+                 * circumstances, this allows for less waiting time. */
+                runCatching {
+                    fusedLocationClient.getCurrentLocation(currentLocationRequest, null)
+                        .addOnSuccessListener {
+                            if (it != null) onLocationReceived(it)
+                        }
+                }
+
+                /* Request location updates, with a retry in case of failure */
+                runCatching {
                     fusedLocationClient.requestLocationUpdates(
                         locationRequest,
                         callback,
@@ -94,11 +105,6 @@ class GoogleLocationProducer(private val applicationContext: Context) : Location
                     }
                 }
             }
-
-            /* Getting the current location right before requesting location updates. In some
-             * circumstances, this allows for less waiting time. */
-            fusedLocationClient.getCurrentLocation(currentLocationRequest, null)
-                .addOnSuccessListener(::onLocationReceived)
 
             requestLocationUpdates()
 
