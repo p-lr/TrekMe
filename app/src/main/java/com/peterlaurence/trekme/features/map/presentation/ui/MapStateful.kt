@@ -381,11 +381,9 @@ private fun MapScaffold(
         floatingActionButton = {
             Column(Modifier.padding(bottom = if (geoStatistics != null) 30.dp else 0.dp)) {
                 if (rotationMode != RotationMode.NONE) {
-                    CompassFab(
+                    CompassComponent(
                         degrees = uiState.mapState.rotation,
-                        onClick = if (rotationMode == RotationMode.FREE) onCompassClick else {
-                            {}
-                        }
+                        onClick = if (rotationMode == RotationMode.FREE) onCompassClick else null
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
