@@ -363,7 +363,7 @@
     </string>
     <string name="background_location_track_follow_failure">The track follow feature can only work when the location permission is set to "Allow all the time". Please grant the permission in the app settings.</string>
     <string name="recording_imported_success">Successfully imported in %1$d files</string>
-    <string name="recording_imported_failure">Couldn\'t import %1$s</string>
+    <string name="recording_imported_failure">Couldn\'t import %1$d files</string>
     <string name="recording_edit_name_desc">Edit recording name</string>
     <string name="recording_import_desc">Import the recording into a map</string>
     <string name="recording_share_desc">Share a recording</string>

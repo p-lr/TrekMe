@@ -27,6 +27,7 @@ class ImportRecordingsInteractor @Inject constructor(
 ) {
     suspend fun importRecordings(uriList: List<Uri>, map: Map? = null) {
         val successCnt = AtomicInteger(0)
+        val errorCnt = AtomicInteger(0)
 
         supervisorScope {
             uriList.forEach { uri ->
@@ -40,6 +41,8 @@ class ImportRecordingsInteractor @Inject constructor(
                             /* Import in all map which intersect the recording */
                             importInAllMaps(excursion)
                         }
+                    } else {
+                        errorCnt.incrementAndGet()
                     }
                 }
             }
@@ -48,6 +51,9 @@ class ImportRecordingsInteractor @Inject constructor(
         if (uriList.isNotEmpty() && uriList.size == successCnt.get()) {
             val msg =
                 app.applicationContext.getString(R.string.recording_imported_success, uriList.size)
+            appEventBus.postMessage(StandardMessage(msg))
+        } else if (errorCnt.get() > 0) {
+            val msg = app.applicationContext.getString(R.string.recording_imported_failure, errorCnt.get())
             appEventBus.postMessage(StandardMessage(msg))
         }
     }

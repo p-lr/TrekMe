@@ -352,7 +352,7 @@
     <string name="no_elevations">Ce fichier GPX ne contient pas d\'information d\'altitude. TrekMe ne peut pas afficher le profil altimétrique.</string>
     <string name="recordings_menu_import">Importer des fichiers</string>
     <string name="recording_imported_success">%1$d fichiers importés avec succès</string>
-    <string name="recording_imported_failure">Erreur d\'import pour %1$s</string>
+    <string name="recording_imported_failure">Erreur d\'import pour %1$d fichiers</string>
     <string name="layer_ign_classic">IGN Classique</string>
     <string name="layer_ign_satellite">Vues aériennes</string>
     <string name="layer_osm_topo">Topo</string>
