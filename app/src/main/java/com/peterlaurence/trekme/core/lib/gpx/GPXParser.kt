@@ -230,7 +230,7 @@ private fun readName(parser: XmlPullParser): String {
 @Throws(IOException::class, XmlPullParserException::class)
 private fun readElevation(parser: XmlPullParser): Double? {
     parser.require(XmlPullParser.START_TAG, null, TAG_ELEVATION)
-    val ele = java.lang.Double.valueOf(readText(parser))
+    val ele = readText(parser).toDoubleOrNull()
     parser.require(XmlPullParser.END_TAG, null, TAG_ELEVATION)
     return ele
 }
