@@ -217,6 +217,8 @@ fun WmtsStateful(
                 viewModel.computeTilesNumber(lMin, lMax, data.p1.toDomain(), data.p2.toDomain())
             },
             tilesNumberLimit = data.tilesNumberLimit,
+            startMinLevel = data.startMinLevel,
+            startMaxLevel = data.startMaxLevel,
             onDownloadClicked = { minLevel, maxLevel ->
                 if (viewModel.onDownloadFormConfirmed(minLevel, maxLevel)) {
                     levelsDialogData = null

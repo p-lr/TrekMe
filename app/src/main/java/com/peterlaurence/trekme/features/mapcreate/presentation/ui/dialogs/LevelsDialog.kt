@@ -30,8 +30,8 @@ import java.util.*
 fun LevelsDialogStateful(
     minLevel: Int,
     maxLevel: Int,
-    startMinLevel: Int = 12,
-    startMaxLevel: Int = 16,
+    startMinLevel: Int,
+    startMaxLevel: Int,
     tilesNumberProvider: (minLevel: Int, maxLevel: Int) -> Long,
     tilesNumberLimit: Long? = null,
     onDownloadClicked: (minLevel: Int, maxLevel: Int) -> Unit = { _, _ -> },
@@ -41,10 +41,22 @@ fun LevelsDialogStateful(
     val step = 1f / range
 
     var min by rememberSaveable {
-        mutableFloatStateOf(normalizedValue(startMinLevel, minLevel, range))
+        mutableFloatStateOf(
+            normalizedValue(
+                startMinLevel.coerceAtMost(startMaxLevel).coerceIn(minLevel..maxLevel),
+                minLevel,
+                range
+            )
+        )
     }
     var max by rememberSaveable {
-        mutableFloatStateOf(normalizedValue(startMaxLevel, minLevel, range))
+        mutableFloatStateOf(
+            normalizedValue(
+                startMaxLevel.coerceIn(minLevel..maxLevel),
+                minLevel,
+                range
+            )
+        )
     }
 
     val minDenormalized = remember(min) {
@@ -284,6 +296,8 @@ fun LevelsDialogPreview() {
             maxLevel = 18,
             tilesNumberProvider = { min, max -> (max - min + 1) * 1000L },
             tilesNumberLimit = 50000,
+            startMinLevel = 12,
+            startMaxLevel = 16,
             onDownloadClicked = { min, max ->
                 println("Download using min=$min max=$max")
             }

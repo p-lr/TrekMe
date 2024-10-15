@@ -102,6 +102,16 @@ fun Long.toSizeInMo(): Long {
     return (this * TILE_SIZE_IN_MO).toLong()
 }
 
+/**
+ * Given a selected area, compute the optimized min level.
+ */
+fun getOptimizedMinLevel(point1: Point, point2: Point): Int? {
+    val (XLeft, YTop, XRight, YBottom) = orderCoordinates(point1, point2)
+    val d = min(abs(XRight- XLeft), abs(YTop - YBottom))
+    if (d == 0.0) return null
+    return (ln(6 * abs(X0) / d) / ln (2.0)).toInt()
+}
+
 
 private data class TopLeftToBottomRight(
     val XLeft: Double,

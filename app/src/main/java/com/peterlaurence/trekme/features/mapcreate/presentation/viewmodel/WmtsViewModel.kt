@@ -49,6 +49,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.usgsC
 import com.peterlaurence.trekme.features.mapcreate.domain.interactors.ParseGeoRecordInteractor
 import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToMercatorInteractor
 import com.peterlaurence.trekme.core.wmts.domain.tools.getNumberOfTiles
+import com.peterlaurence.trekme.core.wmts.domain.tools.getOptimizedMinLevel
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.ignBelgiumConfig
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.osmHdConfig
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.toDomain
@@ -514,6 +515,8 @@ class WmtsViewModel @Inject constructor(
         }
 
         val tilesNumberLimit = if (hasExtendedOffer.value) null else tileNumberLimit
+
+        val levelMinOpt = getOptimizedMinLevel(p1.toDomain(), p2.toDomain())
         val mapSourceBundle = if (levelConf != null) {
             DownloadFormData(
                 wmtsSource = wmtsSource,
@@ -521,6 +524,7 @@ class WmtsViewModel @Inject constructor(
                 p2 = p2,
                 levelMin = levelConf.levelMin,
                 levelMax = levelConf.levelMax,
+                startMinLevel = levelMinOpt ?: 14,
                 startMaxLevel = startMaxLevel ?: 16,
                 tilesNumberLimit = tilesNumberLimit
             )
