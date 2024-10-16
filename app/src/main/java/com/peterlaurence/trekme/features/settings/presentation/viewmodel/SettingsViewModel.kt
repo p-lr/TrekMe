@@ -41,6 +41,7 @@ class SettingsViewModel @Inject constructor(
     val defineScaleCenteredFlow: Flow<Boolean> = settings.getDefineScaleCentered()
     val scaleRatioCenteredFlow: Flow<Float> = settings.getScaleRatioCentered()
     val showScaleIndicatorFlow: Flow<Boolean> = settings.getShowScaleIndicator()
+    val showZoomIndicatorFlow: Flow<Boolean> = settings.getShowZoomIndicator()
     val trackFollowThreshold: Flow<Int> = settings.getTrackFollowThreshold()
     val purchaseFlow: StateFlow<Boolean> =
         hasOneExtendedOfferInteractor.getPurchaseFlow(viewModelScope)
@@ -92,6 +93,10 @@ class SettingsViewModel @Inject constructor(
 
     fun setShowScaleIndicator(show: Boolean) = viewModelScope.launch {
         settings.setShowScaleIndicator(show)
+    }
+
+    fun setShowZoomIndicator(show: Boolean) = viewModelScope.launch {
+        settings.setShowZoomIndicator(show)
     }
 
     /**

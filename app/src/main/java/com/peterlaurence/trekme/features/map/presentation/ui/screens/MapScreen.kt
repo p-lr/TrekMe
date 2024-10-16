@@ -1,7 +1,11 @@
 package com.peterlaurence.trekme.features.map.presentation.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -15,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
@@ -25,6 +30,7 @@ import com.peterlaurence.trekme.features.map.presentation.ui.components.GpsDataO
 import com.peterlaurence.trekme.features.map.presentation.ui.components.LandmarkLines
 import com.peterlaurence.trekme.features.map.presentation.ui.components.ScaleIndicator
 import com.peterlaurence.trekme.features.map.presentation.ui.components.TopOverlay
+import com.peterlaurence.trekme.features.map.presentation.ui.components.ZoomIndicator
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapUiState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.DistanceLineState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.ScaleIndicatorState
@@ -42,6 +48,7 @@ fun MapScreen(
     isShowingSpeed: Boolean,
     isShowingGpsData: Boolean,
     isShowingScaleIndicator: Boolean,
+    isShowingZoomIndicator: Boolean,
     locationFlow: Flow<Location>,
     elevationFix: Int,
     hasElevationFix: Boolean,
@@ -84,10 +91,27 @@ fun MapScreen(
                     isShowingDistance = isShowingDistance
                 )
             }
-            if (isShowingScaleIndicator) {
-                ScaleIndicator(
-                    scaleIndicatorStateProvider = { mapUiState.scaleIndicatorState }
-                )
+            if (isShowingScaleIndicator || isShowingZoomIndicator) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    if (isShowingScaleIndicator) {
+                        ScaleIndicator(
+                            modifier.padding(top = 8.dp),
+                            scaleIndicatorStateProvider = { mapUiState.scaleIndicatorState }
+                        )
+                    }
+
+                    if (isShowingZoomIndicator) {
+                        val zoom by mapUiState.zoomIndicatorState.collectAsState()
+                        zoom?.also {
+                            ZoomIndicator(Modifier.padding(8.dp), zoom = it.toFloat())
+                        }
+                    }
+
+                }
+
             }
 
             recordingButtons()
@@ -123,12 +147,14 @@ fun MapScreen(
  */
 @Composable
 private fun ScaleIndicator(
+    modifier: Modifier = Modifier,
     scaleIndicatorStateProvider: () -> ScaleIndicatorState,
     color: Color = MaterialTheme.colorScheme.tertiaryContainer
 ) {
     val state = scaleIndicatorStateProvider()
 
     ScaleIndicator(
+        modifier = modifier,
         widthPx = state.widthPx,
         widthRatio = state.widthRatio,
         scaleText = state.scaleText,

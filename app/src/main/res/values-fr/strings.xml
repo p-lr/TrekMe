@@ -257,6 +257,7 @@
     <string name="module_check_unknown">Imposible de vérifier le module</string>
     <string name="preference_zoom_when_centered">Zoom quand centré</string>
     <string name="preference_change_scale_when_centering">Définir zoom quand centré</string>
+    <string name="preference_show_zoom_indicator">Afficher le niveau de zoom</string>
     <string name="import_title">Importer depuis des archives</string>
     <string name="import_desc">Importer des cartes préalablement sauvegardées depuis la liste des cartes > MODIFIER > Sauvegarder</string>
     <string name="ordnance_survey_source_description">Carte de Grande-Bretagne</string>

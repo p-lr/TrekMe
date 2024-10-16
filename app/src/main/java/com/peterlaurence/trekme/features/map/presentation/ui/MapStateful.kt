@@ -77,6 +77,7 @@ fun MapStateful(
     val isShowingGpsData by viewModel.isShowingGpsDataFlow().collectAsState(initial = false)
     val isShowingScaleIndicator by viewModel.settings.getShowScaleIndicator()
         .collectAsState(initial = true)
+    val isShowingZoomIndicator by viewModel.settings.getShowZoomIndicator().collectAsState(initial = false)
     val stats by statisticsViewModel.stats.collectAsState(initial = null)
     val rotationMode by viewModel.settings.getRotationMode()
         .collectAsState(initial = RotationMode.NONE)
@@ -199,6 +200,7 @@ fun MapStateful(
                     isLockedOnpPosition,
                     isShowingGpsData,
                     isShowingScaleIndicator,
+                    isShowingZoomIndicator,
                     rotationMode,
                     locationFlow,
                     elevationFix,
@@ -321,6 +323,7 @@ private fun MapScaffold(
     isLockedOnPosition: Boolean,
     isShowingGpsData: Boolean,
     isShowingScaleIndicator: Boolean,
+    isShowingZoomIndicator: Boolean,
     rotationMode: RotationMode,
     locationFlow: Flow<Location>,
     elevationFix: Int,
@@ -409,6 +412,7 @@ private fun MapScaffold(
                 isShowingSpeed = isShowingSpeed,
                 isShowingGpsData = isShowingGpsData,
                 isShowingScaleIndicator = isShowingScaleIndicator,
+                isShowingZoomIndicator = isShowingZoomIndicator,
                 locationFlow = locationFlow,
                 elevationFix = elevationFix,
                 hasElevationFix = hasElevationFix,

@@ -52,6 +52,7 @@ import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.Route
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.ScaleIndicatorLayer
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.ScaleIndicatorState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.TrackFollowLayer
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.ZoomIndicatorLayer
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
 import com.peterlaurence.trekme.util.map as mapStateFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -216,6 +217,12 @@ class MapViewModel @Inject constructor(
         mapInteractor
     )
 
+    private val zoomIndicatorLayer = ZoomIndicatorLayer(
+        viewModelScope,
+        settings.getShowZoomIndicator(),
+        dataStateFlow,
+    )
+
     val routeLayer = RouteLayer(
         scope = viewModelScope,
         dataStateFlow = dataStateFlow,
@@ -376,11 +383,12 @@ class MapViewModel @Inject constructor(
         val landmarkLinesState = LandmarkLinesState(mapState, map)
         val distanceLineState = DistanceLineState(mapState, map)
         val mapUiState = MapUiState(
-            mapState,
-            landmarkLinesState,
-            distanceLineState,
-            scaleIndicatorLayer.state,
-            map.name
+            mapState = mapState,
+            landmarkLinesState = landmarkLinesState,
+            distanceLineState = distanceLineState,
+            scaleIndicatorState = scaleIndicatorLayer.state,
+            zoomIndicatorState = zoomIndicatorLayer.zoom,
+            mapNameFlow = map.name
         )
         _uiState.value = mapUiState
     }
@@ -404,6 +412,7 @@ data class MapUiState(
     val landmarkLinesState: LandmarkLinesState,
     val distanceLineState: DistanceLineState,
     val scaleIndicatorState: ScaleIndicatorState,
+    val zoomIndicatorState: StateFlow<Double?>,
     val mapNameFlow: StateFlow<String>
 ) : UiState
 

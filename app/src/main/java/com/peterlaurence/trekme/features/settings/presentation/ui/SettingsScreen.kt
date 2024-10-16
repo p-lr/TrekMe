@@ -67,6 +67,7 @@ fun SettingsStateful(
     val appDir by viewModel.appDirFlow.collectAsState(null)
     val maxScale by viewModel.maxScaleFlow.collectAsState(null)
     val scaleIndicatorChecked by viewModel.showScaleIndicatorFlow.collectAsState(initial = false)
+    val zoomIndicatorChecked by viewModel.showZoomIndicatorFlow.collectAsState(initial = false)
     val defineScaleChecked by viewModel.defineScaleCenteredFlow.collectAsState(initial = false)
     val currentZoom by viewModel.currentZoom.collectAsState()
     val zoomWhenCentered by viewModel.scaleRatioCenteredFlow.collectAsState(initial = null)
@@ -87,7 +88,9 @@ fun SettingsStateful(
         maxScale = maxScale,
         onMaxScaleChange = { viewModel.setMaxScale(it) },
         scaleIndicatorChecked = scaleIndicatorChecked,
+        zoomIndicatorChecked = zoomIndicatorChecked,
         onScaleIndicatorChange = { viewModel.setShowScaleIndicator(!scaleIndicatorChecked) },
+        onZoomIndicatorToggle = { viewModel.setShowZoomIndicator(!zoomIndicatorChecked) },
         defineScaleChecked = defineScaleChecked,
         onDefineScaleChanged = { viewModel.setDefineScaleCentered(!defineScaleChecked) },
         currentZoom = currentZoom,
@@ -121,7 +124,9 @@ private fun SettingsScreen(
     maxScale: Float?,
     onMaxScaleChange: (Float) -> Unit,
     scaleIndicatorChecked: Boolean,
+    zoomIndicatorChecked: Boolean,
     onScaleIndicatorChange: () -> Unit,
+    onZoomIndicatorToggle: () -> Unit,
     defineScaleChecked: Boolean,
     onDefineScaleChanged: () -> Unit,
     currentZoom: Int?,
@@ -212,7 +217,9 @@ private fun SettingsScreen(
                 maxScale,
                 onMaxScaleChange,
                 scaleIndicatorChecked,
+                zoomIndicatorChecked,
                 onScaleIndicatorChange,
+                onZoomIndicatorToggle,
                 defineScaleChecked,
                 onDefineScaleChanged,
                 currentZoom,
@@ -311,7 +318,9 @@ private fun MapSetting(
     maxScale: Float?,
     onMaxScaleChange: (Float) -> Unit,
     scaleIndicatorChecked: Boolean,
+    zoomIndicatorChecked: Boolean,
     onScaleIndicatorChange: () -> Unit,
+    onZoomIndicatorToggle: () -> Unit,
     defineScaleChecked: Boolean,
     onDefineScaleChanged: () -> Unit,
     currentZoom: Int?,
@@ -343,6 +352,12 @@ private fun MapSetting(
     )
 
     if (isShowingAdvancedSettings) {
+        ToggleSetting(
+            name = stringResource(R.string.preference_show_zoom_indicator),
+            checked = zoomIndicatorChecked,
+            onToggle = onZoomIndicatorToggle
+        )
+
         ToggleSetting(
             name = stringResource(id = R.string.preference_change_scale_when_centering),
             checked = defineScaleChecked,

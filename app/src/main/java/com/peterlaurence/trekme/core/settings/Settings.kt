@@ -56,6 +56,7 @@ class Settings @Inject constructor(
     private val lastMapId = stringPreferencesKey("lastMapId")
     private val defineScaleWhenCentered = booleanPreferencesKey("defineScaleWhenCentered")
     private val showScaleIndicator = booleanPreferencesKey("showScaleIndicator")
+    private val showZoomIndicator = booleanPreferencesKey("showZoomIndicator")
     private val scaleRatioCentered = floatPreferencesKey("scaleRatioCentered")
     private val measurementSystem = stringPreferencesKey("measurementSystem")
     private val locationProducerInfo = stringPreferencesKey("locationProducerInfo")
@@ -222,6 +223,16 @@ class Settings @Inject constructor(
     suspend fun setShowScaleIndicator(show: Boolean) {
         dataStore.safeEdit {
             it[showScaleIndicator] = show
+        }
+    }
+
+    fun getShowZoomIndicator(): Flow<Boolean> = dataStore.safeData.map {
+        it[showZoomIndicator] ?: false
+    }
+
+    suspend fun setShowZoomIndicator(show: Boolean) {
+        dataStore.safeEdit {
+            it[showZoomIndicator] = show
         }
     }
 

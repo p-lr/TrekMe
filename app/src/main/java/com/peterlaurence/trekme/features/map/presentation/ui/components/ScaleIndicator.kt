@@ -22,13 +22,14 @@ import com.peterlaurence.trekme.util.pxToDp
 
 @Composable
 fun ScaleIndicator(
+    modifier: Modifier = Modifier,
     widthPx: Int,
     widthRatio: Float,
     scaleText: String,
     color: Color
 ) {
     Box(
-        Modifier.height(25.dp),
+        modifier.height(25.dp),
         contentAlignment = Alignment.CenterStart
     ) {
         Canvas(

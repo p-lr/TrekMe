@@ -570,6 +570,7 @@
     <string name="preference_rotate_free">Free</string>
     <string name="preference_change_scale_when_centering_key" translatable="false">pref_change_scale_when_centering</string>
     <string name="preference_change_scale_when_centering">Define zoom when centering on position</string>
+    <string name="preference_show_zoom_indicator">Show zoom indicator</string>
     <string name="preference_show_scale_indicator_key" translatable="false">pref_show_scale_indicator</string>
     <string name="preference_show_scale_indicator">Show scale indicator</string>
     <string name="preference_zoom_when_centered_key" translatable="false">pref_scale_zoom_when_centered</string>
