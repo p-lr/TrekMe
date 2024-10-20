@@ -1,11 +1,20 @@
+@file:OptIn(ExperimentalFoundationApi::class)
+
 package com.peterlaurence.trekme.features.map.presentation.ui
 
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.view.Surface
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.exponentialDecay
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.AnchoredDraggableState
+import androidx.compose.foundation.gestures.DraggableAnchors
+import androidx.compose.foundation.gestures.snapTo
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
@@ -14,11 +23,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.Hyphens
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
@@ -29,6 +41,9 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
 import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.core.settings.RotationMode
+import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.BottomSheetCustom
+import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.DragHandle
+import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.States
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingScreen
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.md_theme_light_background
@@ -85,6 +100,20 @@ fun MapStateful(
     val lifecycleOwner = LocalLifecycleOwner.current
     val locationFlow = viewModel.locationFlow
     val elevationFix by viewModel.elevationFixFlow.collectAsState()
+
+    val density = LocalDensity.current
+    val anchoredDraggableState = remember {
+        AnchoredDraggableState(
+            initialValue = States.COLLAPSED,
+            positionalThreshold = { with(density) { 56.dp.toPx() } },
+            velocityThreshold = { with(density) { 125.dp.toPx() } },
+            snapAnimationSpec = tween(
+                durationMillis = 300,
+                easing = FastOutSlowInEasing
+            ),
+            decayAnimationSpec = exponentialDecay(),
+        )
+    }
 
     LaunchedEffectWithLifecycle {
         viewModel.liveRouteLayer.drawLiveRoute()
@@ -186,50 +215,84 @@ fun MapStateful(
         is MapUiState -> {
             val mapUiState = uiState as MapUiState
             val name by mapUiState.mapNameFlow.collectAsStateWithLifecycle()
-            /* Always use the light theme background (dark theme or not). Done this way, it
-             * doesn't add a GPU overdraw. */
-            TrekMeTheme(darkThemeBackground = md_theme_light_background) {
-                MapScaffold(
-                    mapUiState,
-                    name,
-                    snackbarHostState,
-                    isShowingOrientation,
-                    isShowingDistance,
-                    isShowingDistanceOnTrack,
-                    isShowingSpeed,
-                    isLockedOnpPosition,
-                    isShowingGpsData,
-                    isShowingScaleIndicator,
-                    isShowingZoomIndicator,
-                    rotationMode,
-                    locationFlow,
-                    elevationFix,
-                    geoStatistics = stats,
-                    hasElevationFix = purchased,
-                    hasBeacons = purchased,
-                    hasTrackFollow = purchased,
-                    hasMarkerManage = purchased,
-                    onMainMenuClick = onMainMenuClick,
-                    onManageTracks = onNavigateToTracksManage,
-                    onManageMarkers = onNavigateToMarkersManage,
-                    onToggleShowOrientation = viewModel::toggleShowOrientation,
-                    onAddMarker = viewModel.markerLayer::addMarker,
-                    onAddLandmark = viewModel.landmarkLayer::addLandmark,
-                    onAddBeacon = viewModel.beaconLayer::addBeacon,
-                    onShowDistance = viewModel.distanceLayer::toggleDistance,
-                    onToggleDistanceOnTrack = viewModel.routeLayer::toggleDistanceOnTrack,
-                    onToggleSpeed = viewModel::toggleSpeed,
-                    onToggleLockOnPosition = viewModel.locationOrientationLayer::toggleLockedOnPosition,
-                    onToggleShowGpsData = viewModel::toggleShowGpsData,
-                    onFollowTrack = { viewModel.initiateTrackFollow() },
-                    onPositionFabClick = viewModel.locationOrientationLayer::centerOnPosition,
-                    onCompassClick = viewModel::alignToNorth,
-                    onElevationFixUpdate = viewModel::onElevationFixUpdate,
-                    onNavigateToShop = onNavigateToShop,
-                    recordingButtons = {
-                        RecordingFabStateful(gpxRecordServiceViewModel)
+
+            BoxWithConstraints {
+                val screenHeightDp = maxHeight
+                val screenHeightPx = with(LocalDensity.current) {
+                    screenHeightDp.toPx()
+                }
+                val navBarHeightDp = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                val navBarHeightPx = with(LocalDensity.current) {
+                    navBarHeightDp.toPx()
+                }
+                val geoStatisticsBannerHeight = with(LocalDensity.current) {
+                    30.dp.toPx()
+                }
+
+                val bottomSheetOffset by remember(screenHeightPx, stats) {
+                    derivedStateOf {
+                        if (anchoredDraggableState.currentValue == States.COLLAPSED) {
+                            if (stats != null) geoStatisticsBannerHeight else 0f
+                        } else {
+                            val offset = anchoredDraggableState.offset
+                            if (!offset.isNaN()) {
+                                screenHeightPx - offset - navBarHeightPx
+                            } else 0f
+                        }
                     }
-                )
+                }
+
+
+                /* Always use the light theme background (dark theme or not). Done this way, it
+                 * doesn't add a GPU overdraw. */
+                TrekMeTheme(darkThemeBackground = md_theme_light_background) {
+                    MapScaffold(
+                        mapUiState,
+                        name,
+                        snackbarHostState,
+                        isShowingOrientation,
+                        isShowingDistance,
+                        isShowingDistanceOnTrack,
+                        isShowingSpeed,
+                        isLockedOnpPosition,
+                        isShowingGpsData,
+                        isShowingScaleIndicator,
+                        isShowingZoomIndicator,
+                        rotationMode,
+                        locationFlow,
+                        elevationFix,
+                        geoStatistics = stats,
+                        hasElevationFix = purchased,
+                        hasBeacons = purchased,
+                        hasTrackFollow = purchased,
+                        hasMarkerManage = purchased,
+                        bottomSheetOffset = bottomSheetOffset,
+                        onMainMenuClick = onMainMenuClick,
+                        onManageTracks = onNavigateToTracksManage,
+                        onManageMarkers = onNavigateToMarkersManage,
+                        onToggleShowOrientation = viewModel::toggleShowOrientation,
+                        onAddMarker = viewModel.markerLayer::addMarker,
+                        onAddLandmark = viewModel.landmarkLayer::addLandmark,
+                        onAddBeacon = viewModel.beaconLayer::addBeacon,
+                        onShowDistance = viewModel.distanceLayer::toggleDistance,
+                        onToggleDistanceOnTrack = viewModel.routeLayer::toggleDistanceOnTrack,
+                        onToggleSpeed = viewModel::toggleSpeed,
+                        onToggleLockOnPosition = viewModel.locationOrientationLayer::toggleLockedOnPosition,
+                        onToggleShowGpsData = viewModel::toggleShowGpsData,
+                        onFollowTrack = { viewModel.initiateTrackFollow() },
+                        onPositionFabClick = viewModel.locationOrientationLayer::centerOnPosition,
+                        onCompassClick = viewModel::alignToNorth,
+                        onElevationFixUpdate = viewModel::onElevationFixUpdate,
+                        onNavigateToShop = onNavigateToShop,
+                        recordingButtons = {
+                            RecordingFabStateful(gpxRecordServiceViewModel)
+                        }
+                    )
+                }
+
+                if (anchoredDraggableState.currentValue != States.COLLAPSED) {
+                    BottomSheet(anchoredDraggableState, screenHeightDp, screenHeightPx)
+                }
             }
         }
 
@@ -332,6 +395,7 @@ private fun MapScaffold(
     hasBeacons: Boolean,
     hasTrackFollow: Boolean,
     hasMarkerManage: Boolean,
+    bottomSheetOffset: Float,
     onMainMenuClick: () -> Unit,
     onManageTracks: () -> Unit,
     onManageMarkers: () -> Unit,
@@ -382,7 +446,12 @@ private fun MapScaffold(
             )
         },
         floatingActionButton = {
-            Column(Modifier.padding(bottom = if (geoStatistics != null) 30.dp else 0.dp)) {
+            Column(
+                Modifier
+                    .graphicsLayer {
+                        translationY = -bottomSheetOffset
+                    }
+            ) {
                 if (rotationMode != RotationMode.NONE) {
                     CompassComponent(
                         degrees = uiState.mapState.rotation,
@@ -424,6 +493,48 @@ private fun MapScaffold(
             }
         }
     }
+}
+
+@Composable
+private fun BottomSheet(
+    anchoredDraggableState: AnchoredDraggableState<States>,
+    screenHeightDp: Dp,
+    screenHeightPx: Float
+) {
+    val expandedRatio = 0.5f
+    val peakedRatio = 0.3f
+
+    val anchors = remember {
+        DraggableAnchors {
+            States.EXPANDED at screenHeightPx * (1 - expandedRatio)
+            States.PEAKED at screenHeightPx * (1 - peakedRatio)
+            States.COLLAPSED at screenHeightPx
+        }
+    }
+
+    SideEffect {
+        anchoredDraggableState.updateAnchors(anchors)
+    }
+
+    BottomSheetCustom(
+        state = anchoredDraggableState,
+        fullHeight = screenHeightDp * expandedRatio,
+        header = {
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                DragHandle()
+            }
+        },
+        content = {
+            repeat(10) {
+                item(it) {
+                    Text("Hello", color = MaterialTheme.colorScheme.onSurface)
+                }
+            }
+        }
+    )
 }
 
 @Composable

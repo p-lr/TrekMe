@@ -2,6 +2,7 @@ package com.peterlaurence.trekme.features.map.presentation.ui.components
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -24,7 +25,7 @@ fun StatsPanel(
     stats: GeoStatistics,
 ) {
     FlowRow(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface),
         mainAxisAlignment = FlowMainAxisAlignment.SpaceEvenly
     ) {
         StatWithImage(
@@ -60,6 +61,6 @@ private fun StatWithImage(statText: String, @DrawableRes imageId: Int) {
             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.secondary)
         )
         Spacer(modifier = Modifier.width(5.dp))
-        Text(text = statText, color = MaterialTheme.colorScheme.onBackground)
+        Text(text = statText, color = MaterialTheme.colorScheme.onSurface)
     }
 }
