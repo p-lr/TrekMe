@@ -232,11 +232,12 @@ class MapViewModel @Inject constructor(
         excursionInteractor = excursionInteractor,
         mapExcursionInteractor = mapExcursionInteractor,
         onRouteClick = { route, mapState, map, excursionData ->
-            println("xxxxx clik on ${route.id}")
-            if (excursionData != null) {
-                println("xxxx part of excursion ${excursionData.excursionId} ${excursionData.routes.size}")
-            }
             val handled = trackFollowLayer.handleOnPathClick(route.id, mapState, map)
+            if (!handled) {
+                viewModelScope.launch {
+                    _events.send(MapEvent.SHOW_TRACK_BOTTOM_SHEET)
+                }
+            }
         },
     )
 
@@ -432,5 +433,6 @@ enum class MapEvent {
     CURRENT_LOCATION_OUT_OF_BOUNDS,
     AWAITING_LOCATION,
     TRACK_TO_FOLLOW_SELECTED,
-    TRACK_TO_FOLLOW_ALREADY_RUNNING
+    TRACK_TO_FOLLOW_ALREADY_RUNNING,
+    SHOW_TRACK_BOTTOM_SHEET
 }

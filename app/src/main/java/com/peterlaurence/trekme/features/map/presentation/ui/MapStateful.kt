@@ -191,6 +191,11 @@ fun MapStateful(
             MapEvent.TRACK_TO_FOLLOW_ALREADY_RUNNING -> {
                 showTrackFollowDialog = true
             }
+            MapEvent.SHOW_TRACK_BOTTOM_SHEET -> {
+                scope.launch {
+                    anchoredDraggableState.snapTo(States.EXPANDED)
+                }
+            }
         }
     }
 
