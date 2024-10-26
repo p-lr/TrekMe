@@ -230,7 +230,14 @@ class MapViewModel @Inject constructor(
         goToExcursionFlow = mapFeatureEvents.goToExcursion,
         routeInteractor = routeInteractor,
         excursionInteractor = excursionInteractor,
-        mapExcursionInteractor = mapExcursionInteractor
+        mapExcursionInteractor = mapExcursionInteractor,
+        onRouteClick = { route, mapState, map, excursionData ->
+            println("xxxxx clik on ${route.id}")
+            if (excursionData != null) {
+                println("xxxx part of excursion ${excursionData.excursionId} ${excursionData.routes.size}")
+            }
+            val handled = trackFollowLayer.handleOnPathClick(route.id, mapState, map)
+        },
     )
 
     val liveRouteLayer = LiveRouteLayer(dataStateFlow, routeInteractor, gpxRecordEvents)

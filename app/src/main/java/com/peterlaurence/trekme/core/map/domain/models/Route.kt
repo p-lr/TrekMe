@@ -15,7 +15,7 @@ class Route(
     initialVisibility: Boolean = true,
     initialMarkers: List<Marker> = emptyList(),
     initialColor: String? = null, // In the format "#AARRGGBB"
-    var elevationTrusted: Boolean = false,
+    val elevationTrusted: Boolean = false,
 ) {
     val id: String = id ?: UUID.randomUUID().toString()
 

@@ -30,11 +30,9 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ovh.plrapps.mapcompose.api.addPath
-import ovh.plrapps.mapcompose.api.allPaths
 import ovh.plrapps.mapcompose.api.getPathData
 import ovh.plrapps.mapcompose.api.hasPath
 import ovh.plrapps.mapcompose.api.isPathWithinRange
-import ovh.plrapps.mapcompose.api.onPathClick
 import ovh.plrapps.mapcompose.api.removePath
 import ovh.plrapps.mapcompose.api.updatePath
 import ovh.plrapps.mapcompose.ui.paths.PathData
@@ -56,6 +54,8 @@ class TrackFollowLayer(
 
     private val _events = Channel<Event>(1)
     val events = _events.receiveAsFlow()
+
+    private var isAwaitingTrackClick = false
 
     init {
         scope.launch {
@@ -93,7 +93,7 @@ class TrackFollowLayer(
      * 1. Check that location is enabled and that battery optimization is disabled
      * 2. Check for background location permission. If the permission isn't granted, stop there and
      *    warn the user.
-     * 3. Make paths clickable and start the service upon path selection
+     * 3. Set flag to await path selection and notify user.
      */
     fun start() = scope.launch {
         /* Step 1 */
@@ -111,28 +111,20 @@ class TrackFollowLayer(
         }
 
         /* Step 3 */
-        val (map, mapState) = dataStateFlow.firstOrNull() ?: return@launch
+        isAwaitingTrackClick = true
         _events.send(Event.SelectTrackToFollow)
+    }
 
-        mapState.onPathClick { id, _, _ ->
+    fun handleOnPathClick(id: String, mapState: MapState, map: Map): Boolean {
+        return if (isAwaitingTrackClick) {
+            isAwaitingTrackClick = false
             val pathData = mapState.getPathData(id)
             if (pathData != null) {
                 onTrackSelected()
                 startTrackFollowService(pathData, map, id)
             }
-
-            /* Now that selection is done, set paths to not clickable */
-            mapState.allPaths { p ->
-                updatePath(p.id, clickable = false)
-            }
-        }
-
-        mapState.allPaths { p ->
-            /* Some paths, like the live route, shouldn't be clickable */
-            if (p.zIndex == 0f) {
-                updatePath(p.id, clickable = true)
-            }
-        }
+            true
+        } else false
     }
 
     private suspend fun checkLocationAndBatteryOpt() {
