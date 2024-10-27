@@ -320,6 +320,7 @@
         The beacon radius is 100m by default, but can be changed.\nThe alert is a sonar sound effect and a vibration.
         \n\nWhen a map has beacons, a service runs in the background. The purpose of this service is to alert you when you get close to a beacon.
     </string>
+    <string name="no_elevation_track">This track has no elevation data.</string>
 
     <!-- Record list -->
     <string name="fragment_recording" translatable="false">FragmentRecording</string>

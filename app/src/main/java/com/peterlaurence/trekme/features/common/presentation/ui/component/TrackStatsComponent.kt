@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.features.common.presentation.ui.component
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -20,12 +21,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
+import com.peterlaurence.trekme.core.georecord.domain.model.hasElevation
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatDistance
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatDuration
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -87,91 +91,142 @@ fun TrackStats(geoStatistics: GeoStatistics) {
                 Text(text = stringResource(id = R.string.duration_stat), fontSize = 12.sp)
             }
 
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                val verticalDrop = remember(geoStatistics) {
-                    val drop =
-                        (geoStatistics.elevationMax ?: 0.0) - (geoStatistics.elevationMin ?: 0.0)
-                    formatDistance(drop)
-                }
-                Icon(
-                    painter = painterResource(id = R.drawable.vertical_drop),
-                    contentDescription = null
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Row {
-                    Text(
-                        modifier = Modifier.alignByBaseline(),
-                        text = verticalDrop.substringBefore(' '),
-                        fontWeight = FontWeight.Bold
+            if (geoStatistics.hasElevation) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    val verticalDrop = remember(geoStatistics) {
+                        val drop =
+                            (geoStatistics.elevationMax ?: 0.0) - (geoStatistics.elevationMin
+                                ?: 0.0)
+                        formatDistance(drop)
+                    }
+                    Icon(
+                        painter = painterResource(id = R.drawable.vertical_drop),
+                        contentDescription = null
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        modifier = Modifier.alignByBaseline(),
-                        text = verticalDrop.substringAfter(' '),
-                        fontSize = 12.sp
-                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row {
+                        Text(
+                            modifier = Modifier.alignByBaseline(),
+                            text = verticalDrop.substringBefore(' '),
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            modifier = Modifier.alignByBaseline(),
+                            text = verticalDrop.substringAfter(' '),
+                            fontSize = 12.sp
+                        )
+                    }
+                    Text(text = stringResource(id = R.string.vertical_drop_stat), fontSize = 12.sp)
                 }
-                Text(text = stringResource(id = R.string.vertical_drop_stat), fontSize = 12.sp)
-            }
 
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                val verticalDrop = remember(geoStatistics) {
-                    formatDistance(geoStatistics.elevationUpStack)
-                }
-                Icon(
-                    painter = painterResource(id = R.drawable.vertical_ascent),
-                    contentDescription = null
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Row {
-                    Text(
-                        modifier = Modifier.alignByBaseline(),
-                        text = verticalDrop.substringBefore(' '),
-                        fontWeight = FontWeight.Bold
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    val verticalDrop = remember(geoStatistics) {
+                        formatDistance(geoStatistics.elevationUpStack)
+                    }
+                    Icon(
+                        painter = painterResource(id = R.drawable.vertical_ascent),
+                        contentDescription = null
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row {
+                        Text(
+                            modifier = Modifier.alignByBaseline(),
+                            text = verticalDrop.substringBefore(' '),
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            modifier = Modifier.alignByBaseline(),
+                            text = verticalDrop.substringAfter(' '),
+                            fontSize = 12.sp
+                        )
+                    }
                     Text(
-                        modifier = Modifier.alignByBaseline(),
-                        text = verticalDrop.substringAfter(' '),
+                        text = stringResource(id = R.string.vertical_ascent_stat),
                         fontSize = 12.sp
                     )
                 }
-                Text(text = stringResource(id = R.string.vertical_ascent_stat), fontSize = 12.sp)
-            }
 
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                val verticalDrop = remember(geoStatistics) {
-                    formatDistance(geoStatistics.elevationDownStack)
-                }
-                Icon(
-                    painter = painterResource(id = R.drawable.vertical_descent),
-                    contentDescription = null
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Row {
-                    Text(
-                        modifier = Modifier.alignByBaseline(),
-                        text = "-" + verticalDrop.substringBefore(' '),
-                        fontWeight = FontWeight.Bold
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    val verticalDrop = remember(geoStatistics) {
+                        formatDistance(geoStatistics.elevationDownStack)
+                    }
+                    Icon(
+                        painter = painterResource(id = R.drawable.vertical_descent),
+                        contentDescription = null
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row {
+                        Text(
+                            modifier = Modifier.alignByBaseline(),
+                            text = "-" + verticalDrop.substringBefore(' '),
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            modifier = Modifier.alignByBaseline(),
+                            text = verticalDrop.substringAfter(' '),
+                            fontSize = 12.sp
+                        )
+                    }
                     Text(
-                        modifier = Modifier.alignByBaseline(),
-                        text = verticalDrop.substringAfter(' '),
+                        text = stringResource(id = R.string.vertical_descent_stat),
                         fontSize = 12.sp
                     )
                 }
-                Text(text = stringResource(id = R.string.vertical_descent_stat), fontSize = 12.sp)
             }
+        }
+    }
+}
+
+@Preview()
+@Composable
+private fun TrackStatsPreview() {
+    TrekMeTheme {
+        Box {
+            TrackStats(
+                GeoStatistics(
+                    distance = 12568.2,
+                    elevationMax = 2654.0,
+                    elevationMin = 1826.4,
+                    elevationUpStack = 486.0,
+                    elevationDownStack = 274.6,
+                    durationInSecond = 23522,
+                    avgSpeed = 2.6,
+                    boundingBox = null
+                )
+            )
+        }
+    }
+}
+
+@Preview(locale = "fr")
+@Composable
+private fun TrackStatsPreview2() {
+    TrekMeTheme {
+        Box {
+            TrackStats(
+                GeoStatistics(
+                    distance = 12568.2,
+                    elevationMax = null,
+                    elevationMin = null,
+                    elevationUpStack = 486.0,
+                    elevationDownStack = 274.6,
+                    durationInSecond = 23522,
+                    avgSpeed = 2.6,
+                    boundingBox = null
+                )
+            )
         }
     }
 }

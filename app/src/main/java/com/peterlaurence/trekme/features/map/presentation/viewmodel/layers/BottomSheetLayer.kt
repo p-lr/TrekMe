@@ -20,6 +20,9 @@ class BottomSheetLayer(
     val state = MutableStateFlow<BottomSheetState>(BottomSheetState.Loading)
 
     fun setData(route: Route, mapState: MapState, map: Map, excursionData: ExcursionData?) {
+        val id = excursionData?.excursionId ?: route.id
+        if (state.value.let { it is BottomSheetState.GeoStatisticsAvailable && it.id == id}) return
+
         scope.launch {
             state.value = BottomSheetState.Loading
 
@@ -37,7 +40,7 @@ class BottomSheetLayer(
         val geoStatistics = withContext(Dispatchers.Default) {
             getGeoStatistics(routes)
         }
-        state.value = BottomSheetState.GeoStatisticsAvailable(geoStatistics, excursion.title)
+        state.value = BottomSheetState.GeoStatisticsAvailable(excursionData.excursionId, geoStatistics, excursion.title)
     }
 
     private suspend fun processStaticRoute(route: Route) {
@@ -45,7 +48,7 @@ class BottomSheetLayer(
         val geoStatistics = withContext(Dispatchers.Default) {
             getGeoStatistics(routes)
         }
-        state.value = BottomSheetState.GeoStatisticsAvailable(geoStatistics, route.name)
+        state.value = BottomSheetState.GeoStatisticsAvailable(route.id, geoStatistics, route.name)
     }
 
 }
@@ -53,6 +56,7 @@ class BottomSheetLayer(
 sealed interface BottomSheetState {
     data object Loading : BottomSheetState
     data class GeoStatisticsAvailable(
+        val id: String,
         val stats: GeoStatistics,
         val title: StateFlow<String>
     ): BottomSheetState

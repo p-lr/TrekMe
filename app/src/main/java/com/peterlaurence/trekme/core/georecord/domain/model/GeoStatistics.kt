@@ -19,3 +19,6 @@ data class GeoStatistics(
     val durationInSecond: Long? = null, val avgSpeed: Double? = null,
     val boundingBox: BoundingBox? = null
 )
+
+val GeoStatistics.hasElevation
+    get() = elevationMin != null && elevationMax != null

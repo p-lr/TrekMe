@@ -41,6 +41,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
+import com.peterlaurence.trekme.core.georecord.domain.model.hasElevation
 import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.BottomSheetCustom
@@ -559,9 +560,7 @@ private fun BottomSheet(
                 }
                 is BottomSheetState.GeoStatisticsAvailable -> {
                     titleSection(bottomSheetState.title)
-                    item("stats") {
-                        TrackStats(bottomSheetState.stats)
-                    }
+                    statsSection(bottomSheetState.stats)
                 }
             }
             repeat(10) {
@@ -586,8 +585,36 @@ private fun LazyListScope.titleSection(titleFlow: StateFlow<String>) {
                 text = title,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
+    }
+}
+
+private fun LazyListScope.statsSection(geoStatistics: GeoStatistics) {
+    item("stats") {
+        Column {
+            TrackStats(geoStatistics)
+            if (!geoStatistics.hasElevation) {
+                Row(
+                    modifier = Modifier.padding(start = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.information),
+                        tint = MaterialTheme.colorScheme.primary,
+                        contentDescription = null
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(R.string.no_elevation_track),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+            }
+        }
+
     }
 }
 

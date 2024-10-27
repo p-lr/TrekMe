@@ -77,6 +77,7 @@
         \nL\'alerte est sonore et utilise le vibreur.
         \n\nQuand une carte contient des balises, un service est lancé en tâche de fond. C\'est ce qui permet de vous alerter.
     </string>
+    <string name="no_elevation_track">Cette trace n\'a pas d\'information d\'altitude.</string>
     <string name="delete_marker_question">Supprimer le marker ?</string>
     <string name="mapview_show_speed">Afficher vitesse</string>
     <string name="km_h">km/h</string>
