@@ -6,6 +6,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.billing.domain.interactors.HasOneExtendedOfferInteractor
+import com.peterlaurence.trekme.core.excursion.domain.repository.ExcursionRepository
 import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.core.map.domain.interactors.ElevationFixInteractor
@@ -40,6 +41,7 @@ import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvent
 import com.peterlaurence.trekme.features.map.presentation.events.MarkerEditEvent
 import com.peterlaurence.trekme.features.map.presentation.events.PlaceableEvent
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.BeaconLayer
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.BottomSheetLayer
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.DistanceLayer
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.DistanceLineState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.ExcursionWaypointLayer
@@ -99,6 +101,7 @@ class MapViewModel @Inject constructor(
     routeInteractor: RouteInteractor,
     excursionInteractor: ExcursionInteractor,
     mapExcursionInteractor: MapExcursionInteractor,
+    excursionRepository: ExcursionRepository,
     private val trackFollowRepository: TrackFollowRepository,
     private val mapComposeTileStreamProviderInteractor: MapComposeTileStreamProviderInteractor,
     val settings: Settings,
@@ -223,6 +226,11 @@ class MapViewModel @Inject constructor(
         dataStateFlow,
     )
 
+    val bottomSheetLayer = BottomSheetLayer(
+        viewModelScope,
+        excursionRepository = excursionRepository,
+    )
+
     val routeLayer = RouteLayer(
         scope = viewModelScope,
         dataStateFlow = dataStateFlow,
@@ -237,6 +245,7 @@ class MapViewModel @Inject constructor(
                 viewModelScope.launch {
                     _events.send(MapEvent.SHOW_TRACK_BOTTOM_SHEET)
                 }
+                bottomSheetLayer.setData(route, mapState, map, excursionData)
             }
         },
     )

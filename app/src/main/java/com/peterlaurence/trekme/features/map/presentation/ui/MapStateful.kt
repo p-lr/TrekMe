@@ -16,6 +16,7 @@ import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.snapTo
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -29,6 +30,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.Hyphens
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -44,6 +46,7 @@ import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.BottomSheetCustom
 import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.DragHandle
 import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.States
+import com.peterlaurence.trekme.features.common.presentation.ui.component.TrackStats
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingScreen
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.md_theme_light_background
@@ -57,6 +60,7 @@ import com.peterlaurence.trekme.features.map.presentation.ui.components.*
 import com.peterlaurence.trekme.features.map.presentation.ui.screens.ErrorScaffold
 import com.peterlaurence.trekme.features.map.presentation.ui.screens.MapScreen
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.*
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.BottomSheetState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.TrackFollowLayer
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimSolutionDialog
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimWarningDialog
@@ -64,6 +68,7 @@ import com.peterlaurence.trekme.util.android.getActivityOrNull
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.rotation
 import java.util.*
@@ -295,8 +300,14 @@ fun MapStateful(
                     )
                 }
 
+                val bottomSheetState by viewModel.bottomSheetLayer.state.collectAsState()
                 if (anchoredDraggableState.currentValue != States.COLLAPSED) {
-                    BottomSheet(anchoredDraggableState, screenHeightDp, screenHeightPx)
+                    BottomSheet(
+                        anchoredDraggableState = anchoredDraggableState,
+                        screenHeightDp = screenHeightDp,
+                        screenHeightPx = screenHeightPx,
+                        bottomSheetState = bottomSheetState
+                    )
                 }
             }
         }
@@ -504,7 +515,8 @@ private fun MapScaffold(
 private fun BottomSheet(
     anchoredDraggableState: AnchoredDraggableState<States>,
     screenHeightDp: Dp,
-    screenHeightPx: Float
+    screenHeightPx: Float,
+    bottomSheetState: BottomSheetState
 ) {
     val expandedRatio = 0.5f
     val peakedRatio = 0.3f
@@ -533,6 +545,25 @@ private fun BottomSheet(
             }
         },
         content = {
+            when (bottomSheetState) {
+                BottomSheetState.Loading -> {
+                    item {
+                        Box(Modifier.fillMaxWidth()) {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .padding(vertical = 32.dp)
+                                    .align(Alignment.Center)
+                            )
+                        }
+                    }
+                }
+                is BottomSheetState.GeoStatisticsAvailable -> {
+                    titleSection(bottomSheetState.title)
+                    item("stats") {
+                        TrackStats(bottomSheetState.stats)
+                    }
+                }
+            }
             repeat(10) {
                 item(it) {
                     Text("Hello", color = MaterialTheme.colorScheme.onSurface)
@@ -540,6 +571,24 @@ private fun BottomSheet(
             }
         }
     )
+}
+
+private fun LazyListScope.titleSection(titleFlow: StateFlow<String>) {
+    item("title") {
+        val title by titleFlow.collectAsState()
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = title,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+    }
 }
 
 @Composable
