@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.paths.PathData
 import ovh.plrapps.mapcompose.ui.state.MapState
+import java.util.UUID
 
 class LiveRouteLayer(
     private val dataStateFlow: Flow<DataState>,
@@ -36,7 +37,7 @@ class LiveRouteLayer(
         val routeList = mutableListOf<Route>()
 
         fun newRoute(): Route {
-            val route = Route(id = liveRouteId, initialColor = colorLiveRoute)
+            val route = Route(id = "$liveRouteId-${UUID.randomUUID()}", initialColor = colorLiveRoute)
             routeList.add(route)
 
             launch {
