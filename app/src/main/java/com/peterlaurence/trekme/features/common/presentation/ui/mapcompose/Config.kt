@@ -15,7 +15,8 @@ val ignConfig = listOf(
     LevelLimitsConfig(levelMax = 18),
     BoundariesConfig(
         listOf(
-            BoundingBox(41.21, 51.05, -4.92, 8.37),        // France
+            BoundingBox(42.33, 51.10, -5.15, 8.24),        // France
+            BoundingBox(41.32, 43.03, 8.53, 9.57),         // Corse
             BoundingBox(-21.39, -20.86, 55.20, 55.84),     // La Réunion
             BoundingBox(2.07, 5.82, -54.66, -51.53),       // Guyane
             BoundingBox(15.82, 16.54, -61.88, -60.95),     // Guadeloupe

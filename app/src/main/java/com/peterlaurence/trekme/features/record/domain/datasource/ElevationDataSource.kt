@@ -6,4 +6,5 @@ import com.peterlaurence.trekme.features.record.domain.datasource.model.Elevatio
 interface ElevationDataSource {
     suspend fun getElevations(latList: List<Double>, lonList: List<Double>): ElevationResult
     suspend fun checkStatus(): ApiStatus
+    fun isInCoverage(lat: Double, lon: Double): Boolean
 }

@@ -1,5 +1,7 @@
 package com.peterlaurence.trekme.features.record.data.datasource
 
+import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.contains
 import com.peterlaurence.trekme.features.record.domain.datasource.ElevationDataSource
 import com.peterlaurence.trekme.features.record.domain.datasource.model.*
 import com.peterlaurence.trekme.util.performRequest
@@ -26,6 +28,22 @@ class IgnElevationDataSource(
     private val json = Json { isLenient = true; ignoreUnknownKeys = true }
 
     private val geopfHost = "data.geopf.fr"
+
+    private val bounds = listOf(
+        BoundingBox(42.33, 51.10, -5.15, 8.24),      // France
+        BoundingBox(41.32, 43.03, 8.53, 9.57),       // Corse
+        BoundingBox(15.82, 16.52, -61.82, -60.99),   // Guadeloupe
+        BoundingBox(2.10, 5.76, -54.61, -51.61),     // Guyane
+        BoundingBox(16.16, 16.35, -61.13, -61.00),   // La Désirade
+        BoundingBox(15.83, 15.89, -61.66, -61.56),   // Les Saintes
+        BoundingBox(15.86, 16.01, -61.34, -61.19),   // Marie-Galante
+        BoundingBox(14.38, 14.89, -61.24, -60.80),   // Martinique
+        BoundingBox(-13.02, -12.63, 45.01, 45.31),   // Mayotte
+        BoundingBox(-21.40, -20.86, 55.21, 55.85),   // Réunion
+        BoundingBox(17.87, 17.98, -62.93, -62.78),   // Saint-Barthélemy
+        BoundingBox(18.04, 18.13, -63.16, -62.90),   // Saint-Martin
+        BoundingBox(46.74, 47.15, -56.53, -56.07),   // St Pierre & Miq
+    )
 
     override suspend fun getElevations(
         latList: List<Double>,
@@ -65,6 +83,10 @@ class IgnElevationDataSource(
         } else {
             ApiStatus(internetOk = false, restApiOk = false)
         }
+    }
+
+    override fun isInCoverage(lat: Double, lon: Double): Boolean {
+        return bounds.contains(lat, lon)
     }
 
     @Serializable
