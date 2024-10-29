@@ -7,9 +7,9 @@ import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.core.georecord.domain.logic.distanceCalculatorFactory
 import com.peterlaurence.trekme.core.georecord.domain.model.getElevationSource
 import com.peterlaurence.trekme.core.georecord.domain.model.hasTrustedElevations
+import com.peterlaurence.trekme.core.network.domain.model.HasInternetDataSource
 import com.peterlaurence.trekme.features.common.domain.model.ElevationSource
 import com.peterlaurence.trekme.features.record.domain.datasource.ElevationDataSource
-import com.peterlaurence.trekme.features.record.domain.datasource.model.ApiStatus
 import com.peterlaurence.trekme.features.record.domain.datasource.model.Error
 import com.peterlaurence.trekme.features.record.domain.datasource.model.NonTrusted
 import com.peterlaurence.trekme.features.record.domain.datasource.model.TrustedElevations
@@ -37,6 +37,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class ElevationRepository(
     private val dispatcher: CoroutineDispatcher,
     private val ioDispatcher: CoroutineDispatcher,
+    private val hasInternetDataSource: HasInternetDataSource,
     private val elevationDataSource: ElevationDataSource,
     private val processScope: CoroutineScope,
 ) : ElevationStateOwner {
@@ -144,12 +145,13 @@ class ElevationRepository(
                             pts.map { it.lat }, pts.map { it.lon })
                         ) {
                             Error -> {
-                                val apiStatus = checkElevationDataSource()
-                                if (!apiStatus.internetOk || !apiStatus.restApiOk) {
+                                val internetOk = hasInternetDataSource.checkInternet()
+                                val apiOk = elevationDataSource.checkStatus()
+                                if (!internetOk || !apiOk) {
                                     _events.tryEmit(
                                         NoNetworkEvent(
-                                            apiStatus.internetOk,
-                                            apiStatus.restApiOk
+                                            internetOk,
+                                            apiOk
                                         )
                                     )
                                 } else {
@@ -264,10 +266,6 @@ class ElevationRepository(
 
             ElePoint(dist = distanceOffset + distanceCalculator.getDistance(), ele)
         }
-    }
-
-    private suspend fun checkElevationDataSource(): ApiStatus {
-        return elevationDataSource.checkStatus()
     }
 
     private data class SegmentElevationsSubSampled(val points: List<PointIndexed>)

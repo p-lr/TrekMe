@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.features.record.di
 
+import com.peterlaurence.trekme.core.network.domain.model.HasInternetDataSource
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.di.ApplicationScope
 import com.peterlaurence.trekme.di.IoDispatcher
@@ -28,12 +29,14 @@ object RecordModule {
     @Singleton
     @Provides
     fun bindElevationRepository(
+        hasInternetDataSource: HasInternetDataSource,
         elevationDataSource: ElevationDataSource,
         @ApplicationScope processScope: CoroutineScope
     ): ElevationRepository {
         return ElevationRepository(
             dispatcher = Dispatchers.Default,
             ioDispatcher = Dispatchers.IO,
+            hasInternetDataSource = hasInternetDataSource,
             elevationDataSource = elevationDataSource,
             processScope = processScope
         )

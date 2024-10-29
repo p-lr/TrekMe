@@ -68,21 +68,11 @@ class IgnElevationDataSource(
      * Determine if we have an internet connection, then check the availability of the elevation
      * REST api.
      */
-    override suspend fun checkStatus(): ApiStatus = withContext(ioDispatcher){
-        val internetOk = runCatching {
-            val ip = InetAddress.getByName("google.com")
-            ip.hostAddress != ""
-        }
-
-        if (internetOk.isSuccess) {
-            val apiOk = runCatching {
-                val apiIp = InetAddress.getByName(geopfHost)
-                apiIp.hostAddress != ""
-            }
-            ApiStatus(true, apiOk.getOrDefault(false))
-        } else {
-            ApiStatus(internetOk = false, restApiOk = false)
-        }
+    override suspend fun checkStatus(): Boolean = withContext(ioDispatcher) {
+        runCatching {
+            val apiIp = InetAddress.getByName(geopfHost)
+            apiIp.hostAddress != ""
+        }.isSuccess
     }
 
     override fun isInCoverage(lat: Double, lon: Double): Boolean {
