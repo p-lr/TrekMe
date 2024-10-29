@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.excursion.domain.di
+package com.peterlaurence.trekme.core.excursion.di
 
 import android.app.Application
 import com.peterlaurence.trekme.core.TrekMeContext

@@ -9,10 +9,10 @@ import com.peterlaurence.trekme.core.georecord.domain.model.getElevationSource
 import com.peterlaurence.trekme.core.georecord.domain.model.hasTrustedElevations
 import com.peterlaurence.trekme.core.network.domain.model.HasInternetDataSource
 import com.peterlaurence.trekme.features.common.domain.model.ElevationSource
-import com.peterlaurence.trekme.features.record.domain.datasource.ElevationDataSource
-import com.peterlaurence.trekme.features.record.domain.datasource.model.Error
-import com.peterlaurence.trekme.features.record.domain.datasource.model.NonTrusted
-import com.peterlaurence.trekme.features.record.domain.datasource.model.TrustedElevations
+import com.peterlaurence.trekme.core.elevation.domain.datasource.ElevationDataSource
+import com.peterlaurence.trekme.core.elevation.domain.model.Error
+import com.peterlaurence.trekme.core.elevation.domain.model.NonTrusted
+import com.peterlaurence.trekme.core.elevation.domain.model.TrustedElevations
 import com.peterlaurence.trekme.features.record.domain.model.*
 import com.peterlaurence.trekme.util.chunk
 import kotlinx.coroutines.*
@@ -178,7 +178,7 @@ class ElevationRepository(
         }
     }
 
-    private suspend fun subSamplePoints(points: List<Marker>): Flow<PointIndexed> {
+    private fun subSamplePoints(points: List<Marker>): Flow<PointIndexed> {
         return flow {
             var previousPt: Marker? = null
             points.mapIndexed { index, pt ->

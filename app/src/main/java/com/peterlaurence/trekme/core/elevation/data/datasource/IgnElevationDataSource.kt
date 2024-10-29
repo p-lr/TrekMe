@@ -1,9 +1,12 @@
-package com.peterlaurence.trekme.features.record.data.datasource
+package com.peterlaurence.trekme.core.elevation.data.datasource
 
 import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.contains
-import com.peterlaurence.trekme.features.record.domain.datasource.ElevationDataSource
-import com.peterlaurence.trekme.features.record.domain.datasource.model.*
+import com.peterlaurence.trekme.core.elevation.domain.datasource.ElevationDataSource
+import com.peterlaurence.trekme.core.elevation.domain.model.ElevationResult
+import com.peterlaurence.trekme.core.elevation.domain.model.Error
+import com.peterlaurence.trekme.core.elevation.domain.model.NonTrusted
+import com.peterlaurence.trekme.core.elevation.domain.model.TrustedElevations
 import com.peterlaurence.trekme.util.performRequest
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext

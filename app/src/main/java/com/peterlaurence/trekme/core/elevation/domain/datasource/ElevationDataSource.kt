@@ -1,6 +1,6 @@
-package com.peterlaurence.trekme.features.record.domain.datasource
+package com.peterlaurence.trekme.core.elevation.domain.datasource
 
-import com.peterlaurence.trekme.features.record.domain.datasource.model.ElevationResult
+import com.peterlaurence.trekme.core.elevation.domain.model.ElevationResult
 
 interface ElevationDataSource {
     suspend fun getElevations(latList: List<Double>, lonList: List<Double>): ElevationResult
