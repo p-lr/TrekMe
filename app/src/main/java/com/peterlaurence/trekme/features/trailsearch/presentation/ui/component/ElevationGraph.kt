@@ -166,8 +166,11 @@ fun ElevationGraph(
             density.run { 4.dp.toPx() }
         }
 
+        val vPx = remember(density) {
+            density.run { verticalPadding.toPx() }
+        }
+
         val yToPx = remember(density, yValues) {
-            val vPx = density.run { verticalPadding.toPx() }
             val h = density.run { maxHeight.toPx() }
             val a = (2 * vPx - h) / (yMax - yMin)
             val b = vPx - a * yMax
@@ -234,8 +237,8 @@ fun ElevationGraph(
                 drawLine(
                     cursorLineColor,
                     strokeWidth = 2f,
-                    start = Offset(x, 0f),
-                    end = Offset(x, size.height)
+                    start = Offset(x, vPx),
+                    end = Offset(x, size.height - vPx)
                 )
             }
 
@@ -266,7 +269,6 @@ fun ElevationGraph(
             )
         }
     }
-
 }
 
 data class ElevationGraphPoint(val lat: Double, val lon: Double, val distance: Double, val elevation: Double)

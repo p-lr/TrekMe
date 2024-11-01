@@ -42,6 +42,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
 import com.peterlaurence.trekme.core.georecord.domain.model.hasElevation
+import com.peterlaurence.trekme.core.location.domain.model.LatLon
 import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.BottomSheetCustom
@@ -65,6 +66,7 @@ import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.Botto
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.TrackFollowLayer
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimSolutionDialog
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimWarningDialog
+import com.peterlaurence.trekme.features.trailsearch.presentation.ui.component.ElevationGraph
 import com.peterlaurence.trekme.util.android.getActivityOrNull
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 import kotlinx.coroutines.CoroutineScope
@@ -307,7 +309,8 @@ fun MapStateful(
                         anchoredDraggableState = anchoredDraggableState,
                         screenHeightDp = screenHeightDp,
                         screenHeightPx = screenHeightPx,
-                        bottomSheetState = bottomSheetState
+                        bottomSheetState = bottomSheetState,
+                        onCursorMove = { _, _, _-> } // TODO
                     )
                 }
             }
@@ -517,7 +520,8 @@ private fun BottomSheet(
     anchoredDraggableState: AnchoredDraggableState<States>,
     screenHeightDp: Dp,
     screenHeightPx: Float,
-    bottomSheetState: BottomSheetState
+    bottomSheetState: BottomSheetState,
+    onCursorMove: (latLon: LatLon, d: Double, ele: Double) -> Unit
 ) {
     val expandedRatio = 0.5f
     val peakedRatio = 0.3f
@@ -558,14 +562,10 @@ private fun BottomSheet(
                         }
                     }
                 }
-                is BottomSheetState.GeoStatisticsAvailable -> {
+                is BottomSheetState.BottomSheetData -> {
                     titleSection(bottomSheetState.title)
                     statsSection(bottomSheetState.stats)
-                }
-            }
-            repeat(10) {
-                item(it) {
-                    Text("Hello", color = MaterialTheme.colorScheme.onSurface)
+                    elevationGraphSection(bottomSheetState, onCursorMove)
                 }
             }
         }
@@ -615,6 +615,40 @@ private fun LazyListScope.statsSection(geoStatistics: GeoStatistics) {
             }
         }
 
+    }
+}
+
+private fun LazyListScope.elevationGraphSection(
+    data: BottomSheetState.BottomSheetData,
+    onCursorMove: (latLon: LatLon, d: Double, ele: Double) -> Unit
+) {
+    if (data.elevationGraphPoints != null) {
+        item(key = "elevation-graph") {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)) {
+                Text(
+                    stringResource(id = R.string.elevation_profile),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Card {
+                    ElevationGraph(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(150.dp),
+                        points = data.elevationGraphPoints,
+                        verticalSpacingY = 20.dp,
+                        verticalPadding = 16.dp,
+                        onCursorMove = onCursorMove
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+        }
     }
 }
 

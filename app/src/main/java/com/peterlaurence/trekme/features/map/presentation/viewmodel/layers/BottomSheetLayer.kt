@@ -5,6 +5,7 @@ import com.peterlaurence.trekme.core.georecord.domain.logic.getGeoStatistics
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.Route
+import com.peterlaurence.trekme.features.trailsearch.presentation.ui.component.ElevationGraphPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,7 +22,7 @@ class BottomSheetLayer(
 
     fun setData(route: Route, mapState: MapState, map: Map, excursionData: ExcursionData?) {
         val id = excursionData?.excursionId ?: route.id
-        if (state.value.let { it is BottomSheetState.GeoStatisticsAvailable && it.id == id}) return
+        if (state.value.let { it is BottomSheetState.BottomSheetData && it.id == id}) return
 
         scope.launch {
             state.value = BottomSheetState.Loading
@@ -37,27 +38,36 @@ class BottomSheetLayer(
     private suspend fun processExcursion(excursionData: ExcursionData) {
         val excursion = excursionRepository.getExcursion(excursionData.excursionId) ?: return
         val routes = excursionData.routes
-        val geoStatistics = withContext(Dispatchers.Default) {
-            getGeoStatistics(routes)
-        }
-        state.value = BottomSheetState.GeoStatisticsAvailable(excursionData.excursionId, geoStatistics, excursion.title)
+
+        processTrack(routes, excursionData.excursionId, excursion.title)
     }
 
     private suspend fun processStaticRoute(route: Route) {
         val routes = listOf(route)
-        val geoStatistics = withContext(Dispatchers.Default) {
-            getGeoStatistics(routes)
-        }
-        state.value = BottomSheetState.GeoStatisticsAvailable(route.id, geoStatistics, route.name)
+        processTrack(routes, route.id, route.name)
     }
 
+    private suspend fun processTrack(routes: List<Route>, id: String, title: StateFlow<String>) {
+        val points = mutableListOf<ElevationGraphPoint>()
+        val geoStatistics = withContext(Dispatchers.Default) {
+            getGeoStatistics(routes) { distance, marker ->
+                marker.elevation?.also { ele ->
+                    points += ElevationGraphPoint(marker.lat, marker.lon, distance, ele)
+                }
+            }
+        }
+        val elevationGraphPoints = points.ifEmpty { null }
+
+        state.value = BottomSheetState.BottomSheetData(id, title, geoStatistics, elevationGraphPoints)
+    }
 }
 
 sealed interface BottomSheetState {
     data object Loading : BottomSheetState
-    data class GeoStatisticsAvailable(
+    data class BottomSheetData(
         val id: String,
+        val title: StateFlow<String>,
         val stats: GeoStatistics,
-        val title: StateFlow<String>
+        val elevationGraphPoints: List<ElevationGraphPoint>?,
     ): BottomSheetState
 }
