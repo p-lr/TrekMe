@@ -14,7 +14,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
-import androidx.compose.foundation.gestures.snapTo
+import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.CircleShape
@@ -201,7 +201,7 @@ fun MapStateful(
             }
             MapEvent.SHOW_TRACK_BOTTOM_SHEET -> {
                 scope.launch {
-                    anchoredDraggableState.snapTo(States.EXPANDED)
+                    anchoredDraggableState.animateTo(States.PEAKED)
                 }
             }
         }
@@ -255,6 +255,17 @@ fun MapStateful(
                     }
                 }
 
+                LaunchedEffect(anchoredDraggableState.currentValue) {
+                    val ratio = when (anchoredDraggableState.currentValue) {
+                        States.EXPANDED -> expandedRatio
+                        States.PEAKED -> peakedRatio
+                        States.COLLAPSED -> 0f
+                    }
+                    viewModel.bottomSheetLayer.onBottomPadding(
+                        bottom = screenHeightDp * expandedRatio,
+                        withCenter = ratio == expandedRatio
+                    )
+                }
 
                 /* Always use the light theme background (dark theme or not). Done this way, it
                  * doesn't add a GPU overdraw. */
@@ -523,9 +534,6 @@ private fun BottomSheet(
     bottomSheetState: BottomSheetState,
     onCursorMove: (latLon: LatLon, d: Double, ele: Double) -> Unit
 ) {
-    val expandedRatio = 0.5f
-    val peakedRatio = 0.3f
-
     val anchors = remember {
         DraggableAnchors {
             States.EXPANDED at screenHeightPx * (1 - expandedRatio)
@@ -734,3 +742,6 @@ fun showSnackbar(
 
     snackbarHostState.showSnackbar(msg, actionLabel = okString)
 }
+
+private const val expandedRatio = 0.5f
+private const val peakedRatio = 0.3f

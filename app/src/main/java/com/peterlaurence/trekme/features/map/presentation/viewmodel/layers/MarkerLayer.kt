@@ -57,6 +57,7 @@ class MarkerLayer(
                     }
                     launch {
                         goToMarkerFlow.collect { marker ->
+                            mapState.setVisibleAreaPadding(bottomRatio = 0f)
                             mapState.centerOnMarker(id = makeId(marker), destScale = 2f)
                         }
                     }

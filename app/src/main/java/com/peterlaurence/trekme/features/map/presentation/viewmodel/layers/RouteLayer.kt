@@ -42,6 +42,7 @@ class RouteLayer(
             dataStateFlow.collectLatest { (_, mapState) ->
                 goToRouteFlow.collectLatest event@{ route ->
                     val routeData = staticRoutesData.value[route] ?: return@event
+                    mapState.setVisibleAreaPadding(bottomRatio = 0f)
                     mapState.scrollToBoundingBox(routeData.boundingBox)
                 }
             }
@@ -138,6 +139,7 @@ class RouteLayer(
             }.reduceOrNull { acc, b ->
                 acc + b
             } ?: return@event
+            mapState.setVisibleAreaPadding(bottomRatio = 0f)
             mapState.scrollToBoundingBox(boundingBox)
         }
     }

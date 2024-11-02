@@ -42,6 +42,7 @@ import ovh.plrapps.mapcompose.api.getMarkerInfo
 import ovh.plrapps.mapcompose.api.moveMarker
 import ovh.plrapps.mapcompose.api.removeCallout
 import ovh.plrapps.mapcompose.api.removeMarker
+import ovh.plrapps.mapcompose.api.setVisibleAreaPadding
 import ovh.plrapps.mapcompose.api.updateMarkerClickable
 import ovh.plrapps.mapcompose.ui.state.MapState
 import java.util.UUID
@@ -72,6 +73,7 @@ class ExcursionWaypointLayer(
 
                     launch {
                         goToExcursionWaypointFlow.collect { (ref, wpt) ->
+                            mapState.setVisibleAreaPadding(bottomRatio = 0f)
                             mapState.centerOnMarker(id = makeId(ref.id, wpt.id), destScale = 2f)
                         }
                     }

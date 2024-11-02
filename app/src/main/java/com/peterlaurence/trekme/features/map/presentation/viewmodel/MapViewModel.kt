@@ -228,7 +228,9 @@ class MapViewModel @Inject constructor(
 
     val bottomSheetLayer = BottomSheetLayer(
         viewModelScope,
+        dataStateFlow,
         excursionRepository = excursionRepository,
+        mapInteractor = mapInteractor
     )
 
     val routeLayer = RouteLayer(
@@ -245,7 +247,7 @@ class MapViewModel @Inject constructor(
                 viewModelScope.launch {
                     _events.send(MapEvent.SHOW_TRACK_BOTTOM_SHEET)
                 }
-                bottomSheetLayer.setData(route, mapState, map, excursionData)
+                bottomSheetLayer.setData(route, excursionData)
             }
         },
     )
