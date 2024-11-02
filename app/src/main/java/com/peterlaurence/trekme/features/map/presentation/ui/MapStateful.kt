@@ -321,7 +321,9 @@ fun MapStateful(
                         screenHeightDp = screenHeightDp,
                         screenHeightPx = screenHeightPx,
                         bottomSheetState = bottomSheetState,
-                        onCursorMove = { _, _, _-> } // TODO
+                        onCursorMove = { latLon, d, ele ->
+                            viewModel.calloutLayer.setCursor(latLon, distance = d, ele = ele)
+                        }
                     )
                 }
             }

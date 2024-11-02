@@ -42,6 +42,7 @@ import com.peterlaurence.trekme.features.map.presentation.events.MarkerEditEvent
 import com.peterlaurence.trekme.features.map.presentation.events.PlaceableEvent
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.BeaconLayer
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.BottomSheetLayer
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.CalloutLayer
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.DistanceLayer
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.DistanceLineState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.ExcursionWaypointLayer
@@ -231,6 +232,12 @@ class MapViewModel @Inject constructor(
         dataStateFlow,
         excursionRepository = excursionRepository,
         mapInteractor = mapInteractor
+    )
+
+    val calloutLayer = CalloutLayer(
+        scope = viewModelScope,
+        dataStateFlow = dataStateFlow,
+        mapInteractor = mapInteractor,
     )
 
     val routeLayer = RouteLayer(
