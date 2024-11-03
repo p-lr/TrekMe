@@ -13,45 +13,58 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.AnchoredDraggableState
-import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.animateTo
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.Hyphens
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
-import com.peterlaurence.trekme.core.georecord.domain.model.hasMeaningfulElevation
-import com.peterlaurence.trekme.core.location.domain.model.LatLon
 import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.core.settings.RotationMode
-import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.BottomSheetCustom
-import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.DragHandle
 import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.States
-import com.peterlaurence.trekme.features.common.presentation.ui.component.TrackStats
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingScreen
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.md_theme_light_background
@@ -61,26 +74,30 @@ import com.peterlaurence.trekme.features.map.presentation.events.BeaconEditEvent
 import com.peterlaurence.trekme.features.map.presentation.events.ExcursionWaypointEditEvent
 import com.peterlaurence.trekme.features.map.presentation.events.ItineraryEvent
 import com.peterlaurence.trekme.features.map.presentation.events.MarkerEditEvent
-import com.peterlaurence.trekme.features.map.presentation.ui.components.*
+import com.peterlaurence.trekme.features.map.presentation.ui.bottomsheet.BottomSheet
+import com.peterlaurence.trekme.features.map.presentation.ui.components.CompassComponent
+import com.peterlaurence.trekme.features.map.presentation.ui.components.MapTopAppBar
+import com.peterlaurence.trekme.features.map.presentation.ui.components.RecordingButtons
+import com.peterlaurence.trekme.features.map.presentation.ui.components.StatsPanel
 import com.peterlaurence.trekme.features.map.presentation.ui.screens.ErrorScaffold
 import com.peterlaurence.trekme.features.map.presentation.ui.screens.MapScreen
-import com.peterlaurence.trekme.features.map.presentation.viewmodel.*
-import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.BottomSheetState
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.Error
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.GpxRecordServiceViewModel
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.Loading
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapEvent
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapUiState
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapViewModel
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.StatisticsViewModel
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.TrackFollowLayer
-import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.TrackType
-import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.hasElevation
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimSolutionDialog
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimWarningDialog
-import com.peterlaurence.trekme.features.trailsearch.presentation.ui.component.ElevationGraph
 import com.peterlaurence.trekme.util.android.getActivityOrNull
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
-import com.peterlaurence.trekme.util.parseColorL
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.rotation
-import java.util.*
+import java.util.UUID
 
 @Composable
 fun MapStateful(
@@ -106,7 +123,8 @@ fun MapStateful(
     val isShowingGpsData by viewModel.isShowingGpsDataFlow().collectAsState(initial = false)
     val isShowingScaleIndicator by viewModel.settings.getShowScaleIndicator()
         .collectAsState(initial = true)
-    val isShowingZoomIndicator by viewModel.settings.getShowZoomIndicator().collectAsState(initial = false)
+    val isShowingZoomIndicator by viewModel.settings.getShowZoomIndicator()
+        .collectAsState(initial = false)
     val stats by statisticsViewModel.stats.collectAsState(initial = null)
     val rotationMode by viewModel.settings.getRotationMode()
         .collectAsState(initial = RotationMode.NONE)
@@ -140,9 +158,13 @@ fun MapStateful(
     val itineraryError = stringResource(id = R.string.itinerary_error)
     val ok = stringResource(id = R.string.ok_dialog)
     LaunchedEffectWithLifecycle(flow = viewModel.placeableEvents) { event ->
-        when(event) {
+        when (event) {
             is MarkerEditEvent -> onNavigateToMarkerEdit(event.marker.id, event.mapId)
-            is ExcursionWaypointEditEvent -> onNavigateToExcursionWaypointEdit(event.waypoint.id, event.excursionId)
+            is ExcursionWaypointEditEvent -> onNavigateToExcursionWaypointEdit(
+                event.waypoint.id,
+                event.excursionId
+            )
+
             is BeaconEditEvent -> onNavigateToBeaconEdit(event.beacon.id, event.mapId)
             is ItineraryEvent -> {
                 val success = itineraryToMarker(event.latitude, event.longitude, context)
@@ -196,15 +218,23 @@ fun MapStateful(
             snackbarHostState.currentSnackbarData?.dismiss()
         }
         when (event) {
-            MapEvent.CURRENT_LOCATION_OUT_OF_BOUNDS -> showSnackbar(scope, snackbarHostState, outOfBounds, ok)
+            MapEvent.CURRENT_LOCATION_OUT_OF_BOUNDS -> showSnackbar(
+                scope = scope,
+                snackbarHostState = snackbarHostState,
+                msg = outOfBounds,
+                okString = ok
+            )
+
             MapEvent.AWAITING_LOCATION -> {
                 val awaitingLocation = context.getString(R.string.awaiting_location)
                 showSnackbar(scope, snackbarHostState, awaitingLocation, ok)
             }
+
             MapEvent.TRACK_TO_FOLLOW_SELECTED -> dismissSnackbar()
             MapEvent.TRACK_TO_FOLLOW_ALREADY_RUNNING -> {
                 showTrackFollowDialog = true
             }
+
             MapEvent.SHOW_TRACK_BOTTOM_SHEET -> {
                 scope.launch {
                     anchoredDraggableState.animateTo(States.PEAKED)
@@ -240,7 +270,8 @@ fun MapStateful(
                 val screenHeightPx = with(LocalDensity.current) {
                     screenHeightDp.toPx()
                 }
-                val navBarHeightDp = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                val navBarHeightDp =
+                    WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
                 val navBarHeightPx = with(LocalDensity.current) {
                     navBarHeightDp.toPx()
                 }
@@ -326,6 +357,8 @@ fun MapStateful(
                         anchoredDraggableState = anchoredDraggableState,
                         screenHeightDp = screenHeightDp,
                         screenHeightPx = screenHeightPx,
+                        expandedRatio = expandedRatio,
+                        peakedRatio = peakedRatio,
                         bottomSheetState = bottomSheetState,
                         onCursorMove = { latLon, d, ele ->
                             viewModel.calloutLayer.setCursor(latLon, distance = d, ele = ele)
@@ -536,184 +569,6 @@ private fun MapScaffold(
 }
 
 @Composable
-private fun BottomSheet(
-    anchoredDraggableState: AnchoredDraggableState<States>,
-    screenHeightDp: Dp,
-    screenHeightPx: Float,
-    bottomSheetState: BottomSheetState,
-    onCursorMove: (latLon: LatLon, d: Double, ele: Double) -> Unit,
-    onColorChange: (Long, TrackType) -> Unit
-) {
-    val anchors = remember {
-        DraggableAnchors {
-            States.EXPANDED at screenHeightPx * (1 - expandedRatio)
-            States.PEAKED at screenHeightPx * (1 - peakedRatio)
-            States.COLLAPSED at screenHeightPx
-        }
-    }
-
-    SideEffect {
-        anchoredDraggableState.updateAnchors(anchors)
-    }
-
-    BottomSheetCustom(
-        state = anchoredDraggableState,
-        fullHeight = screenHeightDp * expandedRatio,
-        header = {
-            Row(
-                Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                DragHandle()
-            }
-        },
-        content = {
-            when (bottomSheetState) {
-                BottomSheetState.Loading -> {
-                    item {
-                        Box(Modifier.fillMaxWidth()) {
-                            CircularProgressIndicator(
-                                modifier = Modifier
-                                    .padding(vertical = 32.dp)
-                                    .align(Alignment.Center)
-                            )
-                        }
-                    }
-                }
-                is BottomSheetState.BottomSheetData -> {
-                    titleSection(
-                        bottomSheetState.title,
-                        bottomSheetState.color,
-                        onColorChange = { color ->
-                            onColorChange(color, bottomSheetState.type)
-                        }
-                    )
-                    statsSection(bottomSheetState.stats, bottomSheetState.hasElevation)
-                    elevationGraphSection(bottomSheetState, onCursorMove)
-                }
-            }
-        }
-    )
-}
-
-private fun LazyListScope.titleSection(
-    titleFlow: StateFlow<String>,
-    colorFlow: StateFlow<String>,
-    onColorChange: (Long) -> Unit
-) {
-    stickyHeader("title") {
-        val title by titleFlow.collectAsState()
-        val color by colorFlow.collectAsState()
-        var isShowingColorPicker by remember { mutableStateOf(false) }
-
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surface)
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Spacer(Modifier.width(24.dp))
-            Text(
-                modifier = Modifier.weight(1f),
-                text = title,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.Center
-            )
-            Spacer(Modifier.width(8.dp))
-            ColorIndicator(color = color, onClick = { isShowingColorPicker = true })
-        }
-
-        if (isShowingColorPicker) {
-            ColorPicker(
-                initColor = parseColorL(color),
-                onColorPicked = { c ->
-                    onColorChange(c)
-                    isShowingColorPicker = false
-                },
-                onCancel = { isShowingColorPicker = false }
-            )
-        }
-    }
-}
-
-private fun LazyListScope.statsSection(geoStatistics: GeoStatistics, hasElevation: Boolean) {
-    item("stats") {
-        Column {
-            Spacer(Modifier.height(16.dp))
-            TrackStats(Modifier.padding(horizontal = 16.dp), geoStatistics)
-            if (!hasElevation || !geoStatistics.hasMeaningfulElevation) {
-                Spacer(Modifier.height(8.dp))
-                Row(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.information),
-                        tint = MaterialTheme.colorScheme.primary,
-                        contentDescription = null
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(
-                            if (!hasElevation) {
-                                R.string.no_elevation_track
-                            } else {
-                                R.string.elevation_stats_not_significant
-                            }
-                        ),
-                        fontSize = 13.sp,
-                        fontStyle = FontStyle.Italic,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-        }
-    }
-}
-
-private fun LazyListScope.elevationGraphSection(
-    data: BottomSheetState.BottomSheetData,
-    onCursorMove: (latLon: LatLon, d: Double, ele: Double) -> Unit
-) {
-    if (data.elevationGraphPoints != null) {
-        item(key = "elevation-graph") {
-            Column(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .navigationBarsPadding()
-            ) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    stringResource(id = R.string.elevation_profile),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Card {
-                    ElevationGraph(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(150.dp),
-                        points = data.elevationGraphPoints,
-                        verticalSpacingY = 20.dp,
-                        verticalPadding = 16.dp,
-                        onCursorMove = onCursorMove
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
 private fun RecordingFabStateful(viewModel: GpxRecordServiceViewModel) {
     val gpxRecordState by viewModel.status.collectAsState()
     var isShowingBatteryWarning by rememberSaveable { mutableStateOf(false) }
@@ -773,7 +628,7 @@ private fun getDisplayRotation(): Int {
         LocalContext.current.getActivityOrNull()?.windowManager?.defaultDisplay?.rotation
             ?: Surface.ROTATION_0
     } else {
-        LocalContext.current.display?.rotation ?: Surface.ROTATION_0
+        LocalContext.current.display.rotation
     }
 
     return when (surfaceRotation) {
