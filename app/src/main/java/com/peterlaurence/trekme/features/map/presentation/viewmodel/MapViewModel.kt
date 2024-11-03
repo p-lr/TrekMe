@@ -86,6 +86,7 @@ import ovh.plrapps.mapcompose.api.onMarkerLongPress
 import ovh.plrapps.mapcompose.api.reloadTiles
 import ovh.plrapps.mapcompose.api.rotateTo
 import ovh.plrapps.mapcompose.api.scale
+import ovh.plrapps.mapcompose.api.setScrollOffsetRatio
 import ovh.plrapps.mapcompose.ui.state.MapState
 import java.util.UUID
 import javax.inject.Inject
@@ -381,6 +382,7 @@ class MapViewModel @Inject constructor(
             highFidelityColors(false)
         }.apply {
             addLayer(tileStreamProvider)
+            setScrollOffsetRatio(0.5f, 0.5f)
         }
 
         /* region Configuration */
