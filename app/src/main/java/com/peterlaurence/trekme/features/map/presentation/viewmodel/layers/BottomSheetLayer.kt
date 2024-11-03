@@ -148,6 +148,9 @@ sealed interface BottomSheetState {
     ) : BottomSheetState
 }
 
+val BottomSheetState.BottomSheetData.hasElevation: Boolean
+    get() = elevationGraphPoints != null && elevationGraphPoints.size > 1
+
 sealed interface TrackType {
     data class RouteType(val route: Route) : TrackType
     data class ExcursionType(val excursionRef: ExcursionRef) : TrackType

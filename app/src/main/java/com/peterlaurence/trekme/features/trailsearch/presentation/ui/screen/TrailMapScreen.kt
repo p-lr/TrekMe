@@ -614,7 +614,7 @@ private fun LazyListScope.headerSection(title: String) {
 
 private fun LazyListScope.statisticsSection(data: BottomSheetData) {
     item(key = "geostatistics") {
-        TrackStats(data.geoStatistics)
+        TrackStats(Modifier.padding(16.dp), data.geoStatistics)
     }
 }
 

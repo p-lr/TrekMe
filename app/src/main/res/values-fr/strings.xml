@@ -78,6 +78,7 @@
         \n\nQuand une carte contient des balises, un service est lancé en tâche de fond. C\'est ce qui permet de vous alerter.
     </string>
     <string name="no_elevation_track">Cette trace n\'a pas d\'information d\'altitude.</string>
+    <string name="elevation_stats_not_significant">Les statistiques d\'altitude ne sont pas significatives.</string>
     <!-- Map bottomsheet -->
     <string name="elevation_profile">Profil d\'altitude</string>
 

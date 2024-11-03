@@ -30,6 +30,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.Hyphens
 import androidx.compose.ui.text.style.TextAlign
@@ -43,7 +44,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
-import com.peterlaurence.trekme.core.georecord.domain.model.hasElevation
+import com.peterlaurence.trekme.core.georecord.domain.model.hasMeaningfulElevation
 import com.peterlaurence.trekme.core.location.domain.model.LatLon
 import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.core.settings.RotationMode
@@ -67,6 +68,7 @@ import com.peterlaurence.trekme.features.map.presentation.viewmodel.*
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.BottomSheetState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.TrackFollowLayer
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.TrackType
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.hasElevation
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimSolutionDialog
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimWarningDialog
 import com.peterlaurence.trekme.features.trailsearch.presentation.ui.component.ElevationGraph
@@ -586,7 +588,7 @@ private fun BottomSheet(
                             onColorChange(color, bottomSheetState.type)
                         }
                     )
-                    statsSection(bottomSheetState.stats)
+                    statsSection(bottomSheetState.stats, bottomSheetState.hasElevation)
                     elevationGraphSection(bottomSheetState, onCursorMove)
                 }
             }
@@ -640,13 +642,15 @@ private fun LazyListScope.titleSection(
     }
 }
 
-private fun LazyListScope.statsSection(geoStatistics: GeoStatistics) {
+private fun LazyListScope.statsSection(geoStatistics: GeoStatistics, hasElevation: Boolean) {
     item("stats") {
         Column {
-            TrackStats(geoStatistics)
-            if (!geoStatistics.hasElevation) {
+            Spacer(Modifier.height(16.dp))
+            TrackStats(Modifier.padding(horizontal = 16.dp), geoStatistics)
+            if (!hasElevation || !geoStatistics.hasMeaningfulElevation) {
+                Spacer(Modifier.height(8.dp))
                 Row(
-                    modifier = Modifier.padding(start = 16.dp),
+                    modifier = Modifier.padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
@@ -656,7 +660,15 @@ private fun LazyListScope.statsSection(geoStatistics: GeoStatistics) {
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        text = stringResource(R.string.no_elevation_track),
+                        text = stringResource(
+                            if (!hasElevation) {
+                                R.string.no_elevation_track
+                            } else {
+                                R.string.elevation_stats_not_significant
+                            }
+                        ),
+                        fontSize = 13.sp,
+                        fontStyle = FontStyle.Italic,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
@@ -674,9 +686,10 @@ private fun LazyListScope.elevationGraphSection(
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .padding(start = 16.dp, top = 8.dp, end = 16.dp)
+                    .padding(horizontal = 16.dp)
                     .navigationBarsPadding()
             ) {
+                Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     stringResource(id = R.string.elevation_profile),
                     fontSize = 16.sp,

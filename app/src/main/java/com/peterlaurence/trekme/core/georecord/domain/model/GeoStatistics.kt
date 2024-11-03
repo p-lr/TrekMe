@@ -20,5 +20,5 @@ data class GeoStatistics(
     val boundingBox: BoundingBox? = null
 )
 
-val GeoStatistics.hasElevation
+val GeoStatistics.hasMeaningfulElevation
     get() = elevationMin != null && elevationMax != null

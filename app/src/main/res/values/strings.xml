@@ -321,6 +321,7 @@
         \n\nWhen a map has beacons, a service runs in the background. The purpose of this service is to alert you when you get close to a beacon.
     </string>
     <string name="no_elevation_track">This track has no elevation data.</string>
+    <string name="elevation_stats_not_significant">Elevation statistics are\'t significant.</string>
     <!-- Map bottomsheet -->
     <string name="elevation_profile">Elevation profile</string>
 

@@ -26,18 +26,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
-import com.peterlaurence.trekme.core.georecord.domain.model.hasElevation
+import com.peterlaurence.trekme.core.georecord.domain.model.hasMeaningfulElevation
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatDistance
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatDuration
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun TrackStats(geoStatistics: GeoStatistics) {
+fun TrackStats(modifier: Modifier = Modifier, geoStatistics: GeoStatistics) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
+        modifier = modifier.fillMaxWidth()
     ) {
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
@@ -91,7 +89,7 @@ fun TrackStats(geoStatistics: GeoStatistics) {
                 Text(text = stringResource(id = R.string.duration_stat), fontSize = 12.sp)
             }
 
-            if (geoStatistics.hasElevation) {
+            if (geoStatistics.hasMeaningfulElevation) {
                 Column(
                     modifier = Modifier.padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -195,7 +193,7 @@ private fun TrackStatsPreview() {
     TrekMeTheme {
         Box {
             TrackStats(
-                GeoStatistics(
+                geoStatistics = GeoStatistics(
                     distance = 12568.2,
                     elevationMax = 2654.0,
                     elevationMin = 1826.4,
@@ -216,7 +214,7 @@ private fun TrackStatsPreview2() {
     TrekMeTheme {
         Box {
             TrackStats(
-                GeoStatistics(
+                geoStatistics = GeoStatistics(
                     distance = 12568.2,
                     elevationMax = null,
                     elevationMin = null,
