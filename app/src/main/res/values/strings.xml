@@ -224,7 +224,7 @@
     <string name="import_tracks_warning">The file you chose is not in a supported format. Supported extensions are :</string>
     <string name="import_tracks_format_gpx" translatable="false">GPX (tracks, routes, waypoints)</string>
     <string name="import_tracks_format_google" translatable="false">Google Maps directions (XML, JSON)</string>
-    <string name="track_name_change">Enter the name of the track</string>
+    <string name="track_name_change">Track name</string>
     <string name="track_rename_action">Rename</string>
     <string name="go_to_track_on_map">See on the map</string>
     <string name="track_file_name_change">File name</string>

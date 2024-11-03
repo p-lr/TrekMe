@@ -364,6 +364,7 @@ fun MapStateful(
                             viewModel.calloutLayer.setCursor(latLon, distance = d, ele = ele)
                         },
                         onColorChange = viewModel.bottomSheetLayer::onColorChange,
+                        onTitleChange = viewModel.bottomSheetLayer::onTitleChange
                     )
                 }
             }

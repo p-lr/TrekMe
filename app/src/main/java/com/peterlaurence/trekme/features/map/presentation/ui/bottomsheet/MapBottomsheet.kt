@@ -4,6 +4,7 @@ package com.peterlaurence.trekme.features.map.presentation.ui.bottomsheet
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.layout.Arrangement
@@ -17,12 +18,16 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -31,10 +36,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -66,7 +75,8 @@ fun BottomSheet(
     expandedRatio: Float,
     peakedRatio: Float,
     onCursorMove: (latLon: LatLon, d: Double, ele: Double) -> Unit,
-    onColorChange: (Long, TrackType) -> Unit
+    onColorChange: (Long, TrackType) -> Unit,
+    onTitleChange: (String, TrackType) -> Unit
 ) {
     val anchors = remember {
         DraggableAnchors {
@@ -104,12 +114,16 @@ fun BottomSheet(
                         }
                     }
                 }
+
                 is BottomSheetState.BottomSheetData -> {
                     titleSection(
                         bottomSheetState.title,
                         bottomSheetState.color,
                         onColorChange = { color ->
                             onColorChange(color, bottomSheetState.type)
+                        },
+                        onTitleChange = { title ->
+                            onTitleChange(title, bottomSheetState.type)
                         }
                     )
                     statsSection(bottomSheetState.stats, bottomSheetState.hasElevation)
@@ -123,12 +137,14 @@ fun BottomSheet(
 private fun LazyListScope.titleSection(
     titleFlow: StateFlow<String>,
     colorFlow: StateFlow<String>,
-    onColorChange: (Long) -> Unit
+    onColorChange: (Long) -> Unit,
+    onTitleChange: (String) -> Unit
 ) {
     stickyHeader("title") {
         val title by titleFlow.collectAsState()
         val color by colorFlow.collectAsState()
         var isShowingColorPicker by remember { mutableStateOf(false) }
+        var isShowingTitleEdit by remember { mutableStateOf(false) }
 
         Row(
             Modifier
@@ -140,7 +156,11 @@ private fun LazyListScope.titleSection(
         ) {
             Spacer(Modifier.width(24.dp))
             Text(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable {
+                        isShowingTitleEdit = true
+                    },
                 text = title,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
@@ -161,6 +181,14 @@ private fun LazyListScope.titleSection(
                     isShowingColorPicker = false
                 },
                 onCancel = { isShowingColorPicker = false }
+            )
+        }
+
+        if (isShowingTitleEdit) {
+            EditTitleDialog(
+                title = title,
+                onTitleChange = onTitleChange,
+                onDismissRequest = { isShowingTitleEdit = false }
             )
         }
     }
@@ -234,5 +262,65 @@ private fun LazyListScope.elevationGraphSection(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun EditTitleDialog(
+    title: String,
+    onTitleChange: (String) -> Unit,
+    onDismissRequest: () -> Unit
+) {
+    var textFieldValue by remember {
+        mutableStateOf(
+            TextFieldValue(
+                title,
+                selection = TextRange(title.length)
+            )
+        )
+    }
+    val focusRequester = remember { FocusRequester() }
+
+    AlertDialog(
+        title = {
+            Text(
+                text = stringResource(R.string.track_name_change),
+                fontWeight = FontWeight.Medium,
+                fontSize = 16.sp,
+                color = MaterialTheme.colorScheme.primary
+            )
+        },
+        text = {
+            TextField(
+                value = textFieldValue,
+                onValueChange = { textFieldValue = it },
+                modifier = Modifier.focusRequester(focusRequester)
+            )
+        },
+        onDismissRequest = onDismissRequest,
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onTitleChange(textFieldValue.text)
+                    onDismissRequest()
+                }
+            ) {
+                Text(text = stringResource(id = R.string.ok_dialog))
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    textFieldValue = textFieldValue.copy(text = title)
+                    onDismissRequest()
+                }
+            ) {
+                Text(text = stringResource(id = R.string.cancel_dialog_string))
+            }
+        }
+    )
+
+    LaunchedEffect(Unit) {
+        runCatching { focusRequester.requestFocus() }
     }
 }

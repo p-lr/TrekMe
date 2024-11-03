@@ -94,6 +94,19 @@ class BottomSheetLayer(
         }
     }
 
+    fun onTitleChange(title: String, type: TrackType) = scope.launch {
+        when (type) {
+            is TrackType.ExcursionType -> {
+                mapExcursionInteractor.rename(type.excursionRef, title)
+            }
+
+            is TrackType.RouteType -> {
+                val (map, _) = dataStateFlow.firstOrNull() ?: return@launch
+                routeInteractor.renameRoute(map, type.route, title)
+            }
+        }
+    }
+
     private suspend fun processExcursion(excursionData: ExcursionData) {
         val excursion = excursionRepository.getExcursion(excursionData.excursionRef.id) ?: return
         val routes = excursionData.routes
