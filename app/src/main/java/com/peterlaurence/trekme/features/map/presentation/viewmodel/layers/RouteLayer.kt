@@ -119,7 +119,8 @@ class RouteLayer(
                         }
                         if (excursionEntries.isNotEmpty()) {
                             val routes = excursionEntries.map { it.key }
-                            val excursionData = ExcursionData(excursionId, routes)
+                            val excursionRef = map.excursionRefs.value.firstOrNull { it.id == excursionId } ?: return@onPathClick
+                            val excursionData = ExcursionData(excursionRef, routes)
                             onRouteClick(excursionEntry.key, mapState, map, excursionData)
                         }
                     }
@@ -354,4 +355,4 @@ class RouteLayer(
     }
 }
 
-data class ExcursionData(val excursionId: String, val routes: List<Route>)
+data class ExcursionData(val excursionRef: ExcursionRef, val routes: List<Route>)

@@ -32,6 +32,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.Hyphens
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -64,11 +66,13 @@ import com.peterlaurence.trekme.features.map.presentation.ui.screens.MapScreen
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.*
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.BottomSheetState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.TrackFollowLayer
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.TrackType
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimSolutionDialog
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimWarningDialog
 import com.peterlaurence.trekme.features.trailsearch.presentation.ui.component.ElevationGraph
 import com.peterlaurence.trekme.util.android.getActivityOrNull
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
+import com.peterlaurence.trekme.util.parseColorL
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
@@ -262,7 +266,7 @@ fun MapStateful(
                         States.COLLAPSED -> 0f
                     }
                     viewModel.bottomSheetLayer.onBottomPadding(
-                        bottom = screenHeightDp * expandedRatio,
+                        bottom = screenHeightDp * ratio,
                         withCenter = ratio == expandedRatio
                     )
                 }
@@ -323,7 +327,8 @@ fun MapStateful(
                         bottomSheetState = bottomSheetState,
                         onCursorMove = { latLon, d, ele ->
                             viewModel.calloutLayer.setCursor(latLon, distance = d, ele = ele)
-                        }
+                        },
+                        onColorChange = viewModel.bottomSheetLayer::onColorChange,
                     )
                 }
             }
@@ -534,7 +539,8 @@ private fun BottomSheet(
     screenHeightDp: Dp,
     screenHeightPx: Float,
     bottomSheetState: BottomSheetState,
-    onCursorMove: (latLon: LatLon, d: Double, ele: Double) -> Unit
+    onCursorMove: (latLon: LatLon, d: Double, ele: Double) -> Unit,
+    onColorChange: (Long, TrackType) -> Unit
 ) {
     val anchors = remember {
         DraggableAnchors {
@@ -573,7 +579,13 @@ private fun BottomSheet(
                     }
                 }
                 is BottomSheetState.BottomSheetData -> {
-                    titleSection(bottomSheetState.title)
+                    titleSection(
+                        bottomSheetState.title,
+                        bottomSheetState.color,
+                        onColorChange = { color ->
+                            onColorChange(color, bottomSheetState.type)
+                        }
+                    )
                     statsSection(bottomSheetState.stats)
                     elevationGraphSection(bottomSheetState, onCursorMove)
                 }
@@ -582,20 +594,47 @@ private fun BottomSheet(
     )
 }
 
-private fun LazyListScope.titleSection(titleFlow: StateFlow<String>) {
-    item("title") {
+private fun LazyListScope.titleSection(
+    titleFlow: StateFlow<String>,
+    colorFlow: StateFlow<String>,
+    onColorChange: (Long) -> Unit
+) {
+    stickyHeader("title") {
         val title by titleFlow.collectAsState()
+        val color by colorFlow.collectAsState()
+        var isShowingColorPicker by remember { mutableStateOf(false) }
+
         Row(
             Modifier
                 .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surface)
                 .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.Center
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            Spacer(Modifier.width(24.dp))
             Text(
+                modifier = Modifier.weight(1f),
                 text = title,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center
+            )
+            Spacer(Modifier.width(8.dp))
+            ColorIndicator(color = color, onClick = { isShowingColorPicker = true })
+        }
+
+        if (isShowingColorPicker) {
+            ColorPicker(
+                initColor = parseColorL(color),
+                onColorPicked = { c ->
+                    onColorChange(c)
+                    isShowingColorPicker = false
+                },
+                onCancel = { isShowingColorPicker = false }
             )
         }
     }
@@ -621,10 +660,8 @@ private fun LazyListScope.statsSection(geoStatistics: GeoStatistics) {
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
-
             }
         }
-
     }
 }
 
@@ -637,7 +674,9 @@ private fun LazyListScope.elevationGraphSection(
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)) {
+                    .padding(start = 16.dp, top = 8.dp, end = 16.dp)
+                    .navigationBarsPadding()
+            ) {
                 Text(
                     stringResource(id = R.string.elevation_profile),
                     fontSize = 16.sp,
@@ -656,7 +695,6 @@ private fun LazyListScope.elevationGraphSection(
                         onCursorMove = onCursorMove
                     )
                 }
-                Spacer(modifier = Modifier.height(8.dp))
             }
         }
     }

@@ -231,7 +231,9 @@ class MapViewModel @Inject constructor(
         viewModelScope,
         dataStateFlow,
         excursionRepository = excursionRepository,
-        mapInteractor = mapInteractor
+        mapInteractor = mapInteractor,
+        mapExcursionInteractor = mapExcursionInteractor,
+        routeInteractor = routeInteractor
     )
 
     val calloutLayer = CalloutLayer(

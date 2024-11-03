@@ -4,6 +4,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -16,7 +17,7 @@ fun ColorIndicator(color: String, onClick: () -> Unit = {}) {
     val colorContent = remember(color) {
         Color(parseColorL(color))
     }
-    val background = if (isSystemInDarkTheme()) Color(0xffa9b7c6) else Color.White
+    val background = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.onSurface else Color.White
     Canvas(
         modifier = Modifier
             .size(24.dp)
