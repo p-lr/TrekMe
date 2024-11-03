@@ -52,7 +52,7 @@ private fun StatWithImage(statText: String, @DrawableRes imageId: Int) {
     Row(
         Modifier
             .padding(start = 5.dp, end = 10.dp)
-            .height(30.dp),
+            .height(statsPanelHeight),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
@@ -64,3 +64,5 @@ private fun StatWithImage(statText: String, @DrawableRes imageId: Int) {
         Text(text = statText, color = MaterialTheme.colorScheme.onSurface)
     }
 }
+
+val statsPanelHeight = 30.dp

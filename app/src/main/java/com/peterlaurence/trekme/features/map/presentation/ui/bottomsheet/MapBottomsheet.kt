@@ -170,7 +170,11 @@ private fun LazyListScope.titleSection(
                 textAlign = TextAlign.Center
             )
             Spacer(Modifier.width(8.dp))
-            ColorIndicator(color = color, onClick = { isShowingColorPicker = true })
+            ColorIndicator(
+                radius = 16.dp,
+                color = color,
+                onClick = { isShowingColorPicker = true }
+            )
         }
 
         if (isShowingColorPicker) {

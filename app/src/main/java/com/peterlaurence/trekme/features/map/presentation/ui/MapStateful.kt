@@ -79,6 +79,7 @@ import com.peterlaurence.trekme.features.map.presentation.ui.components.CompassC
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MapTopAppBar
 import com.peterlaurence.trekme.features.map.presentation.ui.components.RecordingButtons
 import com.peterlaurence.trekme.features.map.presentation.ui.components.StatsPanel
+import com.peterlaurence.trekme.features.map.presentation.ui.components.statsPanelHeight
 import com.peterlaurence.trekme.features.map.presentation.ui.screens.ErrorScaffold
 import com.peterlaurence.trekme.features.map.presentation.ui.screens.MapScreen
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.Error
@@ -125,7 +126,7 @@ fun MapStateful(
         .collectAsState(initial = true)
     val isShowingZoomIndicator by viewModel.settings.getShowZoomIndicator()
         .collectAsState(initial = false)
-    val stats by statisticsViewModel.stats.collectAsState(initial = null)
+    val recordingStats by statisticsViewModel.stats.collectAsState(initial = null)
     val rotationMode by viewModel.settings.getRotationMode()
         .collectAsState(initial = RotationMode.NONE)
 
@@ -275,14 +276,16 @@ fun MapStateful(
                 val navBarHeightPx = with(LocalDensity.current) {
                     navBarHeightDp.toPx()
                 }
-                val geoStatisticsBannerHeight = with(LocalDensity.current) {
-                    30.dp.toPx()
+
+                // The height of the banner which appears during a recording
+                val recordingBannerHeight = with(LocalDensity.current) {
+                    statsPanelHeight.toPx()
                 }
 
-                val bottomSheetOffset by remember(screenHeightPx, stats) {
+                val bottomSheetOffset by remember(screenHeightPx, recordingStats) {
                     derivedStateOf {
                         if (anchoredDraggableState.currentValue == States.COLLAPSED) {
-                            if (stats != null) geoStatisticsBannerHeight else 0f
+                            if (recordingStats != null) recordingBannerHeight else 0f
                         } else {
                             val offset = anchoredDraggableState.offset
                             if (!offset.isNaN()) {
@@ -322,7 +325,7 @@ fun MapStateful(
                         rotationMode,
                         locationFlow,
                         elevationFix,
-                        geoStatistics = stats,
+                        geoStatistics = recordingStats,
                         hasElevationFix = purchased,
                         hasBeacons = purchased,
                         hasTrackFollow = purchased,
@@ -490,7 +493,14 @@ private fun MapScaffold(
     recordingButtons: @Composable () -> Unit
 ) {
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = {
+            SnackbarHost(
+                modifier = Modifier.graphicsLayer {
+                    translationY = -bottomSheetOffset
+                },
+                hostState = snackbarHostState
+            )
+        },
         topBar = {
             MapTopAppBar(
                 title = name,

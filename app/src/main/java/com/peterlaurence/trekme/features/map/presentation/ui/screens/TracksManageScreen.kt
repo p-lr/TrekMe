@@ -482,7 +482,7 @@ private fun TrackItem(
         )
 
         Row {
-            ColorIndicator(color, onClick = { isShowingColorPicker = true })
+            ColorIndicator(radius = 12.dp, color = color, onClick = { isShowingColorPicker = true })
             Spacer(modifier = Modifier.width(10.dp))
             val interactionSource = remember { MutableInteractionSource() }
             Icon(
