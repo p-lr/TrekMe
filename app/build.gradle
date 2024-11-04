@@ -56,12 +56,12 @@ android {
 }
 
 dependencies {
-    def lifecycle_version = '2.8.6'
+    def lifecycle_version = '2.8.7'
 
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.2'
 //    implementation project(":mapcompose-local")  // for dev purposes
-    implementation 'ovh.plrapps:mapcompose:2.12.8'
+    implementation 'ovh.plrapps:mapcompose:2.12.11'
     implementation 'com.android.billingclient:billing:7.1.1'
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
