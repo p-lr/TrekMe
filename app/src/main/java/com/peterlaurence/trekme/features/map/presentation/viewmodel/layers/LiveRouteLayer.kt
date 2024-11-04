@@ -11,8 +11,10 @@ import com.peterlaurence.trekme.events.recording.LiveRouteStop
 import com.peterlaurence.trekme.features.map.domain.interactors.RouteInteractor
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
 import com.peterlaurence.trekme.util.parseColor
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.paths.PathData
@@ -22,23 +24,28 @@ import java.util.UUID
 class LiveRouteLayer(
     private val dataStateFlow: Flow<DataState>,
     private val routeInteractor: RouteInteractor,
-    private val gpxRecordEvents: GpxRecordEvents
+    private val gpxRecordEvents: GpxRecordEvents,
 ) {
     private val colorLiveRoute = "#FF9800"
     private val liveRouteId = "live-route-trekme"
 
+    /**
+     * When the device is paused, the cancellation of the call removes all added paths. Upon resume,
+     * this method is called again and the whole live route is re-added.
+     * When a recording is stopped, the inner scope is cancelled so the live route is removed.
+     */
     suspend fun drawLiveRoute() {
-        return dataStateFlow.collect { (map, mapState) ->
+        dataStateFlow.collectLatest { (map, mapState) ->
             drawLiveRoute(mapState, map)
         }
     }
 
+    /**
+     * Upon cancellation, every added path are removed.
+     */
     private suspend fun drawLiveRoute(mapState: MapState, map: Map): Nothing = coroutineScope {
-        val routeList = mutableListOf<Route>()
-
         fun newRoute(): Route {
             val route = Route(id = "$liveRouteId-${UUID.randomUUID()}", initialColor = colorLiveRoute)
-            routeList.add(route)
 
             launch {
                 val pathBuilder = mapState.makePathDataBuilder()
@@ -53,6 +60,8 @@ class LiveRouteLayer(
                         }
                     }
                 }
+            }.invokeOnCompletion {
+                mapState.removePath(route.id)
             }
             return route
         }
@@ -65,16 +74,9 @@ class LiveRouteLayer(
                     route.addMarker(it.pt.toMarker())
                 }
                 LiveRouteStop -> {
-                    routeList.forEach { route ->
-                        mapState.removePath(route.id)
-                    }
-                    routeList.clear()
-                    route = newRoute()
+                    cancel()
                 }
                 LiveRoutePause -> {
-                    /* Add previous route */
-                    routeList.add(route)
-
                     /* Create and add a new route */
                     route = newRoute()
                 }
