@@ -49,7 +49,7 @@ fun BottomSheetCustom(
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                 val delta = available.y
-                return if (delta < 0 && source == NestedScrollSource.Drag) {
+                return if (delta < 0 && source == NestedScrollSource.UserInput) {
                     state.dispatchRawDelta(delta).toOffset()
                 } else {
                     Offset.Zero

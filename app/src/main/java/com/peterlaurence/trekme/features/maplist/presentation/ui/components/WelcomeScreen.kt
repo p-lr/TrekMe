@@ -6,8 +6,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -66,7 +66,7 @@ internal fun WelcomeScreen(
             Box(
                 Modifier.padding(vertical = 32.dp)
             ) {
-                Divider(Modifier.fillMaxWidth().align(Alignment.Center))
+                HorizontalDivider(Modifier.fillMaxWidth().align(Alignment.Center))
                 Text(
                     text = stringResource(id = R.string.welcome_screen_or),
                     modifier = Modifier

@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -29,7 +29,7 @@ fun GeoPlaceListUI(
                     fontSize = 17.sp
                 )
                 Text(text = place.locality, Modifier.padding(start = 24.dp, top = 4.dp))
-                Divider(Modifier.padding(top = 8.dp), thickness = 0.5.dp)
+                HorizontalDivider(Modifier.padding(top = 8.dp), thickness = 0.5.dp)
             }
         }
     }

@@ -20,8 +20,7 @@ class DistanceLayer(
     private val scope: CoroutineScope,
     private val mapStateFlow: Flow<MapState>,
 ) {
-    var isVisible = MutableStateFlow(false)
-        private set
+    val isVisible = MutableStateFlow(false)
 
     init {
         mapStateFlow.map {

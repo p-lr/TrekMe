@@ -21,7 +21,7 @@ fun DownloadCard(modifier: Modifier = Modifier, downloadProgress: Int, onCancel:
                 Modifier.padding(start = 8.dp, top = 8.dp)
             )
             LinearProgressIndicator(
-                progress = downloadProgress / 100f,
+                progress = { downloadProgress / 100f },
                 modifier = Modifier
                     .padding(start = 9.dp, top = 8.dp, bottom = 4.dp)
                     .fillMaxWidth()
