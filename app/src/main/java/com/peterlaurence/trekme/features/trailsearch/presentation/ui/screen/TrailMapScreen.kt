@@ -86,6 +86,8 @@ import com.peterlaurence.trekme.core.wmts.domain.model.OsmSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.SwissTopoData
 import com.peterlaurence.trekme.core.wmts.domain.model.TILE_SIZE_IN_MO
 import com.peterlaurence.trekme.core.wmts.domain.model.UsgsData
+import com.peterlaurence.trekme.core.wmts.domain.model.UsgsImageryTopo
+import com.peterlaurence.trekme.core.wmts.domain.model.UsgsTopo
 import com.peterlaurence.trekme.core.wmts.domain.model.WorldStreetMap
 import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.CollapsibleBottomSheet
 import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.States
@@ -334,7 +336,8 @@ fun TrailMapStateful(
             mapSourceDataList = listOf(
                 OsmSourceData(WorldStreetMap),
                 IgnSourceData(IgnClassic, overlays = emptyList()),
-                UsgsData,
+                UsgsData(UsgsTopo),
+                UsgsData(UsgsImageryTopo),
                 OrdnanceSurveyData,
                 IgnSpainData,
                 SwissTopoData

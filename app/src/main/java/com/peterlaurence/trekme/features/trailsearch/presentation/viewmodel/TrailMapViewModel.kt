@@ -676,7 +676,7 @@ class TrailMapViewModel @Inject constructor(
             OrdnanceSurveyData -> ordnanceSurveyConfig
             is OsmSourceData -> osmConfig
             SwissTopoData -> swissTopoConfig
-            UsgsData -> usgsConfig
+            is UsgsData -> usgsConfig
             IgnBelgiumData -> ignBelgiumConfig
         }
     }

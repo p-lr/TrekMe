@@ -116,7 +116,7 @@ private fun MapSourceDataSelectPreview() {
                 OsmSourceData(OpenTopoMap),
                 IgnSourceData(IgnClassic, emptyList()),
                 SwissTopoData,
-                UsgsData
+                UsgsData(UsgsTopo)
             ),
             currentMapSourceData = selectedMapSource,
             requiresExtendedOffer = { it is IgnSourceData },

@@ -367,6 +367,8 @@
     <string name="layer_osm_opentopo">OpenTopoMap</string>
     <string name="layer_osm_cyclosm">CyclOSM</string>
     <string name="layer_osm_outdoors">Outdoors</string>
+    <string name="layer_usgs_topo">USGS Topo</string>
+    <string name="layer_usgs_imagery_topo">USGS Satellite Topo</string>
     <string name="place_search_hint">Chercher un lieu</string>
     <string name="trekme_extended_advert">Profitez d\'une bien meilleure qualité d\'image et de textes plus lisibles.</string>
     <string name="tile_count_text">Téléchargement de %1$s tuiles</string>

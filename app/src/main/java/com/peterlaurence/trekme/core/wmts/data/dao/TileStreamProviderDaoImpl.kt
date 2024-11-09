@@ -53,8 +53,8 @@ class TileStreamProviderDaoImpl(
                 }
             }
 
-            UsgsData -> {
-                val urlTileBuilder = UrlTileBuilderUSGS()
+            is UsgsData -> {
+                val urlTileBuilder = UrlTileBuilderUSGS(data.layer)
                 TileStreamProviderUSGS(urlTileBuilder)
             }
 

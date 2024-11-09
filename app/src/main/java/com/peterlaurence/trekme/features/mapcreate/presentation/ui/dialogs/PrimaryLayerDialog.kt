@@ -100,7 +100,9 @@ private val layerIdToResId = mapOf(
     osmStreet to R.string.layer_osm_street,
     openTopoMap to R.string.layer_osm_opentopo,
     cyclOSM to R.string.layer_osm_cyclosm,
-    osmAndHd to R.string.layer_osm_street_hd
+    osmAndHd to R.string.layer_osm_street_hd,
+    usgsTopo to R.string.layer_usgs_topo,
+    usgsImageryTopo to R.string.layer_usgs_imagery_topo
 )
 
 @Preview(showBackground = true)

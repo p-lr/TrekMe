@@ -45,3 +45,12 @@ const val osmAndHd = "osmAndHd"
 /* All supported OSM layers
  * As of 2024/08/18, remove OpenTopoMap as levels 16 and 17 are no longer available */
 val osmLayersPrimary: List<OsmPrimaryLayer> = listOf(WorldStreetMap, OsmAndHd, CyclOSM, WorldTopoMap)
+
+sealed interface UsgsLayer
+sealed class UsgsPrimaryLayer(override val id: String) : Layer(id), UsgsLayer
+data object UsgsTopo : UsgsPrimaryLayer(usgsTopo)
+data object UsgsImageryTopo : UsgsPrimaryLayer(usgsImageryTopo)
+
+const val usgsTopo = "usgsTopo"
+const val usgsImageryTopo = "usgsImageryTopo"
+val usgsLayersPrimary: List<UsgsPrimaryLayer> = listOf(UsgsTopo, UsgsImageryTopo)

@@ -7,7 +7,7 @@ sealed interface MapSourceData
 data class IgnSourceData(val layer: IgnPrimaryLayer, val overlays: List<LayerPropertiesIgn>) : MapSourceData
 data object SwissTopoData : MapSourceData
 data class OsmSourceData(val layer: OsmLayer) : MapSourceData
-data object UsgsData : MapSourceData
+data class UsgsData(val layer: UsgsLayer) : MapSourceData
 data object IgnSpainData : MapSourceData
 data object OrdnanceSurveyData : MapSourceData
 data object IgnBelgiumData : MapSourceData
@@ -34,7 +34,12 @@ fun MapSourceData.getNameResId(): Int {
             }
         }
         is SwissTopoData -> R.string.swiss_topo_source
-        is UsgsData -> R.string.usgs_map_source
+        is UsgsData -> {
+            when (this.layer) {
+                UsgsImageryTopo -> R.string.layer_usgs_imagery_topo
+                UsgsTopo -> R.string.layer_usgs_topo
+            }
+        }
         is IgnBelgiumData -> R.string.ign_be_source
     }
 }

@@ -113,6 +113,7 @@ class WmtsViewModel @Inject constructor(
 
     private val defaultIgnLayer = IgnClassic
     private val defaultOsmLayer = WorldStreetMap
+    private val defaultUsgsLayer = UsgsTopo
 
     private val areaController = AreaUiController()
     private var downloadFormData: DownloadFormData? = null
@@ -354,7 +355,7 @@ class WmtsViewModel @Inject constructor(
 
     private fun updateTopBarConfig(wmtsSource: WmtsSource) {
         hasPrimaryLayers = when (wmtsSource) {
-            WmtsSource.IGN, WmtsSource.OPEN_STREET_MAP -> true
+            WmtsSource.IGN, WmtsSource.OPEN_STREET_MAP, WmtsSource.USGS -> true
             else -> false
         }
         hasOverlayLayers = wmtsSource == WmtsSource.IGN
@@ -369,6 +370,7 @@ class WmtsViewModel @Inject constructor(
                     it.sortedByDescending { l -> l == OsmAndHd }
                 } else it
             }
+            WmtsSource.USGS -> usgsLayersPrimary
             else -> null
         }
     }
@@ -380,6 +382,7 @@ class WmtsViewModel @Inject constructor(
         return when (wmtsSource) {
             WmtsSource.IGN -> getActivePrimaryIgnLayer()
             WmtsSource.OPEN_STREET_MAP -> getActivePrimaryOsmLayer()
+            WmtsSource.USGS -> getActivePrimaryUsgsLayer()
             else -> null
         }
     }
@@ -392,6 +395,10 @@ class WmtsViewModel @Inject constructor(
         return activePrimaryLayerForSource[WmtsSource.OPEN_STREET_MAP] as? OsmPrimaryLayer ?: run {
             if (hasExtendedOffer.value) OsmAndHd else defaultOsmLayer
         }
+    }
+
+    private fun getActivePrimaryUsgsLayer(): UsgsPrimaryLayer {
+        return activePrimaryLayerForSource[WmtsSource.USGS] as? UsgsPrimaryLayer ?: defaultUsgsLayer
     }
 
     fun onPrimaryLayerDefined(layerId: String) = viewModelScope.launch {
@@ -438,6 +445,8 @@ class WmtsViewModel @Inject constructor(
             openTopoMap -> OpenTopoMap
             cyclOSM -> CyclOSM
             osmAndHd -> OsmAndHd
+            usgsTopo -> UsgsTopo
+            usgsImageryTopo -> UsgsImageryTopo
             else -> null
         }
     }
@@ -473,7 +482,10 @@ class WmtsViewModel @Inject constructor(
                 flow { emit(OsmSourceData(layer)) }
             }
             WmtsSource.SWISS_TOPO -> flow { emit(SwissTopoData) }
-            WmtsSource.USGS -> flow { emit(UsgsData) }
+            WmtsSource.USGS -> {
+                val layer = getActivePrimaryUsgsLayer()
+                flow { emit(UsgsData(layer)) }
+            }
             WmtsSource.IGN_SPAIN -> flow { emit(IgnSpainData) }
             WmtsSource.IGN_BE -> flow { emit(IgnBelgiumData) }
         }

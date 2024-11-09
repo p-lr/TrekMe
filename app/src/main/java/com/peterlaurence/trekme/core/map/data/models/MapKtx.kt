@@ -246,6 +246,8 @@ enum class SwissPrimaryLayerIdKtx {
 @Serializable
 enum class UsgsPrimaryLayerIdKtx {
     @SerialName("usgs-topo")
-    UsgsTopo
+    UsgsTopo,
+    @SerialName("usgs-imagery-topo")
+    UsgsImageryTopo
 }
 /* endregion */

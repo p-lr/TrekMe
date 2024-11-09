@@ -53,6 +53,8 @@ import com.peterlaurence.trekme.core.wmts.domain.model.Satellite
 import com.peterlaurence.trekme.core.wmts.domain.model.Slopes
 import com.peterlaurence.trekme.core.wmts.domain.model.SwissTopoData
 import com.peterlaurence.trekme.core.wmts.domain.model.UsgsData
+import com.peterlaurence.trekme.core.wmts.domain.model.UsgsImageryTopo
+import com.peterlaurence.trekme.core.wmts.domain.model.UsgsTopo
 import com.peterlaurence.trekme.core.wmts.domain.model.WorldStreetMap
 import com.peterlaurence.trekme.core.wmts.domain.model.WorldTopoMap
 import java.util.UUID
@@ -173,7 +175,14 @@ private fun LayerDataKtx.toDomain(): MapSourceData {
         is IgnSpainLayerDataKtx -> IgnSpainData
         is OrdnanceSurveyLayerDataKtx -> OrdnanceSurveyData
         is SwissLayerDataKtx -> SwissTopoData
-        is UsgsLayerDataKtx -> UsgsData
+        is UsgsLayerDataKtx -> {
+            UsgsData(
+                layer = when (this.primaryLayerId) {
+                    UsgsPrimaryLayerIdKtx.UsgsTopo -> UsgsTopo
+                    UsgsPrimaryLayerIdKtx.UsgsImageryTopo -> UsgsImageryTopo
+                }
+            )
+        }
         is IgnBelgiumLayerDataKtx -> IgnBelgiumData
     }
 }
@@ -272,7 +281,12 @@ private fun MapSourceData.toData(): LayerDataKtx {
         }
 
         is SwissTopoData -> SwissLayerDataKtx(primaryLayerId = SwissPrimaryLayerIdKtx.SwissTopo)
-        is UsgsData -> UsgsLayerDataKtx(primaryLayerId = UsgsPrimaryLayerIdKtx.UsgsTopo)
+        is UsgsData -> UsgsLayerDataKtx(
+            primaryLayerId = when (layer) {
+                UsgsImageryTopo -> UsgsPrimaryLayerIdKtx.UsgsImageryTopo
+                UsgsTopo -> UsgsPrimaryLayerIdKtx.UsgsTopo
+            }
+        )
         is IgnBelgiumData -> IgnBelgiumLayerDataKtx(primaryLayerId = IgnBelgiumPrimaryLayerIdKtx.IgnBelgiumTopo)
     }
 }
