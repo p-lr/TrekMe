@@ -293,15 +293,10 @@ private fun MapSettingsScreen(
 @Composable
 private fun ThumbnailSetting(onSetImage: (Uri) -> Unit) {
     val resultLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        /* Check if the request code is the one we are interested in */
-        if (result.resultCode == Activity.RESULT_OK) {
-            if (result.data == null) return@rememberLauncherForActivityResult
-            val uri = result.data?.data
-            if (uri != null) {
-                onSetImage(uri)
-            }
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            onSetImage(uri)
         }
     }
 
@@ -310,12 +305,7 @@ private fun ThumbnailSetting(onSetImage: (Uri) -> Unit) {
         name = stringResource(id = R.string.image_change_btn_txt),
         enabled = true,
         onClick = {
-            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-            intent.addCategory(Intent.CATEGORY_OPENABLE)
-
-            /* Search for all documents available via installed storage providers */
-            intent.type = "image/*"
-            resultLauncher.launch(intent)
+            resultLauncher.launch("image/*")
         }
     )
 }
