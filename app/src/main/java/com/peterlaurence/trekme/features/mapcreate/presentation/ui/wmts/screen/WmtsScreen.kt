@@ -77,6 +77,7 @@ import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.WmtsOn
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.WmtsState
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.WmtsViewModel
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.DefaultCanvas
 import ovh.plrapps.mapcompose.api.fullSize
@@ -259,6 +260,7 @@ fun WmtsStateful(
             snackbarHostState = snackbarHostState,
             topBarState = topBarState,
             uiState = uiState,
+            isSearchPendingState = viewModel.isSearchPendingState,
             wmtsSource = wmtsSource,
             onToggleArea = {
                 viewModel.toggleArea()
@@ -354,6 +356,7 @@ private fun WmtsScaffold(
     snackbarHostState: SnackbarHostState,
     topBarState: TopBarState,
     uiState: UiState,
+    isSearchPendingState: StateFlow<Boolean>,
     wmtsSource: WmtsSource?,
     onToggleArea: () -> Unit,
     onValidateArea: () -> Unit,
@@ -407,9 +410,12 @@ private fun WmtsScaffold(
                 /* In this context, intercept physical back gesture */
                 BackHandler(onBack = onCloseSearch)
 
+                val isSearchPending by isSearchPendingState.collectAsState()
+
                 GeoPlaceListUI(
                     modifier,
                     uiState,
+                    isSearchPending,
                     onGeoPlaceSelection
                 )
             }

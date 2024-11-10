@@ -53,7 +53,7 @@ class GeocodingEngine @Inject constructor(
             val geoPlaces = runCatching {
                 for (backend in backends) {
                     val geoPlaces = backend.search(query)
-                    if (geoPlaces != null) {
+                    if (!geoPlaces.isNullOrEmpty()) {
                         return@runCatching geoPlaces
                     }
                 }

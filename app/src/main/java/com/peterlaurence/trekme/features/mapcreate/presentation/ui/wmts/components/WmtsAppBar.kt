@@ -1,25 +1,49 @@
 package com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.selection.TextSelectionColors
-import androidx.compose.material3.*
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.DpOffset
@@ -64,14 +88,17 @@ fun WmtsAppBar(
             )
         },
         navigationIcon = {
-            IconButton(onClick = if (state is SearchMode) onCloseSearch else onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "")
+            if (state !is SearchMode) {
+                IconButton(onClick = onBack) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "")
+                }
             }
         },
         actions = {
             when (state) {
                 is Empty -> {
                 }
+
                 is Collapsed -> {
                     IconButton(onClick = onSearchClick) {
                         Icon(
@@ -142,8 +169,9 @@ fun WmtsAppBar(
                         }
                     }
                 }
+
                 is SearchMode -> {
-                    SearchView(state.textValueState, onQueryTextSubmit)
+                    SearchView(state.lastSearch, onBack = onCloseSearch, onQueryTextSubmit)
                 }
             }
         }
@@ -161,7 +189,10 @@ fun WmtsAppBar(
             },
             text = {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(stringResource(id = R.string.mapcreate_from_track_rationale), Modifier.fillMaxWidth())
+                    Text(
+                        stringResource(id = R.string.mapcreate_from_track_rationale),
+                        Modifier.fillMaxWidth()
+                    )
                     Spacer(modifier = Modifier.height(24.dp))
                     Image(
                         painter = painterResource(id = R.drawable.create_from_track),
@@ -191,61 +222,76 @@ fun WmtsAppBar(
 }
 
 @Composable
-fun SearchView(state: MutableState<TextFieldValue>, onTextChange: (String) -> Unit) {
-    val focusRequester = remember { FocusRequester() }
-
-    TextField(
-        value = state.value,
-        onValueChange = { value ->
-            state.value = value
-            onTextChange(value.text)
-        },
-        modifier = Modifier
+fun SearchView(lastSearch: String, onBack: () -> Unit, onTextChange: (String) -> Unit) {
+    var searchText by remember {
+        mutableStateOf(TextFieldValue(lastSearch, selection = TextRange(lastSearch.length)))
+    }
+    Surface(
+        Modifier
+            .padding(start = 12.dp, end = 12.dp)
             .fillMaxWidth()
-            .padding(start = 58.dp, end = 8.dp)
-            .focusRequester(focusRequester),
-        textStyle = TextStyle(fontSize = 18.sp),
-        placeholder = {
-            Text(
-                text = stringResource(id = R.string.search_hint),
-                fontSize = 18.sp,
-                color = MaterialTheme.colorScheme.onTertiaryContainer,
-                modifier = Modifier.alpha(0.5f)
-            )
-        },
-        trailingIcon = {
-            if (state.value != TextFieldValue("")) {
-                IconButton(
-                    onClick = {
-                        state.value = TextFieldValue("")
-                    }
+            .padding(top = 12.dp)
+            .height(40.dp)
+            .border(
+                1.dp,
+                MaterialTheme.colorScheme.outlineVariant,
+                RoundedCornerShape(50)
+            ),
+        shape = RoundedCornerShape(50),
+    ) {
+        val focusRequester = remember { FocusRequester() }
+        BasicTextField(
+            modifier = Modifier.focusRequester(focusRequester),
+            value = searchText,
+            onValueChange = {
+                searchText = it
+                onTextChange(it.text)
+            },
+            singleLine = true,
+            textStyle = androidx.compose.material.LocalTextStyle.current.copy(
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 14.sp
+            ),
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary)
+        ) { innerTextField ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // Leading icon
+                IconButton(onClick = onBack) {
+                    Image(
+                        painter = painterResource(id = R.drawable.baseline_arrow_back_24),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
+                        contentDescription = null
+                    )
+                }
+
+                Box(
+                    Modifier.weight(1f),
+                    contentAlignment = Alignment.CenterStart
                 ) {
-                    Icon(
-                        Icons.Default.Close,
-                        contentDescription = "",
-                        modifier = Modifier
-                            .padding(5.dp)
-                            .size(24.dp)
+                    if (searchText.text.isEmpty()) {
+                        Text(
+                            stringResource(id = R.string.excursion_search_button),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontSize = 16.sp
+                        )
+                    }
+                    innerTextField()
+                }
+
+                // Trailing icon
+                IconButton(onClick = { searchText = TextFieldValue("") }) {
+                    Image(
+                        painter = painterResource(id = R.drawable.close_circle_outline),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
+                        contentDescription = null
                     )
                 }
             }
-        },
-        singleLine = true,
-        shape = RectangleShape,
-        colors = TextFieldDefaults.colors(
-            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-            focusedContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
-            cursorColor = MaterialTheme.colorScheme.tertiary,
-            selectionColors = TextSelectionColors(
-                handleColor = MaterialTheme.colorScheme.tertiary,
-                backgroundColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.4f)
-            ),
-            focusedIndicatorColor = MaterialTheme.colorScheme.tertiary
-        )
-    )
+        }
 
-    DisposableEffect(Unit) {
-        focusRequester.requestFocus()
-        onDispose { }
+        DisposableEffect(Unit) {
+            focusRequester.requestFocus()
+            onDispose { }
+        }
     }
 }

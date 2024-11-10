@@ -3,11 +3,8 @@ package com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel
 import android.app.Application
 import android.content.Intent
 import android.net.Uri
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.billing.di.IGN
@@ -118,7 +115,6 @@ class WmtsViewModel @Inject constructor(
     private val areaController = AreaUiController()
     private var downloadFormData: DownloadFormData? = null
 
-    private val searchFieldState: MutableState<TextFieldValue> = mutableStateOf(TextFieldValue(""))
     private var hasPrimaryLayers = false
     private var hasOverlayLayers = false
 
@@ -135,6 +131,11 @@ class WmtsViewModel @Inject constructor(
      * flag to true. */
     private var shouldCenterOnNextLocation = true
 
+    private var lastSearch: String? = null
+    private var lastPlaces: List<GeoPlace>? = null
+
+    val isSearchPendingState = geocodingRepository.isLoadingFlow
+
     init {
         viewModelScope.launch {
             wmtsSourceRepository.wmtsSourceState.collectLatest { source ->
@@ -146,6 +147,7 @@ class WmtsViewModel @Inject constructor(
             if (_uiState.value is GeoplaceList) {
                 _uiState.value = GeoplaceList(places)
             }
+            lastPlaces = places
         }.launchIn(viewModelScope)
 
         _wmtsState.map {
@@ -741,13 +743,14 @@ class WmtsViewModel @Inject constructor(
     }
 
     fun onSearchClick() {
-        _topBarState.value = SearchMode(searchFieldState)
-        _uiState.value = GeoplaceList(listOf())
+        _topBarState.value = SearchMode(lastSearch.orEmpty())
+        _uiState.value = GeoplaceList(lastPlaces ?: emptyList())
     }
 
     fun onQueryTextSubmit(query: String) {
         if (query.isNotEmpty()) {
             geocodingRepository.search(query)
+            lastSearch = query
         }
     }
 
@@ -802,4 +805,4 @@ private fun WmtsState.getMapState(): MapState? {
 sealed interface TopBarState
 data object Empty : TopBarState
 data class Collapsed(val hasPrimaryLayers: Boolean, val hasOverlayLayers: Boolean, val hasTrackImport: Boolean) : TopBarState
-data class SearchMode(val textValueState: MutableState<TextFieldValue>) : TopBarState
+data class SearchMode(val lastSearch: String) : TopBarState
