@@ -36,8 +36,8 @@ android {
 
     compileOptions {
         coreLibraryDesugaringEnabled true
-        sourceCompatibility JavaVersion.VERSION_21
-        targetCompatibility JavaVersion.VERSION_21
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
     packagingOptions {
         resources {
@@ -51,6 +51,7 @@ android {
     }
     kotlinOptions {
         freeCompilerArgs = ['-Xjvm-default=all-compatibility', '-Xopt-in=androidx.compose.material.ExperimentalMaterialApi']
+        jvmTarget = "17"
     }
     namespace 'com.peterlaurence.trekme'
 }
@@ -59,7 +60,7 @@ dependencies {
     def lifecycle_version = '2.8.7'
 
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.2'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.3'
 //    implementation project(":mapcompose-local")  // for dev purposes
     implementation 'ovh.plrapps:mapcompose:2.12.11'
     implementation 'com.android.billingclient:billing:7.1.1'
