@@ -54,7 +54,7 @@ fun PermissionRequestHandler(
         if (isGranted.values.any { !it }) {
             scope.launch {
                 val result = snackbarHostState.showSnackbar(
-                    message = context.getString(R.string.storage_perm_denied),
+                    message = context.getString(R.string.critical_perm_denied),
                     isLong = true,
                     actionLabel = context.getString(R.string.ok_dialog)
                 )
@@ -78,9 +78,13 @@ fun PermissionRequestHandler(
         WarningDialog(
             title = stringResource(id = R.string.warning_title),
             contentText = stringResource(id = R.string.no_storage_perm),
-            onConfirmPressed = { storagePermLauncher.launch(MIN_PERMISSIONS_ANDROID_9_AND_BELOW) },
+            onConfirmPressed = {
+                isShowingAndroid9AndBelowRationale = false
+                storagePermLauncher.launch(MIN_PERMISSIONS_ANDROID_9_AND_BELOW)
+            },
             confirmButtonText = stringResource(id = R.string.ok_dialog),
             onDismissRequest = {
+                isShowingAndroid9AndBelowRationale = false
                 storagePermLauncher.launch(MIN_PERMISSIONS_ANDROID_9_AND_BELOW)
             }
         )

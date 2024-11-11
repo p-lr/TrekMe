@@ -29,7 +29,7 @@
     <string name="init_error">TrekMe can\'t create necessary folders, and cannot function properly. If this error persists, consider re-installing the app.</string>
     <string name="bad_storage_status">There is something wrong with your SD card: we can\'t write to it.\nThis has nothing to do with TrekMe, and it won\'t be able to download maps or save changes.</string>
     <string name="storage_read_only">Your SD card is only accessible as read-only. This means we can\'t write to it and TrekMe won\'t be able to download maps or save changes.</string>
-    <string name="storage_perm_denied">Please enable storage permission from settings</string>
+    <string name="critical_perm_denied">Please enable required permissions from settings</string>
     <string name="close_dialog">Close</string>
     <string name="cancel_dialog_string">Cancel</string>
     <string name="start_dialog_string">Start</string>

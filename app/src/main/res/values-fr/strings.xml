@@ -269,7 +269,7 @@
     <string name="ign_be_source">IGN Belgique</string>
     <string name="ign_be_description">Belgique uniquement</string>
     <string name="map_import_error">Erreur: le format de la carte n\'est pas reconnu.</string>
-    <string name="storage_perm_denied">Veuillez activer la permission de stockage</string>
+    <string name="critical_perm_denied">Veuillez activer les permissions requises</string>
     <string name="map_image_import_ok">Image changée</string>
     <string name="map_image_import_error">Erreur lors du changement d\'image :(</string>
     <string name="map_settings_error">Désolé, une erreur est survenue</string>
