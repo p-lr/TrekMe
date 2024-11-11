@@ -22,6 +22,7 @@ class Nominatim(private val client: OkHttpClient) : GeocodingBackend {
     private val requestBuilder = Request.Builder()
 
     override suspend fun search(query: String): List<GeoPlace>? {
+        if (query.length <= 2) return emptyList()
         val req = makeRequest(query)
         val resp = client.performRequest<List<NominatimJson>>(req, json)
 
@@ -29,7 +30,11 @@ class Nominatim(private val client: OkHttpClient) : GeocodingBackend {
     }
 
     private fun makeRequest(query: String): Request {
-        return requestBuilder.url("${nominatimApi}search?q=$query&format=jsonv2").build()
+        return requestBuilder
+            .url("${nominatimApi}search?q=$query&format=jsonv2")
+            .header("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36")
+            .header("Cache-Control", "public, max-age=604800") // 7 days
+            .build()
     }
 
     private fun convert(response: List<NominatimJson>): List<GeoPlace>? {

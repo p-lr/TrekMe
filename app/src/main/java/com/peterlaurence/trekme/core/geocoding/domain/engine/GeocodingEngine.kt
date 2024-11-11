@@ -37,7 +37,7 @@ class GeocodingEngine @Inject constructor(
     val geoPlaceFlow: SharedFlow<List<GeoPlace>> = _geoPlaceFlow.asSharedFlow()
 
     private val queryFlow = MutableSharedFlow<String>(0, 1, BufferOverflow.DROP_OLDEST)
-    private val queryFlowDebounced = queryFlow.debounce(500)
+    private val queryFlowDebounced = queryFlow.debounce(1000)
 
     init {
         collectQueries()

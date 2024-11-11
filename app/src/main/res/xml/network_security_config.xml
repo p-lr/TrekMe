@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
+    <base-config>
+        <trust-anchors>
+            <!-- Nominatim, Photon, and WaymarkedTrails use the same root ca (as of 2024/11) -->
+            <certificates src="@raw/isrg_root_x1"/>
+            <certificates src="system"/>
+        </trust-anchors>
+    </base-config>
+
     <debug-overrides>
         <trust-anchors>
             <!-- Trust user added CAs while debuggable only -->

@@ -28,7 +28,10 @@ class Photon(private val client: OkHttpClient) : GeocodingBackend {
     }
 
     private fun makeRequest(query: String): Request {
-        return requestBuilder.url("$photonApi?q=$query&limit=10").build()
+        return requestBuilder
+            .url("$photonApi?q=$query&limit=10")
+            .header("Cache-Control", "public, max-age=604800") // 7 days
+            .build()
     }
 
     private fun convert(response: PhotonMainResponse): List<GeoPlace>? {
