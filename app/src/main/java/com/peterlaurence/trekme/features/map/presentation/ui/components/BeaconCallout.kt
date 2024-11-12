@@ -16,16 +16,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.Callout
 
+
 @Composable
 fun BeaconCallout(
-    size: DpSize,
     title: String,
     subTitle: String,
     shouldAnimate: Boolean,
@@ -42,7 +41,7 @@ fun BeaconCallout(
         elevation = 0.dp,
     ) {
         Column(
-            Modifier.size(size),
+            Modifier.width(beaconCalloutWidthDp.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(Modifier.fillMaxWidth()) {
@@ -52,7 +51,7 @@ fun BeaconCallout(
                         .padding(top = 11.dp, start = 24.dp, end = 30.dp)
                         .align(Alignment.TopCenter),
                     fontWeight = FontWeight.Medium,
-                    maxLines = 3,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     fontSize = 14.sp
                 )
@@ -78,7 +77,6 @@ fun BeaconCallout(
                 modifier = Modifier.padding(vertical = 4.dp),
                 fontSize = 10.sp
             )
-            Spacer(modifier = Modifier.weight(1f))
             HorizontalDivider(thickness = 0.5.dp)
             Row(
                 verticalAlignment = Alignment.CenterVertically
@@ -149,12 +147,14 @@ fun BeaconCallout(
     }
 }
 
+const val beaconCalloutWidthDp = 200
+const val beaconCalloutHeightDp = 120
+
 @Preview
 @Composable
 private fun BeaconCalloutPreview() {
     TrekMeTheme {
         BeaconCallout(
-            size = DpSize(200.dp, 120.dp),
             title = "A beacon",
             subTitle = "Lat : -21.2059 Lon : 55.6268",
             shouldAnimate = false,

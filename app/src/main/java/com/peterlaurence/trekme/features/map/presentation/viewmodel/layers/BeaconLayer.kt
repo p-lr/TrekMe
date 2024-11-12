@@ -4,8 +4,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.models.Beacon
 import com.peterlaurence.trekme.core.map.domain.models.Map
@@ -154,7 +152,6 @@ class BeaconLayer(
                 val title = beacon.name
 
                 BeaconCallout(
-                    DpSize(beaconCalloutWidthDp.dp, beaconCalloutHeightDp.dp),
                     title = title,
                     subTitle = subTitle,
                     shouldAnimate,
@@ -282,9 +279,6 @@ private const val beaconPrefix = "beacon"
 private const val beaconGrabPrefix = "grabBeacon"
 private const val beaconClickAreaPrefix = "beaconClickArea"
 private const val calloutPrefix = "callout"
-
-private const val beaconCalloutWidthDp = 200
-private const val beaconCalloutHeightDp = 120
 
 private val df = DecimalFormat("#.####").apply {
     roundingMode = RoundingMode.CEILING
