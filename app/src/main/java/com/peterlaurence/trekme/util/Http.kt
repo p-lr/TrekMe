@@ -14,7 +14,6 @@ import okhttp3.ResponseBody
 import okhttp3.internal.cacheGet
 import java.io.IOException
 import java.util.zip.GZIPInputStream
-import java.util.zip.ZipException
 import kotlin.coroutines.resumeWithException
 
 suspend inline fun <reified T> OkHttpClient.performRequest(request: Request, json: Json): T? =
@@ -22,12 +21,12 @@ suspend inline fun <reified T> OkHttpClient.performRequest(request: Request, jso
         runCatching {
             val cachedResponse = cache?.let { cacheGet(it, request) }
             val str = if (cachedResponse != null && cachedResponse.isSuccessful) {
-                val bodyData = cachedResponse.body?.bytes()!!
-                /* First, try to read the bytes as gzip content. Otherwise, treat it as clear text */
-                try {
-                    GZIPInputStream(bodyData.inputStream()).bufferedReader().use { it.readText() }
-                } catch (e: ZipException) {
-                    String(bodyData)
+                val body = cachedResponse.body!! // on purpose (!!)
+                /* The cache may contain gzipped content */
+                if (cachedResponse.isGzip()) {
+                    GZIPInputStream(body.byteStream()).bufferedReader().use { it.readText() }
+                } else {
+                    body.string()
                 }
             } else {
                 val call = newCall(request)
@@ -62,4 +61,8 @@ suspend fun Call.await() = suspendCancellableCoroutine<ResponseBody?> { continua
             continuation.resumeWithException(e)
         }
     })
+}
+
+fun Response.isGzip(): Boolean {
+    return header("Content-Encoding") == "gzip"
 }
