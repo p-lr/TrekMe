@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
@@ -313,6 +315,7 @@ private fun BoxWithConstraintsScope.OnBoardingOverlay(
             modifier = Modifier
                 .width(min(maxWidth * 0.9f, 330.dp))
                 .padding(bottom = 16.dp, end = 85.dp)
+                .navigationBarsPadding()
                 .align(Alignment.BottomEnd),
             text = stringResource(id = R.string.onboarding_select_area),
             popupOrigin = PopupOrigin.BottomEnd,
@@ -335,6 +338,7 @@ private fun BoxWithConstraintsScope.OnBoardingOverlay(
             modifier = Modifier
                 .width(min(maxWidth * 0.8f, 310.dp))
                 .padding(top = 60.dp, end = 50.dp)
+                .statusBarsPadding()
                 .align(Alignment.TopEnd),
             text = stringResource(id = R.string.onboarding_center_on_pos),
             popupOrigin = PopupOrigin.TopEnd,

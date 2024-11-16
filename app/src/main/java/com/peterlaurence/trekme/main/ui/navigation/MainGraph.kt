@@ -44,7 +44,7 @@ fun MainGraph(
         mapListGraph(
             navController = navController,
             onNavigateToMapCreate = { navController.navigateToMapCreation() },
-            onNavigateToMap = { id -> navController.navigateToMap() },
+            onNavigateToMap = { navController.navigateToMap() },
             onNavigateToExcursionSearch = { navController.navigateToTrailSearch() },
             onNavigateToShop = { navController.navigateToShop() },
             onMainMenuClick = onMainMenuClick

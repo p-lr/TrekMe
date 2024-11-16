@@ -1,9 +1,5 @@
 package com.peterlaurence.trekme.main.ui
 
-import android.Manifest
-import android.content.pm.PackageManager
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
@@ -32,7 +28,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.core.content.ContextCompat
 import androidx.navigation.compose.rememberNavController
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.events.AppEventBus
@@ -40,15 +35,16 @@ import com.peterlaurence.trekme.events.FatalMessage
 import com.peterlaurence.trekme.events.WarningMessage
 import com.peterlaurence.trekme.events.gpspro.GpsProEvents
 import com.peterlaurence.trekme.events.maparchive.MapArchiveEvents
-import com.peterlaurence.trekme.main.ui.component.DrawerHeader
 import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.WarningDialog
 import com.peterlaurence.trekme.main.eventhandler.BillingEventHandler
-import com.peterlaurence.trekme.main.viewmodel.MainActivityEvent
-import com.peterlaurence.trekme.main.viewmodel.MainActivityViewModel
 import com.peterlaurence.trekme.main.eventhandler.HandleGenericMessages
 import com.peterlaurence.trekme.main.eventhandler.MapArchiveEventHandler
 import com.peterlaurence.trekme.main.eventhandler.MapDownloadEventHandler
 import com.peterlaurence.trekme.main.eventhandler.RecordingEventHandler
+import com.peterlaurence.trekme.main.permission.PermissionRequestHandler
+import com.peterlaurence.trekme.main.ui.component.DrawerHeader
+import com.peterlaurence.trekme.main.ui.component.HandleBackGesture
+import com.peterlaurence.trekme.main.ui.component.MainActivityLifecycleObserver
 import com.peterlaurence.trekme.main.ui.navigation.MainGraph
 import com.peterlaurence.trekme.main.ui.navigation.navigateToAbout
 import com.peterlaurence.trekme.main.ui.navigation.navigateToGpsPro
@@ -61,12 +57,10 @@ import com.peterlaurence.trekme.main.ui.navigation.navigateToSettings
 import com.peterlaurence.trekme.main.ui.navigation.navigateToShop
 import com.peterlaurence.trekme.main.ui.navigation.navigateToTrailSearch
 import com.peterlaurence.trekme.main.ui.navigation.navigateToWifiP2p
-import com.peterlaurence.trekme.main.permission.PermissionRequestHandler
-import com.peterlaurence.trekme.main.ui.component.HandleBackGesture
-import com.peterlaurence.trekme.main.ui.component.MainActivityLifecycleObserver
+import com.peterlaurence.trekme.main.viewmodel.MainActivityEvent
+import com.peterlaurence.trekme.main.viewmodel.MainActivityViewModel
 import com.peterlaurence.trekme.main.viewmodel.RecordingEventHandlerViewModel
 import com.peterlaurence.trekme.util.android.activity
-import com.peterlaurence.trekme.util.checkInternet
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 import kotlinx.coroutines.launch
 
@@ -148,32 +142,6 @@ fun MainStateful(
 
     BillingEventHandler(appEventBus)
 
-    val launcher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        // Permission should always be granted
-    }
-
-    val checkInternetPermission = {
-        if (ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.INTERNET
-            ) == PackageManager.PERMISSION_DENIED
-        ) {
-            launcher.launch(Manifest.permission.INTERNET)
-        }
-    }
-
-    val noInternet = stringResource(id = R.string.no_internet)
-    // TODO: do this in each individual destination and not at this level
-    val warnIfNotInternet = {
-        scope.launch {
-            if (!checkInternet()) {
-                snackbarHostState.showSnackbar(noInternet)
-            }
-        }
-    }
-
     val gpsProPurchased by viewModel.gpsProPurchased.collectAsState()
     val menuItems by remember {
         derivedStateOf {
@@ -211,18 +179,9 @@ fun MainStateful(
 
                             when (item) {
                                 MenuItem.MapList -> navController.navigateToMapList()
-                                MenuItem.MapCreate -> {
-                                    checkInternetPermission()
-                                    warnIfNotInternet()
-                                    navController.navigateToMapCreation()
-                                }
-
+                                MenuItem.MapCreate -> navController.navigateToMapCreation()
                                 MenuItem.Record -> navController.navigateToRecord()
-                                MenuItem.TrailSearch -> {
-                                    warnIfNotInternet()
-                                    navController.navigateToTrailSearch()
-                                }
-
+                                MenuItem.TrailSearch -> navController.navigateToTrailSearch()
                                 MenuItem.GpsPro -> navController.navigateToGpsPro()
                                 MenuItem.MapImport -> navController.navigateToMapImport()
                                 MenuItem.WifiP2p -> navController.navigateToWifiP2p()

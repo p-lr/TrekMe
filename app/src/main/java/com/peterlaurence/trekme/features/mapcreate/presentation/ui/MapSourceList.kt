@@ -1,5 +1,9 @@
 package com.peterlaurence.trekme.features.mapcreate.presentation.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.LinkAnnotation
@@ -22,16 +27,20 @@ import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.OnBoardingTip
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.PopupOrigin
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.MapSourceListViewModel
+import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MapSourceListUi(
+    snackbarHostState: SnackbarHostState,
     sources: List<WmtsSource>,
     onSourceClick: (WmtsSource) -> Unit,
     onBackClick: () -> Unit
@@ -46,7 +55,8 @@ private fun MapSourceListUi(
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         LazyColumn(
             Modifier
@@ -192,23 +202,58 @@ fun MapSourceListStateful(
     onSourceClick: (WmtsSource) -> Unit,
     onBackClick: () -> Unit
 ) {
-    val sourceList by viewModel.sourceList
-    var showOnBoarding by viewModel.showOnBoarding
+    val sourceList by viewModel.sourceList.collectAsState()
+    val showOnBoarding by viewModel.showOnBoarding.collectAsState()
+
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        // Permission should always be granted
+    }
+
+    val context = LocalContext.current
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    val noInternetWarning = stringResource(id = R.string.no_internet)
+    LaunchedEffectWithLifecycle(flow = viewModel.events) { event ->
+        when (event) {
+            MapSourceListViewModel.Event.NoInternet -> {
+                scope.launch {
+                    /* Check internet permission */
+                    if (ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.INTERNET
+                        ) == PackageManager.PERMISSION_DENIED
+                    ) {
+                        launcher.launch(Manifest.permission.INTERNET)
+                    }
+
+                    snackbarHostState.showSnackbar(
+                        message = noInternetWarning,
+                        withDismissAction = true,
+                        duration = SnackbarDuration.Indefinite
+                    )
+                }
+            }
+        }
+    }
 
     BoxWithConstraints {
-        MapSourceListUi(sourceList, onSourceClick, onBackClick = onBackClick)
+        MapSourceListUi(snackbarHostState, sourceList, onSourceClick, onBackClick = onBackClick)
         if (showOnBoarding) {
             OnBoardingTip(
                 modifier = Modifier
                     .width(min(maxWidth * 0.8f, 310.dp))
                     .padding(bottom = 16.dp)
+                    .navigationBarsPadding()
                     .align(Alignment.BottomCenter),
                 popupOrigin = PopupOrigin.BottomCenter,
                 text = stringResource(
                     id = R.string.onboarding_map_create
                 ),
                 delayMs = 500,
-                onAcknowledge = { showOnBoarding = false }
+                onAcknowledge = { viewModel.hideOnboarding() }
             )
         }
     }
