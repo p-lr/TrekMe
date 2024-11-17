@@ -1,16 +1,40 @@
 package com.peterlaurence.trekme.features.map.presentation.ui.components
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -57,6 +81,7 @@ fun MapTopAppBar(
     var isShowingTrackFollowHelp by rememberSaveable { mutableStateOf(false) }
     var isShowingTrackFollowRedirect by rememberSaveable { mutableStateOf(false) }
     var isShowingManageMarkersRedirect by rememberSaveable { mutableStateOf(false) }
+    var isShowingBeaconRedirect by rememberSaveable { mutableStateOf(false) }
 
     TopAppBar(
         title = {
@@ -109,19 +134,37 @@ fun MapTopAppBar(
                             }
                         )
 
-                        if (hasBeacons) {
-                            IconAndText(
-                                { modifier ->
-                                    val radius = with(LocalDensity.current) { 20.dp.toPx() }
-                                    Beacon(modifier, beaconVicinityRadiusPx = radius)
-                                },
-                                R.string.mapview_add_beacon,
-                                onClick = {
+                        IconAndText(
+                            icon = { modifier ->
+                                Icon(
+                                    modifier = modifier.padding(top = 8.dp),
+                                    painter = painterResource(R.drawable.track_create),
+                                    contentDescription = null
+                                )
+                            },
+                            R.string.mapview_add_track,
+                            onClick = {
+                                expandedAddOnMap = false
+                                // TODO
+                            }
+                        )
+
+                        IconAndText(
+                            { modifier ->
+                                val radius = with(LocalDensity.current) { 20.dp.toPx() }
+                                Beacon(modifier, beaconVicinityRadiusPx = radius)
+                            },
+                            R.string.mapview_add_beacon,
+                            enabled = hasBeacons,
+                            onClick = {
+                                if (hasBeacons) {
                                     expandedAddOnMap = false
                                     onAddBeacon()
+                                } else {
+                                    isShowingBeaconRedirect = true
                                 }
-                            )
-                        }
+                            }
+                        )
                     }
                 }
             }
@@ -372,18 +415,78 @@ fun MapTopAppBar(
             },
         )
     }
+
+    if (isShowingBeaconRedirect) {
+        AlertDialog(
+            onDismissRequest = { isShowingBeaconRedirect = false },
+            title = {
+                Text(stringResource(id = R.string.map_settings_trekme_extended_title))
+            },
+            text = {
+                Text(text = stringResource(id = R.string.beacon_advertise))
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        isShowingBeaconRedirect = false
+                    }
+                ) {
+                    Text(text = stringResource(id = R.string.cancel_dialog_string))
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        expandedAddOnMap = false
+                        isShowingBeaconRedirect = false
+                        onNavigateToShop()
+                    }
+                ) {
+                    Text(text = stringResource(id = R.string.ok_dialog))
+                }
+            },
+        )
+    }
 }
 
 @Composable
-private fun IconAndText(icon: @Composable (Modifier) -> Unit, textId: Int, onClick: () -> Unit) {
+private fun IconAndText(
+    icon: @Composable (Modifier) -> Unit,
+    textId: Int,
+    enabled: Boolean = true,
+    onClick: () -> Unit
+) {
     Box(
         modifier = Modifier
             .height(90.dp)
             .clickable(onClick = onClick)
             .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 16.dp)
     ) {
-        icon(Modifier.align(Alignment.TopCenter))
-        Text(stringResource(id = textId), Modifier.align(Alignment.BottomCenter))
+        if (!enabled) {
+            Box(Modifier.align(Alignment.TopCenter)) {
+                icon(Modifier)
+                Image(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .background(
+                            MaterialTheme.colorScheme.tertiaryContainer,
+                            RoundedCornerShape(4.dp)
+                        ),
+                    painter = painterResource(R.drawable.ic_lock),
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.tertiary),
+                    contentDescription = null
+                )
+            }
+        } else {
+            icon(Modifier.align(Alignment.TopCenter))
+        }
+
+        Text(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .then(if (!enabled) Modifier.alpha(0.5f) else Modifier),
+            text = stringResource(id = textId),
+        )
     }
 }
 
@@ -438,7 +541,20 @@ fun IconAndTextPreview2() {
     TrekMeTheme {
         IconAndText(
             { modifier -> Beacon(modifier, beaconVicinityRadiusPx = 50f) },
-            R.string.mapview_add_marker,
+            R.string.mapview_add_beacon,
+            onClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BeaconLockedPreview() {
+    TrekMeTheme {
+        IconAndText(
+            { modifier -> Beacon(modifier, beaconVicinityRadiusPx = 50f) },
+            R.string.mapview_add_beacon,
+            enabled = false,
             onClick = {}
         )
     }

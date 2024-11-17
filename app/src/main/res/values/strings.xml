@@ -259,6 +259,7 @@
     <string name="mapview_add_marker">Marker</string>
     <string name="mapview_add_landmark">Landmark</string>
     <string name="mapview_add_beacon">Beacon</string>
+    <string name="mapview_add_track">Track</string>
     <string name="mapview_measure_distance">Measure distance</string>
     <string name="mapview_measure_distance_on_track">Distance on track</string>
     <string name="mapview_orientation_enable">Show orientation</string>
@@ -315,6 +316,10 @@
     <string name="comment_label">Comment</string>
     <string name="save_action">Save</string>
     <string name="marker_changes_saved">Changes saved</string>
+    <string name="beacon_advertise">Add a beacon to be notified you when you get close enough to it.
+        The vicinity area is indicated with a dashed line.
+        The beacon radius is 100m by default, but can be changed.\nThe alert is a sonar sound effect and a vibration.
+    </string>
     <string name="beacon_help">A beacon notifies you when you get close enough to it.
         The vicinity area is indicated with a dashed line.
         The beacon radius is 100m by default, but can be changed.\nThe alert is a sonar sound effect and a vibration.
