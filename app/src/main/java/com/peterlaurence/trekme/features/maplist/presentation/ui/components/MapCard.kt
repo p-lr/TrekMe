@@ -26,6 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -43,11 +44,12 @@ internal fun MapCard(
     mapItem: MapItem,
     intents: MapListIntents
 ) {
+    val imageSize = pxToDp(256).coerceAtMost(110).dp
     ElevatedCard(modifier) {
         Box(
             Modifier
                 .fillMaxWidth()
-                .height(155.dp)
+                .height(58.dp + imageSize)
                 .clickable { intents.onMapClicked(mapItem.mapId) }
         ) {
             val title by mapItem.titleFlow.collectAsStateWithLifecycle()
@@ -94,7 +96,7 @@ internal fun MapCard(
                     }
                 }
 
-                ImagePlaceHolder(mapItem, intents::onSetMapImage)
+                ImagePlaceHolder(mapItem, imageSize, intents::onSetMapImage)
             }
             ButtonRow(
                 Modifier.align(Alignment.BottomStart), mapItem.isFavorite,
@@ -128,7 +130,7 @@ internal fun MapCard(
 }
 
 @Composable
-private fun ImagePlaceHolder(mapItem: MapItem, onSetMapImage: (UUID, Uri) -> Unit) {
+private fun ImagePlaceHolder(mapItem: MapItem, imageSize: Dp, onSetMapImage: (UUID, Uri) -> Unit) {
     val addImageDialogState = remember { mutableStateOf(false) }
 
     val launcher = rememberLauncherForActivityResult(
@@ -151,7 +153,7 @@ private fun ImagePlaceHolder(mapItem: MapItem, onSetMapImage: (UUID, Uri) -> Uni
             )
         } else {
             OutlinedButton(
-                modifier = Modifier.size(pxToDp(256).dp),
+                modifier = Modifier.size(imageSize),
                 onClick = { addImageDialogState.value = true },
                 shape = RoundedCornerShape(10.dp),
                 contentPadding = PaddingValues(0.dp)
@@ -201,7 +203,7 @@ private fun ButtonRow(
     val deleteDialogState = remember { mutableStateOf(false) }
 
     Row(
-        modifier.padding(start = 8.dp, end = 0.dp, bottom = 0.dp),
+        modifier.padding(start = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         TextButton(onClick = onMapSettings) {
