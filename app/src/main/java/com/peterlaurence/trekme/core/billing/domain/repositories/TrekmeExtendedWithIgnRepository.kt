@@ -1,15 +1,14 @@
 package com.peterlaurence.trekme.core.billing.domain.repositories
 
-import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.billing.di.IGN
 import com.peterlaurence.trekme.core.billing.domain.api.BillingApi
 import com.peterlaurence.trekme.core.billing.domain.model.ExtendedOfferStateOwner
+import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.billing.domain.model.SubscriptionDetails
 import com.peterlaurence.trekme.di.MainDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -19,7 +18,7 @@ import javax.inject.Singleton
 @Singleton
 class TrekmeExtendedWithIgnRepository @Inject constructor(
     @MainDispatcher mainDispatcher: CoroutineDispatcher,
-    @IGN private val billingApi: BillingApi
+    @IGN private val billingApi: BillingApi,
 ) : ExtendedOfferStateOwner {
     private val scope = CoroutineScope(mainDispatcher + SupervisorJob())
 
@@ -70,14 +69,14 @@ class TrekmeExtendedWithIgnRepository @Inject constructor(
         }
     }
 
-    private suspend fun updateSubscriptionInfo() = coroutineScope {
-        launch {
+    private fun updateSubscriptionInfo() {
+        scope.launch {
             runCatching {
                 val subDetails = billingApi.getSubDetails(1)
                 _yearlySubDetailsFlow.value = subDetails
             }
         }
-        launch {
+        scope.launch {
             runCatching {
                 val subDetails = billingApi.getSubDetails(0)
                 _monthlySubDetailsFlow.value = subDetails
