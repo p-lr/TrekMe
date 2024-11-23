@@ -19,6 +19,7 @@ fun NavGraphBuilder.mapScreen(
     onNavigateToExcursionWaypointEdit: (waypointId: String, excursionId: String) -> Unit,
     onNavigateToBeaconEdit: (beaconId: String, mapId: UUID) -> Unit,
     onNavigateToShop: () -> Unit,
+    onNavigateToTrackCreate: (TrackCreateScreenArgs) -> Unit,
     onMainMenuClick: () -> Unit
 ) {
     composable(mapDestination) {
@@ -39,6 +40,7 @@ fun NavGraphBuilder.mapScreen(
                 onNavigateToExcursionWaypointEdit = onNavigateToExcursionWaypointEdit,
                 onNavigateToBeaconEdit = onNavigateToBeaconEdit,
                 onNavigateToShop = onNavigateToShop,
+                onNavigateToTrackCreate = onNavigateToTrackCreate,
                 onMainMenuClick = onMainMenuClick
             )
         }

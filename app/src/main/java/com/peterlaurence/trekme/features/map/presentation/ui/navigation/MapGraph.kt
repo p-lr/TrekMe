@@ -24,12 +24,13 @@ fun NavGraphBuilder.mapGraph(
                 navController.navigateToBeaconEdit(beaconId, mapId.toString())
             },
             onNavigateToShop = onNavigateToShop,
+            onNavigateToTrackCreate = { navController.navigate(it) },
             onMainMenuClick = onMainMenuClick
         )
 
         tracksManageScreen(
-            onNavigateToMap = navController::navigateUp,
-            onBackClick = navController::navigateUp
+            onNavigateToMap = navController::popBackStack,
+            onBackClick = navController::popBackStack
         )
 
         markersManageScreen(
@@ -39,14 +40,16 @@ fun NavGraphBuilder.mapGraph(
             onEditWaypoint = { wptId, excursionId ->
                 navController.navigateToExcursionWaypointEdit(wptId, excursionId)
             },
-            onBackClick = navController::navigateUp
+            onBackClick = navController::popBackStack
         )
 
-        markerEditScreen(onBack = navController::navigateUp)
+        markerEditScreen(onBack = navController::popBackStack)
 
-        excursionWaypointEditScreen(onBack = navController::navigateUp)
+        excursionWaypointEditScreen(onBack = navController::popBackStack)
 
-        beaconEditScreen(onBack = navController::navigateUp)
+        beaconEditScreen(onBack = navController::popBackStack)
+
+        trackCreateScreen(onBack = navController::popBackStack)
     }
 }
 

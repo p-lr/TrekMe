@@ -74,7 +74,8 @@ fun MapTopAppBar(
     onToggleSpeed: () -> Unit,
     onToggleLockPosition: () -> Unit,
     onToggleShowGpsData: () -> Unit,
-    onNavigateToShop: () -> Unit
+    onNavigateToShop: () -> Unit,
+    onNavigateToTrackCreate: () -> Unit
 ) {
     var expandedMenu by remember { mutableStateOf(false) }
     var expandedAddOnMap by remember { mutableStateOf(false) }
@@ -145,7 +146,7 @@ fun MapTopAppBar(
                             R.string.mapview_add_track,
                             onClick = {
                                 expandedAddOnMap = false
-                                // TODO
+                                onNavigateToTrackCreate()
                             }
                         )
 
@@ -505,20 +506,21 @@ private fun MapTopAppBarPreview() {
             hasBeacons = true,
             hasTrackFollow = false,
             hasMarkerManage = true,
-            onMenuClick = { },
-            onManageTracks = { },
-            onManageMarkers = { },
-            onFollowTrack = { },
-            onToggleShowOrientation = { },
-            onAddMarker = { },
-            onAddLandmark = { },
-            onAddBeacon = { },
-            onShowDistance = { },
-            onToggleDistanceOnTrack = { },
-            onToggleSpeed = { },
-            onToggleLockPosition = { },
-            onToggleShowGpsData = { },
-            onNavigateToShop = { }
+            onMenuClick = {},
+            onManageTracks = {},
+            onManageMarkers = {},
+            onFollowTrack = {},
+            onToggleShowOrientation = {},
+            onAddMarker = {},
+            onAddLandmark = {},
+            onAddBeacon = {},
+            onShowDistance = {},
+            onToggleDistanceOnTrack = {},
+            onToggleSpeed = {},
+            onToggleLockPosition = {},
+            onToggleShowGpsData = {},
+            onNavigateToShop = {},
+            onNavigateToTrackCreate = {}
         )
     }
 }

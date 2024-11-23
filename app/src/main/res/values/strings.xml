@@ -330,6 +330,9 @@
     <!-- Map bottomsheet -->
     <string name="elevation_profile">Elevation profile</string>
 
+    <!-- Track create screen -->
+    <string name="track_create_title">Track create</string>
+
     <!-- Record list -->
     <string name="fragment_recording" translatable="false">FragmentRecording</string>
     <string name="my_trails_title">My trails</string>

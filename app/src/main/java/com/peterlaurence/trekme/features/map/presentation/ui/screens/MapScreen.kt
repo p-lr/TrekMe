@@ -1,12 +1,19 @@
 package com.peterlaurence.trekme.features.map.presentation.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -17,17 +24,27 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
+import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
 import com.peterlaurence.trekme.core.location.domain.model.Location
+import com.peterlaurence.trekme.core.settings.RotationMode
+import com.peterlaurence.trekme.features.map.presentation.ui.components.CompassComponent
 import com.peterlaurence.trekme.features.map.presentation.ui.components.DistanceLine
 import com.peterlaurence.trekme.features.map.presentation.ui.components.ElevationFixDialog
 import com.peterlaurence.trekme.features.map.presentation.ui.components.GpsDataOverlay
 import com.peterlaurence.trekme.features.map.presentation.ui.components.LandmarkLines
+import com.peterlaurence.trekme.features.map.presentation.ui.components.MapTopAppBar
 import com.peterlaurence.trekme.features.map.presentation.ui.components.ScaleIndicator
+import com.peterlaurence.trekme.features.map.presentation.ui.components.StatsPanel
 import com.peterlaurence.trekme.features.map.presentation.ui.components.TopOverlay
 import com.peterlaurence.trekme.features.map.presentation.ui.components.ZoomIndicator
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapUiState
@@ -36,11 +53,142 @@ import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.Scale
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import ovh.plrapps.mapcompose.api.rotation
 import ovh.plrapps.mapcompose.ui.MapUI
 import kotlin.time.TimeSource
 
 @Composable
 fun MapScreen(
+    uiState: MapUiState,
+    name: String,
+    snackbarHostState: SnackbarHostState,
+    isShowingOrientation: Boolean,
+    isShowingDistance: Boolean,
+    isShowingDistanceOnTrack: Boolean,
+    isShowingSpeed: Boolean,
+    isLockedOnPosition: Boolean,
+    isShowingGpsData: Boolean,
+    isShowingScaleIndicator: Boolean,
+    isShowingZoomIndicator: Boolean,
+    rotationMode: RotationMode,
+    locationFlow: Flow<Location>,
+    elevationFix: Int,
+    geoStatistics: GeoStatistics?,
+    hasElevationFix: Boolean,
+    hasBeacons: Boolean,
+    hasTrackFollow: Boolean,
+    hasMarkerManage: Boolean,
+    bottomSheetOffset: Float,
+    onMainMenuClick: () -> Unit,
+    onManageTracks: () -> Unit,
+    onManageMarkers: () -> Unit,
+    onToggleShowOrientation: () -> Unit,
+    onAddMarker: () -> Unit,
+    onAddLandmark: () -> Unit,
+    onAddBeacon: () -> Unit,
+    onShowDistance: () -> Unit,
+    onToggleDistanceOnTrack: () -> Unit,
+    onToggleSpeed: () -> Unit,
+    onToggleLockOnPosition: () -> Unit,
+    onToggleShowGpsData: () -> Unit,
+    onFollowTrack: () -> Unit,
+    onPositionFabClick: () -> Unit,
+    onCompassClick: () -> Unit,
+    onElevationFixUpdate: (Int) -> Unit,
+    onNavigateToShop: () -> Unit,
+    onNavigateToTrackCreate: () -> Unit,
+    recordingButtons: @Composable () -> Unit
+) {
+    Scaffold(
+        snackbarHost = {
+            SnackbarHost(
+                modifier = Modifier.graphicsLayer {
+                    translationY = -bottomSheetOffset
+                },
+                hostState = snackbarHostState
+            )
+        },
+        topBar = {
+            MapTopAppBar(
+                title = name,
+                isShowingOrientation = isShowingOrientation,
+                isShowingDistance = isShowingDistance,
+                isShowingDistanceOnTrack = isShowingDistanceOnTrack,
+                isShowingSpeed = isShowingSpeed,
+                isLockedOnPosition = isLockedOnPosition,
+                isShowingGpsData = isShowingGpsData,
+                hasBeacons = hasBeacons,
+                hasTrackFollow = hasTrackFollow,
+                hasMarkerManage = hasMarkerManage,
+                onMenuClick = onMainMenuClick,
+                onManageTracks = onManageTracks,
+                onManageMarkers = onManageMarkers,
+                onToggleShowOrientation = onToggleShowOrientation,
+                onAddMarker = onAddMarker,
+                onAddLandmark = onAddLandmark,
+                onAddBeacon = onAddBeacon,
+                onShowDistance = onShowDistance,
+                onToggleDistanceOnTrack = onToggleDistanceOnTrack,
+                onToggleSpeed = onToggleSpeed,
+                onToggleLockPosition = onToggleLockOnPosition,
+                onToggleShowGpsData = onToggleShowGpsData,
+                onFollowTrack = onFollowTrack,
+                onNavigateToShop = onNavigateToShop,
+                onNavigateToTrackCreate = onNavigateToTrackCreate
+            )
+        },
+        floatingActionButton = {
+            Column(
+                Modifier
+                    .graphicsLayer {
+                        translationY = -bottomSheetOffset
+                    }
+            ) {
+                if (rotationMode != RotationMode.NONE) {
+                    CompassComponent(
+                        degrees = uiState.mapState.rotation,
+                        onClick = if (rotationMode == RotationMode.FREE) onCompassClick else null
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                FloatingActionButton(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    onClick = onPositionFabClick,
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_gps_fixed_24dp),
+                        contentDescription = stringResource(id = R.string.center_on_position_btn_desc),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimaryContainer)
+                    )
+                }
+            }
+        }
+    ) { paddingValues ->
+        Column(Modifier.padding(paddingValues)) {
+            MapScreenContent(
+                modifier = Modifier.weight(1f, true),
+                mapUiState = uiState,
+                isShowingDistance = isShowingDistance,
+                isShowingSpeed = isShowingSpeed,
+                isShowingGpsData = isShowingGpsData,
+                isShowingScaleIndicator = isShowingScaleIndicator,
+                isShowingZoomIndicator = isShowingZoomIndicator,
+                locationFlow = locationFlow,
+                elevationFix = elevationFix,
+                hasElevationFix = hasElevationFix,
+                onElevationFixUpdate = onElevationFixUpdate,
+                recordingButtons = recordingButtons
+            )
+            if (geoStatistics != null) {
+                StatsPanel(stats = geoStatistics)
+            }
+        }
+    }
+}
+
+@Composable
+private fun MapScreenContent(
     modifier: Modifier = Modifier,
     mapUiState: MapUiState,
     isShowingDistance: Boolean,
