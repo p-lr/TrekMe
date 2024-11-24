@@ -10,6 +10,8 @@ import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.features.common.domain.interactors.MapComposeTileStreamProviderInteractor
 import com.peterlaurence.trekme.features.map.presentation.ui.navigation.TrackCreateScreenArgs
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.layer.TrackCreateLayer
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.layer.TrackSegmentState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -36,6 +38,8 @@ class TrackCreateViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow<UiState>(Loading)
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
+
+    private val trackCreateLayer = TrackCreateLayer(viewModelScope)
 
     init {
         viewModelScope.launch {
@@ -79,10 +83,13 @@ class TrackCreateViewModel @Inject constructor(
             setScrollOffsetRatio(0.5f, 0.5f)
         }
 
-        dataStateFlow.tryEmit(DataState(map, mapState))
+        trackCreateLayer.init(mapState)
+
+        dataStateFlow.emit(DataState(map, mapState))
         val mapUiState = MapUiState(
             mapState = mapState,
-            mapNameFlow = map.name
+            mapNameFlow = map.name,
+            trackState = trackCreateLayer.trackState
         )
         _uiState.value = mapUiState
     }
@@ -92,7 +99,8 @@ class TrackCreateViewModel @Inject constructor(
 sealed interface UiState
 data class MapUiState(
     val mapState: MapState,
-    val mapNameFlow: StateFlow<String>
+    val mapNameFlow: StateFlow<String>,
+    val trackState: StateFlow<List<TrackSegmentState>>
 ) : UiState
 
 data object Loading : UiState

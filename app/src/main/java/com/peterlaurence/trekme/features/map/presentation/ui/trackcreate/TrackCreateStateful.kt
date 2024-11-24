@@ -23,9 +23,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingScreen
+import com.peterlaurence.trekme.features.map.presentation.ui.trackcreate.component.TrackLines
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.Loading
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.MapUiState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.TrackCreateViewModel
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.layer.TrackSegmentState
+import kotlinx.coroutines.flow.StateFlow
 import ovh.plrapps.mapcompose.ui.MapUI
 import ovh.plrapps.mapcompose.ui.state.MapState
 
@@ -40,8 +43,10 @@ fun TrackCreateStateful(
     when (uiState) {
         Loading -> LoadingScreen()
         is MapUiState -> {
+            val mapUiState = (uiState as MapUiState)
             TrackCreateScaffold(
-                mapState = (uiState as MapUiState).mapState,
+                mapState = mapUiState.mapState,
+                trackState = mapUiState.trackState,
                 snackbarHostState = snackbarHostState,
                 onClose = {
                     onBack()  // TODO : ask confirmation
@@ -54,6 +59,7 @@ fun TrackCreateStateful(
 @Composable
 private fun TrackCreateScaffold(
     mapState: MapState,
+    trackState: StateFlow<List<TrackSegmentState>>,
     snackbarHostState: SnackbarHostState,
     onClose: () -> Unit
 ) {
@@ -66,8 +72,9 @@ private fun TrackCreateScaffold(
         }
     ) { paddingValues ->
         TrackCreateScreen(
-            Modifier.padding(paddingValues),
-            mapState
+            modifier = Modifier.padding(paddingValues),
+            mapState = mapState,
+            trackState = trackState
         )
     }
 }
@@ -91,9 +98,18 @@ private fun TopBar(onCloseClick: () -> Unit) {
 }
 
 @Composable
-private fun TrackCreateScreen(modifier: Modifier, mapState: MapState) {
+private fun TrackCreateScreen(
+    modifier: Modifier,
+    mapState: MapState,
+    trackState: StateFlow<List<TrackSegmentState>>
+) {
     MapUI(
         modifier = modifier,
         state = mapState
-    )
+    ) {
+        TrackLines(
+            mapState = mapState,
+            trackState = trackState
+        )
+    }
 }
