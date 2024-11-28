@@ -140,6 +140,7 @@ fun MapTopAppBar(
                                 Icon(
                                     modifier = modifier.padding(top = 8.dp),
                                     painter = painterResource(R.drawable.track_create),
+                                    tint = MaterialTheme.colorScheme.primary,
                                     contentDescription = null
                                 )
                             },
@@ -544,6 +545,25 @@ fun IconAndTextPreview2() {
         IconAndText(
             { modifier -> Beacon(modifier, beaconVicinityRadiusPx = 50f) },
             R.string.mapview_add_beacon,
+            onClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TrackIconPreview() {
+    TrekMeTheme {
+        IconAndText(
+            icon = { modifier ->
+                Icon(
+                    modifier = modifier.padding(top = 8.dp),
+                    painter = painterResource(R.drawable.track_create),
+                    tint = MaterialTheme.colorScheme.primary,
+                    contentDescription = null
+                )
+            },
+            R.string.mapview_add_track,
             onClick = {}
         )
     }

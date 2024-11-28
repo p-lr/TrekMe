@@ -39,8 +39,6 @@ class TrackCreateViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<UiState>(Loading)
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
-    private val trackCreateLayer = TrackCreateLayer(viewModelScope)
-
     init {
         viewModelScope.launch {
             val map = mapRepository.getMap(UUID.fromString(args.mapId)) ?: return@launch
@@ -83,13 +81,11 @@ class TrackCreateViewModel @Inject constructor(
             setScrollOffsetRatio(0.5f, 0.5f)
         }
 
-        trackCreateLayer.init(mapState)
-
         dataStateFlow.emit(DataState(map, mapState))
         val mapUiState = MapUiState(
             mapState = mapState,
             mapNameFlow = map.name,
-            trackState = trackCreateLayer.trackState
+            trackCreateLayer = TrackCreateLayer(viewModelScope, mapState)
         )
         _uiState.value = mapUiState
     }
@@ -100,7 +96,7 @@ sealed interface UiState
 data class MapUiState(
     val mapState: MapState,
     val mapNameFlow: StateFlow<String>,
-    val trackState: StateFlow<List<TrackSegmentState>>
+    val trackCreateLayer: TrackCreateLayer
 ) : UiState
 
 data object Loading : UiState
