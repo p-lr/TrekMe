@@ -17,6 +17,7 @@ fun MarkerGrab(
     modifier: Modifier = Modifier,
     morphedIn: Boolean,
     size: Dp = 100.dp,
+    color: Color = Color(0x55448AFF),
     onMorphOutDone: () -> Unit = {}
 ) {
     /* We need to control the initial value, so we can't use animateFloatAsState */
@@ -26,7 +27,6 @@ fun MarkerGrab(
         if (!morphedIn) onMorphOutDone()
     }
 
-    val color = remember { Color(0x55448AFF) }
     Canvas(
         modifier = modifier
             .size(size * animatedScale.value)

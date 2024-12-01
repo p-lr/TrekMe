@@ -4,8 +4,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
@@ -92,16 +94,7 @@ class TrackCreateLayer(
 
         val firstPointId = makeMarkerId()
 
-        mapState.addMarker(
-            firstPointId,
-            p1x,
-            p1y,
-            relativeOffset = Offset(-0.5f, -0.5f),
-            clickable = true  // on purpose, to avoid accidentally creating a new point next to the first point
-        ) {
-            MarkerGrab(morphedIn = true, size = 50.dp)
-        }
-
+        addMarkerGrab(firstPointId, p1x, p1y, color = { startMarkerColor })
         val p1State = PointState(firstPointId, p1x, p1y, markerId = firstPointId)
         configureDrag(p1State)
 
@@ -192,15 +185,12 @@ class TrackCreateLayer(
 
         configureCenterDrag(segmentState)
 
-        mapState.addMarker(
-            newPointState.markerId,
-            newPointState.x,
-            newPointState.y,
-            relativeOffset = Offset(-0.5f, -0.5f),
-            clickable = true
-        ) {
-            MarkerGrab(morphedIn = true, size = 50.dp)
-        }
+        addMarkerGrab(
+            id = newPointState.markerId,
+            x = newPointState.x,
+            y = newPointState.y,
+            color = { pointMarkerColor }
+        )
         configureDrag(newPointState)
     }
 
@@ -297,15 +287,12 @@ class TrackCreateLayer(
 
     private fun undoRemoveMiddlePoint(action: Action.RemoveMiddlePoint) {
         mapState.removeMarker(action.newSegment.centerId)
-        mapState.addMarker(
-            action.previousSegment.p2.markerId,
-            action.previousSegment.p2.x,
-            action.previousSegment.p2.y,
-            relativeOffset = Offset(-0.5f, -0.5f),
-            clickable = true
-        ) {
-            MarkerGrab(morphedIn = true, size = 50.dp)
-        }
+        addMarkerGrab(
+            id = action.previousSegment.p2.markerId,
+            x = action.previousSegment.p2.x,
+            y = action.previousSegment.p2.y,
+            color = { pointMarkerColor }
+        )
         undoFuseSegments(
             previousToRestore = action.previousSegment,
             nextToRestore = action.nextSegment,
@@ -338,8 +325,12 @@ class TrackCreateLayer(
 
         configureCenterDrag(previousToRestore)
         configureCenterDrag(nextToRestore)
-        mapState.moveMarker(
-            previousToRestore.p2.markerId, previousToRestore.p2.x, previousToRestore.p2.y
+        mapState.removeMarker(previousToRestore.p2.markerId)
+        addMarkerGrab(
+            previousToRestore.p2.markerId,
+            previousToRestore.p2.x,
+            previousToRestore.p2.y,
+            color = { pointMarkerColor }
         )
         configureDrag(previousToRestore.p2)
     }
@@ -357,15 +348,15 @@ class TrackCreateLayer(
         val centerId = segmentState.centerId
         val centerX = (segmentState.p1.x + segmentState.p2.x) / 2
         val centerY = (segmentState.p1.y + segmentState.p2.y) / 2
-        mapState.addMarker(centerId, centerX, centerY, relativeOffset = Offset(-0.5f, -0.5f)) {
-            MarkerGrab(morphedIn = true, size = 25.dp)
-        }
+        var color by mutableStateOf(segmentCenterMarkerColor)
+        addMarkerGrab(centerId, centerX, centerY, color = { color })
         var split: PointState? = null
         var dragStart: Point? = null
         mapState.enableMarkerDrag(
             centerId,
             onDragStart = { _, x, y ->
                 if (split == null) {
+                    color = pointMarkerColor
                     val newPoint = splitSegment(segmentState)
                     split = newPoint
 
@@ -496,6 +487,23 @@ class TrackCreateLayer(
         return found
     }
 
+    private fun addMarkerGrab(
+        id: String,
+        x: Double,
+        y: Double,
+        color: () -> Color
+    ) {
+        mapState.addMarker(
+            id,
+            x = x,
+            y = y,
+            relativeOffset = Offset(-0.5f, -0.5f),
+            clickable = true
+        ) {
+            MarkerGrab(morphedIn = true, size = 50.dp, color = color())
+        }
+    }
+
     private fun popUndo(): Action? {
         return undoStack.removeLastOrNull().also {
             hasUndoState.value = undoStack.size > 0
@@ -524,6 +532,9 @@ class TrackCreateLayer(
     }
 }
 
+private val startMarkerColor = Color(0x884CAF50)
+private val pointMarkerColor = Color(0x55448AFF)
+private val segmentCenterMarkerColor = Color(0x30000000)
 private const val calloutId = "delete-callout"
 
 data class TrackSegmentState(val id: String, val p1: PointState, val p2: PointState) {
@@ -560,5 +571,6 @@ sealed interface Action {
         val nextSegment: TrackSegmentState,
         val newSegment: TrackSegmentState
     ) : Action
+
     data class RemoveLastPoint(val pointState: PointState) : Action
 }

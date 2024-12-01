@@ -7,6 +7,7 @@ import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentGreen
 import com.peterlaurence.trekme.features.map.presentation.ui.components.makeOffset
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.layer.TrackSegmentState
 import com.peterlaurence.trekme.util.dpToPx
@@ -41,7 +42,10 @@ fun TrackLines(
                     cap = StrokeCap.Round
                 )
 
-                drawCircle(lineColor, center = p1, radius = mainNodeRadiusPx / mapState.scale)
+                val dotColor = if (segment.id == segments.firstOrNull()?.id) {
+                    accentGreen
+                } else lineColor
+                drawCircle(dotColor, center = p1, radius = mainNodeRadiusPx / mapState.scale)
                 drawCircle(lineColor, center = (p1 + p2) / 2f, radius = secondaryNodeRadiusPx / mapState.scale)
                 drawCircle(lineColor, center = p2, radius = mainNodeRadiusPx / mapState.scale)
             }
@@ -49,7 +53,7 @@ fun TrackLines(
     }
 }
 
-private val lineColor = Color(0xFF311B92)
+private val lineColor = Color(0xFF448AFF)
 private val lineWidthPx = dpToPx(4)
 private val secondaryNodeRadiusPx = dpToPx(4)
 private val mainNodeRadiusPx = dpToPx(8)
