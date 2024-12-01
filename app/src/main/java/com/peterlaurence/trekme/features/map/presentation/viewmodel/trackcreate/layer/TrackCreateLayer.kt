@@ -1,20 +1,27 @@
 package com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.layer
 
+import androidx.compose.material3.Icon
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.wmts.domain.model.Point
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerGrab
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import ovh.plrapps.mapcompose.api.addCallout
 import ovh.plrapps.mapcompose.api.addMarker
 import ovh.plrapps.mapcompose.api.enableMarkerDrag
 import ovh.plrapps.mapcompose.api.moveMarker
+import ovh.plrapps.mapcompose.api.onMarkerClick
 import ovh.plrapps.mapcompose.api.onTap
+import ovh.plrapps.mapcompose.api.removeCallout
 import ovh.plrapps.mapcompose.api.removeMarker
 import ovh.plrapps.mapcompose.api.visibleArea
 import ovh.plrapps.mapcompose.ui.state.MapState
@@ -33,8 +40,8 @@ class TrackCreateLayer(
     fun undo() {
         val action = popUndo() ?: return
 
-        when(action) {
-            is Action.AddPoint -> removePoint(action.pointState.id)
+        when (action) {
+            is Action.AddPoint -> removeLastPoint(action.pointState)
             is Action.MovePoint -> movePoint(action.pointState, action.from)
             is Action.SplitSegment -> {
                 val prev = action.newPoint.prev
@@ -43,23 +50,20 @@ class TrackCreateLayer(
                     fuseSegments(prev, next, action.previousSegment)
                 }
             }
+
+            is Action.RemoveMiddlePoint -> undoRemoveMiddlePoint(action)
+            is Action.RemoveLastPoint -> redoAddLastPoint(action.pointState)
         }
 
         addActionToRedoStack(action)
+        mapState.removeCallout(calloutId)
     }
 
     fun reDo() {
         val action = popRedo() ?: return
 
-        when(action) {
-            is Action.AddPoint -> {
-                val lastPointState = trackState.value.lastOrNull()?.p2 ?: action.pointState.prev?.p1
-                val segment = action.pointState.prev
-                if (lastPointState != null && segment != null) {
-                    lastPointState.next = segment
-                    addPoint(action.pointState, segment)
-                }
-            }
+        when (action) {
+            is Action.AddPoint -> redoAddLastPoint(action.pointState)
             is Action.MovePoint -> movePoint(action.pointState, action.to)
             is Action.SplitSegment -> {
                 val prev = action.newPoint.prev
@@ -68,9 +72,13 @@ class TrackCreateLayer(
                     undoFuseSegments(prev, next, action.previousSegment)
                 }
             }
+
+            is Action.RemoveMiddlePoint -> redoRemoveMiddlePoint(action)
+            is Action.RemoveLastPoint -> removeLastPoint(action.pointState)
         }
 
         addActionToUndoStack(action)
+        mapState.removeCallout(calloutId)
     }
 
     init {
@@ -84,7 +92,13 @@ class TrackCreateLayer(
 
         val firstPointId = makeMarkerId()
 
-        mapState.addMarker(firstPointId, p1x, p1y, relativeOffset = Offset(-0.5f, -0.5f)) {
+        mapState.addMarker(
+            firstPointId,
+            p1x,
+            p1y,
+            relativeOffset = Offset(-0.5f, -0.5f),
+            clickable = true  // on purpose, to avoid accidentally creating a new point next to the first point
+        ) {
             MarkerGrab(morphedIn = true, size = 50.dp)
         }
 
@@ -110,6 +124,65 @@ class TrackCreateLayer(
             addActionToUndoStack(Action.AddPoint(newPointState))
             clearRedoStack()
         }
+
+        mapState.onMarkerClick { id, x, y ->
+            /* Click on first marker is no-op. We do that instead of making the first marker
+             * non-clickable to avoid accidentally creating a new point when clicking on first
+             * marker. */
+            if (id == firstPointId) return@onMarkerClick
+
+            if (isCenterOfSegment(id)) return@onMarkerClick
+
+            mapState.addCallout(calloutId, x, y) {
+                SmallFloatingActionButton(
+                    onClick = {
+                        val pointState = getPointState(id) ?: return@SmallFloatingActionButton
+                        val prev = pointState.prev ?: return@SmallFloatingActionButton
+                        val next = pointState.next
+
+                        if (next != null) {
+                            val newSegment = removeMiddlePoint(pointState, next.p2)
+
+                            if (newSegment != null) {
+                                /* This is a user gesture: add an action to undo stack and clear redo stack */
+                                addActionToUndoStack(
+                                    Action.RemoveMiddlePoint(
+                                        prev,
+                                        next,
+                                        newSegment
+                                    )
+                                )
+                                clearRedoStack()
+                            }
+                        } else {
+                            removeLastPoint(pointState)
+
+                            /* This is a user gesture: add an action to undo stack and clear redo stack */
+                            addActionToUndoStack(
+                                Action.RemoveLastPoint(pointState)
+                            )
+                            clearRedoStack()
+                        }
+
+                        mapState.removeCallout(calloutId)
+                    }
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_delete_forever_black_24dp),
+                        contentDescription = null
+                    )
+                }
+            }
+        }
+    }
+
+    private fun redoAddLastPoint(pointState: PointState) {
+        val lastPointState = trackState.value.lastOrNull()?.p2 ?: pointState.prev?.p1
+        val segment = pointState.prev
+        if (lastPointState != null && segment != null) {
+            lastPointState.next = segment
+            addPoint(pointState, segment)
+        }
     }
 
     private fun addPoint(newPointState: PointState, segmentState: TrackSegmentState) {
@@ -119,42 +192,77 @@ class TrackCreateLayer(
 
         configureCenterDrag(segmentState)
 
-        mapState.addMarker(newPointState.id, newPointState.x, newPointState.y, relativeOffset = Offset(-0.5f, -0.5f)) {
+        mapState.addMarker(
+            newPointState.markerId,
+            newPointState.x,
+            newPointState.y,
+            relativeOffset = Offset(-0.5f, -0.5f),
+            clickable = true
+        ) {
             MarkerGrab(morphedIn = true, size = 50.dp)
         }
         configureDrag(newPointState)
     }
 
-    private fun removePoint(id: String) {
+    private fun removeMiddlePoint(
+        pointState: PointState,
+        nextPoint: PointState
+    ): TrackSegmentState? {
+        var newSegment: TrackSegmentState? = null
         trackState.update {
-            val indexesFound = mutableListOf<Int>()
-            for ((i, s) in it.withIndex()) {
-                if (s.p1.id == id || s.p2.id == id) {
-                    indexesFound.add(i)
-                }
-            }
-            when (indexesFound.size) {
-                0 -> it
-                1 -> {  // head or tail remove
-                    val index = indexesFound.first()
-                    val segment = it[index]
-                    if (segment.p1.id == id) { // removing the very first point
-                        println("xxxxx removing first point")
-                        it
-                    } else {  // removing the last point
-                        println("xxxxx removing last point")
-                        segment.p1.next = null
-                        mapState.removeMarker(id)
-                        mapState.removeMarker(segment.centerId)
-                        it - it.last()
+            buildList {
+                for (s in it) {
+                    when {
+                        s.p2.id == pointState.id -> {
+                            mapState.removeMarker(pointState.markerId)
+                            mapState.removeMarker(s.centerId)
+
+                            val segment = TrackSegmentState(
+                                id = makeSegmentId(),
+                                p1 = s.p1,
+                                p2 = nextPoint
+                            )
+                            newSegment = segment
+
+                            s.p1.next = newSegment
+                            nextPoint.prev = newSegment
+                            configureCenterDrag(segment)
+
+                            add(segment)
+                        }
+
+                        s.p1.id == pointState.id -> {
+                            mapState.removeMarker(s.centerId)
+                        }
+
+                        else -> add(s)
                     }
-                }
-                else -> { // indexesFound.size must be 2, in this case removing a point in between
-                    println("xxxxx removing in between")
-                    it
                 }
             }
         }
+        return newSegment
+    }
+
+    private fun removeLastPoint(pointState: PointState) {
+        val centerId = pointState.prev?.centerId ?: return
+        mapState.removeMarker(pointState.markerId)
+        mapState.removeMarker(centerId)
+        pointState.prev?.p1?.next = null
+
+        trackState.update {
+            if (it.isNotEmpty()) {
+                it - it.last()
+            } else it
+        }
+    }
+
+    private fun redoRemoveMiddlePoint(action: Action.RemoveMiddlePoint) {
+        mapState.removeMarker(action.previousSegment.p2.markerId)
+        fuseSegments(
+            previousToRemove = action.previousSegment,
+            nextToRemove = action.nextSegment,
+            oldToRestore = action.newSegment
+        )
     }
 
     private fun fuseSegments(
@@ -187,18 +295,36 @@ class TrackCreateLayer(
         configureCenterDrag(oldToRestore)
     }
 
+    private fun undoRemoveMiddlePoint(action: Action.RemoveMiddlePoint) {
+        mapState.removeMarker(action.newSegment.centerId)
+        mapState.addMarker(
+            action.previousSegment.p2.markerId,
+            action.previousSegment.p2.x,
+            action.previousSegment.p2.y,
+            relativeOffset = Offset(-0.5f, -0.5f),
+            clickable = true
+        ) {
+            MarkerGrab(morphedIn = true, size = 50.dp)
+        }
+        undoFuseSegments(
+            previousToRestore = action.previousSegment,
+            nextToRestore = action.nextSegment,
+            oldToRemove = action.newSegment
+        )
+    }
+
     private fun undoFuseSegments(
-        previousToRemove: TrackSegmentState,
-        nextToRemove: TrackSegmentState,
-        oldToRestore: TrackSegmentState
+        previousToRestore: TrackSegmentState,
+        nextToRestore: TrackSegmentState,
+        oldToRemove: TrackSegmentState
     ) {
         trackState.update {
             var hasReplaced = false
             buildList {
                 for (s in it) {
-                    if (s.id == oldToRestore.id && !hasReplaced) {
-                        add(previousToRemove)
-                        add(nextToRemove)
+                    if (s.id == oldToRemove.id && !hasReplaced) {
+                        add(previousToRestore)
+                        add(nextToRestore)
                         hasReplaced = true
                     } else {
                         add(s)
@@ -207,15 +333,15 @@ class TrackCreateLayer(
             }
         }
 
-        previousToRemove.p1.next = previousToRemove
-        nextToRemove.p2.prev = nextToRemove
+        previousToRestore.p1.next = previousToRestore
+        nextToRestore.p2.prev = nextToRestore
 
-        configureCenterDrag(previousToRemove)
-        configureCenterDrag(nextToRemove)
+        configureCenterDrag(previousToRestore)
+        configureCenterDrag(nextToRestore)
         mapState.moveMarker(
-            previousToRemove.p2.markerId, previousToRemove.p2.x, previousToRemove.p2.y
+            previousToRestore.p2.markerId, previousToRestore.p2.x, previousToRestore.p2.y
         )
-        configureDrag(previousToRemove.p2)
+        configureDrag(previousToRestore.p2)
     }
 
     private fun movePoint(pointState: PointState, to: Point) {
@@ -256,7 +382,13 @@ class TrackCreateLayer(
                 val splitPoint = split
                 if (from != null && splitPoint != null) {
                     /* This is a user gesture: add an action to undo stack and clear redo stack */
-                    addActionToUndoStack(Action.MovePoint(splitPoint, from = from, to = Point(x, y)))
+                    addActionToUndoStack(
+                        Action.MovePoint(
+                            splitPoint,
+                            from = from,
+                            to = Point(x, y)
+                        )
+                    )
                     clearRedoStack()
                 }
             }
@@ -348,6 +480,22 @@ class TrackCreateLayer(
         }
     }
 
+    private fun isCenterOfSegment(id: String): Boolean {
+        return trackState.value.any { it.centerId == id }
+    }
+
+    private fun getPointState(id: String): PointState? {
+        var found: PointState? = null
+        for (s in trackState.value) {
+            found = when {
+                s.p1.markerId == id -> s.p1
+                s.p2.markerId == id -> s.p2
+                else -> continue
+            }
+        }
+        return found
+    }
+
     private fun popUndo(): Action? {
         return undoStack.removeLastOrNull().also {
             hasUndoState.value = undoStack.size > 0
@@ -363,8 +511,6 @@ class TrackCreateLayer(
     private fun addActionToUndoStack(action: Action) {
         undoStack.add(action)
         hasUndoState.value = true
-
-        println("xxxxx undo: ${undoStack.joinToString(",") { it.toString() }}")
     }
 
     private fun addActionToRedoStack(action: Action) {
@@ -377,6 +523,8 @@ class TrackCreateLayer(
         hasRedoState.value = false
     }
 }
+
+private const val calloutId = "delete-callout"
 
 data class TrackSegmentState(val id: String, val p1: PointState, val p2: PointState) {
     val centerId = makeMarkerId()
@@ -397,12 +545,20 @@ class PointState(val id: String, x: Double, y: Double, val markerId: String) {
     var prev: TrackSegmentState? = null
 
     override fun toString(): String {
-        return """PointState(x=$x, y=$y, next=${next?.id}, prev=${prev?.id})"""
+        return """PointState(x=$x, y=$y, next=${next?.id}, prev=${prev?.id}, markerId=$markerId)"""
     }
 }
 
 sealed interface Action {
-    data class AddPoint(val pointState: PointState): Action
-    data class MovePoint(val pointState: PointState, val from: Point, val to: Point): Action
-    data class SplitSegment(val previousSegment: TrackSegmentState, val newPoint: PointState): Action
+    data class AddPoint(val pointState: PointState) : Action
+    data class MovePoint(val pointState: PointState, val from: Point, val to: Point) : Action
+    data class SplitSegment(val previousSegment: TrackSegmentState, val newPoint: PointState) :
+        Action
+
+    data class RemoveMiddlePoint(
+        val previousSegment: TrackSegmentState,
+        val nextSegment: TrackSegmentState,
+        val newSegment: TrackSegmentState
+    ) : Action
+    data class RemoveLastPoint(val pointState: PointState) : Action
 }
