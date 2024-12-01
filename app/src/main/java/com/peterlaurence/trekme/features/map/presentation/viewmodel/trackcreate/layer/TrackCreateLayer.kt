@@ -1,14 +1,23 @@
 package com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.layer
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SmallFloatingActionButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.wmts.domain.model.Point
@@ -20,6 +29,7 @@ import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.addCallout
 import ovh.plrapps.mapcompose.api.addMarker
 import ovh.plrapps.mapcompose.api.enableMarkerDrag
+import ovh.plrapps.mapcompose.api.hasCallout
 import ovh.plrapps.mapcompose.api.moveMarker
 import ovh.plrapps.mapcompose.api.onMarkerClick
 import ovh.plrapps.mapcompose.api.onTap
@@ -122,7 +132,26 @@ class TrackCreateLayer(
             /* Click on first marker is no-op. We do that instead of making the first marker
              * non-clickable to avoid accidentally creating a new point when clicking on first
              * marker. */
-            if (id == firstPointId) return@onMarkerClick
+            if (id == firstPointId) {
+                mapState.addCallout(calloutId, x, y) {
+                    Surface(
+                        onClick = {
+                            mapState.removeCallout(calloutId)
+                        },
+                        tonalElevation = 6.dp,
+                        shape = RoundedCornerShape(8.dp),
+                        shadowElevation = 4.dp,
+                        color = MaterialTheme.colorScheme.primaryContainer
+                    ) {
+                        Text(
+                            stringResource(R.string.track_create_start),
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+                return@onMarkerClick
+            }
 
             if (isCenterOfSegment(id)) return@onMarkerClick
 
@@ -349,13 +378,15 @@ class TrackCreateLayer(
         val centerX = (segmentState.p1.x + segmentState.p2.x) / 2
         val centerY = (segmentState.p1.y + segmentState.p2.y) / 2
         var color by mutableStateOf(segmentCenterMarkerColor)
-        addMarkerGrab(centerId, centerX, centerY, color = { color })
+        var size by mutableStateOf(segmentCenterMarkerSize)
+        addMarkerGrab(centerId, centerX, centerY, size = { size }, color = { color })
         var split: PointState? = null
         var dragStart: Point? = null
         mapState.enableMarkerDrag(
             centerId,
             onDragStart = { _, x, y ->
                 if (split == null) {
+                    size = pointMarkerSize
                     color = pointMarkerColor
                     val newPoint = splitSegment(segmentState)
                     split = newPoint
@@ -491,6 +522,7 @@ class TrackCreateLayer(
         id: String,
         x: Double,
         y: Double,
+        size: () -> Dp = { pointMarkerSize },
         color: () -> Color
     ) {
         mapState.addMarker(
@@ -500,7 +532,7 @@ class TrackCreateLayer(
             relativeOffset = Offset(-0.5f, -0.5f),
             clickable = true
         ) {
-            MarkerGrab(morphedIn = true, size = 50.dp, color = color())
+            MarkerGrab(morphedIn = true, size = size(), color = color())
         }
     }
 
@@ -535,6 +567,9 @@ class TrackCreateLayer(
 private val startMarkerColor = Color(0x884CAF50)
 private val pointMarkerColor = Color(0x55448AFF)
 private val segmentCenterMarkerColor = Color(0x30000000)
+
+private val pointMarkerSize = 50.dp
+private val segmentCenterMarkerSize = 35.dp
 private const val calloutId = "delete-callout"
 
 data class TrackSegmentState(val id: String, val p1: PointState, val p2: PointState) {

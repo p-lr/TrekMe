@@ -332,6 +332,7 @@
 
     <!-- Track create screen -->
     <string name="track_create_title">Track create</string>
+    <string name="track_create_start">Start</string>
 
     <!-- Record list -->
     <string name="fragment_recording" translatable="false">FragmentRecording</string>

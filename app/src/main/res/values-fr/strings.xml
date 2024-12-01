@@ -90,6 +90,7 @@
 
     <!-- Track create screen -->
     <string name="track_create_title">Track create</string>
+    <string name="track_create_start">Départ</string>
 
     <string name="delete_marker_question">Supprimer le marker ?</string>
     <string name="mapview_show_speed">Afficher vitesse</string>
