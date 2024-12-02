@@ -3,6 +3,7 @@
 package com.peterlaurence.trekme.features.map.presentation.ui.trackcreate
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -26,8 +27,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -67,7 +70,7 @@ fun TrackCreateStateful(
                 hasUndoState = mapUiState.trackCreateLayer.hasUndoState,
                 hasRedoState = mapUiState.trackCreateLayer.hasRedoState,
                 onUndo = mapUiState.trackCreateLayer::undo,
-                onReDo = mapUiState.trackCreateLayer::reDo,
+                onRedo = mapUiState.trackCreateLayer::reDo,
                 onClose = {
                     onBack()  // TODO : ask confirmation
                 }
@@ -84,7 +87,7 @@ private fun TrackCreateScaffold(
     hasUndoState: StateFlow<Boolean>,
     hasRedoState: StateFlow<Boolean>,
     onUndo: () -> Unit,
-    onReDo: () -> Unit,
+    onRedo: () -> Unit,
     onClose: () -> Unit
 ) {
     Scaffold(
@@ -94,75 +97,21 @@ private fun TrackCreateScaffold(
         topBar = {
             TopBar(onCloseClick = onClose)
         },
-        floatingActionButton = {
-            val hasUndo by hasUndoState.collectAsState()
-            val hasRedo by hasRedoState.collectAsState()
-            Row {
-                if (hasUndo) {
-                    FloatingActionButton(
-                        onClick = onUndo,
-                        shape = CircleShape
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.ic_undo_white_24dp),
-                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
-                            contentDescription = null
-                        )
-                    }
-                } else {
-                    Surface(
-                        modifier = Modifier
-                            .alpha(disabledAlpha)
-                            .semantics { role = Role.Image }
-                            .size(56.dp),
-                        shape = CircleShape
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.ic_undo_white_24dp),
-                            modifier = Modifier.padding(16.dp),
-                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
-                            contentDescription = null
-                        )
-                    }
-                }
-
-                Spacer(Modifier.width(16.dp))
-
-                if (hasRedo) {
-                    FloatingActionButton(
-                        onClick = onReDo,
-                        shape = CircleShape
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.ic_redo_white_24px),
-                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
-                            contentDescription = null
-                        )
-                    }
-                } else {
-                    Surface(
-                        modifier = Modifier
-                            .alpha(disabledAlpha)
-                            .semantics { role = Role.Image }
-                            .size(56.dp),
-                        shape = CircleShape
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.ic_redo_white_24px),
-                            modifier = Modifier.padding(16.dp),
-                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
-                            contentDescription = null
-                        )
-                    }
-                }
-            }
-        }
     ) { paddingValues ->
-        TrackCreateScreen(
-            modifier = Modifier.padding(paddingValues),
-            mapState = mapState,
-            trackState = trackState
-        )
+        Box(Modifier.padding(paddingValues)) {
+            TrackCreateScreen(
+                mapState = mapState,
+                trackState = trackState
+            )
+
+            FabRow(
+                Modifier.align(Alignment.BottomEnd),
+                hasUndoState,
+                hasRedoState,
+                onUndo,
+                onRedo
+            )
+        }
     }
 }
 
@@ -186,18 +135,91 @@ private fun TopBar(onCloseClick: () -> Unit) {
 
 @Composable
 private fun TrackCreateScreen(
-    modifier: Modifier,
     mapState: MapState,
     trackState: StateFlow<List<TrackSegmentState>>
 ) {
     MapUI(
-        modifier = modifier,
         state = mapState
     ) {
         TrackLines(
             mapState = mapState,
             trackState = trackState
         )
+    }
+}
+
+@Composable
+private fun FabRow(
+    modifier: Modifier = Modifier,
+    hasUndoState: StateFlow<Boolean>,
+    hasRedoState: StateFlow<Boolean>,
+    onUndo: () -> Unit,
+    onReDo: () -> Unit,
+) {
+    val hasUndo by hasUndoState.collectAsState()
+    val hasRedo by hasRedoState.collectAsState()
+
+    /* Using a surface to consume clicks around the FABs. */
+    Surface(modifier = modifier, color = Color.Transparent) {
+        Row(Modifier.padding(16.dp)) {
+            if (hasUndo) {
+                FloatingActionButton(
+                    onClick = onUndo,
+                    shape = CircleShape
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.ic_undo_white_24dp),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
+                        contentDescription = null
+                    )
+                }
+            } else {
+                Surface(
+                    modifier = Modifier
+                        .alpha(disabledAlpha)
+                        .semantics { role = Role.Image }
+                        .size(56.dp),
+                    shape = CircleShape
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.ic_undo_white_24dp),
+                        modifier = Modifier.padding(16.dp),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
+                        contentDescription = null
+                    )
+                }
+            }
+
+            Spacer(Modifier.width(16.dp))
+
+            if (hasRedo) {
+                FloatingActionButton(
+                    onClick = onReDo,
+                    shape = CircleShape
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.ic_redo_white_24px),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
+                        contentDescription = null
+                    )
+                }
+            } else {
+                Surface(
+                    modifier = Modifier
+                        .alpha(disabledAlpha)
+                        .semantics { role = Role.Image }
+                        .size(56.dp),
+                    shape = CircleShape
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.ic_redo_white_24px),
+                        modifier = Modifier.padding(16.dp),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
+                        contentDescription = null
+                    )
+                }
+            }
+        }
     }
 }
 

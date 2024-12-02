@@ -98,7 +98,7 @@
     <string name="with_onboarding_btn">With onboarding</string>
     <string name="without_onboarding_btn">Without onboarding</string>
     <string name="welcome_excursion_search">Search for excursions</string>
-    <string name="ok_dialog">Ok</string>
+    <string name="ok_dialog">OK</string>
     <string name="no_dialog">No</string>
     <string name="open_dialog">Open</string>
     <string name="no_authorize_dialog">Don\'t authorize</string>
@@ -332,7 +332,8 @@
 
     <!-- Track create screen -->
     <string name="track_create_title">Track create</string>
-    <string name="track_create_start">Start</string>
+    <string name="track_create_start_title">Starting point</string>
+    <string name="track_create_start_help">Press somewhere on the map to add new points to the track.</string>
 
     <!-- Record list -->
     <string name="fragment_recording" translatable="false">FragmentRecording</string>

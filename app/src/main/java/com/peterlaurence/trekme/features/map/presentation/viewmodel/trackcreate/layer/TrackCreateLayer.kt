@@ -1,27 +1,30 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.layer
 
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.SmallFloatingActionButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults.rememberPlainTooltipPositionProvider
+import androidx.compose.material3.TooltipState
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.wmts.domain.model.Point
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerGrab
+import com.peterlaurence.trekme.util.dpToPx
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -29,7 +32,6 @@ import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.addCallout
 import ovh.plrapps.mapcompose.api.addMarker
 import ovh.plrapps.mapcompose.api.enableMarkerDrag
-import ovh.plrapps.mapcompose.api.hasCallout
 import ovh.plrapps.mapcompose.api.moveMarker
 import ovh.plrapps.mapcompose.api.onMarkerClick
 import ovh.plrapps.mapcompose.api.onTap
@@ -128,31 +130,14 @@ class TrackCreateLayer(
             clearRedoStack()
         }
 
+        val tooltipState = TooltipState(isPersistent = false)
+        showStartToolTip(tooltipState, p1x, p1y)
+
         mapState.onMarkerClick { id, x, y ->
             /* Click on first marker is no-op. We do that instead of making the first marker
              * non-clickable to avoid accidentally creating a new point when clicking on first
              * marker. */
-            if (id == firstPointId) {
-                mapState.addCallout(calloutId, x, y) {
-                    Surface(
-                        onClick = {
-                            mapState.removeCallout(calloutId)
-                        },
-                        tonalElevation = 6.dp,
-                        shape = RoundedCornerShape(8.dp),
-                        shadowElevation = 4.dp,
-                        color = MaterialTheme.colorScheme.primaryContainer
-                    ) {
-                        Text(
-                            stringResource(R.string.track_create_start),
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
-                return@onMarkerClick
-            }
-
+            if (id == firstPointId) return@onMarkerClick
             if (isCenterOfSegment(id)) return@onMarkerClick
 
             mapState.addCallout(calloutId, x, y) {
@@ -536,6 +521,15 @@ class TrackCreateLayer(
         }
     }
 
+    private fun showStartToolTip(tooltipState: TooltipState, x: Double, y: Double) {
+        mapState.addCallout(calloutId, x, y, absoluteOffset = Offset(0f, -pointMarkerSizePx / 2)) {
+            StartToolTip(tooltipState)
+        }
+        scope.launch {
+            tooltipState.show()
+        }
+    }
+
     private fun popUndo(): Action? {
         return undoStack.removeLastOrNull().also {
             hasUndoState.value = undoStack.size > 0
@@ -564,11 +558,27 @@ class TrackCreateLayer(
     }
 }
 
+@Composable
+private fun StartToolTip(tooltipState: TooltipState) {
+    TooltipBox(
+        state = tooltipState,
+        positionProvider = rememberPlainTooltipPositionProvider(),
+        tooltip = {
+            PlainTooltip {
+                Text(stringResource(id = R.string.track_create_start_title))
+            }
+        },
+        content = {
+        }
+    )
+}
+
 private val startMarkerColor = Color(0x884CAF50)
 private val pointMarkerColor = Color(0x55448AFF)
 private val segmentCenterMarkerColor = Color(0x30000000)
 
 private val pointMarkerSize = 50.dp
+private val pointMarkerSizePx = dpToPx(pointMarkerSize.value)
 private val segmentCenterMarkerSize = 35.dp
 private const val calloutId = "delete-callout"
 

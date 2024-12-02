@@ -21,7 +21,7 @@
     <string name="projected_y_short">N</string>
     <string name="projection_none">Aucune</string>
     <string name="calibration_projection_saved_ok">Projection changée</string>
-    <string name="ok_dialog">Ok</string>
+    <string name="ok_dialog">OK</string>
     <string name="no_dialog">Non</string>
     <string name="open_dialog">Ouvrir</string>
     <string name="no_authorize_dialog">Ne pas autoriser</string>
@@ -90,7 +90,8 @@
 
     <!-- Track create screen -->
     <string name="track_create_title">Track create</string>
-    <string name="track_create_start">Départ</string>
+    <string name="track_create_start_title">Point de départ</string>
+    <string name="track_create_start_help">Appuyez quelque-part sur la carte pour ajouter de nouveaux points.</string>
 
     <string name="delete_marker_question">Supprimer le marker ?</string>
     <string name="mapview_show_speed">Afficher vitesse</string>
