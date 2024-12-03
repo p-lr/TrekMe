@@ -4,6 +4,7 @@ package com.peterlaurence.trekme.features.map.presentation.ui.trackcreate
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -14,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,7 +31,10 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -125,7 +130,7 @@ private fun TrackCreateScaffold(
             val hasUndo by hasUndoState.collectAsState()
             val hasRedo by hasRedoState.collectAsState()
 
-            FabRow(
+            FabSection(
                 modifier = Modifier.align(Alignment.BottomEnd),
                 hasUndo = hasUndo,
                 hasRedo = hasRedo,
@@ -170,71 +175,96 @@ private fun TrackCreateScreen(
 }
 
 @Composable
-private fun FabRow(
+private fun FabSection(
     modifier: Modifier = Modifier,
     hasUndo: Boolean,
     hasRedo: Boolean,
     onUndo: () -> Unit,
     onReDo: () -> Unit,
 ) {
-    /* Using a surface to consume clicks around the FABs. */
-    Surface(modifier = modifier, color = Color.Transparent) {
-        Row(Modifier.padding(16.dp)) {
-            if (hasUndo) {
-                FloatingActionButton(
-                    onClick = onUndo,
-                    shape = CircleShape
-                ) {
-                    Image(
-                        painter = painterResource(R.drawable.ic_undo_white_24dp),
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
+    Column(
+        modifier,
+        horizontalAlignment = Alignment.End
+    ) {
+        var saveExpanded by rememberSaveable { mutableStateOf(true) }
+        if (hasUndo) {
+            ExtendedFloatingActionButton(
+                text = {
+                    Text(stringResource(R.string.save_action))
+                },
+                icon = {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_save_white_24dp),
                         contentDescription = null
                     )
+                },
+                expanded = saveExpanded,
+                modifier = Modifier.padding(end = 16.dp),
+                onClick = {
+                    saveExpanded = false
                 }
-            } else {
-                Surface(
-                    modifier = Modifier
-                        .alpha(disabledAlpha)
-                        .semantics { role = Role.Image }
-                        .size(56.dp),
-                    shape = CircleShape
-                ) {
-                    Image(
-                        painter = painterResource(R.drawable.ic_undo_white_24dp),
-                        modifier = Modifier.padding(16.dp),
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
-                        contentDescription = null
-                    )
-                }
-            }
+            )
+        }
 
-            Spacer(Modifier.width(16.dp))
-
-            if (hasRedo) {
-                FloatingActionButton(
-                    onClick = onReDo,
-                    shape = CircleShape
-                ) {
-                    Image(
-                        painter = painterResource(R.drawable.ic_redo_white_24px),
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
-                        contentDescription = null
-                    )
+        /* Using a surface to consume clicks around the undo/redo FABs. */
+        Surface(color = Color.Transparent) {
+            Row(Modifier.padding(16.dp)) {
+                if (hasUndo) {
+                    FloatingActionButton(
+                        onClick = onUndo,
+                        shape = CircleShape
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.ic_undo_white_24dp),
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
+                            contentDescription = null
+                        )
+                    }
+                } else {
+                    Surface(
+                        modifier = Modifier
+                            .alpha(disabledAlpha)
+                            .semantics { role = Role.Image }
+                            .size(56.dp),
+                        shape = CircleShape
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.ic_undo_white_24dp),
+                            modifier = Modifier.padding(16.dp),
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
+                            contentDescription = null
+                        )
+                    }
                 }
-            } else {
-                Surface(
-                    modifier = Modifier
-                        .alpha(disabledAlpha)
-                        .semantics { role = Role.Image }
-                        .size(56.dp),
-                    shape = CircleShape
-                ) {
-                    Image(
-                        painter = painterResource(R.drawable.ic_redo_white_24px),
-                        modifier = Modifier.padding(16.dp),
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
-                        contentDescription = null
-                    )
+
+                Spacer(Modifier.width(16.dp))
+
+                if (hasRedo) {
+                    FloatingActionButton(
+                        onClick = onReDo,
+                        shape = CircleShape
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.ic_redo_white_24px),
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
+                            contentDescription = null
+                        )
+                    }
+                } else {
+                    Surface(
+                        modifier = Modifier
+                            .alpha(disabledAlpha)
+                            .semantics { role = Role.Image }
+                            .size(56.dp),
+                        shape = CircleShape
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.ic_redo_white_24px),
+                            modifier = Modifier.padding(16.dp),
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
+                            contentDescription = null
+                        )
+                    }
                 }
             }
         }
