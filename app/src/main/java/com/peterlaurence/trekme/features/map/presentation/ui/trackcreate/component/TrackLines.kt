@@ -1,8 +1,6 @@
 package com.peterlaurence.trekme.features.map.presentation.ui.trackcreate.component
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -11,7 +9,6 @@ import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentGree
 import com.peterlaurence.trekme.features.map.presentation.ui.components.makeOffset
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.layer.TrackSegmentState
 import com.peterlaurence.trekme.util.dpToPx
-import kotlinx.coroutines.flow.StateFlow
 import ovh.plrapps.mapcompose.api.DefaultCanvas
 import ovh.plrapps.mapcompose.api.scale
 import ovh.plrapps.mapcompose.ui.state.MapState
@@ -20,9 +17,8 @@ import ovh.plrapps.mapcompose.ui.state.MapState
 fun TrackLines(
     modifier: Modifier = Modifier,
     mapState: MapState,
-    trackState: StateFlow<List<TrackSegmentState>>
+    segments: List<TrackSegmentState>
 ) {
-    val segments by trackState.collectAsState()
     if (segments.isEmpty()) return
 
     for (segment in segments) {

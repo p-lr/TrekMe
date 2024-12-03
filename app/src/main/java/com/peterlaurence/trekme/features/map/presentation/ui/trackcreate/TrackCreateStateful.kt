@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,7 +25,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -37,6 +40,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.Hyphens
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -63,9 +69,16 @@ fun TrackCreateStateful(
         Loading -> LoadingScreen()
         is MapUiState -> {
             val mapUiState = (uiState as MapUiState)
+            val segmentsState = mapUiState.trackCreateLayer.trackState.collectAsState()
+            val isTrackEmpty by remember {
+                derivedStateOf {
+                    segmentsState.value.isEmpty()
+                }
+            }
             TrackCreateScaffold(
                 mapState = mapUiState.mapState,
-                trackState = mapUiState.trackCreateLayer.trackState,
+                segmentsState = segmentsState,
+                isTrackEmpty = isTrackEmpty,
                 snackbarHostState = snackbarHostState,
                 hasUndoState = mapUiState.trackCreateLayer.hasUndoState,
                 hasRedoState = mapUiState.trackCreateLayer.hasRedoState,
@@ -82,7 +95,8 @@ fun TrackCreateStateful(
 @Composable
 private fun TrackCreateScaffold(
     mapState: MapState,
-    trackState: StateFlow<List<TrackSegmentState>>,
+    segmentsState: State<List<TrackSegmentState>>,
+    isTrackEmpty: Boolean,
     snackbarHostState: SnackbarHostState,
     hasUndoState: StateFlow<Boolean>,
     hasRedoState: StateFlow<Boolean>,
@@ -101,15 +115,22 @@ private fun TrackCreateScaffold(
         Box(Modifier.padding(paddingValues)) {
             TrackCreateScreen(
                 mapState = mapState,
-                trackState = trackState
+                segments = segmentsState.value
             )
 
+            if (isTrackEmpty) {
+                HelpTrackCreate(Modifier.align(Alignment.TopCenter))
+            }
+
+            val hasUndo by hasUndoState.collectAsState()
+            val hasRedo by hasRedoState.collectAsState()
+
             FabRow(
-                Modifier.align(Alignment.BottomEnd),
-                hasUndoState,
-                hasRedoState,
-                onUndo,
-                onRedo
+                modifier = Modifier.align(Alignment.BottomEnd),
+                hasUndo = hasUndo,
+                hasRedo = hasRedo,
+                onUndo = onUndo,
+                onReDo = onRedo
             )
         }
     }
@@ -136,14 +157,14 @@ private fun TopBar(onCloseClick: () -> Unit) {
 @Composable
 private fun TrackCreateScreen(
     mapState: MapState,
-    trackState: StateFlow<List<TrackSegmentState>>
+    segments: List<TrackSegmentState>
 ) {
     MapUI(
         state = mapState
     ) {
         TrackLines(
             mapState = mapState,
-            trackState = trackState
+            segments = segments
         )
     }
 }
@@ -151,14 +172,11 @@ private fun TrackCreateScreen(
 @Composable
 private fun FabRow(
     modifier: Modifier = Modifier,
-    hasUndoState: StateFlow<Boolean>,
-    hasRedoState: StateFlow<Boolean>,
+    hasUndo: Boolean,
+    hasRedo: Boolean,
     onUndo: () -> Unit,
     onReDo: () -> Unit,
 ) {
-    val hasUndo by hasUndoState.collectAsState()
-    val hasRedo by hasRedoState.collectAsState()
-
     /* Using a surface to consume clicks around the FABs. */
     Surface(modifier = modifier, color = Color.Transparent) {
         Row(Modifier.padding(16.dp)) {
@@ -220,6 +238,23 @@ private fun FabRow(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun HelpTrackCreate(modifier: Modifier = Modifier) {
+    Surface(
+        modifier = modifier
+            .padding(horizontal = 24.dp)
+            .padding(top = 8.dp),
+        shape = RoundedCornerShape(8.dp),
+        color = MaterialTheme.colorScheme.primaryContainer
+    ) {
+        Text(
+            stringResource(R.string.track_create_start_help),
+            style = TextStyle(hyphens = Hyphens.Auto, lineBreak = LineBreak.Paragraph),
+            modifier = Modifier.padding(8.dp)
+        )
     }
 }
 
