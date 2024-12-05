@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalClusteringApi::class)
 
 package com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.layer
 
@@ -29,7 +29,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import ovh.plrapps.mapcompose.api.Custom
+import ovh.plrapps.mapcompose.api.ExperimentalClusteringApi
 import ovh.plrapps.mapcompose.api.addCallout
+import ovh.plrapps.mapcompose.api.addClusterer
 import ovh.plrapps.mapcompose.api.addMarker
 import ovh.plrapps.mapcompose.api.enableMarkerDrag
 import ovh.plrapps.mapcompose.api.moveMarker
@@ -39,6 +42,7 @@ import ovh.plrapps.mapcompose.api.removeCallout
 import ovh.plrapps.mapcompose.api.removeMarker
 import ovh.plrapps.mapcompose.api.visibleArea
 import ovh.plrapps.mapcompose.ui.state.MapState
+import ovh.plrapps.mapcompose.ui.state.markers.model.RenderingStrategy
 import java.util.UUID
 
 class TrackCreateLayer(
@@ -96,7 +100,19 @@ class TrackCreateLayer(
     }
 
     init {
+        configureClustering()
         initialize()
+    }
+
+    private fun configureClustering() {
+        mapState.addClusterer(clustererId,
+            clusteringThreshold = 25.dp,
+            clusterClickBehavior = Custom(
+                withDefaultBehavior = false,
+                onClick = { _ -> })
+        ) { _ ->
+            {  }  // When markers are too close to each other, don't display anything
+        }
     }
 
     private fun initialize() = scope.launch {
@@ -503,6 +519,7 @@ class TrackCreateLayer(
         return found
     }
 
+    @OptIn(ExperimentalClusteringApi::class)
     private fun addMarkerGrab(
         id: String,
         x: Double,
@@ -515,7 +532,8 @@ class TrackCreateLayer(
             x = x,
             y = y,
             relativeOffset = Offset(-0.5f, -0.5f),
-            clickable = true
+            clickable = true,
+            renderingStrategy = RenderingStrategy.Clustering(clustererId)
         ) {
             MarkerGrab(morphedIn = true, size = size(), color = color())
         }
@@ -572,6 +590,8 @@ private fun StartToolTip(tooltipState: TooltipState) {
         }
     )
 }
+
+private const val clustererId = "default"
 
 private val startMarkerColor = Color(0x884CAF50)
 private val pointMarkerColor = Color(0x55448AFF)

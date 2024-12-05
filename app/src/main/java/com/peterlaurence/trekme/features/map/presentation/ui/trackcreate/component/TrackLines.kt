@@ -52,4 +52,4 @@ fun TrackLines(
 private val lineColor = Color(0xFF448AFF)
 private val lineWidthPx = dpToPx(4)
 private val secondaryNodeRadiusPx = dpToPx(4)
-private val mainNodeRadiusPx = dpToPx(8)
+private val mainNodeRadiusPx = dpToPx(4)
