@@ -4,15 +4,22 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
+import com.peterlaurence.trekme.core.georecord.domain.model.RouteGroup
+import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
 import com.peterlaurence.trekme.core.map.domain.models.Map
+import com.peterlaurence.trekme.core.map.domain.models.Marker
+import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.features.common.domain.interactors.MapComposeTileStreamProviderInteractor
+import com.peterlaurence.trekme.features.map.domain.core.getLonLatFromNormalizedCoordinateBlocking
+import com.peterlaurence.trekme.features.map.domain.interactors.TrackCreateInteractor
 import com.peterlaurence.trekme.features.map.presentation.ui.navigation.TrackCreateScreenArgs
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.layer.TrackCreateLayer
-import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.layer.TrackSegmentState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +27,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ovh.plrapps.mapcompose.api.addLayer
 import ovh.plrapps.mapcompose.api.setScrollOffsetRatio
 import ovh.plrapps.mapcompose.ui.state.MapState
@@ -31,6 +39,7 @@ class TrackCreateViewModel @Inject constructor(
     private val mapComposeTileStreamProviderInteractor: MapComposeTileStreamProviderInteractor,
     val settings: Settings,
     val mapRepository: MapRepository,
+    private val trackCreateInteractor: TrackCreateInteractor,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private val args = savedStateHandle.toRoute<TrackCreateScreenArgs>()
@@ -38,6 +47,8 @@ class TrackCreateViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow<UiState>(Loading)
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
+
+    private var excursionRef: ExcursionRef? = null
 
     init {
         viewModelScope.launch {
@@ -84,18 +95,77 @@ class TrackCreateViewModel @Inject constructor(
         dataStateFlow.emit(DataState(map, mapState))
         val mapUiState = MapUiState(
             mapState = mapState,
-            mapNameFlow = map.name,
+            map = map,
             trackCreateLayer = TrackCreateLayer(viewModelScope, mapState)
         )
         _uiState.value = mapUiState
     }
     /* endregion */
+
+    fun isNewTrack(): Boolean = excursionRef == null
+
+    fun save(withName: String) = viewModelScope.launch {
+        // TODO: add a loading while saving
+        val mapUiState = (_uiState.value as? MapUiState) ?: return@launch
+
+        /* Make a defensive copy of the current list of segments */
+        val trackSegments = mapUiState.trackCreateLayer.trackState.value.toList()
+
+        val geoRecord = withContext(Dispatchers.Default) {
+            val markers = buildList {
+                for (s in trackSegments) {
+                    val lonLatP1 = getLonLatFromNormalizedCoordinateBlocking(
+                        s.p1.x,
+                        s.p1.y,
+                        projection = mapUiState.map.projection,
+                        mapBounds = mapUiState.map.mapBounds
+                    )
+
+                    add(Marker(id = s.p1.id, lat = lonLatP1[1], lon = lonLatP1[0]))
+
+                    val lonLatP2 = getLonLatFromNormalizedCoordinateBlocking(
+                        s.p2.x,
+                        s.p2.y,
+                        projection = mapUiState.map.projection,
+                        mapBounds = mapUiState.map.mapBounds
+                    )
+
+                    add(Marker(id = s.p2.id, lat = lonLatP2[1], lon = lonLatP2[0]))
+                }
+            }
+
+            GeoRecord(
+                id = UUID.randomUUID(),
+                name = withName,
+                routeGroups = listOf(
+                    RouteGroup(
+                        id = UUID.randomUUID().toString(),
+                        routes = listOf(
+                            Route(
+                                id = UUID.randomUUID().toString(),
+                                initialMarkers = markers,
+                            )
+                        )
+                    )
+                ),
+                markers = emptyList(),
+                time = null,
+                elevationSourceInfo = null
+            )
+        }
+
+        excursionRef = trackCreateInteractor.createExcursion(
+            title = withName,
+            geoRecord = geoRecord,
+            map = mapUiState.map
+        )
+    }
 }
 
 sealed interface UiState
 data class MapUiState(
     val mapState: MapState,
-    val mapNameFlow: StateFlow<String>,
+    val map: Map,
     val trackCreateLayer: TrackCreateLayer
 ) : UiState
 

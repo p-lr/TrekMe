@@ -334,6 +334,7 @@
     <string name="track_create_title">Track create</string>
     <string name="track_create_start_title">Starting point</string>
     <string name="track_create_start_help">Press on the map to add new points</string>
+    <string name="track_create_name_dialog">Track name</string>
 
     <!-- Record list -->
     <string name="fragment_recording" translatable="false">FragmentRecording</string>

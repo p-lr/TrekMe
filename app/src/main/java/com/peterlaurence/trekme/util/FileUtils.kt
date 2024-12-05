@@ -6,6 +6,9 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
 import java.io.PrintWriter
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 fun writeToFile(st: String, out: File, errCb: () -> Unit) {
     try {
@@ -23,6 +26,15 @@ fun writeToFile(st: String, out: File): Result<Unit> {
             it.print(st)
         }
     }
+}
+
+/**
+ * A string appropriate for file names on android devices.
+ */
+fun fileNameAsCurrentDate(): String {
+    val date = Date()
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd_HH'h'mm-ss", Locale.ENGLISH)
+    return dateFormat.format(date)
 }
 
 /**

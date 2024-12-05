@@ -22,6 +22,7 @@ import com.peterlaurence.trekme.core.lib.geojson.GeoJsonWriter
 import com.peterlaurence.trekme.core.lib.gpx.parseGpxSafely
 import com.peterlaurence.trekme.core.lib.gpx.writeGpx
 import com.peterlaurence.trekme.util.FileUtils
+import com.peterlaurence.trekme.util.fileNameAsCurrentDate
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -497,9 +498,8 @@ class ExcursionDaoFileBased(
     }.getOrNull()
 
     private fun newExcursionFolder(parent: File): File {
-        val date = Date()
-        val dateFormat = SimpleDateFormat("dd-MM-yyyy_HH-mm-ss", Locale.ENGLISH)
-        val folderName = "excursion-" + dateFormat.format(date)
+        val date = fileNameAsCurrentDate()
+        val folderName = "excursion-$date"
 
         val destFolder = File(parent, folderName)
         if (!destFolder.exists()) {

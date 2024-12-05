@@ -6,10 +6,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * Utility method to get latitude and longitude from normalized coordinates.
+ * Utility method to get latitude and longitude from normalized coordinates. This call is appropriate
+ * for a one-time call from the main thread.
  *
  * @param x Normalized X position on the map
  * @param y Normalized Y position on the map
+ * @param projection The projection used. If null, the result is the interpolation between the map
+ *        bounds.
  *
  * @return An array of two elements: the longitude and the latitude
  */
@@ -18,13 +21,33 @@ suspend fun getLonLatFromNormalizedCoordinate(
     y: Double,
     projection: Projection?,
     mapBounds: MapBounds
+): DoubleArray = withContext(Dispatchers.Default) {
+    getLonLatFromNormalizedCoordinateBlocking(x, y, projection, mapBounds)
+}
+
+/**
+ * Utility method to get latitude and longitude from normalized coordinates. This call is typically
+ * used off ui-thread for a list of normalized coordinates.
+ *
+ * @param x Normalized X position on the map
+ * @param y Normalized Y position on the map
+ * @param projection The projection used. If null, the result is the interpolation between the map
+ *        bounds.
+ *
+ * @return An array of two elements: the longitude and the latitude
+ */
+fun getLonLatFromNormalizedCoordinateBlocking(
+    x: Double,
+    y: Double,
+    projection: Projection?,
+    mapBounds: MapBounds
 ): DoubleArray {
     val relativeX = deNormalize(x, mapBounds.X0, mapBounds.X1)
     val relativeY = deNormalize(y, mapBounds.Y0, mapBounds.Y1)
 
-    val lonLat = withContext(Dispatchers.Default) {
+    val lonLat =
         projection?.undoProjection(relativeX, relativeY)
-    } ?: doubleArrayOf(relativeX, relativeY)
+     ?: doubleArrayOf(relativeX, relativeY)
 
     return lonLat
 }

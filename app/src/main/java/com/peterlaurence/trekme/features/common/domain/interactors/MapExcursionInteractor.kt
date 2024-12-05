@@ -10,11 +10,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
-/**
- * For instance, excursions are imported into [Map]s using classic routes. However, this is only
- * done in-memory. Eventually, new data structures specific to excursions will be introduced, to
- * get rid of the current limitations (a route == track segment).
- */
+
 class MapExcursionInteractor @Inject constructor(
     private val excursionRefDao: ExcursionRefDao,
     private val excursionDao: ExcursionDao,
