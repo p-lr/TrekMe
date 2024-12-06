@@ -2,12 +2,14 @@ package com.peterlaurence.trekme.features.map.presentation.viewmodel.layers
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Dp
+import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.excursion.domain.repository.ExcursionRepository
 import com.peterlaurence.trekme.core.georecord.domain.logic.getGeoStatistics
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
 import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.features.common.domain.interactors.MapExcursionInteractor
+import com.peterlaurence.trekme.features.common.domain.interactors.RemoveRouteInteractor
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.domain.interactors.RouteInteractor
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
@@ -30,7 +32,8 @@ class BottomSheetLayer(
     private val excursionRepository: ExcursionRepository,
     private val mapInteractor: MapInteractor,
     private val mapExcursionInteractor: MapExcursionInteractor,
-    private val routeInteractor: RouteInteractor
+    private val routeInteractor: RouteInteractor,
+    private val removeRouteInteractor: RemoveRouteInteractor
 ) {
     val state = MutableStateFlow<BottomSheetState>(BottomSheetState.Loading)
 
@@ -107,13 +110,23 @@ class BottomSheetLayer(
         }
     }
 
+    fun onRemoveExcursion(ref: ExcursionRef) = scope.launch {
+        val (map, _) = dataStateFlow.firstOrNull() ?: return@launch
+        mapExcursionInteractor.removeExcursionOnMap(map, ref)
+    }
+
+    fun onRemoveRoute(route: Route) = scope.launch {
+        val (map, _) = dataStateFlow.firstOrNull() ?: return@launch
+        removeRouteInteractor.removeRoutesOnMap(map, listOf(route.id))
+    }
+
     private suspend fun processExcursion(excursionData: ExcursionData) {
         val excursion = excursionRepository.getExcursion(excursionData.excursionRef.id) ?: return
         val routes = excursionData.routes
 
         processTrack(
             routes = routes,
-            type = TrackType.ExcursionType(excursionData.excursionRef),
+            type = TrackType.ExcursionType(excursionData.excursionRef, excursion.isPathEditable),
             title = excursion.title,
             color = excursionData.excursionRef.color
         )
@@ -166,7 +179,7 @@ val BottomSheetState.BottomSheetData.hasElevation: Boolean
 
 sealed interface TrackType {
     data class RouteType(val route: Route) : TrackType
-    data class ExcursionType(val excursionRef: ExcursionRef) : TrackType
+    data class ExcursionType(val excursionRef: ExcursionRef, val isPathEditable: Boolean) : TrackType
 }
 
 private val TrackType.id: String

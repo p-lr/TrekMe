@@ -10,5 +10,6 @@ interface Excursion {
     val description: String
     val waypoints: StateFlow<List<ExcursionWaypoint>>  // waypoints are lazy loaded
     val photos: List<ExcursionPhoto>
+    val isPathEditable: Boolean
     // TODO: maybe add statistics
 }

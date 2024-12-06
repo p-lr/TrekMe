@@ -28,7 +28,8 @@ class RestoreRecordInteractor @Inject constructor(
             title = geoRecord.name,
             type = ExcursionType.Hike,
             description = "",
-            geoRecord = geoRecord
+            geoRecord = geoRecord,
+            isPathEditable = false
         )
 
         val success = when (result) {

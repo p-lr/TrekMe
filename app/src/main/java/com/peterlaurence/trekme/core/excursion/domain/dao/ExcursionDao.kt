@@ -12,7 +12,7 @@ interface ExcursionDao {
     suspend fun getExcursionsFlow(): StateFlow<List<Excursion>>
     suspend fun getGeoRecord(excursion: Excursion): GeoRecord?
     suspend fun getGeoRecordUri(id: String, format: GeoRecordExportFormat): Uri?
-    suspend fun putExcursion(id: String, title: String, type: ExcursionType, description: String, geoRecord: GeoRecord): Boolean
+    suspend fun putExcursion(id: String, title: String, type: ExcursionType, description: String, geoRecord: GeoRecord, isPathEditable: Boolean): Boolean
     suspend fun putExcursion(id: String, uri: Uri): Excursion?
     suspend fun deleteExcursions(ids: List<String>): Boolean
     suspend fun rename(id: String, newName: String): Boolean

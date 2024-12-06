@@ -79,6 +79,7 @@ import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapUiState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapViewModel
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.StatisticsViewModel
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.TrackFollowLayer
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.TrackType
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimSolutionDialog
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimWarningDialog
 import com.peterlaurence.trekme.util.android.getActivityOrNull
@@ -358,7 +359,21 @@ fun MapStateful(
                             viewModel.calloutLayer.setCursor(latLon, distance = d, ele = ele)
                         },
                         onColorChange = viewModel.bottomSheetLayer::onColorChange,
-                        onTitleChange = viewModel.bottomSheetLayer::onTitleChange
+                        onTitleChange = viewModel.bottomSheetLayer::onTitleChange,
+                        onEditPath = {}, // TODO
+                        onDelete = { trackType ->
+                            when (trackType) {
+                                is TrackType.ExcursionType -> {
+                                    viewModel.bottomSheetLayer.onRemoveExcursion(trackType.excursionRef)
+                                }
+                                is TrackType.RouteType -> {
+                                    viewModel.bottomSheetLayer.onRemoveRoute(trackType.route)
+                                }
+                            }
+                            scope.launch {
+                                anchoredDraggableState.animateTo(States.COLLAPSED)
+                            }
+                        }
                     )
                 }
             }

@@ -87,6 +87,8 @@
     <string name="elevation_stats_not_significant">Les statistiques d\'altitude ne sont pas significatives.</string>
     <!-- Map bottomsheet -->
     <string name="elevation_profile">Profil d\'altitude</string>
+    <string name="edit_track_path">Modifier</string>
+    <string name="delete_track_confirm">Confirmez-vous la suppression de la trace ?</string>
 
     <!-- Track create screen -->
     <string name="track_create_title">Track create</string>

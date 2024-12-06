@@ -329,6 +329,8 @@
     <string name="elevation_stats_not_significant">Elevation statistics are\'t significant.</string>
     <!-- Map bottomsheet -->
     <string name="elevation_profile">Elevation profile</string>
+    <string name="edit_track_path">Edit path</string>
+    <string name="delete_track_confirm">Are you sure you want to delete this track?</string>
 
     <!-- Track create screen -->
     <string name="track_create_title">Track create</string>

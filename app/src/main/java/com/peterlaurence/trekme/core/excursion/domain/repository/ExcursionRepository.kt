@@ -49,7 +49,7 @@ class ExcursionRepository @Inject constructor(
         dao.deleteWaypoints(excursion, waypoints)
     }
 
-    suspend fun putExcursion(id: String, title: String, type: ExcursionType, description: String, geoRecord: GeoRecord): PutExcursionResult {
+    suspend fun putExcursion(id: String, title: String, type: ExcursionType, description: String, geoRecord: GeoRecord, isPathEditable: Boolean): PutExcursionResult {
         /* Check for a pending put with the same id */
         if (pendingPut.contains(id)) {
             return PutExcursionResult.Pending
@@ -66,7 +66,7 @@ class ExcursionRepository @Inject constructor(
         }
 
         return try {
-            if (dao.putExcursion(id, title, type, description, geoRecord)) {
+            if (dao.putExcursion(id, title, type, description, geoRecord, isPathEditable)) {
                 PutExcursionResult.Ok
             } else {
                 PutExcursionResult.Error

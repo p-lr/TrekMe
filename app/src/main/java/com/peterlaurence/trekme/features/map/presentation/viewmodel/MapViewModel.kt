@@ -25,6 +25,7 @@ import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.features.common.domain.interactors.MapComposeTileStreamProviderInteractor
 import com.peterlaurence.trekme.features.common.domain.interactors.MapExcursionInteractor
+import com.peterlaurence.trekme.features.common.domain.interactors.RemoveRouteInteractor
 import com.peterlaurence.trekme.features.map.domain.interactors.BeaconInteractor
 import com.peterlaurence.trekme.features.map.domain.interactors.ExcursionInteractor
 import com.peterlaurence.trekme.features.map.domain.interactors.LandmarkInteractor
@@ -104,6 +105,7 @@ class MapViewModel @Inject constructor(
     landmarkInteractor: LandmarkInteractor,
     beaconInteractor: BeaconInteractor,
     routeInteractor: RouteInteractor,
+    removeRouteInteractor: RemoveRouteInteractor,
     excursionInteractor: ExcursionInteractor,
     mapExcursionInteractor: MapExcursionInteractor,
     excursionRepository: ExcursionRepository,
@@ -237,7 +239,8 @@ class MapViewModel @Inject constructor(
         excursionRepository = excursionRepository,
         mapInteractor = mapInteractor,
         mapExcursionInteractor = mapExcursionInteractor,
-        routeInteractor = routeInteractor
+        routeInteractor = routeInteractor,
+        removeRouteInteractor = removeRouteInteractor
     )
 
     val calloutLayer = CalloutLayer(

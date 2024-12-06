@@ -20,7 +20,8 @@ class TrackCreateInteractor @Inject constructor(
             title = title,
             type = ExcursionType.Hike,
             geoRecord = geoRecord,
-            description = ""
+            description = "",
+            isPathEditable = true
         )
         val excursion = excursionRepository.getExcursion(id)
 

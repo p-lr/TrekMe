@@ -17,11 +17,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -47,16 +53,19 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
 import com.peterlaurence.trekme.core.georecord.domain.model.hasMeaningfulElevation
 import com.peterlaurence.trekme.core.location.domain.model.LatLon
+import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
 import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.BottomSheetCustom
 import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.DragHandle
 import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.States
 import com.peterlaurence.trekme.features.common.presentation.ui.component.TrackStats
+import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.ConfirmDialog
 import com.peterlaurence.trekme.features.map.presentation.ui.components.ColorIndicator
 import com.peterlaurence.trekme.features.map.presentation.ui.components.ColorPicker
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.BottomSheetState
@@ -76,7 +85,9 @@ fun BottomSheet(
     peakedRatio: Float,
     onCursorMove: (latLon: LatLon, d: Double, ele: Double) -> Unit,
     onColorChange: (Long, TrackType) -> Unit,
-    onTitleChange: (String, TrackType) -> Unit
+    onTitleChange: (String, TrackType) -> Unit,
+    onEditPath: (ExcursionRef) -> Unit,
+    onDelete: (TrackType) -> Unit
 ) {
     val anchors = remember {
         DraggableAnchors {
@@ -124,7 +135,11 @@ fun BottomSheet(
                         },
                         onTitleChange = { title ->
                             onTitleChange(title, bottomSheetState.type)
-                        }
+                        },
+                        onEditPath = if (bottomSheetState.type is TrackType.ExcursionType && bottomSheetState.type.isPathEditable) {
+                            { onEditPath(bottomSheetState.type.excursionRef) }
+                        } else null,
+                        onDelete = { onDelete(bottomSheetState.type) }
                     )
                     statsSection(bottomSheetState.stats, bottomSheetState.hasElevation)
                     elevationGraphSection(bottomSheetState, onCursorMove)
@@ -138,13 +153,17 @@ private fun LazyListScope.titleSection(
     titleFlow: StateFlow<String>,
     colorFlow: StateFlow<String>,
     onColorChange: (Long) -> Unit,
-    onTitleChange: (String) -> Unit
+    onTitleChange: (String) -> Unit,
+    onEditPath: (() -> Unit)?,
+    onDelete: () -> Unit
 ) {
     stickyHeader("title") {
         val title by titleFlow.collectAsState()
         val color by colorFlow.collectAsState()
         var isShowingColorPicker by remember { mutableStateOf(false) }
         var isShowingTitleEdit by remember { mutableStateOf(false) }
+        var expandedMenu by remember { mutableStateOf(false) }
+        var showDeleteConfirmation by remember { mutableStateOf(false) }
 
         Row(
             Modifier
@@ -154,7 +173,12 @@ private fun LazyListScope.titleSection(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Spacer(Modifier.width(24.dp))
+            ColorIndicator(
+                radius = 16.dp,
+                color = color,
+                onClick = { isShowingColorPicker = true }
+            )
+            Spacer(Modifier.width(8.dp))
             Text(
                 modifier = Modifier
                     .weight(1f)
@@ -169,12 +193,50 @@ private fun LazyListScope.titleSection(
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center
             )
-            Spacer(Modifier.width(8.dp))
-            ColorIndicator(
-                radius = 16.dp,
-                color = color,
-                onClick = { isShowingColorPicker = true }
-            )
+
+            IconButton(
+                onClick = { expandedMenu = true },
+                modifier = Modifier.width(36.dp)
+            ) {
+                Icon(
+                    Icons.Default.MoreVert,
+                    contentDescription = null,
+                )
+            }
+            Box(
+                Modifier
+                    .height(24.dp)
+                    .wrapContentSize(Alignment.BottomEnd, true)
+            ) {
+                DropdownMenu(
+                    expanded = expandedMenu,
+                    onDismissRequest = { expandedMenu = false },
+                    offset = DpOffset(0.dp, 0.dp)
+                ) {
+                    if (onEditPath != null) {
+                        DropdownMenuItem(
+                            onClick = {
+                                expandedMenu = false
+                                onEditPath()
+                            },
+                            text = {
+                                Text(stringResource(id = R.string.edit_track_path))
+                                Spacer(Modifier.weight(1f))
+                            }
+                        )
+                    }
+                    DropdownMenuItem(
+                        onClick = {
+                            expandedMenu = false
+                            showDeleteConfirmation = true
+                        },
+                        text = {
+                            Text(stringResource(id = R.string.delete_dialog))
+                            Spacer(Modifier.weight(1f))
+                        }
+                    )
+                }
+            }
         }
 
         if (isShowingColorPicker) {
@@ -193,6 +255,16 @@ private fun LazyListScope.titleSection(
                 title = title,
                 onTitleChange = onTitleChange,
                 onDismissRequest = { isShowingTitleEdit = false }
+            )
+        }
+
+        if (showDeleteConfirmation) {
+            ConfirmDialog(
+                contentText = stringResource(R.string.delete_track_confirm),
+                onConfirmPressed = onDelete,
+                cancelButtonText = stringResource(R.string.cancel_dialog_string),
+                confirmButtonText = stringResource(R.string.delete_dialog),
+                onDismissRequest = { showDeleteConfirmation = false }
             )
         }
     }

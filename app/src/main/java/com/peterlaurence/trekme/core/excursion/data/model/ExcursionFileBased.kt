@@ -28,6 +28,8 @@ class ExcursionFileBased(
         get() = waypointsFlow
     override val photos: List<ExcursionPhoto>
         get() = config.photos
+    override val isPathEditable: Boolean
+        get() = config.isPathEditable
 }
 
 @Serializable
@@ -38,7 +40,9 @@ data class ExcursionConfig(
     val description: String,
     val type: Type,
     @SerialName("photos")
-    val photos: List<Photo> = emptyList()
+    val photos: List<Photo> = emptyList(),
+    @SerialName("is-path-editable")
+    val isPathEditable: Boolean = false
 )
 
 @Serializable

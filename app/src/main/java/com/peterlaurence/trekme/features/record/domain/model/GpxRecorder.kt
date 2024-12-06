@@ -160,7 +160,8 @@ class GpxRecorder(
                     title = trackName,
                     type = ExcursionType.Hike,
                     description = "",
-                    geoRecord = geoRecord
+                    geoRecord = geoRecord,
+                    isPathEditable = false
                 )
 
                 if (result == ExcursionRepository.PutExcursionResult.Ok) {
