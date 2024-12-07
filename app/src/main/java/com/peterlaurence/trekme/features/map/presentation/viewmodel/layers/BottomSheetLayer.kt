@@ -2,7 +2,6 @@ package com.peterlaurence.trekme.features.map.presentation.viewmodel.layers
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Dp
-import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.excursion.domain.repository.ExcursionRepository
 import com.peterlaurence.trekme.core.georecord.domain.logic.getGeoStatistics
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics

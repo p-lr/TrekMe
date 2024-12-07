@@ -19,5 +19,6 @@ data class TrackCreateScreenArgs(
     val mapId: String,
     val centroidX: Double,
     val centroidY: Double,
-    val scale: Float
+    val scale: Float,
+    val excursionId: String?
 )

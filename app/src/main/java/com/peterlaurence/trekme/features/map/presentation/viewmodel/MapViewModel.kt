@@ -41,7 +41,6 @@ import com.peterlaurence.trekme.features.map.presentation.events.ItineraryEvent
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.map.presentation.events.MarkerEditEvent
 import com.peterlaurence.trekme.features.map.presentation.events.PlaceableEvent
-import com.peterlaurence.trekme.features.map.presentation.ui.navigation.TrackCreateScreenArgs
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.BeaconLayer
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.BottomSheetLayer
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.CalloutLayer
@@ -81,8 +80,6 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.addLayer
-import ovh.plrapps.mapcompose.api.centroidX
-import ovh.plrapps.mapcompose.api.centroidY
 import ovh.plrapps.mapcompose.api.maxScale
 import ovh.plrapps.mapcompose.api.onMarkerClick
 import ovh.plrapps.mapcompose.api.onMarkerLongPress
@@ -356,18 +353,8 @@ class MapViewModel @Inject constructor(
         elevationFixInteractor.setElevationFix(dataStateFlow.first().map, fix)
     }
 
-    fun onRequestTrackCreate(onNavigate: (TrackCreateScreenArgs) -> Unit) {
-        val dataState = dataStateFlow.replayCache.firstOrNull() ?: return
-        with(dataState.mapState) {
-            onNavigate(
-                TrackCreateScreenArgs(
-                    mapId = dataState.map.id.toString(),
-                    centroidX = centroidX,
-                    centroidY = centroidY,
-                    scale = scale
-                )
-            )
-        }
+    fun getCurrentDataState(): DataState? {
+        return dataStateFlow.replayCache.firstOrNull()
     }
 
     fun isShowingDistanceFlow(): StateFlow<Boolean> = distanceLayer.isVisible

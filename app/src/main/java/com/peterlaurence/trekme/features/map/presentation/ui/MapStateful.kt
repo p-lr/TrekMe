@@ -71,6 +71,7 @@ import com.peterlaurence.trekme.features.map.presentation.ui.components.statsPan
 import com.peterlaurence.trekme.features.map.presentation.ui.navigation.TrackCreateScreenArgs
 import com.peterlaurence.trekme.features.map.presentation.ui.screens.ErrorScaffold
 import com.peterlaurence.trekme.features.map.presentation.ui.screens.MapScreen
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.Error
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.GpxRecordServiceViewModel
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.Loading
@@ -86,6 +87,9 @@ import com.peterlaurence.trekme.util.android.getActivityOrNull
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import ovh.plrapps.mapcompose.api.centroidX
+import ovh.plrapps.mapcompose.api.centroidY
+import ovh.plrapps.mapcompose.api.scale
 import java.util.UUID
 
 @Composable
@@ -338,7 +342,11 @@ fun MapStateful(
                         onElevationFixUpdate = viewModel::onElevationFixUpdate,
                         onNavigateToShop = onNavigateToShop,
                         onNavigateToTrackCreate = {
-                            viewModel.onRequestTrackCreate(onNavigateToTrackCreate)
+                            viewModel.getCurrentDataState()?.also { dataState ->
+                                onNavigateToTrackCreate(
+                                    makeTrackCreationArgs(dataState, excursionId = null)
+                                )
+                            }
                         },
                         recordingButtons = {
                             RecordingFabStateful(gpxRecordServiceViewModel)
@@ -360,7 +368,13 @@ fun MapStateful(
                         },
                         onColorChange = viewModel.bottomSheetLayer::onColorChange,
                         onTitleChange = viewModel.bottomSheetLayer::onTitleChange,
-                        onEditPath = {}, // TODO
+                        onEditPath = {
+                            viewModel.getCurrentDataState()?.also { dataState ->
+                                onNavigateToTrackCreate(
+                                    makeTrackCreationArgs(dataState, excursionId = it.id)
+                                )
+                            }
+                        },
                         onDelete = { trackType ->
                             when (trackType) {
                                 is TrackType.ExcursionType -> {
@@ -539,6 +553,16 @@ fun showSnackbar(
     snackbarHostState.currentSnackbarData?.dismiss()
 
     snackbarHostState.showSnackbar(msg, actionLabel = okString)
+}
+
+private fun makeTrackCreationArgs(dataState: DataState, excursionId: String?): TrackCreateScreenArgs {
+    return TrackCreateScreenArgs(
+        mapId = dataState.map.id.toString(),
+        centroidX = dataState.mapState.centroidX,
+        centroidY = dataState.mapState.centroidY,
+        scale = dataState.mapState.scale,
+        excursionId = excursionId
+    )
 }
 
 private const val expandedRatio = 0.5f
