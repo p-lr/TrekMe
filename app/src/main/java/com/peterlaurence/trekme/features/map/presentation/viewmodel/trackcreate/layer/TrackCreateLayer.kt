@@ -101,7 +101,6 @@ class TrackCreateLayer(
 
     init {
         configureClustering()
-        initialize()
     }
 
     private fun configureClustering() {
@@ -115,45 +114,37 @@ class TrackCreateLayer(
         }
     }
 
-    private fun initialize() = scope.launch {
-        val area = mapState.visibleArea()
-        val p1x = (0.5 * area.p1x + 0.5 * area.p3x).coerceIn(0.0..1.0)
-        val p1y = (0.5 * area.p1y + 0.5 * area.p3y).coerceIn(0.0..1.0)
+    /* region restore from existing */
+    fun addFirstSegment(x1: Double, y1: Double, x2: Double, y2: Double): PointState {
+        val p1State = addStartPoint(x1, y1)
+        addSegment(lastPointState = p1State, x2, y2)
+        return p1State
+    }
 
-        val firstPointId = makeMarkerId()
+    fun addExistingPoint(x: Double, y: Double) {
+        val lastSegmentState = trackState.value.lastOrNull() ?: return
 
-        addMarkerGrab(firstPointId, p1x, p1y, color = { startMarkerColor })
-        val p1State = PointState(firstPointId, p1x, p1y, markerId = firstPointId)
-        configureDrag(p1State)
+        val lastPointState = lastSegmentState.p2
+        addSegment(lastPointState, x, y)
+    }
+    /* endregion */
 
+    fun initialize(firstPointState: PointState) = scope.launch {
         mapState.onTap { x, y ->
             val lastSegmentState = trackState.value.lastOrNull()
-            val lastPointState = lastSegmentState?.p2 ?: p1State
-            val newMarkerId = makeMarkerId()
-            val newPointState = PointState(newMarkerId, x, y, markerId = newMarkerId)
-            val newSegment = TrackSegmentState(
-                id = makeSegmentId(),
-                p1 = lastPointState,
-                p2 = newPointState
-            )
-            newPointState.prev = newSegment
-            lastPointState.next = newSegment
-
-            addPoint(newPointState, newSegment)
+            val lastPointState = lastSegmentState?.p2 ?: firstPointState
+            val newPointState = addSegment(lastPointState, x, y)
 
             /* This is a user gesture: add an action to undo stack and clear redo stack */
             addActionToUndoStack(Action.AddPoint(newPointState))
             clearRedoStack()
         }
 
-        val tooltipState = TooltipState(isPersistent = false)
-        showStartToolTip(tooltipState, p1x, p1y)
-
         mapState.onMarkerClick { id, x, y ->
             /* Click on first marker is no-op. We do that instead of making the first marker
              * non-clickable to avoid accidentally creating a new point when clicking on first
              * marker. */
-            if (id == firstPointId) return@onMarkerClick
+            if (id == firstPointState.id) return@onMarkerClick
             if (isCenterOfSegment(id)) return@onMarkerClick
 
             mapState.addCallout(calloutId, x, y) {
@@ -197,6 +188,43 @@ class TrackCreateLayer(
                 }
             }
         }
+    }
+
+    fun initializeNewTrack() = scope.launch {
+        val area = mapState.visibleArea()
+        val p1x = (0.5 * area.p1x + 0.5 * area.p3x).coerceIn(0.0..1.0)
+        val p1y = (0.5 * area.p1y + 0.5 * area.p3y).coerceIn(0.0..1.0)
+
+        val p1State = addStartPoint(p1x, p1y)
+
+        initialize(p1State)
+
+        /* Show tooltip on first point */
+        val tooltipState = TooltipState(isPersistent = false)
+        showStartToolTip(tooltipState, p1x, p1y)
+    }
+
+    private fun addStartPoint(x: Double, y: Double): PointState {
+        val id = makeMarkerId()
+        addMarkerGrab(id, x, y, color = { startMarkerColor })
+        val p1State = PointState(id, x, y, markerId = id)
+        configureDrag(p1State)
+        return p1State
+    }
+
+    private fun addSegment(lastPointState: PointState, x: Double, y: Double): PointState {
+        val newMarkerId = makeMarkerId()
+        val newPointState = PointState(newMarkerId, x, y, markerId = newMarkerId)
+        val newSegment = TrackSegmentState(
+            id = makeSegmentId(),
+            p1 = lastPointState,
+            p2 = newPointState
+        )
+        newPointState.prev = newSegment
+        lastPointState.next = newSegment
+
+        addPoint(newPointState, newSegment)
+        return newPointState
     }
 
     private fun redoAddLastPoint(pointState: PointState) {

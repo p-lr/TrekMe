@@ -66,6 +66,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingS
 import com.peterlaurence.trekme.features.map.presentation.ui.trackcreate.component.TrackLines
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.Loading
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.MapUiState
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.SaveConfig
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.TrackCreateViewModel
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.layer.TrackSegmentState
 import com.peterlaurence.trekme.util.fileNameAsCurrentDate
@@ -102,10 +103,11 @@ fun TrackCreateStateful(
                 onUndo = mapUiState.trackCreateLayer::undo,
                 onRedo = mapUiState.trackCreateLayer::reDo,
                 onSave = {
-                    if (viewModel.isNewTrack()) {
+                    val currentRef = viewModel.getCurrentExcursionRef()
+                    if (currentRef == null) {
                         isShowingTrackNameDialog = true
                     } else {
-                        // TODO
+                        viewModel.save(SaveConfig.UpdateExisting(currentRef))
                     }
                 },
                 onClose = {
@@ -118,7 +120,7 @@ fun TrackCreateStateful(
     if (isShowingTrackNameDialog) {
         TrackCreateDialog(
             onDismissRequest = { isShowingTrackNameDialog = false },
-            onSave = { viewModel.save(it) }
+            onSave = { viewModel.save(SaveConfig.CreateWithName(it)) }
         )
     }
 }

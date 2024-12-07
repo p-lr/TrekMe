@@ -15,8 +15,10 @@ import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.features.common.domain.interactors.MapComposeTileStreamProviderInteractor
 import com.peterlaurence.trekme.features.map.domain.core.getLonLatFromNormalizedCoordinateBlocking
 import com.peterlaurence.trekme.features.map.domain.interactors.TrackCreateInteractor
+import com.peterlaurence.trekme.features.map.domain.models.NormalizedPos
 import com.peterlaurence.trekme.features.map.presentation.ui.navigation.TrackCreateScreenArgs
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.layer.PointState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.layer.TrackCreateLayer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -53,17 +55,18 @@ class TrackCreateViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val map = mapRepository.getMap(UUID.fromString(args.mapId)) ?: return@launch
-            onMapChange(
+            configure(
                 map,
                 centroidX = args.centroidX,
                 centroidY = args.centroidY,
-                scale = args.scale
+                scale = args.scale,
+                excursionId = args.excursionId
             )
         }
     }
 
     /* region map configuration */
-    private suspend fun onMapChange(map: Map, centroidX: Double, centroidY: Double, scale: Float) {
+    private suspend fun configure(map: Map, centroidX: Double, centroidY: Double, scale: Float, excursionId: String?) {
         /* Shutdown the previous map state, if any */
         dataStateFlow.replayCache.firstOrNull()?.mapState?.shutdown()
 
@@ -93,50 +96,73 @@ class TrackCreateViewModel @Inject constructor(
         }
 
         dataStateFlow.emit(DataState(map, mapState))
+
+        val trackCreateLayer = TrackCreateLayer(viewModelScope, mapState)
+        if (excursionId != null) {
+            excursionRef = map.excursionRefs.value.firstOrNull { it.id == excursionId }
+
+            var previous: NormalizedPos? = null
+            var firstPointState: PointState? = null
+            trackCreateInteractor.getCurrentRelativeCoordinates(map, excursionId).collect {
+                val prev = previous
+                if (prev != null) {
+                    if (firstPointState == null) {
+                        firstPointState = trackCreateLayer.addFirstSegment(prev.x, prev.y, it.x, it.y)
+                    } else {
+                        trackCreateLayer.addExistingPoint(it.x, it.y)
+                    }
+                }
+                previous = it
+            }
+            firstPointState?.also {
+                trackCreateLayer.initialize(it)
+            }
+        } else {
+            trackCreateLayer.initializeNewTrack()
+        }
+
         val mapUiState = MapUiState(
             mapState = mapState,
             map = map,
-            trackCreateLayer = TrackCreateLayer(viewModelScope, mapState)
+            trackCreateLayer = trackCreateLayer
         )
         _uiState.value = mapUiState
     }
     /* endregion */
 
-    fun isNewTrack(): Boolean = excursionRef == null
+    fun getCurrentExcursionRef(): ExcursionRef? = excursionRef
 
-    fun save(withName: String) = viewModelScope.launch {
+    fun save(config: SaveConfig) = viewModelScope.launch {
         // TODO: add a loading while saving
         val mapUiState = (_uiState.value as? MapUiState) ?: return@launch
 
         /* Make a defensive copy of the current list of segments */
         val trackSegments = mapUiState.trackCreateLayer.trackState.value.toList()
 
+        val geoRecordName = when (config) {
+            is SaveConfig.UpdateExisting -> config.excursionRef.name.value
+            is SaveConfig.CreateWithName -> config.name
+        }
+
         val geoRecord = withContext(Dispatchers.Default) {
-            val markers = buildList {
-                for (s in trackSegments) {
-                    val lonLatP1 = getLonLatFromNormalizedCoordinateBlocking(
-                        s.p1.x,
-                        s.p1.y,
-                        projection = mapUiState.map.projection,
-                        mapBounds = mapUiState.map.mapBounds
-                    )
-
-                    add(Marker(id = s.p1.id, lat = lonLatP1[1], lon = lonLatP1[0]))
-
-                    val lonLatP2 = getLonLatFromNormalizedCoordinateBlocking(
-                        s.p2.x,
-                        s.p2.y,
-                        projection = mapUiState.map.projection,
-                        mapBounds = mapUiState.map.mapBounds
-                    )
-
-                    add(Marker(id = s.p2.id, lat = lonLatP2[1], lon = lonLatP2[0]))
-                }
+            val points = mutableSetOf<PointState>()
+            for (s in trackSegments) {
+                points.add(s.p1)
+                points.add(s.p2)
+            }
+            val markers = points.map { p ->
+                val lonLat = getLonLatFromNormalizedCoordinateBlocking(
+                    p.x,
+                    p.y,
+                    projection = mapUiState.map.projection,
+                    mapBounds = mapUiState.map.mapBounds
+                )
+                Marker(id = p.id, lat = lonLat[1], lon = lonLat[0])
             }
 
             GeoRecord(
                 id = UUID.randomUUID(),
-                name = withName,
+                name = geoRecordName,
                 routeGroups = listOf(
                     RouteGroup(
                         id = UUID.randomUUID().toString(),
@@ -154,11 +180,18 @@ class TrackCreateViewModel @Inject constructor(
             )
         }
 
-        excursionRef = trackCreateInteractor.createExcursion(
-            title = withName,
-            geoRecord = geoRecord,
-            map = mapUiState.map
-        )
+        when (config) {
+            is SaveConfig.UpdateExisting -> {
+                trackCreateInteractor.saveGeoRecord(mapUiState.map, config.excursionRef, geoRecord)
+            }
+            is SaveConfig.CreateWithName -> {
+                excursionRef = trackCreateInteractor.createExcursion(
+                    title = config.name,
+                    geoRecord = geoRecord,
+                    map = mapUiState.map
+                )
+            }
+        }
     }
 }
 
@@ -170,3 +203,8 @@ data class MapUiState(
 ) : UiState
 
 data object Loading : UiState
+
+sealed interface SaveConfig {
+    data class CreateWithName(val name: String): SaveConfig
+    data class UpdateExisting(val excursionRef: ExcursionRef) : SaveConfig
+}
