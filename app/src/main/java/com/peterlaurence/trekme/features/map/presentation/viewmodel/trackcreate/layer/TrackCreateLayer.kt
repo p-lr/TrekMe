@@ -52,6 +52,7 @@ class TrackCreateLayer(
     val trackState = MutableStateFlow<List<TrackSegmentState>>(emptyList())
     val hasUndoState = MutableStateFlow(false)
     val hasRedoState = MutableStateFlow(false)
+    val lastUndoActionId = MutableStateFlow<String?>(null)
     private val undoStack = ArrayDeque<Action>()
     private val redoStack = ArrayDeque<Action>()
 
@@ -190,6 +191,7 @@ class TrackCreateLayer(
         }
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     fun initializeNewTrack() = scope.launch {
         val area = mapState.visibleArea()
         val p1x = (0.5 * area.p1x + 0.5 * area.p3x).coerceIn(0.0..1.0)
@@ -579,6 +581,7 @@ class TrackCreateLayer(
     private fun popUndo(): Action? {
         return undoStack.removeLastOrNull().also {
             hasUndoState.value = undoStack.size > 0
+            lastUndoActionId.value = undoStack.lastOrNull()?.id
         }
     }
 
@@ -591,6 +594,7 @@ class TrackCreateLayer(
     private fun addActionToUndoStack(action: Action) {
         undoStack.add(action)
         hasUndoState.value = true
+        lastUndoActionId.value = action.id
     }
 
     private fun addActionToRedoStack(action: Action) {
@@ -653,17 +657,19 @@ class PointState(val id: String, x: Double, y: Double, val markerId: String) {
     }
 }
 
-sealed interface Action {
-    data class AddPoint(val pointState: PointState) : Action
-    data class MovePoint(val pointState: PointState, val from: Point, val to: Point) : Action
+sealed class Action {
+    val id = UUID.randomUUID().toString()
+
+    data class AddPoint(val pointState: PointState) : Action()
+    data class MovePoint(val pointState: PointState, val from: Point, val to: Point) : Action()
     data class SplitSegment(val previousSegment: TrackSegmentState, val newPoint: PointState) :
-        Action
+        Action()
 
     data class RemoveMiddlePoint(
         val previousSegment: TrackSegmentState,
         val nextSegment: TrackSegmentState,
         val newSegment: TrackSegmentState
-    ) : Action
+    ) : Action()
 
-    data class RemoveLastPoint(val pointState: PointState) : Action
+    data class RemoveLastPoint(val pointState: PointState) : Action()
 }

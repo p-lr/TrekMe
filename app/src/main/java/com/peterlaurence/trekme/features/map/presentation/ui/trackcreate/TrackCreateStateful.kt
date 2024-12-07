@@ -102,6 +102,7 @@ fun TrackCreateStateful(
                 hasRedoState = mapUiState.trackCreateLayer.hasRedoState,
                 onUndo = mapUiState.trackCreateLayer::undo,
                 onRedo = mapUiState.trackCreateLayer::reDo,
+                hasSaveState = mapUiState.shouldDisplaySave,
                 onSave = {
                     val currentRef = viewModel.getCurrentExcursionRef()
                     if (currentRef == null) {
@@ -131,6 +132,7 @@ private fun TrackCreateScaffold(
     segmentsState: State<List<TrackSegmentState>>,
     isTrackEmpty: Boolean,
     snackbarHostState: SnackbarHostState,
+    hasSaveState: StateFlow<Boolean>,
     hasUndoState: StateFlow<Boolean>,
     hasRedoState: StateFlow<Boolean>,
     onUndo: () -> Unit,
@@ -158,9 +160,11 @@ private fun TrackCreateScaffold(
 
             val hasUndo by hasUndoState.collectAsState()
             val hasRedo by hasRedoState.collectAsState()
+            val hasSave by hasSaveState.collectAsState()
 
             FabSection(
                 modifier = Modifier.align(Alignment.BottomEnd),
+                hasSave = hasSave,
                 hasUndo = hasUndo,
                 hasRedo = hasRedo,
                 onUndo = onUndo,
@@ -207,6 +211,7 @@ private fun TrackCreateScreen(
 @Composable
 private fun FabSection(
     modifier: Modifier = Modifier,
+    hasSave: Boolean,
     hasUndo: Boolean,
     hasRedo: Boolean,
     onUndo: () -> Unit,
@@ -218,7 +223,7 @@ private fun FabSection(
         horizontalAlignment = Alignment.End
     ) {
         var saveExpanded by rememberSaveable { mutableStateOf(true) }
-        if (hasUndo) {
+        if (hasSave) {
             ExtendedFloatingActionButton(
                 text = {
                     Text(stringResource(R.string.save_action))

@@ -27,7 +27,9 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ovh.plrapps.mapcompose.api.addLayer
@@ -51,6 +53,7 @@ class TrackCreateViewModel @Inject constructor(
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
     private var excursionRef: ExcursionRef? = null
+    private val actionIdOnLastSave = MutableStateFlow<String?>(null)
 
     init {
         viewModelScope.launch {
@@ -121,10 +124,22 @@ class TrackCreateViewModel @Inject constructor(
             trackCreateLayer.initializeNewTrack()
         }
 
+        val shouldDisplaySave = combine(
+            trackCreateLayer.lastUndoActionId,
+            actionIdOnLastSave
+        ) { lastUndoActionId, actionIdOnLastSave ->
+            if (actionIdOnLastSave != null) {
+                lastUndoActionId != actionIdOnLastSave
+            } else {
+                lastUndoActionId != null
+            }
+        }.stateIn(viewModelScope)
+
         val mapUiState = MapUiState(
             mapState = mapState,
             map = map,
-            trackCreateLayer = trackCreateLayer
+            trackCreateLayer = trackCreateLayer,
+            shouldDisplaySave = shouldDisplaySave
         )
         _uiState.value = mapUiState
     }
@@ -135,6 +150,7 @@ class TrackCreateViewModel @Inject constructor(
     fun save(config: SaveConfig) = viewModelScope.launch {
         // TODO: add a loading while saving
         val mapUiState = (_uiState.value as? MapUiState) ?: return@launch
+        actionIdOnLastSave.value = mapUiState.trackCreateLayer.lastUndoActionId.value
 
         /* Make a defensive copy of the current list of segments */
         val trackSegments = mapUiState.trackCreateLayer.trackState.value.toList()
@@ -199,7 +215,8 @@ sealed interface UiState
 data class MapUiState(
     val mapState: MapState,
     val map: Map,
-    val trackCreateLayer: TrackCreateLayer
+    val trackCreateLayer: TrackCreateLayer,
+    val shouldDisplaySave: StateFlow<Boolean>
 ) : UiState
 
 data object Loading : UiState
