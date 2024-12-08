@@ -2,7 +2,9 @@
 
 package com.peterlaurence.trekme.features.map.presentation.ui.trackcreate
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
@@ -37,6 +40,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -46,6 +50,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -64,13 +69,16 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingScreen
 import com.peterlaurence.trekme.features.map.presentation.ui.trackcreate.component.TrackLines
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.Event
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.Loading
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.MapUiState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.SaveConfig
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.TrackCreateViewModel
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.layer.TrackSegmentState
+import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 import com.peterlaurence.trekme.util.fileNameAsCurrentDate
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.ui.MapUI
 import ovh.plrapps.mapcompose.ui.state.MapState
 
@@ -82,6 +90,20 @@ fun TrackCreateStateful(
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     var isShowingTrackNameDialog by remember { mutableStateOf(false) }
+    val isSavePending by viewModel.savingState.collectAsState()
+
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    LaunchedEffectWithLifecycle(viewModel.events) { event ->
+        when(event) {
+            Event.SaveDone -> {
+                scope.launch {
+                    val msg = context.getString(R.string.track_create_save_done)
+                    snackbarHostState.showSnackbar(msg)
+                }
+            }
+        }
+    }
 
     when (uiState) {
         Loading -> LoadingScreen()
@@ -97,6 +119,7 @@ fun TrackCreateStateful(
                 mapState = mapUiState.mapState,
                 segmentsState = segmentsState,
                 isTrackEmpty = isTrackEmpty,
+                isSavePending = isSavePending,
                 snackbarHostState = snackbarHostState,
                 hasUndoState = mapUiState.trackCreateLayer.hasUndoState,
                 hasRedoState = mapUiState.trackCreateLayer.hasRedoState,
@@ -131,6 +154,7 @@ private fun TrackCreateScaffold(
     mapState: MapState,
     segmentsState: State<List<TrackSegmentState>>,
     isTrackEmpty: Boolean,
+    isSavePending: Boolean,
     snackbarHostState: SnackbarHostState,
     hasSaveState: StateFlow<Boolean>,
     hasUndoState: StateFlow<Boolean>,
@@ -171,6 +195,20 @@ private fun TrackCreateScaffold(
                 onReDo = onRedo,
                 onSave = onSave
             )
+
+            AnimatedVisibility(
+                visible = isSavePending,
+                modifier = Modifier.align(Alignment.TopCenter)
+            ) {
+                CircularProgressIndicator(
+                    Modifier
+                        .padding(top = 64.dp)
+                        .size(25.dp)
+                        .background(MaterialTheme.colorScheme.surface, shape = CircleShape)
+                        .padding(4.dp),
+                    strokeWidth = 2.dp
+                )
+            }
         }
     }
 }
