@@ -200,6 +200,7 @@ private fun LazyListScope.titleSection(
             ) {
                 Icon(
                     Icons.Default.MoreVert,
+                    tint = MaterialTheme.colorScheme.onSurface,
                     contentDescription = null,
                 )
             }

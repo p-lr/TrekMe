@@ -3,6 +3,10 @@
 package com.peterlaurence.trekme.features.map.presentation.ui.trackcreate
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.core.AnimationConstants.DefaultDurationMillis
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -77,6 +81,7 @@ import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.layer.TrackSegmentState
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 import com.peterlaurence.trekme.util.fileNameAsCurrentDate
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.ui.MapUI
@@ -95,7 +100,7 @@ fun TrackCreateStateful(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     LaunchedEffectWithLifecycle(viewModel.events) { event ->
-        when(event) {
+        when (event) {
             Event.SaveDone -> {
                 scope.launch {
                     val msg = context.getString(R.string.track_create_save_done)
@@ -261,29 +266,45 @@ private fun FabSection(
         horizontalAlignment = Alignment.End
     ) {
         var saveExpanded by rememberSaveable { mutableStateOf(true) }
-        if (hasSave) {
-            ExtendedFloatingActionButton(
-                text = {
-                    Text(stringResource(R.string.save_action))
-                },
-                icon = {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_save_white_24dp),
-                        contentDescription = null
-                    )
-                },
-                expanded = saveExpanded,
-                modifier = Modifier.padding(end = 16.dp),
-                onClick = {
-                    saveExpanded = false
-                    onSave()
-                }
+        val scope = rememberCoroutineScope()
+
+        /* Using an animated visibility instead of a simple "if" to remove the button after a delay
+         * in order to avoid adding unwanted points (in case of user double taping the save btn).*/
+        AnimatedVisibility(
+            hasSave,
+            enter = EnterTransition.None,
+            exit = fadeOut(
+                animationSpec = tween(durationMillis = DefaultDurationMillis)
             )
+        ) {
+            Surface(color = Color.Transparent) {
+                ExtendedFloatingActionButton(
+                    text = {
+                        Text(stringResource(R.string.save_action))
+                    },
+                    icon = {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_save_white_24dp),
+                            contentDescription = null
+                        )
+                    },
+                    expanded = saveExpanded,
+                    modifier = Modifier.padding(16.dp),
+                    onClick = {
+                        // Set expanded to false after the animation is done
+                        scope.launch {
+                            delay(DefaultDurationMillis.toLong())
+                            saveExpanded = false
+                        }
+                        onSave()
+                    }
+                )
+            }
         }
 
         /* Using a surface to consume clicks around the undo/redo FABs. */
         Surface(color = Color.Transparent) {
-            Row(Modifier.padding(16.dp)) {
+            Row(Modifier.padding(start = 16.dp, bottom = 16.dp, end = 16.dp)) {
                 if (hasUndo) {
                     FloatingActionButton(
                         onClick = onUndo,

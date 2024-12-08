@@ -22,6 +22,7 @@ import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.layer.TrackCreateLayer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -56,6 +57,7 @@ class TrackCreateViewModel @Inject constructor(
 
     private var excursionRef: ExcursionRef? = null
     private val actionIdOnLastSave = MutableStateFlow<String?>(null)
+    private var saveJob: Job? = null
     val savingState = MutableStateFlow(false)
 
     private val _events = Channel<Event>(1)
@@ -153,70 +155,73 @@ class TrackCreateViewModel @Inject constructor(
 
     fun getCurrentExcursionRef(): ExcursionRef? = excursionRef
 
-    fun save(config: SaveConfig) = viewModelScope.launch {
-        val mapUiState = (_uiState.value as? MapUiState) ?: return@launch
-        savingState.value = true
-        actionIdOnLastSave.value = mapUiState.trackCreateLayer.lastUndoActionId.value
+    fun save(config: SaveConfig) {
+        if (saveJob?.isActive == true) return
+        saveJob = viewModelScope.launch {
+            val mapUiState = (_uiState.value as? MapUiState) ?: return@launch
+            savingState.value = true
+            actionIdOnLastSave.value = mapUiState.trackCreateLayer.lastUndoActionId.value
 
-        /* Make a defensive copy of the current list of segments */
-        val trackSegments = mapUiState.trackCreateLayer.trackState.value.toList()
+            /* Make a defensive copy of the current list of segments */
+            val trackSegments = mapUiState.trackCreateLayer.trackState.value.toList()
 
-        val geoRecordName = when (config) {
-            is SaveConfig.UpdateExisting -> config.excursionRef.name.value
-            is SaveConfig.CreateWithName -> config.name
-        }
-
-        val geoRecord = withContext(Dispatchers.Default) {
-            val points = mutableSetOf<PointState>()
-            for (s in trackSegments) {
-                points.add(s.p1)
-                points.add(s.p2)
-            }
-            val markers = points.map { p ->
-                val lonLat = getLonLatFromNormalizedCoordinateBlocking(
-                    p.x,
-                    p.y,
-                    projection = mapUiState.map.projection,
-                    mapBounds = mapUiState.map.mapBounds
-                )
-                Marker(id = p.id, lat = lonLat[1], lon = lonLat[0])
+            val geoRecordName = when (config) {
+                is SaveConfig.UpdateExisting -> config.excursionRef.name.value
+                is SaveConfig.CreateWithName -> config.name
             }
 
-            GeoRecord(
-                id = UUID.randomUUID(),
-                name = geoRecordName,
-                routeGroups = listOf(
-                    RouteGroup(
-                        id = UUID.randomUUID().toString(),
-                        routes = listOf(
-                            Route(
-                                id = UUID.randomUUID().toString(),
-                                initialMarkers = markers,
+            val geoRecord = withContext(Dispatchers.Default) {
+                val points = mutableSetOf<PointState>()
+                for (s in trackSegments) {
+                    points.add(s.p1)
+                    points.add(s.p2)
+                }
+                val markers = points.map { p ->
+                    val lonLat = getLonLatFromNormalizedCoordinateBlocking(
+                        p.x,
+                        p.y,
+                        projection = mapUiState.map.projection,
+                        mapBounds = mapUiState.map.mapBounds
+                    )
+                    Marker(id = p.id, lat = lonLat[1], lon = lonLat[0])
+                }
+
+                GeoRecord(
+                    id = UUID.randomUUID(),
+                    name = geoRecordName,
+                    routeGroups = listOf(
+                        RouteGroup(
+                            id = UUID.randomUUID().toString(),
+                            routes = listOf(
+                                Route(
+                                    id = UUID.randomUUID().toString(),
+                                    initialMarkers = markers,
+                                )
                             )
                         )
-                    )
-                ),
-                markers = emptyList(),
-                time = null,
-                elevationSourceInfo = null
-            )
-        }
-
-        when (config) {
-            is SaveConfig.UpdateExisting -> {
-                trackCreateInteractor.saveGeoRecord(mapUiState.map, config.excursionRef, geoRecord)
-            }
-            is SaveConfig.CreateWithName -> {
-                excursionRef = trackCreateInteractor.createExcursion(
-                    title = config.name,
-                    geoRecord = geoRecord,
-                    map = mapUiState.map
+                    ),
+                    markers = emptyList(),
+                    time = null,
+                    elevationSourceInfo = null
                 )
             }
-        }
 
-        savingState.value = false
-        _events.send(Event.SaveDone)
+            when (config) {
+                is SaveConfig.UpdateExisting -> {
+                    trackCreateInteractor.saveGeoRecord(mapUiState.map, config.excursionRef, geoRecord)
+                }
+                is SaveConfig.CreateWithName -> {
+                    excursionRef = trackCreateInteractor.createExcursion(
+                        title = config.name,
+                        geoRecord = geoRecord,
+                        map = mapUiState.map
+                    )
+                }
+            }
+
+            savingState.value = false
+            _events.send(Event.SaveDone)
+        }
     }
 }
 
