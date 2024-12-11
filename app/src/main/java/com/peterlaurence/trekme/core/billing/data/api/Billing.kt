@@ -13,7 +13,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.*
 
@@ -140,21 +140,25 @@ class Billing(
             .setProductType(BillingClient.ProductType.INAPP)
             .build()
         val inAppPurchases = queryPurchases(inAppQuery)
-        val oneTimeAck = inAppPurchases.second.getOneTimePurchase()?.let {
-            if (shouldAcknowledgePurchase(it)) {
-                acknowledge(it)
-            } else false
-        } ?: false
+        val oneTimeAck = if (inAppPurchases != null) {
+             inAppPurchases.second.getOneTimePurchase()?.let {
+                if (shouldAcknowledgePurchase(it)) {
+                    acknowledge(it)
+                } else false
+            } ?: false
+        } else false
 
         val subQuery = QueryPurchasesParams.newBuilder()
             .setProductType(BillingClient.ProductType.SUBS)
             .build()
         val subs = queryPurchases(subQuery)
-        val subAck = subs.second.getSubPurchase()?.let {
-            if (shouldAcknowledgeSubPurchase(it)) {
-                acknowledge(it)
-            } else false
-        } ?: false
+        val subAck = if (subs != null) {
+            subs.second.getSubPurchase()?.let {
+                if (shouldAcknowledgeSubPurchase(it)) {
+                    acknowledge(it)
+                } else false
+            } ?: false
+        } else false
 
         return oneTimeAck || subAck
     }
@@ -166,19 +170,21 @@ class Billing(
             .setProductType(BillingClient.ProductType.INAPP)
             .build()
         val inAppPurchases = queryPurchases(inAppQuery)
-        val oneTimeLicense = inAppPurchases.second.getValidOneTimePurchase()?.let {
-            if (purchaseVerifier.checkTime(it.purchaseTime) !is AccessGranted) {
-                consume(it.purchaseToken)
-                null
-            } else it
-        }
+        val oneTimeLicense = if (inAppPurchases != null) {
+            inAppPurchases.second.getValidOneTimePurchase()?.let {
+                if (purchaseVerifier.checkTime(it.purchaseTime) !is AccessGranted) {
+                    consume(it.purchaseToken)
+                    null
+                } else it
+            }
+        } else null
 
         return if (oneTimeLicense == null) {
             val subQuery = QueryPurchasesParams.newBuilder()
                 .setProductType(BillingClient.ProductType.SUBS)
                 .build()
             val subs = queryPurchases(subQuery)
-            subs.second.getValidSubPurchase() != null
+            subs?.second?.getValidSubPurchase() != null
         } else true
     }
 
@@ -210,19 +216,17 @@ class Billing(
 
     /**
      * Get the details of a subscription.
-     * @throws [ProductNotFoundException], [NotSupportedException], [IllegalStateException]
+     * @throws [IllegalStateException]
      */
-    override suspend fun getSubDetails(index: Int): SubscriptionDetails {
+    override suspend fun getSubDetails(index: Int): SubscriptionDetails? {
         val subId = subIdList.getOrNull(index) ?: error("no sku for index $index")
         awaitConnect()
-        val (billingResult, skuDetailsList) = querySubDetails(subId)
+        val (billingResult, skuDetailsList) = querySubDetails(subId) ?: return null
         return when (billingResult.responseCode) {
             OK -> skuDetailsList.find { it.productId == subId }?.let {
                 makeSubscriptionDetails(it)
-            } ?: throw ProductNotFoundException()
-            FEATURE_NOT_SUPPORTED -> throw NotSupportedException()
-            SERVICE_DISCONNECTED -> error("should retry")
-            else -> error("other error")
+            }
+            else -> null
         }
     }
 
@@ -251,7 +255,7 @@ class Billing(
      * By collecting a [callbackFlow], the real collector is on a different call stack. So the
      * [BillingClient] has no reference on the collector.
      */
-    private suspend fun querySubDetails(subId: String): ProductDetailsResult = callbackFlow {
+    private suspend fun querySubDetails(subId: String): ProductDetailsResult? = callbackFlow {
         val productList =
             listOf(
                 QueryProductDetailsParams.Product.newBuilder()
@@ -267,7 +271,7 @@ class Billing(
         }
 
         awaitClose { /* We can't do anything, but it doesn't matter */ }
-    }.first()
+    }.firstOrNull()
 
     /**
      * Using a [callbackFlow] instead of [suspendCancellableCoroutine], as we have no way to remove
@@ -276,13 +280,13 @@ class Billing(
      * By collecting a [callbackFlow], the real collector is on a different call stack. So the
      * [BillingClient] has no reference on the collector.
      */
-    private suspend fun queryPurchases(params: QueryPurchasesParams): Pair<BillingResult, List<Purchase>> =
+    private suspend fun queryPurchases(params: QueryPurchasesParams): Pair<BillingResult, List<Purchase>>? =
         callbackFlow {
             billingClient.queryPurchasesAsync(params) { r, p ->
                 trySend(Pair(r, p))
             }
             awaitClose { /* We can't do anything, but it doesn't matter */ }
-        }.first()
+        }.firstOrNull()
 
     /**
      * Using a [callbackFlow] instead of [suspendCancellableCoroutine], as we have no way to remove
@@ -291,7 +295,7 @@ class Billing(
      * By collecting a [callbackFlow], the real collector is on a different call stack. So the
      * [BillingClient] has no reference on the collector.
      */
-    private suspend fun acknowledge(purchase: Purchase) = callbackFlow {
+    private suspend fun acknowledge(purchase: Purchase): Boolean? = callbackFlow {
         /* Approve the payment */
         val acknowledgePurchaseParams = AcknowledgePurchaseParams.newBuilder()
             .setPurchaseToken(purchase.purchaseToken)
@@ -302,7 +306,7 @@ class Billing(
         }
 
         awaitClose { /* We can't do anything, but it doesn't matter */ }
-    }.first()
+    }.firstOrNull()
 
     private data class ProductDetailsResult(
         val billingResult: BillingResult,

@@ -24,7 +24,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -154,7 +153,7 @@ class TrackFollowLayer(
 
             appEventBus.requestBackgroundLocation(request)
 
-            request.result.receiveAsFlow().first()
+            request.result.receiveAsFlow().firstOrNull() ?: false
         } else true
     }
 

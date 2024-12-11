@@ -67,7 +67,7 @@ class MarkerLayer(
     }
 
     fun addMarker() = scope.launch {
-        val (map, mapState) = dataStateFlow.first()
+        val (map, mapState) = dataStateFlow.firstOrNull() ?: return@launch
         val x = mapState.centroidX
         val y = mapState.centroidY
         val marker = markerInteractor.makeMarker(map, x, y)
@@ -216,7 +216,7 @@ class MarkerLayer(
         val markerInfo = mapState.getMarkerInfo(markerState.idOnMap) ?: return
         val marker = markerState.marker
         scope.launch {
-            dataStateFlow.first().also {
+            dataStateFlow.firstOrNull()?.also {
                 markerInteractor.addMarkerAtPosition(
                     marker,
                     it.map,

@@ -46,7 +46,7 @@ class LocationOrientationLayer(
 
     init {
         locationFlow.map { loc ->
-            val (map, mapState) = dataStateFlow.first()
+            val (map, mapState) = dataStateFlow.firstOrNull() ?: return@map
             onLocation(loc, mapState, map)
         }.launchIn(scope)
 
@@ -116,7 +116,7 @@ class LocationOrientationLayer(
     }
 
     fun centerOnPosition() = scope.launch {
-        val mapState = dataStateFlow.first().mapState
+        val mapState = dataStateFlow.firstOrNull()?.mapState ?: return@launch
 
         val posMarker = mapState.getMarkerInfo(positionMarkerId)
         if (posMarker != null) {

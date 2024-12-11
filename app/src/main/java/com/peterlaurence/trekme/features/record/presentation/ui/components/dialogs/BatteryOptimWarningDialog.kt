@@ -47,14 +47,12 @@ fun BatteryOptimWarningDialog(
 
 @Composable
 private fun BatteryOptimLayout(text: String) {
-    Surface {
-        Column(
-            Modifier
-                .padding(horizontal = 24.dp)
-                .verticalScroll(rememberScrollState())
-        ) {
-            Text(text, textAlign = TextAlign.Justify, style = LocalTextStyle.current.copy(hyphens = Hyphens.Auto))
-        }
+    Column(
+        Modifier
+            .padding(horizontal = 24.dp)
+            .verticalScroll(rememberScrollState())
+    ) {
+        Text(text, textAlign = TextAlign.Justify, style = LocalTextStyle.current.copy(hyphens = Hyphens.Auto))
     }
 }
 

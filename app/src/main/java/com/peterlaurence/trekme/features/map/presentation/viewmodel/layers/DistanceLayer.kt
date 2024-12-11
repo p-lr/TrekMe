@@ -30,7 +30,7 @@ class DistanceLayer(
     }
 
     fun toggleDistance() = scope.launch {
-        mapStateFlow.first().also { mapState ->
+        mapStateFlow.firstOrNull()?.also { mapState ->
             if (isVisible.value) {
                 hide(mapState)
             } else {

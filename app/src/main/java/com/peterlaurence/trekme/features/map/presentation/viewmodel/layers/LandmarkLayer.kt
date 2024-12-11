@@ -1,15 +1,9 @@
 package com.peterlaurence.trekme.features.map.presentation.viewmodel.layers
 
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.dp
-import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.geotools.distanceApprox
 import com.peterlaurence.trekme.core.map.domain.models.Landmark
 import com.peterlaurence.trekme.core.map.domain.models.Map
@@ -27,14 +21,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.state.MapState
-import java.math.RoundingMode
-import java.text.DecimalFormat
 import java.util.*
 
 class LandmarkLayer(
@@ -84,7 +76,7 @@ class LandmarkLayer(
     }
 
     fun addLandmark() = scope.launch {
-        val (map, mapState) = dataStateFlow.first()
+        val (map, mapState) = dataStateFlow.firstOrNull() ?: return@launch
 
         val x = mapState.centroidX
         val y = mapState.centroidY
@@ -186,7 +178,7 @@ class LandmarkLayer(
         val landmarkInfo = mapState.getMarkerInfo(landmarkState.idOnMap) ?: return
         val landmark = landmarkState.landmark
         scope.launch {
-            dataStateFlow.first().also {
+            dataStateFlow.firstOrNull()?.also {
                 landmarkInteractor.updateAndSaveLandmark(
                     landmark,
                     it.map,

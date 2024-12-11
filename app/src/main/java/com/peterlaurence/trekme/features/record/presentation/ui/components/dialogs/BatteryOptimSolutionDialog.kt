@@ -34,17 +34,15 @@ fun BatteryOptimSolutionDialog(
 
 @Composable
 private fun BatteryOptimLayout() {
-    Surface {
-        Column(
-            Modifier
-                .padding(horizontal = 24.dp)
-                .wrapContentHeight()
-        ) {
-            Text(
-                stringResource(id = R.string.battery_warn_solution_msg),
-                textAlign = TextAlign.Justify
-            )
-        }
+    Column(
+        Modifier
+            .padding(horizontal = 24.dp)
+            .wrapContentHeight()
+    ) {
+        Text(
+            stringResource(id = R.string.battery_warn_solution_msg),
+            textAlign = TextAlign.Justify
+        )
     }
 }
 

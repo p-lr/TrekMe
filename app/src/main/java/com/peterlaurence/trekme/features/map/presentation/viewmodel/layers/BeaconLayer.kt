@@ -94,7 +94,7 @@ class BeaconLayer(
     }
 
     fun addBeacon() = scope.launch {
-        val (map, mapState) = dataStateFlow.first()
+        val (map, mapState) = dataStateFlow.firstOrNull() ?: return@launch
         val x = mapState.centroidX
         val y = mapState.centroidY
         val beacon = beaconInteractor.makeBeacon(map, x, y)
@@ -186,7 +186,7 @@ class BeaconLayer(
         val markerInfo = mapState.getMarkerInfo(beaconState.idOnMap) ?: return
         val beacon = beaconState.beacon
         scope.launch {
-            dataStateFlow.first().also {
+            dataStateFlow.firstOrNull()?.also {
                 beaconInteractor.updateAndSaveBeacon(
                     beacon,
                     it.map,

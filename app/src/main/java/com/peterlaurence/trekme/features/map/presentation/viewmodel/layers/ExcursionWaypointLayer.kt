@@ -32,7 +32,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.addCallout
 import ovh.plrapps.mapcompose.api.addMarker
@@ -298,7 +298,7 @@ class ExcursionWaypointLayer(
         val markerInfo = mapState.getMarkerInfo(wptState.idOnMap) ?: return
         val waypoint = wptState.waypoint
         scope.launch {
-            dataStateFlow.first().also {
+            dataStateFlow.firstOrNull()?.also {
                 excursionInteractor.updateAndSaveWaypoint(
                     excursionId = excursionId,
                     map = it.map,

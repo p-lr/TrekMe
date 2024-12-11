@@ -346,11 +346,12 @@ class MapViewModel @Inject constructor(
     }
 
     fun alignToNorth() = viewModelScope.launch {
-        dataStateFlow.first().mapState.rotateTo(0f)
+        dataStateFlow.firstOrNull()?.mapState?.rotateTo(0f)
     }
 
     fun onElevationFixUpdate(fix: Int) = viewModelScope.launch {
-        elevationFixInteractor.setElevationFix(dataStateFlow.first().map, fix)
+        val map = dataStateFlow.firstOrNull()?.map ?: return@launch
+        elevationFixInteractor.setElevationFix(map, fix)
     }
 
     fun getCurrentDataState(): DataState? {

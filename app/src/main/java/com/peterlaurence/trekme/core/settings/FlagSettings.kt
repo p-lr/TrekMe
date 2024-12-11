@@ -6,9 +6,10 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.peterlaurence.trekme.util.android.safeData
 import com.peterlaurence.trekme.util.android.safeEdit
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -27,11 +28,11 @@ class FlagSettings @Inject constructor(
 
     private val showTipForTrailSearch = booleanPreferencesKey("showTipForTrailSearch")
 
-    suspend fun getShowTipForTrailSearch(): Boolean = dataStore.data.map {
-        it[showTipForTrailSearch] ?: true
+    suspend fun getShowTipForTrailSearch(): Boolean = dataStore.safeData.map {
+        it[showTipForTrailSearch]
     }.catch {
         emit(false)
-    }.first()
+    }.firstOrNull() ?: true
 
     suspend fun setShowTipForTrailSearch(show: Boolean) {
         dataStore.safeEdit {

@@ -18,7 +18,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -94,7 +94,7 @@ class GpxRecordServiceViewModel @Inject constructor(
             val request = AppEventBus.BackgroundLocationRequest(R.string.background_location_rationale_gpx_recording)
             appEventBus.requestBackgroundLocation(request)
 
-            val granted = request.result.receiveAsFlow().first()
+            val granted = request.result.receiveAsFlow().firstOrNull() ?: false
             if (!granted) {
                 appEventBus.postMessage(
                     WarningMessage(
