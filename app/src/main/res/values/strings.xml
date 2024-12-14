@@ -100,6 +100,7 @@
     <string name="welcome_excursion_search">Search for excursions</string>
     <string name="ok_dialog">OK</string>
     <string name="no_dialog">No</string>
+    <string name="yes_quit_dialog">Yes, QUIT</string>
     <string name="open_dialog">Open</string>
     <string name="no_authorize_dialog">Don\'t authorize</string>
     <string name="delete_dialog">Delete</string>
@@ -338,6 +339,9 @@
     <string name="track_create_start_help">Press on the map to add new points</string>
     <string name="track_create_name_dialog">Track name</string>
     <string name="track_create_save_done">Track saved</string>
+    <string name="track_create_unsaved_changes_title">Quit track edit?</string>
+    <string name="track_create_unsaved_changes_content">Changes you made so far will not be saved.</string>
+    <string name="track_create_unsaved_changes_keep_edit">Keep Editing</string>
 
     <!-- Record list -->
     <string name="fragment_recording" translatable="false">FragmentRecording</string>

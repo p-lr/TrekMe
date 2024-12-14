@@ -2,6 +2,7 @@
 
 package com.peterlaurence.trekme.features.map.presentation.ui.trackcreate
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.AnimationConstants.DefaultDurationMillis
@@ -95,6 +96,7 @@ fun TrackCreateStateful(
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     var isShowingTrackNameDialog by remember { mutableStateOf(false) }
+    var isShowingUnsavedChangesDialog by remember { mutableStateOf(false) }
     val isSavePending by viewModel.savingState.collectAsState()
 
     val scope = rememberCoroutineScope()
@@ -140,9 +142,21 @@ fun TrackCreateStateful(
                     }
                 },
                 onClose = {
-                    onBack()  // TODO : ask confirmation
+                    if (isSavePending) {
+                        isShowingUnsavedChangesDialog = true
+                    } else {
+                        onBack()
+                    }
                 }
             )
+
+            BackHandler {
+                if (isSavePending) {
+                    isShowingUnsavedChangesDialog = true
+                } else {
+                    onBack()
+                }
+            }
         }
     }
 
@@ -150,6 +164,13 @@ fun TrackCreateStateful(
         TrackCreateDialog(
             onDismissRequest = { isShowingTrackNameDialog = false },
             onSave = { viewModel.save(SaveConfig.CreateWithName(it)) }
+        )
+    }
+
+    if (isShowingUnsavedChangesDialog) {
+        UnsavedChangesDialog(
+            onDismissRequest = { isShowingUnsavedChangesDialog = false },
+            onQuit = onBack
         )
     }
 }
@@ -439,6 +460,41 @@ private fun TrackCreateDialog(
     LaunchedEffect(Unit) {
         runCatching { focusRequester.requestFocus() }
     }
+}
+
+@Composable
+private fun UnsavedChangesDialog(
+    onDismissRequest: () -> Unit,
+    onQuit: () -> Unit
+) {
+    AlertDialog(
+        title = {
+            Text(
+                text = stringResource(R.string.track_create_unsaved_changes_title),
+            )
+        },
+        text = {
+            Text(
+                text = stringResource(R.string.track_create_unsaved_changes_content),
+            )
+        },
+        onDismissRequest = onDismissRequest,
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onDismissRequest()
+                    onQuit()
+                }
+            ) {
+                Text(text = stringResource(id = R.string.yes_quit_dialog))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text(text = stringResource(id = R.string.track_create_unsaved_changes_keep_edit))
+            }
+        }
+    )
 }
 
 private const val disabledAlpha = 0.4f

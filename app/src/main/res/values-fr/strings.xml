@@ -23,6 +23,7 @@
     <string name="calibration_projection_saved_ok">Projection changée</string>
     <string name="ok_dialog">OK</string>
     <string name="no_dialog">Non</string>
+    <string name="yes_quit_dialog">Oui, QUITTER</string>
     <string name="open_dialog">Ouvrir</string>
     <string name="no_authorize_dialog">Ne pas autoriser</string>
     <string name="import_menu_title">Importer une carte</string>
@@ -96,6 +97,9 @@
     <string name="track_create_start_help">Appuyez sur la carte pour ajouter de nouveaux points</string>
     <string name="track_create_name_dialog">Nom de la trace</string>
     <string name="track_create_save_done">Trace enregistrée</string>
+    <string name="track_create_unsaved_changes_title">Quitter l\'édition ?</string>
+    <string name="track_create_unsaved_changes_content">Vos derniers changements ne seront pas enregistrés.</string>
+    <string name="track_create_unsaved_changes_keep_edit">Continuer l\'édition</string>
 
     <string name="delete_marker_question">Supprimer le marker ?</string>
     <string name="mapview_show_speed">Afficher vitesse</string>
