@@ -84,6 +84,7 @@ import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.Track
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimSolutionDialog
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimWarningDialog
 import com.peterlaurence.trekme.util.android.getActivityOrNull
+import com.peterlaurence.trekme.util.android.sendShareIntent
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -212,27 +213,36 @@ fun MapStateful(
             snackbarHostState.currentSnackbarData?.dismiss()
         }
         when (event) {
-            MapEvent.CURRENT_LOCATION_OUT_OF_BOUNDS -> showSnackbar(
+            MapEvent.CurrentLocationOutOfBounds -> showSnackbar(
                 scope = scope,
                 snackbarHostState = snackbarHostState,
                 msg = outOfBounds,
                 okString = ok
             )
 
-            MapEvent.AWAITING_LOCATION -> {
+            MapEvent.AwaitingLocation -> {
                 val awaitingLocation = context.getString(R.string.awaiting_location)
                 showSnackbar(scope, snackbarHostState, awaitingLocation, ok)
             }
 
-            MapEvent.TRACK_TO_FOLLOW_SELECTED -> dismissSnackbar()
-            MapEvent.TRACK_TO_FOLLOW_ALREADY_RUNNING -> {
+            MapEvent.TrackToFollowSelected -> dismissSnackbar()
+            MapEvent.TrackToFollowAlreadyRunning -> {
                 showTrackFollowDialog = true
             }
 
-            MapEvent.SHOW_TRACK_BOTTOM_SHEET -> {
+            MapEvent.ShowTrackBottomSheet -> {
                 scope.launch {
                     anchoredDraggableState.animateTo(States.PEAKED)
                 }
+            }
+
+            is MapEvent.ShareTracks -> {
+                sendShareIntent(context, event.uris)
+            }
+
+            MapEvent.ShareTrackFailure -> {
+                val msg = context.getString(R.string.track_share_error)
+                showSnackbar(scope, snackbarHostState, msg, ok)
             }
         }
     }
@@ -374,6 +384,9 @@ fun MapStateful(
                                     makeTrackCreationArgs(dataState, excursionId = it.id)
                                 )
                             }
+                        },
+                        onSharePath = {
+                            viewModel.shareTracks(listOf(it.id))
                         },
                         onDelete = { trackType ->
                             when (trackType) {

@@ -557,6 +557,7 @@
     <string name="track_rename">Renommer</string>
     <string name="track_choose_map">Ajouter à …</string>
     <string name="track_share">Partager</string>
+    <string name="track_share_error">Une erreur est survenue lors du partage de trace</string>
     <string name="track_elevation_profile">Voir le profil</string>
     <string name="manage_subscription_btn">GÉRER L\'ABONNEMENT</string>
 

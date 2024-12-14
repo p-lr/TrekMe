@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.features.map.presentation.viewmodel
 
 import android.app.Application
+import android.net.Uri
 import androidx.compose.runtime.State
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
@@ -43,6 +44,7 @@ import com.peterlaurence.trekme.features.map.presentation.events.MarkerEditEvent
 import com.peterlaurence.trekme.features.map.presentation.events.PlaceableEvent
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.BeaconLayer
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.BottomSheetLayer
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.BottomSheetState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.CalloutLayer
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.DistanceLayer
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.DistanceLineState
@@ -60,6 +62,7 @@ import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.ZoomI
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
@@ -103,7 +106,7 @@ class MapViewModel @Inject constructor(
     beaconInteractor: BeaconInteractor,
     routeInteractor: RouteInteractor,
     removeRouteInteractor: RemoveRouteInteractor,
-    excursionInteractor: ExcursionInteractor,
+    private val excursionInteractor: ExcursionInteractor,
     mapExcursionInteractor: MapExcursionInteractor,
     excursionRepository: ExcursionRepository,
     private val trackFollowRepository: TrackFollowRepository,
@@ -150,12 +153,12 @@ class MapViewModel @Inject constructor(
         mapInteractor,
         onOutOfBounds = {
             viewModelScope.launch {
-                _events.send(MapEvent.CURRENT_LOCATION_OUT_OF_BOUNDS)
+                _events.send(MapEvent.CurrentLocationOutOfBounds)
             }
         },
         onNoLocation = {
             viewModelScope.launch {
-                _events.send(MapEvent.AWAITING_LOCATION)
+                _events.send(MapEvent.AwaitingLocation)
             }
         }
     )
@@ -209,7 +212,7 @@ class MapViewModel @Inject constructor(
         appEventBus = appEventBus,
         onTrackSelected = {
             viewModelScope.launch {
-                _events.send(MapEvent.TRACK_TO_FOLLOW_SELECTED)
+                _events.send(MapEvent.TrackToFollowSelected)
             }
         }
     )
@@ -258,7 +261,7 @@ class MapViewModel @Inject constructor(
             val handled = trackFollowLayer.handleOnPathClick(route.id, mapState, map)
             if (!handled) {
                 viewModelScope.launch {
-                    _events.send(MapEvent.SHOW_TRACK_BOTTOM_SHEET)
+                    _events.send(MapEvent.ShowTrackBottomSheet)
                 }
                 bottomSheetLayer.setData(route, excursionData)
             }
@@ -327,7 +330,7 @@ class MapViewModel @Inject constructor(
 
     fun initiateTrackFollow() = viewModelScope.launch {
         if (trackFollowRepository.serviceState.value is TrackFollowServiceState.Started) {
-            _events.send(MapEvent.TRACK_TO_FOLLOW_ALREADY_RUNNING)
+            _events.send(MapEvent.TrackToFollowAlreadyRunning)
         } else {
             trackFollowLayer.start()
         }
@@ -364,6 +367,27 @@ class MapViewModel @Inject constructor(
     fun orientationVisibilityFlow(): Flow<Boolean> = settings.getOrientationVisibility()
     fun isLockedOnPosition(): State<Boolean> = locationOrientationLayer.isLockedOnPosition
     fun isShowingGpsDataFlow(): Flow<Boolean> = settings.getGpsDataVisibility()
+
+    private var shareLoadingJob: Job? = null
+    fun shareTracks(trackIds: List<String>) {
+        if (shareLoadingJob?.isActive == true) return
+        shareLoadingJob = viewModelScope.launch {
+            val bottomSheetState =
+                bottomSheetLayer.state.value as? BottomSheetState.BottomSheetData ?: return@launch
+            bottomSheetState.shareLoading.value = true
+            val uris = trackIds.mapNotNull { id ->
+                excursionInteractor.getUriForShare(id)
+            }
+            bottomSheetState.shareLoading.value = true
+
+            if (uris.isNotEmpty()) {
+                _events.send(MapEvent.ShareTracks(uris))
+            } else {
+                _events.send(MapEvent.ShareTrackFailure)
+            }
+            bottomSheetState.shareLoading.value = false
+        }
+    }
 
     /* region map configuration */
     private suspend fun onMapChange(map: Map) {
@@ -459,10 +483,12 @@ enum class Error : UiState {
     IgnLicenseError, WmtsLicenseError, EmptyMap
 }
 
-enum class MapEvent {
-    CURRENT_LOCATION_OUT_OF_BOUNDS,
-    AWAITING_LOCATION,
-    TRACK_TO_FOLLOW_SELECTED,
-    TRACK_TO_FOLLOW_ALREADY_RUNNING,
-    SHOW_TRACK_BOTTOM_SHEET
+sealed interface MapEvent {
+    data object CurrentLocationOutOfBounds : MapEvent
+    data object AwaitingLocation : MapEvent
+    data object TrackToFollowSelected : MapEvent
+    data object TrackToFollowAlreadyRunning : MapEvent
+    data object ShowTrackBottomSheet : MapEvent
+    data class ShareTracks(val uris: List<Uri>) : MapEvent
+    data object ShareTrackFailure : MapEvent
 }

@@ -405,6 +405,7 @@
     <string name="track_rename">Rename</string>
     <string name="track_choose_map">Add to map</string>
     <string name="track_share">Share</string>
+    <string name="track_share_error">An error occurred while sharing a track</string>
     <string name="track_elevation_profile">Show elevation</string>
 
     <!-- Elevation fragment -->

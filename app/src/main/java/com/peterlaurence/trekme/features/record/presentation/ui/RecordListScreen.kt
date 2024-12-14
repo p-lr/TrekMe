@@ -2,8 +2,6 @@
 
 package com.peterlaurence.trekme.features.record.presentation.ui
 
-import android.content.Context
-import android.net.Uri
 import android.os.Parcelable
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -37,7 +35,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.app.ShareCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -60,6 +57,7 @@ import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordLis
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordViewModel
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordingEvent
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordingStatisticsViewModel
+import com.peterlaurence.trekme.util.android.sendShareIntent
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -443,19 +441,6 @@ private fun LoadingScreen(onBackClick: () -> Unit) {
             stringResource(id = R.string.trails_loading)
         )
     }
-}
-
-private fun sendShareIntent(context: Context, uris: List<Uri>) {
-    val intentBuilder = ShareCompat.IntentBuilder(context)
-        .setType("text/plain")
-    uris.forEach { uri ->
-        try {
-            intentBuilder.addStream(uri)
-        } catch (e: IllegalArgumentException) {
-            e.printStackTrace()
-        }
-    }
-    intentBuilder.startChooser()
 }
 
 private fun RecordingData.toModel(isSelected: Boolean): SelectableRecordingItem {

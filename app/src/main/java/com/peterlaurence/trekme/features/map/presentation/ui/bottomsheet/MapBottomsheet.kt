@@ -88,6 +88,7 @@ fun BottomSheet(
     onColorChange: (Long, TrackType) -> Unit,
     onTitleChange: (String, TrackType) -> Unit,
     onEditPath: (ExcursionRef) -> Unit,
+    onSharePath: (ExcursionRef) -> Unit,
     onDelete: (TrackType) -> Unit
 ) {
     val anchors = remember {
@@ -131,6 +132,7 @@ fun BottomSheet(
                     titleSection(
                         bottomSheetState.title,
                         bottomSheetState.color,
+                        bottomSheetState.shareLoading,
                         onColorChange = { color ->
                             onColorChange(color, bottomSheetState.type)
                         },
@@ -139,6 +141,9 @@ fun BottomSheet(
                         },
                         onEditPath = if (bottomSheetState.type is TrackType.ExcursionType && bottomSheetState.type.isPathEditable) {
                             { onEditPath(bottomSheetState.type.excursionRef) }
+                        } else null,
+                        onShare = if (bottomSheetState.type is TrackType.ExcursionType) {
+                            { onSharePath(bottomSheetState.type.excursionRef) }
                         } else null,
                         onDelete = { onDelete(bottomSheetState.type) }
                     )
@@ -153,14 +158,17 @@ fun BottomSheet(
 private fun LazyListScope.titleSection(
     titleFlow: StateFlow<String>,
     colorFlow: StateFlow<String>,
+    shareLoadingFlow: StateFlow<Boolean>,
     onColorChange: (Long) -> Unit,
     onTitleChange: (String) -> Unit,
     onEditPath: (() -> Unit)?,
+    onShare: (() -> Unit)?,
     onDelete: () -> Unit
 ) {
     stickyHeader("title") {
         val title by titleFlow.collectAsState()
         val color by colorFlow.collectAsState()
+        val shareLoading by shareLoadingFlow.collectAsState()
         var isShowingColorPicker by remember { mutableStateOf(false) }
         var isShowingTitleEdit by remember { mutableStateOf(false) }
         var expandedMenu by remember { mutableStateOf(false) }
@@ -231,6 +239,28 @@ private fun LazyListScope.titleSection(
                                     modifier = Modifier.size(24.dp),
                                     contentDescription = stringResource(
                                         id = R.string.edit_track_path
+                                    )
+                                )
+                            }
+                        )
+                    }
+                    if (onShare != null) {
+                        DropdownMenuItem(
+                            enabled = !shareLoading,
+                            onClick = {
+                                expandedMenu = false
+                                onShare()
+                            },
+                            text = {
+                                Text(stringResource(id = R.string.track_share))
+                                Spacer(Modifier.weight(1f))
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    painterResource(id = R.drawable.ic_share_black_24dp),
+                                    modifier = Modifier.size(24.dp),
+                                    contentDescription = stringResource(
+                                        id = R.string.track_share
                                     )
                                 )
                             }

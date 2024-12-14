@@ -1,20 +1,27 @@
 package com.peterlaurence.trekme.features.map.domain.interactors
 
+import android.net.Uri
+import com.peterlaurence.trekme.core.excursion.domain.dao.ExcursionDao
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionWaypoint
 import com.peterlaurence.trekme.core.excursion.domain.repository.ExcursionRepository
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecordExportFormat
 import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.Route
+import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.features.map.domain.core.getLonLatFromNormalizedCoordinate
 import com.peterlaurence.trekme.features.map.domain.core.getNormalizedCoordinates
 import com.peterlaurence.trekme.features.map.domain.models.ExcursionWaypointWithNormalizedPos
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class ExcursionInteractor @Inject constructor(
     private val excursionRepository: ExcursionRepository,
+    private val excursionDao: ExcursionDao,
+    private val settings: Settings
 ) {
     /**
      * For each [ExcursionRef] corresponds potentially a list of [Route].
@@ -71,5 +78,11 @@ class ExcursionInteractor @Inject constructor(
 
     suspend fun deleteWaypoint(excursionId: String, waypoint: ExcursionWaypoint) {
         excursionRepository.deleteWaypoint(excursionId, waypoint)
+    }
+
+    suspend fun getUriForShare(id: String): Uri? {
+        val exportFormat = settings.getRecordingExportFormat().firstOrNull() ?: GeoRecordExportFormat.Gpx
+
+        return excursionDao.getGeoRecordUri(id, format = exportFormat)
     }
 }

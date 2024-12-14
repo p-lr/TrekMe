@@ -157,7 +157,8 @@ class BottomSheetLayer(
             title = title,
             color = color,
             stats = geoStatistics,
-            elevationGraphPoints = elevationGraphPoints
+            elevationGraphPoints = elevationGraphPoints,
+            shareLoading = MutableStateFlow(false)
         )
     }
 }
@@ -170,6 +171,7 @@ sealed interface BottomSheetState {
         val color: StateFlow<String>,
         val stats: GeoStatistics,
         val elevationGraphPoints: List<ElevationGraphPoint>?,
+        val shareLoading: MutableStateFlow<Boolean>
     ) : BottomSheetState
 }
 
