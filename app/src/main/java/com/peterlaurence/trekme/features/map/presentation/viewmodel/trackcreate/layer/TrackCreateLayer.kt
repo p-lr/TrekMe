@@ -29,6 +29,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import ovh.plrapps.mapcompose.api.ClusterScaleThreshold
 import ovh.plrapps.mapcompose.api.Custom
 import ovh.plrapps.mapcompose.api.ExperimentalClusteringApi
 import ovh.plrapps.mapcompose.api.addCallout
@@ -40,6 +41,7 @@ import ovh.plrapps.mapcompose.api.onMarkerClick
 import ovh.plrapps.mapcompose.api.onTap
 import ovh.plrapps.mapcompose.api.removeCallout
 import ovh.plrapps.mapcompose.api.removeMarker
+import ovh.plrapps.mapcompose.api.setClustererExemptList
 import ovh.plrapps.mapcompose.api.visibleArea
 import ovh.plrapps.mapcompose.ui.state.MapState
 import ovh.plrapps.mapcompose.ui.state.markers.model.RenderingStrategy
@@ -109,7 +111,8 @@ class TrackCreateLayer(
             clusteringThreshold = 25.dp,
             clusterClickBehavior = Custom(
                 withDefaultBehavior = false,
-                onClick = { _ -> })
+                onClick = { _ -> }),
+            scaleThreshold = ClusterScaleThreshold.FixedScale(1f)
         ) { _ ->
             {  }  // When markers are too close to each other, don't display anything
         }
@@ -135,6 +138,8 @@ class TrackCreateLayer(
             val lastSegmentState = trackState.value.lastOrNull()
             val lastPointState = lastSegmentState?.p2 ?: firstPointState
             val newPointState = addSegment(lastPointState, x, y)
+            /* This to avoid the marker being immediately clusterized after being added */
+            mapState.setClustererExemptList(clustererId, setOf(newPointState.markerId))
 
             /* This is a user gesture: add an action to undo stack and clear redo stack */
             addActionToUndoStack(Action.AddPoint(newPointState))
@@ -420,6 +425,9 @@ class TrackCreateLayer(
                     size = pointMarkerSize
                     color = pointMarkerColor
                     val newPoint = splitSegment(segmentState)
+                    /* Very important, otherwise the clustering might remove this marker during the
+                     * drag and onDragEnd would not be called. */
+                    mapState.setClustererExemptList(clustererId, setOf(newPoint.markerId))
                     split = newPoint
 
                     /* This is a user gesture: add an action to undo stack and clear redo stack */
@@ -507,6 +515,9 @@ class TrackCreateLayer(
             pointState.markerId,
             onDragStart = { _, x, y ->
                 dragStart = Point(x, y)
+                /* Very important, otherwise the clustering might remove this marker during the
+                 * drag and onDragEnd would not be called. */
+                mapState.setClustererExemptList(clustererId, setOf(pointState.markerId))
             },
             onDragEnd = { _, x, y ->
                 val from = dragStart

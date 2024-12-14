@@ -46,7 +46,7 @@ fun RecordDropDownMenu(
                     painterResource(id = R.drawable.selection_ellipse),
                     modifier = Modifier.size(24.dp),
                     contentDescription = stringResource(
-                        id = R.string.recording_edit_name_desc
+                        id = R.string.track_select
                     )
                 )
             }
@@ -65,7 +65,7 @@ fun RecordDropDownMenu(
                     painterResource(id = R.drawable.ic_edit_black_30dp),
                     modifier = Modifier.size(24.dp),
                     contentDescription = stringResource(
-                        id = R.string.recording_edit_name_desc
+                        id = R.string.track_rename
                     )
                 )
             }
@@ -84,7 +84,7 @@ fun RecordDropDownMenu(
                     painterResource(id = R.drawable.import_24dp),
                     modifier = Modifier.size(24.dp),
                     contentDescription = stringResource(
-                        id = R.string.recording_edit_name_desc
+                        id = R.string.track_choose_map
                     )
                 )
             }
@@ -105,7 +105,7 @@ fun RecordDropDownMenu(
                     painterResource(id = R.drawable.ic_share_black_24dp),
                     modifier = Modifier.size(24.dp),
                     contentDescription = stringResource(
-                        id = R.string.recording_edit_name_desc
+                        id = R.string.track_share
                     )
                 )
             }
@@ -125,7 +125,7 @@ fun RecordDropDownMenu(
                     painterResource(id = R.drawable.elevation_graph),
                     modifier = Modifier.padding(bottom = 4.dp).size(24.dp),
                     contentDescription = stringResource(
-                        id = R.string.recording_edit_name_desc
+                        id = R.string.track_elevation_profile
                     )
                 )
             }
@@ -144,7 +144,7 @@ fun RecordDropDownMenu(
                 Icon(
                     painterResource(id = R.drawable.ic_delete_forever_black_24dp),
                     contentDescription = stringResource(
-                        id = R.string.recording_edit_name_desc
+                        id = R.string.delete_dialog
                     )
                 )
             }

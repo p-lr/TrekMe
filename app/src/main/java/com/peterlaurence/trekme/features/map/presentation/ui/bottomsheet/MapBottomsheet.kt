@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyListScope
@@ -223,6 +224,15 @@ private fun LazyListScope.titleSection(
                             text = {
                                 Text(stringResource(id = R.string.edit_track_path))
                                 Spacer(Modifier.weight(1f))
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    painterResource(id = R.drawable.ic_edit_black_30dp),
+                                    modifier = Modifier.size(24.dp),
+                                    contentDescription = stringResource(
+                                        id = R.string.edit_track_path
+                                    )
+                                )
                             }
                         )
                     }
@@ -234,6 +244,14 @@ private fun LazyListScope.titleSection(
                         text = {
                             Text(stringResource(id = R.string.delete_dialog))
                             Spacer(Modifier.weight(1f))
+                        },
+                        leadingIcon = {
+                            Icon(
+                                painterResource(id = R.drawable.ic_delete_forever_black_24dp),
+                                contentDescription = stringResource(
+                                    id = R.string.delete_dialog
+                                )
+                            )
                         }
                     )
                 }
