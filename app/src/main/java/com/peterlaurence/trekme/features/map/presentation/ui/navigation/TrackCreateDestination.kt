@@ -7,10 +7,11 @@ import kotlinx.serialization.Serializable
 
 
 fun NavGraphBuilder.trackCreateScreen(
+    onNavigateToShop: () -> Unit,
     onBack: () -> Unit
 ) {
     composable<TrackCreateScreenArgs> {
-        TrackCreateStateful(onBack = onBack)
+        TrackCreateStateful(onBack = onBack, onNavigateToShop = onNavigateToShop)
     }
 }
 

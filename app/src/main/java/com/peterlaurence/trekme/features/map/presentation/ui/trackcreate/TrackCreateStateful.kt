@@ -10,6 +10,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -63,6 +64,7 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.Hyphens
@@ -73,6 +75,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingScreen
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.md_theme_dark_surface
 import com.peterlaurence.trekme.features.map.presentation.ui.trackcreate.component.TrackLines
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.Event
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.Loading
@@ -80,6 +83,7 @@ import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.SaveConfig
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.TrackCreateViewModel
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.layer.TrackSegmentState
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.trackcreate.layer.pointsLimit
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 import com.peterlaurence.trekme.util.fileNameAsCurrentDate
 import kotlinx.coroutines.delay
@@ -91,13 +95,16 @@ import ovh.plrapps.mapcompose.ui.state.MapState
 @Composable
 fun TrackCreateStateful(
     viewModel: TrackCreateViewModel = hiltViewModel(),
+    onNavigateToShop: () -> Unit,
     onBack: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     var isShowingTrackNameDialog by remember { mutableStateOf(false) }
     var isShowingUnsavedChangesDialog by remember { mutableStateOf(false) }
+    var isShowingTrackLimitDialog by remember { mutableStateOf(false) }
     val isSavePending by viewModel.savingState.collectAsState()
+    val hasTrekMeExtended by viewModel.hasExtendedOffer.collectAsState()
 
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -108,6 +115,10 @@ fun TrackCreateStateful(
                     val msg = context.getString(R.string.track_create_save_done)
                     snackbarHostState.showSnackbar(msg)
                 }
+            }
+
+            Event.TrackLimitExceeded -> {
+                isShowingTrackLimitDialog = true
             }
         }
     }
@@ -122,6 +133,7 @@ fun TrackCreateStateful(
                     segmentsState.value.isEmpty()
                 }
             }
+            val hasSave = mapUiState.shouldDisplaySave.collectAsState()
             TrackCreateScaffold(
                 mapState = mapUiState.mapState,
                 segmentsState = segmentsState,
@@ -132,7 +144,8 @@ fun TrackCreateStateful(
                 hasRedoState = mapUiState.trackCreateLayer.hasRedoState,
                 onUndo = mapUiState.trackCreateLayer::undo,
                 onRedo = mapUiState.trackCreateLayer::reDo,
-                hasSaveState = mapUiState.shouldDisplaySave,
+                hasSave = hasSave,
+                hasTrekMeExtended = hasTrekMeExtended,
                 onSave = {
                     val currentRef = viewModel.getCurrentExcursionRef()
                     if (currentRef == null) {
@@ -141,8 +154,11 @@ fun TrackCreateStateful(
                         viewModel.save(SaveConfig.UpdateExisting(currentRef))
                     }
                 },
+                onShowTrackLimitDialog = {
+                    isShowingTrackLimitDialog = true
+                },
                 onClose = {
-                    if (isSavePending) {
+                    if (hasSave.value) {
                         isShowingUnsavedChangesDialog = true
                     } else {
                         onBack()
@@ -173,6 +189,13 @@ fun TrackCreateStateful(
             onQuit = onBack
         )
     }
+
+    if (isShowingTrackLimitDialog) {
+        TrackLimitDialog(
+            onDismissRequest = { isShowingTrackLimitDialog = false },
+            onRedirectToShop = onNavigateToShop
+        )
+    }
 }
 
 @Composable
@@ -182,12 +205,14 @@ private fun TrackCreateScaffold(
     isTrackEmpty: Boolean,
     isSavePending: Boolean,
     snackbarHostState: SnackbarHostState,
-    hasSaveState: StateFlow<Boolean>,
+    hasSave: State<Boolean>,
     hasUndoState: StateFlow<Boolean>,
     hasRedoState: StateFlow<Boolean>,
+    hasTrekMeExtended: Boolean,
     onUndo: () -> Unit,
     onRedo: () -> Unit,
     onSave: () -> Unit,
+    onShowTrackLimitDialog: () -> Unit,
     onClose: () -> Unit
 ) {
     Scaffold(
@@ -204,17 +229,24 @@ private fun TrackCreateScaffold(
                 segments = segmentsState.value
             )
 
+            if (!hasTrekMeExtended) {
+                PointsCountIndicator(
+                    modifier = Modifier.align(Alignment.TopEnd),
+                    pointsCount = segmentsState.value.size + 1,
+                    onClick = onShowTrackLimitDialog
+                )
+            }
+
             if (isTrackEmpty) {
                 HelpTrackCreate(Modifier.align(Alignment.TopCenter))
             }
 
             val hasUndo by hasUndoState.collectAsState()
             val hasRedo by hasRedoState.collectAsState()
-            val hasSave by hasSaveState.collectAsState()
 
             FabSection(
                 modifier = Modifier.align(Alignment.BottomEnd),
-                hasSave = hasSave,
+                hasSave = hasSave.value,
                 hasUndo = hasUndo,
                 hasRedo = hasRedo,
                 onUndo = onUndo,
@@ -389,6 +421,36 @@ private fun FabSection(
 }
 
 @Composable
+private fun PointsCountIndicator(
+    modifier: Modifier = Modifier,
+    pointsCount: Int,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier
+            .clickable(onClick = onClick)
+            .padding(8.dp)
+            .background(
+                when {
+                    pointsCount >= pointsLimit -> Color(0xFFC62828)
+                    pointsCount >= pointsLimit * 0.8 -> Color(0xFFE65100)
+                    else -> md_theme_dark_surface
+                }.copy(alpha = 0.5f),
+                RoundedCornerShape(50)
+            )
+            .padding(horizontal = 6.dp, vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "$pointsCount/$pointsLimit",
+            color = Color.White,
+            fontSize = 14.sp,
+            fontFamily = FontFamily.Monospace
+        )
+    }
+}
+
+@Composable
 private fun HelpTrackCreate(modifier: Modifier = Modifier) {
     Surface(
         modifier = modifier
@@ -487,6 +549,36 @@ private fun UnsavedChangesDialog(
                 }
             ) {
                 Text(text = stringResource(id = R.string.yes_quit_dialog))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text(text = stringResource(id = R.string.track_create_unsaved_changes_keep_edit))
+            }
+        }
+    )
+}
+
+@Composable
+private fun TrackLimitDialog(
+    onDismissRequest: () -> Unit,
+    onRedirectToShop: () -> Unit
+) {
+    AlertDialog(
+        text = {
+            Text(
+                text = stringResource(R.string.track_create_limit).format(pointsLimit),
+            )
+        },
+        onDismissRequest = onDismissRequest,
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onDismissRequest()
+                    onRedirectToShop()
+                }
+            ) {
+                Text(text = stringResource(id = R.string.see_offer))
             }
         },
         dismissButton = {

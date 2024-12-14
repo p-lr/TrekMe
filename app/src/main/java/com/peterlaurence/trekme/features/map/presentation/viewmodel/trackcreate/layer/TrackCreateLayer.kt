@@ -49,7 +49,9 @@ import java.util.UUID
 
 class TrackCreateLayer(
     private val scope: CoroutineScope,
-    private val mapState: MapState
+    private val mapState: MapState,
+    private val hasTrekMeExtended: () -> Boolean,
+    private val onLimitExceeded: () -> Unit
 ) {
     val trackState = MutableStateFlow<List<TrackSegmentState>>(emptyList())
     val hasUndoState = MutableStateFlow(false)
@@ -135,6 +137,11 @@ class TrackCreateLayer(
 
     fun initialize(firstPointState: PointState) = scope.launch {
         mapState.onTap { x, y ->
+            if (shouldDisplayLimitExceeded()) {
+                onLimitExceeded()
+                return@onTap
+            }
+
             val lastSegmentState = trackState.value.lastOrNull()
             val lastPointState = lastSegmentState?.p2 ?: firstPointState
             val newPointState = addSegment(lastPointState, x, y)
@@ -421,6 +428,11 @@ class TrackCreateLayer(
         mapState.enableMarkerDrag(
             centerId,
             onDragStart = { _, x, y ->
+                if (shouldDisplayLimitExceeded()) {
+                    onLimitExceeded()
+                    return@enableMarkerDrag
+                }
+
                 if (split == null) {
                     size = pointMarkerSize
                     color = pointMarkerColor
@@ -617,6 +629,10 @@ class TrackCreateLayer(
         redoStack.clear()
         hasRedoState.value = false
     }
+
+    private fun shouldDisplayLimitExceeded(): Boolean {
+        return !hasTrekMeExtended() && trackState.value.size + 1 > pointsLimit
+    }
 }
 
 @Composable
@@ -684,3 +700,5 @@ sealed class Action {
 
     data class RemoveLastPoint(val pointState: PointState) : Action()
 }
+
+const val pointsLimit = 60

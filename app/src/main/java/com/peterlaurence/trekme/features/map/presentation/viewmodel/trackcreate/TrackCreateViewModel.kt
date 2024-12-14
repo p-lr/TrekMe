@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.peterlaurence.trekme.core.billing.domain.interactors.HasOneExtendedOfferInteractor
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.georecord.domain.model.RouteGroup
 import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
@@ -47,6 +48,7 @@ class TrackCreateViewModel @Inject constructor(
     val settings: Settings,
     val mapRepository: MapRepository,
     private val trackCreateInteractor: TrackCreateInteractor,
+    hasOneExtendedOfferInteractor: HasOneExtendedOfferInteractor,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private val args = savedStateHandle.toRoute<TrackCreateScreenArgs>()
@@ -54,6 +56,8 @@ class TrackCreateViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow<UiState>(Loading)
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
+
+    val hasExtendedOffer = hasOneExtendedOfferInteractor.getPurchaseFlow(viewModelScope)
 
     private var excursionRef: ExcursionRef? = null
     private val actionIdOnLastSave = MutableStateFlow<String?>(null)
@@ -108,7 +112,16 @@ class TrackCreateViewModel @Inject constructor(
 
         dataStateFlow.emit(DataState(map, mapState))
 
-        val trackCreateLayer = TrackCreateLayer(viewModelScope, mapState)
+        val trackCreateLayer = TrackCreateLayer(
+            viewModelScope,
+            mapState,
+            hasTrekMeExtended = { hasExtendedOffer.value },
+            onLimitExceeded = {
+                viewModelScope.launch {
+                    _events.send(Event.TrackLimitExceeded)
+                }
+            }
+        )
         if (excursionId != null) {
             excursionRef = map.excursionRefs.value.firstOrNull { it.id == excursionId }
 
@@ -242,4 +255,5 @@ sealed interface SaveConfig {
 
 sealed interface Event {
     data object SaveDone : Event
+    data object TrackLimitExceeded : Event
 }

@@ -342,6 +342,7 @@
     <string name="track_create_unsaved_changes_title">Quit track edit?</string>
     <string name="track_create_unsaved_changes_content">Changes you made so far will not be saved.</string>
     <string name="track_create_unsaved_changes_keep_edit">Keep Editing</string>
+    <string name="track_create_limit">You\'re limited to %1$d points per track with the free version.\nWith TrekMe Extended, remove this limit and enjoy other premium features.</string>
 
     <!-- Record list -->
     <string name="fragment_recording" translatable="false">FragmentRecording</string>
@@ -691,6 +692,7 @@
     <string name="add_beacons">Add beacons to alert you when you get close to specific locations.</string>
     <string name="no_ads">No ads</string>
     <string name="create_map_from_track">Create a map from a gpx track.</string>
+    <string name="remove_track_size_limit">Remove the points number limit while creating a track.</string>
     <string name="center_on_track">Quick center on a track from tracks management screen.</string>
     <string name="define_elevation_fix">Set an elevation fix in the GPS statistics panel.</string>
     <string name="no_download_limit">No download limit.</string>

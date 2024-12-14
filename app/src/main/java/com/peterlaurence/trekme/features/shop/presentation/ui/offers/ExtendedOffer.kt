@@ -102,6 +102,7 @@ fun TrekMeExtendedContent(withIgn: Boolean, purchased: Boolean, onIgnSelectionCh
     LineItem(id = R.string.trekme_extended_update_maps)
     LineItem(id = R.string.add_beacons)
     LineItem(id = R.string.create_map_from_track)
+    LineItem(id = R.string.remove_track_size_limit)
     LineItem(id = R.string.center_on_track)
     LineItem(id = R.string.define_elevation_fix)
 

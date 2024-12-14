@@ -49,7 +49,10 @@ fun NavGraphBuilder.mapGraph(
 
         beaconEditScreen(onBack = navController::popBackStack)
 
-        trackCreateScreen(onBack = navController::popBackStack)
+        trackCreateScreen(
+            onNavigateToShop = onNavigateToShop,
+            onBack = navController::popBackStack
+        )
     }
 }
 

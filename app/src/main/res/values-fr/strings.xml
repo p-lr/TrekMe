@@ -100,6 +100,7 @@
     <string name="track_create_unsaved_changes_title">Quitter l\'édition ?</string>
     <string name="track_create_unsaved_changes_content">Vos derniers changements ne seront pas enregistrés.</string>
     <string name="track_create_unsaved_changes_keep_edit">Continuer l\'édition</string>
+    <string name="track_create_limit">En version gratuite, la limite est de %1$d points par trace.\nAvec TrekMe Extended, supprimez cette limite et profitez d\'autres avantages.</string>
 
     <string name="delete_marker_question">Supprimer le marker ?</string>
     <string name="mapview_show_speed">Afficher vitesse</string>
@@ -541,6 +542,7 @@
     <string name="no_download_limit">Pas de limite de téléchargement.</string>
     <string name="osm_level_17">Débloquez le niveau 17 pour les cartes OpenStreetMap.</string>
     <string name="create_map_from_track">Créez une carte à partir d\'une trace gpx.</string>
+    <string name="remove_track_size_limit">Supprimez la limite du nombre de points lors de la création de trace.</string>
     <string name="rate_the_app">Noter l\'application</string>
     <string name="user_feedback">Retours et suggestions</string>
     <string name="feedback_desc">Vous avez des idées d\'amélioration ou quelques soucis, n\'hésitez pas à m\'envoyer un mail.</string>
