@@ -103,6 +103,7 @@ class TrackCreateViewModel @Inject constructor(
         ) {
             magnifyingFactor(magnifyingFactor)
             highFidelityColors(false)
+            maxScale(4f)
             scale(scale)
             scroll(centroidX, centroidY)
         }.apply {
