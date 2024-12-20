@@ -11,12 +11,12 @@ import java.io.IOException
 
 /**
  * When an [IOException] is encountered when reading data, this extension property returns an empty
- * [Preferences] instance.
+ * [Preferences] instance. Consequently, it is safe to call `first()` operator on the returned flow.
  */
-val <T> DataStore<T>.safeData: Flow<T>
+val DataStore<Preferences>.safeData: Flow<Preferences>
     get() = data.catch {
         if (it is IOException) {
-            emptyPreferences()
+            emit(emptyPreferences())
         } else throw it
     }
 
