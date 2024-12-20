@@ -16,8 +16,6 @@
     <string name="share_menu_title">Receive or send</string>
     <string name="settings_menu_title">Settings</string>
     <string name="shop_menu_title">Shop</string>
-    <string name="about">About</string>
-    <string name="help_url">https://github.com/p-lr/TrekMe/blob/master/Readme.md#summary</string>
     <string name="link_error">The link cannot be opened :/</string>
     <string name="confirm_exit">Click BACK again to exit</string>
     <string name="no_internet">You must be connected to internet to create a map</string>
@@ -709,6 +707,11 @@
     <string name="nb">PS</string>
     <string name="manage_subscription_btn">MANAGE SUBSCRIPTION</string>
     <string name="subscription_center" translatable="false">https://play.google.com/store/account/subscriptions</string>
+
+    <!-- About -->
+    <string name="about">About</string>
+    <string name="help_url">https://github.com/p-lr/TrekMe/blob/master/Readme.md#summary</string>
+    <string name="email_explanation">Your favorite email app will be opened.</string>
 
     <!-- General -->
     <string name="meters_short" translatable="false">m</string>

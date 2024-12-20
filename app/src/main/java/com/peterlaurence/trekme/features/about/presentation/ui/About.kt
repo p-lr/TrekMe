@@ -14,8 +14,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -31,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.settings.privacyPolicyUrl
+import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.ConfirmDialog
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import kotlinx.coroutines.launch
 
@@ -50,6 +54,7 @@ fun AboutStateful(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
+    var isShowingEmailConfirmation by remember { mutableStateOf(false) }
 
     val onLinkError = {
         scope.launch {
@@ -80,10 +85,20 @@ fun AboutStateful(
                 }
             }
         },
-        onSendMail = { sendMail(context) },
+        onSendMail = { isShowingEmailConfirmation = true },
         onBackClick = onBackClick,
         onLinkError = onLinkError
     )
+
+    if (isShowingEmailConfirmation) {
+        ConfirmDialog(
+            contentText = stringResource(R.string.email_explanation),
+            onConfirmPressed = { sendMail(context)},
+            onDismissRequest = { isShowingEmailConfirmation = false },
+            confirmButtonText = stringResource(R.string.ok_dialog),
+            cancelButtonText = stringResource(R.string.cancel_dialog_string)
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -199,8 +199,6 @@
     <string name="import_result_recap">Résultat d\'import\n  Routes: %s \n  Marqueurs: %s</string>
     <string name="import_result_out_of_bounds">Cette trace est hors des limites de la carte.</string>
     <string name="gpx_import_error_msg">Oups.. il y a eu problème pendant l\'import</string>
-    <string name="about">À propos</string>
-    <string name="help_url">https://github.com/p-lr/TrekMe/blob/master/Readme.fr.md#sommaire</string>
     <string name="link_error">Le lien ne peut être ouvert :/</string>
     <string name="map_download_dialog_error">Une erreur est survenue durant l\'import de la carte, qui n\'apparaîtra probablement pas dans la liste des cartes, ou bien elle ne sera pas calibrée. Le plus simple est de télécharger à nouveau votre carte. Désolé :(</string>
     <string name="bad_storage_status">Votre carte SD présente un problème. TrekMe ne peut télécharger des cartes ou fonctionner normalement dans ces conditions.</string>
@@ -608,6 +606,11 @@
     <string name="see_offer">Voir l\'offre</string>
     <string name="trail_select_disalog_title">Sélectionnez une piste</string>
     <string name="trail_helper_tip">Appuyez sur une trace pour voir le détail.</string>
+
+    <!-- About -->
+    <string name="about">À propos</string>
+    <string name="help_url">https://github.com/p-lr/TrekMe/blob/master/Readme.fr.md#sommaire</string>
+    <string name="email_explanation">Vous allez êtes redirigé(e) en dehors de l\'application vers votre application email.</string>
 
     <!-- General -->
     <string name="meters">mètres</string>
