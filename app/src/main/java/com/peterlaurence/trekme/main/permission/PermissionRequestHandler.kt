@@ -183,7 +183,7 @@ fun PermissionRequestHandler(
         contract = ActivityResultContracts.RequestPermission()
     ) { granted ->
         scope.launch {
-            backgroundLocationRequest?.result?.send(granted)
+            appEventBus.backgroundLocationResult.send(granted)
         }
     }
 
@@ -206,7 +206,7 @@ fun PermissionRequestHandler(
             },
             onIgnore = {
                 scope.launch {
-                    request.result.send(false)
+                    appEventBus.backgroundLocationResult.send(false)
                 }
                 isShowingBackgroundLocationRationale = null
             },

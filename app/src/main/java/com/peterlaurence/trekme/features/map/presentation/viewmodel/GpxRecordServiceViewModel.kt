@@ -83,18 +83,11 @@ class GpxRecordServiceViewModel @Inject constructor(
             return
         }
 
-        /* Check battery optimization, and inform the user if needed */
-        if (isBatteryOptimized(app.applicationContext)) {
-            _events.send(Event.DisableBatteryOptSignal)
-            /* Wait for the user to take action before continuing */
-            ackBatteryOptSignal.receive()
-        }
-
         if (!isBackgroundLocationGranted(app.applicationContext)) {
             val request = AppEventBus.BackgroundLocationRequest(R.string.background_location_rationale_gpx_recording)
             appEventBus.requestBackgroundLocation(request)
 
-            val granted = request.result.receiveAsFlow().firstOrNull() ?: false
+            val granted = appEventBus.backgroundLocationResult.receive()
             if (!granted) {
                 appEventBus.postMessage(
                     WarningMessage(
@@ -106,13 +99,20 @@ class GpxRecordServiceViewModel @Inject constructor(
             }
         }
 
+        /* Check battery optimization, and inform the user if needed */
+        if (isBatteryOptimized(app.applicationContext)) {
+            _events.send(Event.DisableBatteryOptSignal)
+            /* Wait for the user to take action before continuing */
+            ackBatteryOptSignal.receive()
+        }
+
         /* Start service */
         val intent = Intent(app, GpxRecordService::class.java)
         app.startService(intent)
     }
 
     sealed interface Event {
-        object DisableBatteryOptSignal : Event
+        data object DisableBatteryOptSignal : Event
     }
 }
 

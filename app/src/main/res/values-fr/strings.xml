@@ -25,7 +25,8 @@
     <string name="no_dialog">Non</string>
     <string name="yes_quit_dialog">Oui, QUITTER</string>
     <string name="open_dialog">Ouvrir</string>
-    <string name="no_authorize_dialog">Ne pas autoriser</string>
+    <string name="allow_dialog">Autoriser</string>
+    <string name="disallow_dialog">Refuser</string>
     <string name="import_menu_title">Importer une carte</string>
     <string name="import_folder_select_btn">Sélection du dossier d\'archives</string>
     <string name="extraction_lbl">Extraction</string>
@@ -293,18 +294,16 @@
     <string name="map_settings_error">Désolé, une erreur est survenue</string>
     <string name="map_settings_trekme_extended_title">TrekMe Extended requis</string>
     <string name="calibration_projection_error">Erreur lors du changement de projection :(</string>
-    <string name="battery_warn_message_gpx_recording">L\'enregistrement GPX sera probablement interrompu, car l\'optimisation de la batterie est activée
-        pour TrekMe.\nUn enregistrement GPX est lancé sous forme de service Android, qui tourne en tâche de fond.
-        Mais certains téléphones sont réglés de manière à limiter ces services, pour économiser la batterie.
-        Dans le cas d\'un enregistrement GPX, il est normal de consommer un peu de batterie. Mais Android ne
-        fait pas de distinction, et peut arrêter brutalement le service (et TrekMe avec).</string>
-    <string name="battery_warn_message_track_follow">Le suivi de trace sera probablement interrompu, car l\'optimisation de la batterie est activée
-        pour TrekMe.\nLe suivi de trace est lancé sous forme de service Android, qui tourne en tâche de fond.
-        Mais certains téléphones sont réglés de manière à limiter ces services, pour économiser la batterie.
-        Dans le cas du suivi de trace, il est normal de consommer un peu de batterie. Mais Android ne
-        fait pas de distinction, et peut arrêter brutalement le service (et TrekMe avec).</string>
-    <string name="battery_warn_solution_btn_txt">Voir la solution</string>
-    <string name="battery_warn_solution_title">Solution</string>
+    <string name="battery_warn_message_gpx_recording_title">L\'optimisation de la batterie ou mode économie d\'énergie doit être désactivé</string>
+    <string name="battery_warn_problem_cause">TrekMe risque de ne pas recevoir de points GPS quand l\'écran est éteint.</string>
+    <string name="battery_warn_message_gpx_recording">Votre enregistrement comportera alors des lignes droites et risque d\'être incomplet.</string>
+    <string name="battery_warn_request_action_api35">Veuillez autoriser TrekMe à s\'exécuter en arrière plan dans l\'écran suivant en allant à \"Utilisation de la batterie\" puis appuyer sur \"Autoriser l\'utilisation en arrière plan\" et enfin choisir \"Sans restriction\".</string>
+    <string name="battery_warn_request_action_api34_and_less">Veuillez autoriser TrekMe à s\'exécuter en arrière plan dans l\'écran suivant en allant à \"Utilisation de la batterie\" puis choisir \"Sans restriction\".</string>
+    <string name="battery_warn_message_track_follow">Vous ne serez pas alerté quand vous vous éloignez trop de la trace.</string>
+    <string name="battery_warn_solution_btn_txt">Continuer</string>
+    <string name="battery_optim_disable_title">Toujours autoriser en arrière-plan ?</string>
+    <string name="battery_optim_disable_1">Autoriser TrekMe à toujours fonctionner en arrière-plan peut réduire l\'autonomie de la batterie.</string>
+    <string name="battery_optim_disable_2">Vous pourrez toujours modifier ce choix dans Paramètres > Applications > TrekMe.</string>
     <string name="battery_warn_solution_msg">Allez dans les réglages du téléphone, dans \"Applications\" puis \"TrekMe\". Dans les
         paramètres de Batterie, il faut y trouver un menu \"Utilisation de la batterie\" ou similaire. Par défaut l\'optimisation est activée.
         Il faut alors désactiver l\'optimisation (sans restriction).
@@ -327,11 +326,11 @@
         l\'application est fermée ou inutilisée. Pour cela, l\'autorisation de position doit être mise à «toujours autoriser» ou équivalent.\n\nCes informations de position sont stockées localement sur votre
         appareil et ne sont <b>en aucun cas communiquées à des tiers</b>.
     </string>
-    <string name="background_location_gpx_recording_failure">L\'enregistrement GPX ne peut fonctionner que si l\'autorisation de localistion est à "toujours autoriser". Veuillez accorder cette permission dans les paramètres de l\'application.</string>
+    <string name="background_location_gpx_recording_failure">L\'enregistrement GPX ne peut fonctionner que si l\'autorisation de localisation est à "toujours autoriser". Veuillez accorder cette permission dans les paramètres de l\'application.</string>
     <string name="background_location_rationale_track_follow">Pour vérifier à intervalle régulier votre distance par rapport à la trace suivie, TrekMe doit avoir accès à votre position en arrière plan.\nPour
         cela, l\'autorisation de position doit être mise à «toujours autoriser» ou équivalent.\n\nVotre position ne sera <b>en aucun cas communiquées à des tiers</b>.
     </string>
-    <string name="background_location_track_follow_failure">Le suivi de trace ne peut fonctionner que si l\'autorisation de localistion est à "toujours autoriser". Veuillez accorder cette permission dans les paramètres de l\'application.</string>
+    <string name="background_location_track_follow_failure">Le suivi de trace ne peut fonctionner que si l\'autorisation de localisation est à "toujours autoriser". Veuillez accorder cette permission dans les paramètres de l\'application.</string>
     <string name="close_dialog">Fermer</string>
     <string name="understood_dialog">J\'ai compris</string>
     <string name="new_text">nouveau</string>

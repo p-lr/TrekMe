@@ -11,7 +11,6 @@ import com.peterlaurence.trekme.util.android.isBackgroundLocationGranted
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -35,21 +34,18 @@ class BeaconServiceLauncherViewModel @Inject constructor(
                         R.string.beacon_background_loc_perm,
                     )
 
-                    appEventBus.requestBackgroundLocation(
-                        request
-                    )
+                    appEventBus.requestBackgroundLocation(request)
 
-                    request.result.receiveAsFlow().collect { granted ->
-                        if (granted) {
-                            _startServiceEvent.send(Unit)
-                        } else {
-                            appEventBus.postMessage(
-                                WarningMessage(
-                                    title = appContext.getString(R.string.warning_title),
-                                    msg = appContext.getString(R.string.beacon_background_loc_perm_failure)
-                                )
+                    val granted = appEventBus.backgroundLocationResult.receive()
+                    if (granted) {
+                        _startServiceEvent.send(Unit)
+                    } else {
+                        appEventBus.postMessage(
+                            WarningMessage(
+                                title = appContext.getString(R.string.warning_title),
+                                msg = appContext.getString(R.string.beacon_background_loc_perm_failure)
                             )
-                        }
+                        )
                     }
                 } else {
                     _startServiceEvent.send(Unit)

@@ -100,7 +100,8 @@
     <string name="no_dialog">No</string>
     <string name="yes_quit_dialog">Yes, QUIT</string>
     <string name="open_dialog">Open</string>
-    <string name="no_authorize_dialog">Don\'t authorize</string>
+    <string name="allow_dialog">Allow</string>
+    <string name="disallow_dialog">Deny</string>
     <string name="delete_dialog">Delete</string>
     <string name="map_manage_btn_string">Edit</string>
     <string name="download_map_dialog_title">Map download</string>
@@ -359,24 +360,22 @@
     <string name="track_is_being_restored">A track is being restored</string>
     <string name="track_add_error">An error occurred while importing the track</string>
     <string name="track_no_map">Couldn\'t find a map containing this track :/</string>
-    <string name="battery_warn_message_gpx_recording">The GPX recording will probably be interrupted, because battery optimization is
-        enabled for TrekMe.\nA GPX recording is actually an Android service which runs in the background.
-        However, some devices put a hard limit on the number of background services allowed to run.\nIt\'s common
-        for Android to abruptly stop a service, if it considers that stopping it would extend battery life. In the case
-        of a GPX recording, it\'s reasonable to consume a bit of power while you\'re aware of it.</string>
-    <string name="battery_warn_message_track_follow">The track-follow service will probably be interrupted, because battery optimization is
-        enabled for TrekMe.\nThe track-follow service runs in the background.
-        However, some devices put a hard limit on the number of background services allowed to run.\nIt\'s common
-        for Android to abruptly stop a service, if it considers that stopping it would extend battery life. When following a track,
-        it\'s reasonable to consume a bit of power while you\'re aware of it.</string>
-    <string name="battery_warn_solution_btn_txt">See solution</string>
-    <string name="battery_warn_solution_title">Solution</string>
+    <string name="battery_warn_message_gpx_recording_title">Battery restrictions or power saving must be disabled</string>
+    <string name="battery_warn_problem_cause">TrekMe might not receive GPS points when the screen if off.</string>
+    <string name="battery_warn_message_gpx_recording">Your track recording will have straight lines and may be interrupted.</string>
+    <string name="battery_warn_request_action_api35">Please allow TrekMe to run in the background in the next screen > \"App battery usage\", then tap on \"Allow background usage\", then select Unrestricted.</string>
+    <string name="battery_warn_request_action_api34_and_less">Please allow TrekMe to run in the background in the next screen > \"App battery usage\", then select Unrestricted.</string>
+    <string name="battery_warn_message_track_follow">You might not get notified when you move away from the track.</string>
+    <string name="battery_warn_solution_btn_txt">Continue</string>
+    <string name="battery_optim_disable_title">Let app always run in background?</string>
+    <string name="battery_optim_disable_1">Allowing TrekMe to always run in the background may reduce battery life.</string>
+    <string name="battery_optim_disable_2">You can change this later from Settings > Apps > TrekMe.</string>
     <string name="battery_warn_solution_msg">Go to your device settings -> \"Apps\" then \"TrekMe\". Inside the Battery setting,
         you should see a menu \"Battery optimization\" or similar. You should disable the battery optimization.</string>
     <string name="automatic_import_feedback">Track imported in %1$d maps</string>
     <string name="location_info_title">Information</string>
     <string name="background_location_rationale_gpx_recording">TrekMe collects location data during the GPX recording,
-        even when the app is closed or not in use. In order to do that, the location permission must be set to "allow all the time" or equivalent.\n\nThis location data <b>isn\'t shared with anyone</b>,
+        even when the app is closed or not in use. In order to do that, the location permission must be set to \"allow all the time\" or equivalent.\n\nThis location data <b>isn\'t shared with anyone</b>,
         and gpx files are stored locally on your device.</string>
     <string name="background_location_gpx_recording_failure">The GPX recording feature can only work when the location permission is set to "Allow all the time". Please grant the permission in the app settings.</string>
     <string name="background_location_rationale_track_follow">In order to regularly check your distance to the followed track, TrekMe needs to collect location data in the background,

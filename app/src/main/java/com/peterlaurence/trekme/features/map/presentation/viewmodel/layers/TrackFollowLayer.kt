@@ -24,7 +24,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -89,16 +88,13 @@ class TrackFollowLayer(
 
     /**
      * 3 steps:
-     * 1. Check that location is enabled and that battery optimization is disabled
-     * 2. Check for background location permission. If the permission isn't granted, stop there and
+     * 1. Check for background location permission. If the permission isn't granted, stop there and
      *    warn the user.
+     * 2. Check that location is enabled and that battery optimization is disabled
      * 3. Set flag to await path selection and notify user.
      */
     fun start() = scope.launch {
         /* Step 1 */
-        checkLocationAndBatteryOpt()
-
-        /* Step 2 */
         if (!checkBackgroundLocationPerm()) {
             appEventBus.postMessage(
                 WarningMessage(
@@ -108,6 +104,9 @@ class TrackFollowLayer(
             )
             return@launch
         }
+
+        /* Step 2 */
+        checkLocationAndBatteryOpt()
 
         /* Step 3 */
         isAwaitingTrackClick = true
@@ -153,7 +152,7 @@ class TrackFollowLayer(
 
             appEventBus.requestBackgroundLocation(request)
 
-            request.result.receiveAsFlow().firstOrNull() ?: false
+            appEventBus.backgroundLocationResult.receive()
         } else true
     }
 

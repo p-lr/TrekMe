@@ -51,7 +51,7 @@ Ce problème peut avoir deux causes :
 
 1. L'optimisation de la batterie est active pour TrekMe. Dans ce cas, voir [Mon enregistrement GPX s'arrête parfois tout seul](#mon-enregistrement-gpx-sarrête-parfois-tout-seul).
 
-2. L'autorisation de location pour TrekMe n'est pas au niveau suffisant. Elle doit être au niveau
+2. L'autorisation de localisation pour TrekMe n'est pas au niveau suffisant. Elle doit être au niveau
 "Toujours autoriser", et pas seulement quand l'appli est en cours d'utilisation.
 
 ## J'ai un autre problème

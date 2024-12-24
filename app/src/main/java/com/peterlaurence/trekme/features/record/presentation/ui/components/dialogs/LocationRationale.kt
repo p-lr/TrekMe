@@ -30,7 +30,7 @@ fun LocationRationale(
         },
         dismissButton = {
             TextButton(onClick = onIgnore) {
-                Text(text = stringResource(id = R.string.no_authorize_dialog))
+                Text(text = stringResource(id = R.string.disallow_dialog))
             }
         },
         onDismissRequest = {}  // on purpose

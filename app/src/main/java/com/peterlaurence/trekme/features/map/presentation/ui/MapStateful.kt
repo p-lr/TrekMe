@@ -81,9 +81,9 @@ import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapViewModel
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.StatisticsViewModel
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.TrackFollowLayer
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.TrackType
-import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimSolutionDialog
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimWarningDialog
 import com.peterlaurence.trekme.util.android.getActivityOrNull
+import com.peterlaurence.trekme.util.android.openAppSettingsIntent
 import com.peterlaurence.trekme.util.android.sendShareIntent
 import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 import kotlinx.coroutines.CoroutineScope
@@ -249,7 +249,6 @@ fun MapStateful(
 
     val selectTrack = stringResource(id = R.string.select_track_to_follow)
     var isShowingBatteryWarning by rememberSaveable { mutableStateOf(false) }
-    var isShowingBatterySolution by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffectWithLifecycle(flow = viewModel.trackFollowLayer.events) { event ->
         when (event) {
@@ -393,6 +392,7 @@ fun MapStateful(
                                 is TrackType.ExcursionType -> {
                                     viewModel.bottomSheetLayer.onRemoveExcursion(trackType.excursionRef)
                                 }
+
                                 is TrackType.RouteType -> {
                                     viewModel.bottomSheetLayer.onRemoveRoute(trackType.route)
                                 }
@@ -462,34 +462,24 @@ fun MapStateful(
 
     if (isShowingBatteryWarning) {
         BatteryOptimWarningDialog(
-            text = stringResource(id = R.string.battery_warn_message_track_follow),
-            onShowSolution = {
-                isShowingBatterySolution = true
-                isShowingBatteryWarning = false
-            },
+            consequences = stringResource(id = R.string.battery_warn_message_track_follow),
             onDismissRequest = {
                 isShowingBatteryWarning = false
                 viewModel.trackFollowLayer.ackBatteryOptSignal.trySend(Unit)
             },
-        )
-    }
-
-    if (isShowingBatterySolution) {
-        BatteryOptimSolutionDialog(
-            onDismissRequest = {
-                isShowingBatterySolution = false
+            onOpenSettings = {
+                openAppSettingsIntent(context)
+                isShowingBatteryWarning = false
                 viewModel.trackFollowLayer.ackBatteryOptSignal.trySend(Unit)
             }
         )
     }
 }
 
-
 @Composable
 private fun RecordingFabStateful(viewModel: GpxRecordServiceViewModel) {
     val gpxRecordState by viewModel.status.collectAsState()
     var isShowingBatteryWarning by rememberSaveable { mutableStateOf(false) }
-    var isShowingBatterySolution by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffectWithLifecycle(flow = viewModel.events) { event ->
         when (event) {
@@ -499,25 +489,18 @@ private fun RecordingFabStateful(viewModel: GpxRecordServiceViewModel) {
         }
     }
 
+    val context = LocalContext.current
     if (isShowingBatteryWarning) {
         BatteryOptimWarningDialog(
-            text = stringResource(id = R.string.battery_warn_message_gpx_recording),
-            onShowSolution = {
-                isShowingBatterySolution = true
+            consequences = stringResource(id = R.string.battery_warn_message_gpx_recording),
+            onDismissRequest = {
+                viewModel.ackBatteryOptSignal.trySend(Unit)
                 isShowingBatteryWarning = false
             },
-            onDismissRequest = {
+            onOpenSettings = {
+                openAppSettingsIntent(context)
+                viewModel.ackBatteryOptSignal.trySend(Unit)
                 isShowingBatteryWarning = false
-                viewModel.ackBatteryOptSignal.trySend(Unit)
-            },
-        )
-    }
-
-    if (isShowingBatterySolution) {
-        BatteryOptimSolutionDialog(
-            onDismissRequest = {
-                isShowingBatterySolution = false
-                viewModel.ackBatteryOptSignal.trySend(Unit)
             }
         )
     }
@@ -568,7 +551,10 @@ fun showSnackbar(
     snackbarHostState.showSnackbar(msg, actionLabel = okString)
 }
 
-private fun makeTrackCreationArgs(dataState: DataState, excursionId: String?): TrackCreateScreenArgs {
+private fun makeTrackCreationArgs(
+    dataState: DataState,
+    excursionId: String?
+): TrackCreateScreenArgs {
     return TrackCreateScreenArgs(
         mapId = dataState.map.id.toString(),
         centroidX = dataState.mapState.centroidX,

@@ -27,15 +27,9 @@ class AppEventBus {
 
     fun requestBackgroundLocation(request: BackgroundLocationRequest) = _requestBackgroundLocationSignal.tryEmit(request)
 
-    /**
-     * The sender sends a [BackgroundLocationRequest] and "collects" the channel (so the sender
-     * suspends). The receiver (some permission handler in the app), does what necessary and posts
-     * the result (true if the perm is granted or false otherwise). Then, the receiver can act upon
-     * the decision of the user.
-     */
-    data class BackgroundLocationRequest(val rationaleId: Int) {
-        val result = Channel<Boolean>(1)
-    }
+    val backgroundLocationResult = Channel<Boolean>(1)
+
+    data class BackgroundLocationRequest(val rationaleId: Int)
 
     /**********************************************************************************************/
 
