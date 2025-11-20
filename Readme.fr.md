@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-<img src="doc/images/map-list.jpg" width="200"> &nbsp&nbsp&nbsp <img src="doc/images/trekme-example.jpg" width="200">
+<img src="doc/images/map-list.jpg" width="200"> &nbsp&nbsp&nbsp <img src="doc/images/trekme-example-fr.jpg" width="200">
 </p>
 
 ## Sommaire
@@ -25,8 +25,6 @@
   * [Importer une trace GPX](#import-dun-fichier-gpx)
   * [S'enregistrer au format GPX](#enregistrement-gpx)
   * [Suivre une trace](#suivre-une-trace)
-  * [Gérer les traces](#gérer-les-traces)
-  * [Gérer les marqueurs](#gérer-les-marqueurs)
 5. [Paramètres](#paramètres)
   * [Démarrer sur la dernière carte](#démarrer-sur-la-dernière-carte)
   * [Dossier de téléchargement](#dossier-de-téléchargement)
@@ -49,26 +47,32 @@ randonnée. L'application est aussi très fluide de manière générale.
 ## Résumé des fonctionnalités
 
 * Création de cartes depuis l'application:
-    - France IGN (requiert une [souscription](#cartes-ign))
+    - France IGN (requiert TrekMe Pro)
     - Swiss Topo
 	- USA : USGS
  	- Espagne IGN 
  	- OpenStreetMap
-* Marqueurs (possibilité d'ajout de commentaire)
+* Marqueurs (possibilité d'ajout de commentaire et de photos)
 * GPX : import de trace et enregistrement
 * Indicateur d'orientation
 * Indicateur de vitesse
 * Indicateur de distance à vol d'oiseau
 * Verrouiller la vue à la position courante
-* Balises pour alerter à l'approche de lieux précis sur la carte
+
+
+Certaines fonctionnalités requièrent un abonnement premium :
+
+* Créez autant de dossiers que vous voulez pour organiser vos parcours
+* Pas de limite de taille de carte
+* Ajoutez des balises pour alerter à l'approche de lieux précis sur la carte
+* … et plus
 
 ## Créer une carte
 
-Il y a quatre manières de créer une carte :
+Il y a trois manières de créer une carte :
 1. Sélectionner une zone avec une source de carte comme l'IGN par ex
 2. Import d'une archive
 3. Recevoir une carte d'un autre utilisateur de TrekMe (à proximité, en Wifi)
-4. La faire soi-même (pour les utilisateurs avancés)
 
 La méthode la plus facile et recommandée est la première. Ci-dessous sont décrites chacune de ces
  méthodes.
@@ -95,49 +99,39 @@ sources suivantes :
 </p>
 
 Quand vous avez fait votre choix, la carte s'affiche après un délai de quelques secondes.
+La plupart des fournisseurs de cartes n'ont qu'une couverture partielle du globe. A l'exception
+d'OpenStreetMap, qui couvre le monde entier, l'USGS par ex ne couvre que les Etats-Unis, l'IGN Espagne
+que l'Espagne, etc.
 Vous pouvez alors zoomer et vous déplacer sur la zone qui vous intérresse.
 
 Si zoomer manuellement sur la zone qui vous intéresse n'est pas la méthode la plus facile, il
 existe trois autres possibilités :
 
-- Centrer sur votre position, comme dans cette vidéo : 
-
-https://user-images.githubusercontent.com/15638794/136759759-33378909-cba7-4434-a09a-2c40cc16b71b.mp4
-
+- Centrer sur votre position avec le bouton position en haut de l'écran.
 - Rechercher un lieu particulier avec le bouton recherche. 
-- Importer une trace GPX (disponible seulement avec l'offre Extended). Pour cela, dépliez le menu en
+- Importer une trace GPX (disponible seulement avec l'offre Plus et Pro). Pour cela, dépliez le menu en
 haut à droite (les trois petits points), puis sélectionnez "Importer une trace". Pour l'IGN, c'est
 aussi depuis ce menu qu'on définit le [choix de différentes couches](doc/ign_layers.fr.md). 
 
-Quand vous avec trouvé la bonne zone, un bouton en bas à droite de l'écran fait apparaître une zone 
-bleue qui définit ce qui sera téléchargé. 
-Cette zone est modifiable en déplaçant les deux ronds bleus (voir la vidéo ci-dessous).
-
-https://user-images.githubusercontent.com/15638794/136759807-dc5b183e-e181-4bae-af52-5fa2418f06cf.mp4
-
-Quand vous êtes satisfait de votre sélection, utilisez le bouton de téléchargement. 
-
-NB : La plupart des fournisseurs de cartes n'ont qu'une couverture partielle du globe. A l'exception 
-d'OpenStreetMap, qui couvre le monde entier, l'USGS par ex ne couvre que les Etats-Unis, l'IGN Espagne 
-que l'Espagne, etc.
-
-A l'exception de l'IGN France, qui nécessite un abonnement annuel, le menu suivant s'affiche :
+Quand vous avec trouvé la bonne zone, ajustez si besoin la position des deux ronds bleu qui
+définissent la zone à télécharger. Puis appuyez sur "Valider" en bas de l'écran. Un menu s'affiche
+alors avant de valider le téléchargement :
 
 <p align="center">
-<img src="doc/images/map-configuration.jpg" width="300">
+<img src="doc/images/map-configuration-fr.jpg" width="300">
 </p>
 
 Les fournisseurs de carte proposent différents niveaux de zoom, allant de 1 (niveau globe) à 18 
 (carte très détaillée).
 Dans la plupart des cas, vous ne voulez pas des niveaux 1 à 10, et le niveau 17 est rarement
 nécessaire. 
-C'est la raison pour laquelle le réglage par défaut est de 12 pour le zoom minimum, et 16 pour le maximum.
-Ces réglages par défaut conviennent pour la plupart des usages, et il est conseillé de ne pas les
-changer sauf si vous savez ce que vous faites.
+Il est conseillé de conserver les réglages par défaut, en particulier pour le niveau minimum,
+sauf si vous savez ce que vous faites. 
 
-La quantité d'images qui devront être téléchargées dépend directement du choix des niveaux de zoom 
-min et max. Plus le niveau de zoom min est petit et plus le niveau max est grand, plus la quantité à
- télécharger est importante.
+La quantité d'images qui seront téléchargées dépend directement de la taille de la zone et du
+choix des niveaux de zoom min et max. Plus le niveau de zoom min est petit et plus le niveau max est
+grand, plus la quantité à télécharger est importante. Le plus simple est donc d'ajuster la zone à 
+télécharger.
 Ceci est indiqué par l'estimation de la taille de la carte en Mo.
 Il est important de noter que télécharger plusieurs centaines de Mo peut prendre des heures... Il est
  donc fortement recommandé de ne sélectionner que la zone dont vous avez besoin.
@@ -165,10 +159,10 @@ Lorsqu'un téléchargement de carte est interrompu (soit manuellement, ou par ex
 par ex), la carte est incomplète. Ceci est indiqué sur la carte :
 
 <p align="center">
-<img src="doc/images/download-abort-fr.jpg" width="300">
+<img src="doc/images/download-aborted.jpg" width="150">
 </p>
 
-Il est alors possible, si vous avec TrekMe Extended, de poursuivre le téléchargement en allant dans
+Il est alors possible, si vous avec TrekMe Plus ou Pro, de poursuivre le téléchargement en allant dans
 "MODIFIER" puis "Analyser & réparer". Les parties manquantes de la carte vont être téléchargées.
 Si vous n'avez pas l'offre premium de TrekMe, la réparation de carte n'est pas disponible. Il vous
 est alors conseillé de supprimer la carte incomplète.
@@ -186,23 +180,6 @@ importer individuellement.
 ### Recevoir une carte
 
 Reportez-vous à la section [Partage de carte](#partage-de-carte).
-
-### Création manuelle - le plus difficile
-
-Il est possible d'utiliser votre propre carte si vous la scannez et suivez le tutoriel pour l'utiliser
-avec TrekMe.
-C'est réservé aux experts. Cette méthode n'est en aucun cas nécessaire, mais grâce à cette fonctionnalité, 
-on peut mettre n'importe quelle carte dans TrekMe.
-Il faut avoir des connaissances en géolocalisation, et il est recommandé d'être familiarisé avec les
- termes suivants :
-
-[Map projection](https://en.wikipedia.org/wiki/Map_projection),
-[WGS84](https://en.wikipedia.org/wiki/World_Geodetic_System#WGS84),
-[Mercator](https://en.wikipedia.org/wiki/Mercator_projection?oldid=9506890).
-
-Pour les personnes voulant apprendre, il est conseillé de lire ce [guide](UserGuide.md) (en anglais).
-
-Ensuite, poursuivez avec le [Guide de création manuelle de carte](MapCreation-Manual.md).
 
    
 ## Fonctionnalités
@@ -257,10 +234,10 @@ comme celui-ci :
 <img src="doc/images/new-marker.jpg" width="300">
 </p>
 
-Avec ses flèches rouge qui tournent autour, il indique qu'il peut être déplacé. Pour cela appuyez 
+La présence du rond bleu indique que le marqueur peut être déplacé. Pour cela appuyez 
 avec un doigt dans la zone bleue et déplacez le marqueur à l'endroit désiré.
-Quand vous êtes satisfait de sa position, "appuyez" une fois sur le marqueur rouge. Il change alors 
-de forme et la zone bleue disparaît. Cela indique que le marqueur est désormais fixé à son emplacement.
+Quand vous êtes satisfait de sa position, "appuyez" une fois sur le rond bleu. Le marqueur est 
+désormais fixé à son emplacement.
 
 Si on appuie sur le marqueur, une bulle comme celle-ci s'affiche :
 
@@ -271,16 +248,10 @@ Si on appuie sur le marqueur, une bulle comme celle-ci s'affiche :
 On peut alors :
 
 * Lancer Google Maps pour naviguer vers le marqueur (icône en haut à droite)
-* Changer le nom ou le commentaire du marqueur
-* Déplacer le marqueur (il reprend sa forme avec les flèches qui tournent, indiquant qu'il peut être 
-déplacé)
+* Modifier le marqueur (changer son nom, ajouter un commentaire, une photo)
+* Déplacer le marqueur (il reprend sa forme avec le rond bleu, indiquant qu'il peut être déplacé)
 * Supprimer le marqueur
 
-<p align="center">
-<img src="doc/images/marker-edit-fr.jpg" width="300">
-</p>
-
-La plupart du temps, on se contente de modifier seulement le nom ou le commentaire.
 
 ### Ajout de points de repère
 
@@ -318,7 +289,8 @@ l'enregistrement en cours s'affiche sur votre carte, sous forme de trace orange.
 Cela ne fonctionne que pour les cartes qui couvrent la zone dans laquelle vous êtes au moment de 
 l'enregistrement.
 
-Même si vous quittez TrekMe, vous retrouverez la trace en temps réel sur votre carte, tant que l'enregistrement est en cours.
+Même si vous quittez TrekMe, vous retrouverez la trace en temps réel sur votre carte, tant que 
+l'enregistrement est en cours.
 
 <p align="center">
 <img src="doc/images/live-route.jpg" width="300">
@@ -331,45 +303,17 @@ soit on importe dans toutes les cartes qui peuvent contenir la trace (méthode 2
 
 #### Méthode 1 : import gpx dans une carte
 
-Alors que vous visionnez une carte, utilisez le menu en haut à droite, puis sélectionnez "Gérer les traces":
-
-<p align="center">
-<img src="doc/images/open-manage-tracks-fr.jpg" width="300">
-</p>
-
-La liste des traces disponibles pour votre carte s'affiche alors (à ce stade il peut y en avoir aucune) :
-
-<p align="center">
-<img src="doc/images/track-list-fr.jpg" width="300">
-</p>
-
-Vous pouvez alors :
-
-* Importer un fichier gpx avec le bouton d'import en bas à droite
-* Assigner une couleur pour chaque trace
-* Gérer la visibilité des traces déjà importées. Un appui long sur ce bouton change la visibilité de
-toutes les traces.
-* Supprimer des traces en les faisant glisser à droite ou à gauche (cela n'affecte en rien le fichier gpx)
-
-Avec le menu en haut à droite, qui apparaît quand vous sélectionnez une trace, vous pouvez :
-
-* Renommer la trace sélectionnée
-* Aller directement sur la trace sélectionnée sur la carte (cette fonctionnalité n'est disponible qu'avec l'offre TrekMe Extended).
+Alors que vous visionnez une carte, utilisez le menu en haut à droite, puis sélectionnez 
+"Gérer les traces". Vous arrivez sur l'écran de gestion des traces. Utilisez le menu en haut à 
+droite, puis sélectionnez "Importer un fichier GPX".
 
 #### Méthode 2 : import gpx dans toutes les cartes
 
-Depuis le menu principal > Mes traces, utilisez le menu ci-dessous puis "Importer des fichiers":
-
-<p align="center">
-<img src="doc/images/gpx-import-menu_fr.png" width="300">
-</p>
+Depuis le menu principal > Mes traces, utilisez le bouton principal en bas à droite de l'écran, puis
+"Importer des fichiers GPX".
 
 Sélectionnez alors le ou les fichiers gpx à importer. La trace sera alors importée dans toutes les
 cartes qui peuvent l'afficher.
-
-Noter que les traces importées de cette manière sont communes à toutes les cartes. Par exemple, la
-suppression de la trace depuis cet écran a pour conséquence la suppression de la trace pour toutes
-les cartes.
 
 ### Enregistrement GPX
 
@@ -398,7 +342,7 @@ Parfois, on souhaite utiliser le moins possible le téléphone. Mais on prend le
 de chemin et de s'en apercevoir assez tard, ce qui peut significativement prolonger la randonnée.
 
 Pour éviter ce problème, le suivi de trace permet d'être alerté quand on s'écarte de plus de 50m (par défaut)
-d'une trace. Cette fonctionnalité n'est disponible qu'avec les offres "TrekMe Extended".
+d'une trace. Cette fonctionnalité n'est disponible qu'avec les offres premium.
 Le suivi de trace se lance depuis une carte, dans le menu en haut à droite:
 
 <p align="center">
@@ -418,66 +362,6 @@ si toutes les conditions suivantes sont remplies :
 - L'autorisation de localisation est réglée sur "toujours autoriser"
 - La localisation est activée sur l'appareil
 
-### Gérer les traces
-
-La liste des enregistrements effectués est accessible depuis le menu > "Gérer les traces".
-En sélectionnant un enregistrement, quatre boutons en bas à gauche vous permettent respectivement de :
-
-* Renommer le fichier gpx
-* Importer la trace dans une carte existante (un menu vous donne alors le choix de la carte)
-* Partager un ou plusieurs fichiers gpx (par email, par exemple)
-* Afficher le profil altimétrique
-
-**Mode de sélection multiple**
-
-Appuyez sur le bouton en haut à droite de la liste, à côté du menu.
-Pour revenir au mode de sélection normal, appuyez sur le même bouton.
-
-**Partage d'un ou plusieurs enregistrements**
-
-Que vous soyez en mode de sélection simple ou multiple, le bouton de partage est disponible :
-<p align="center">
-<img src="doc/images/share-recording.jpg" width="300">
-</p>
-
-**Supprimer un enregistrement**
-
-Un bouton rouge en bas à droite avec une icone de corbeille est accessible en mode de sélection
-simple ou multiple. Attention, si vous pressez ce bouton rouge, tous les enregistrements sélectionnés
-(cad sur fond bleu) seront **définitivement** supprimés.
-  
-**Import automatique d'une trace**
-
-Lorsque vous arrêtez un enregistrement, le fichier GPX correspondant s'ajoute dans la liste des
-enregistrements _et_ la trace est automatiquement importée dans toutes les cartes qui peuvent
-l'afficher. Il est donc très facile de vous enregistrer et d'afficher vos traces sur vos cartes
-favorites.
-
-**Profil altimétrique**
-
-Le profil altimétrique vous permet de connaître l'altitude en tout point du parcours, et en particulier
-les altitudes min, max, et le dénivelé (non-cumulé).
-
-<p align="center">
-<img src="doc/images/ele-profile-fr.jpg" width="300">
-</p>
-
-### Gérer les marqueurs
-
-La liste des marqueurs est accessible depuis le menu > "Gérer les marqueurs". Depuis cet écran, 
-vous pouvez chercher un marqueur à partir de son nom.
-
-<p align="center">
-<img src="doc/images/manage-markers-fr.jpg" width="300">
-</p>
-
-Pour chaque marqueur, plusieurs actions sont possibles depuis le menu sur la droite, comme le fait 
-de centrer la carte sur le marqueur.
-
-<p align="center">
-<img src="doc/images/manage-markers-edit-fr.jpg" width="300">
-</p>
-
 
 ## Paramètres
 
@@ -486,11 +370,7 @@ Les paramètres de TrekMe sont accessibles depuis le menu principal > Paramètre
 ### Démarrer sur la dernière carte
 
 Par défaut, TrekMe démarre sur la liste des cartes. Mais vous pouvez aussi démarrer sur la dernière 
-carte visitée. Dans la section "Général" > "Lancer TrekMe sur" :
-
-<p align="center">
-<img src="doc/images/start_on_fr.jpg" width="300">
-</p>
+carte visitée. Dans la section "Général" > "Lancer TrekMe sur".
 
 
 ### Dossier de téléchargement
@@ -553,14 +433,11 @@ A partir d'Android 10, toutes les cartes (qu'elles soient sur mémoire interne o
 si TrekMe est désinstallé. Il vous est donc fortement conseillé d'utiliser la fonctionnalité de sauvegarde
 intégrée à TrekMe. Cela vous permettra de restaurer vos cartes si vous changez de téléphone par exemple.
 
-Pour créer une archive, depuis la liste des cartes, utilisez le bouton "MODIFIER", en bas à gauche :
+Pour créer une archive, depuis la liste des cartes, faites apparaitres les paramètres en faisant
+soit un appui long sur une carte, soit menu en haut à droite > affichier les options des cartes.
 
-<p align="center">
-<img src="doc/images/bali-fr.jpg" width="300">
-</p>
-
-Vous arrivez alors dans les options pour cette carte. Tout en bas, il y a un bouton "Sauvegarder".
-Appuyez dessus ; un message vous explique alors que vous devez choisir le dossier dans votre téléphone
+Dans les options de la carte, tout en bas, utilisez le bouton "Sauvegarder".
+Un message vous explique alors que vous devez choisir le dossier dans votre téléphone
 où l'archive sera créée. Vous pouvez en effet choisir le dossier que vous voulez (ne choisissez pas
 un dossier interne à l'application TrekMe..). Vous pouvez aussi créer un nouveau dossier et le nommer
 (par exemple) "TrekMe_sauvegardes".
@@ -595,15 +472,3 @@ tentative peut réussir (ce sont les aléas de la Wifi).
 Si les deux appareils mettent vraiment trop de temps à se connecter et à débuter le transfert (plus
 de 5 min), essayez d'arrêter et relancer respectivement la réception et l'envoi. En dernier recours,
 redémarrer les deux apprareils puis re-tentez la procédure.
-
-## Cartes IGN
-
-TrekMe propose deux offres dites "Extended" en versions annuelle et mensuelle, avec une semaine 
-d'essai gratuite sans engagement.
-Pourquoi n'est-ce pas gratuit? L'esprit de TrekMe est la consultation hors ligne des cartes. 
-Bien que certaines ressources sont désormais libres, les cartes IGN les plus demandées comme 
-"Plan IGN" sont toujours basées sur des 
-[ressources payantes](https://www.ign.fr/sites/default/files/2020-12/cp_gratuite_donnees_2020.pdf). 
-Pour cette raison, et aussi pour rémunérer le travail considérable que représente le développement
-de cette application, les cartes IGN sont proposées au travers une offre "TrekMe Extended", disponible
-sous forme d'abonnement à l'année ou au mois.

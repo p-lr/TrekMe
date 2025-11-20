@@ -25,6 +25,9 @@ updates coming from your GPS device. If you don't see any location updates, plea
 GPS device is properly configured. If the issue remains, there might be connectivity issues with
 TrekMe. See the troubleshooting section below.
 
+**Please be careful** to select an actual GPS device. Otherwise, TrekMe won't get any location data.
+It won't fallback to using the internal GPS.
+
 ## Troubleshooting
 
 For investigation purposes, you can record your GPS device activity for a short period of time

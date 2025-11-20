@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-<img src="doc/images/map-list-en.jpg" width="200"> &nbsp&nbsp&nbsp <img src="doc/images/trekme-example.jpg" width="200">
+<img src="doc/images/map-list-en.jpg" width="200"> &nbsp&nbsp&nbsp <img src="doc/images/trekme-example-en.jpg" width="200">
 </p>
 
 ## Summary
@@ -25,14 +25,13 @@
   * [Import a GPX track](#import-a-gpx-track)
   * [GPX recording](#gpx-recording)
   * [Follow a track](#follow-a-track)
-  * [Manage trails](#manage-trails)
-  * [Manage markers](#manage-markers)
 5. [Settings](#settings)
   * [Start on the last map](#start-on-the-last-map)
   * [Download folder](#download-folder)
   * [Rotation mode](#rotation-mode)
 6. [Save your maps](#save-your-maps)
 7. [Share your maps](#map-sharing)
+8. [What should I do when...](doc/troubleshoot/troubleshoot.md)
 
 
 ## Overview
@@ -53,23 +52,28 @@ Perhaps most importantly, TrekMe is _designed_ to consume few CPU resources, to 
  	- Spain IGN 
  	- Swiss Topo
  	- OpenStreetMap
-* Marker support (with optional comments)
+* Marker support (with optional comments, and photos)
 * GPX tracks import
 * Lock the view to the current position
 * Orientation indicator
 * Speed indicator
 * Distance indicator
 * GPX track recording
-* Beacons to alert when getting close to specific locations
+
+Some features require a premium subscription, such as:
+
+* Create an unlimited number of folders to organize your tracks
+* Remove the limit of map size
+* Add beacons to be alerted when getting close to specific locations
+* … and more
 
 ## Create a map
 
-There are four ways to create a map:
+There are three ways to create a map:
 
 1. Select an area from an official source provider like IGN or USGS,
 2. Import from an archive,
-3. Receive a map from a nearby TrekMe user (over Wifi),
-4. Make it yourself (the hard way)
+3. Receive a map from a nearby TrekMe user (over Wifi)
 
 The preferred and easiest way is the first one. Below are detailed each of these methods.
 
@@ -92,45 +96,35 @@ From the "Create map" option menu, you get to choose between available providers
 <img src="doc/images/wmts-providers.jpg" width="300">
 </p>
 
-When you've made your choice, the map appears shortly.
+When you've made your choice, the map appears shortly. Beware that USGS only provides detailed 
+levels for USA. Actually, other providers only cover their relevant country, except for 
+OpenStreetMap which covers the entire world.
+
 From there, you can zoom into the area in the world you want to capture. If this isn't the most handy
 way to find your area of interest, there are others ways:
 
-- You can center on your current location, as shown in the video below.
-
-[Zoom on position](https://user-images.githubusercontent.com/15638794/136757539-ac589d8e-fbf4-4e71-aac0-cdac7a446c02.mp4)
-
+- You can center on your current location, using the location button at the top.
 - You can search for a particular place, using the search button in the top bar.
 - Import a GPX track, using the menu at top-right corner. This feature is available as part of the 
-Extended offer.
+Plus and Pro offer.
 
-When you found the place you're looking for, press the area button (at the bottom-right of the screen)
-so an area of selection appears. 
-This area can be resized by moving the two blue circles.
-
-
-If you can't reach the blue circles (after you
-e.g zoomed in), pressing the area button again will make the area disapear. Pressing the button again
-will make the area fit on the screen. 
- 
-Beware that USGS only provides detailed levels for USA. Actually, other providers only cover their 
-relevant country, except for OpenStreetMap which covers the entire world.
-
-When you're done, press the download button, at the bottom right. Except for France's IGN, for which
- an annual subscription is required, you'll see this configuration menu:
+When you found the place you're looking for, you may adjust the position of the blue circles, which
+define the area to download. When you're ready, press the "Validate" button at the bottom of the screen.
+You then see the menu below, from where you will start the download.
 
 <p align="center">
-<img src="doc/images/map-configuration.jpg" width="300">
+<img src="doc/images/map-configuration-en.jpg" width="300">
 </p>
 
 WMTS map providers have different zoom levels, generally from 1 to 18. In most cases, you don't want
-levels 1 to 10 for your hike, and level 18 is not always necessary. This is why the default presets
-have the minimum and maximum levels to 12 and 17 respectively. 
+levels 1 to 10 for your hike, and level 17 is not always necessary. Unless you know what you're 
+doing, it's advised to keep the default level presets.
 
-The number of tiles that will be downloaded depends on your choice of minimum and maximum levels.
-The lower the minimum zoom, and the higher the maximum zoom, the greater is number of tiles. This
+The number of tiles that will be downloaded depends on the size of the area, and on minimum and 
+maximum levels. So the simplest thing to do is to adjust the area to download.
+The number of tiles increases when the minimum zoom is low and the maximum zoom is high. This
 is indicated by the estimated size in Mb. Downloading hundreds of Mb may take hours..
-so choose carefully your area and levels to only download the tiles you actually need.
+so choose carefully your area to only download the tiles you actually need.
 
 Finally, press the download button. A download service is launched and you get a notification. From
 the notification center of your Android device, you can either:
@@ -154,11 +148,11 @@ When a map download was stopped (either manually or e.g when shutting down the d
 now incomplete. You can tell that by the warning bellow:
 
 <p align="center">
-<img src="doc/images/download-abort-en.jpg" width="300">
+<img src="doc/images/download-aborted.jpg" width="150">
 </p>
 
 You can resume the download by using EDIT > "Analyze & repair". The map repair will fetch the 
-missing tiles. This is possible if you have TrekMe Extended. Otherwise, it's advised to delete the 
+missing tiles. This is possible if you have TrekMe Plus or Pro. Otherwise, it's advised to delete the 
 incomplete map.
 
 ### Import from an archive
@@ -173,24 +167,6 @@ import.
 ### Receive a map
 
 See [Map Sharing](#map-sharing).
-
-### Manual map creation - the hard way
-
-If you own a paper map, just scan it, then prepare it to use inside TrekMe (see below). It also works
- if you have a huge single image (several Gb), as TrekMe is designed to work with arbitrary map size.
-The only limitation is the memory available on your device (smartphone, tablet).
-
-However, it's definitely not easy to create a map using this method, as basic understanding of 
-localisation on a map is required. If you can, prefer the first method (area selection).
-
-It is advised to be familiar with the following terms:
-[Map projection](https://en.wikipedia.org/wiki/Map_projection),
-[WGS84](https://en.wikipedia.org/wiki/World_Geodetic_System#WGS84),
-[Mercator](https://en.wikipedia.org/wiki/Mercator_projection?oldid=9506890).
-
-Beginners are strongly advised to read the Technical Basis from the [User Guide](UserGuide.md).
-
-Then, proceed with the [Manual map creation guide](MapCreation-Manual.md).
 
    
 ## Features
@@ -242,9 +218,8 @@ Press the marker button to add a new marker at the center of the screen:
 <img src="doc/images/new-marker.jpg" width="300">
 </p>
 
-With its reds arrows turning around it, its shows that it can be moved by dragging the blue circle.
-When you're satisfied with its position, tap on the red circle at the center. It then morphs to its 
-static form.
+The marker can be moved by dragging the blue circle. When you're satisfied with its position, tap 
+once anywhere on the blue circle.
 
 Tapping a marker displays a popup:
 
@@ -255,15 +230,9 @@ Tapping a marker displays a popup:
 From here you can:
 
 * Navigate to the marker using Google Maps (top-right icon),
-* Edit the marker (change its name and set a comment, see below),
+* Edit the marker (change its name, add a comment or a photo),
 * Move it,
 * Delete it
-
-Here is the marker edition view:
-
-<p align="center">
-<img src="doc/images/marker-edit-en.jpg" width="300">
-</p>
 
 ### Add landmarks
 
@@ -308,44 +277,17 @@ specific map, while using the second one you import a track for all maps which c
 
 #### Import gpx for a specific map
 
-While viewing a map, press the button below on the upper right corner :
-
-<p align="center">
-<img src="doc/images/open-manage-tracks-en.jpg" width="300">
-</p>
-
-Then, a list of currently available tracks opens up: 
-
-<p align="center">
-<img src="doc/images/track-list.jpg" width="300">
-</p>
-
-Here you can:
-
-* Import a new gpx files using the import button at the bottom right corner,
-* Assign a color to a track,
-* Manage track visibility using the "eye" button. A long click on this button changes the visibility
-of all tracks.
-* Remove tracks by swiping them left or right
-
-Using the menu at the top right corner (the three vertical dots), which appears when you select a track, you can:
-
-* Rename the selected track
-* Center on the selected track on the map (only available with TrekMe Extended)
+While viewing a map, press the menu button at the upper right corner, then select "Manage tracks".
+You land on the track manage screen. From there, press the the menu button at the upper right corner,
+then select "Import GPX file".
 
 #### Import gpx for all maps
 
-From the main menu > My trails, click on bellow the button menu, then select "Import files":
-
-<p align="center">
-<img src="doc/images/gpx-import-menu_en.png" width="300">
-</p>
+From the main menu > My trails, click on the main button at the bottom right of the screen, then
+select "Import GPX files".
 
 You can then select the file(s) you wish to import. The track(s) will then be imported for all maps
 which can display the track(s).
-
-Note that tracks imported this way are common to all maps. This means that deleting a track from
-this screen deletes the track for all maps.
 
 ### GPX recording
 
@@ -374,7 +316,7 @@ path and realize it a bit too late.
 
 To avoid this problem, the track following feature alerts you when you get off the track. The alert
 threshold is 50m by default but can be changed in the settings. This feature is only available with
-"TrekMe Extended" offers.
+premium offers.
 
 The track following can be started from any map, in the top-right menu:
 
@@ -394,76 +336,14 @@ The track following feature runs as a background service, which only works when 
 - Location authorization is set to "allow all the time"
 - Location is enabled on the device
 
-### Manage trails
-
-From the main menu > Manage trails, the list of gpx recordings appear. Four buttons at the bottom-left enable you to:
-
-* Rename the track,
-* Import the track into an existing map (press the import button at the bottom of the list, then choose the map),
-* Share the gpx file (using e.g email),
-* Show the elevation profile
-
-
-**Multiple-selection mode**
-
-To switch to multiple-selection mode, use button in the top bar, next to the drop-down menu.
-To revert back to single selection mode, use the same button.
-
-**Share recordings**
-
-Whatever the selection mode, the share button below is available:
-<p align="center">
-<img src="doc/images/share-recording.jpg" width="300">
-</p>
-
-**Delete a recording**
-
-A delete button at the bottom-right with a red trash-icon allows you to delete one or multiple
-recordings. Beware the if you press that button, all selected recordings will be *permanently*
-deleted.
-
-**Automatic import of a track**
-
-After you stop a recording, a new GPX file is added to the recordings list _and_ the corresponding
-track is automatically imported into all relevant maps.
-This way, it's super easy to record yourself and see your tracks on your favorite maps.
-
-**Elevation profile**
-
-The elevation profile allows you to know the elevation at any point of the trek. It also shows the
-minimum and maximum elevations.
-
-<p align="center">
-<img src="doc/images/ele-profile-en.jpg" width="300">
-</p>
-
-### Manage markers
-
-From the main menu > Manage markers, the list of markers is shown. From this screen, you can search
-for a specific marker from its name.
-
-<p align="center">
-<img src="doc/images/manage-markers-en.jpg" width="300">
-</p>
-
-For each marker, several actions are possible using the drop-down menu on the right, such as centering
-the map on the marker.
-
-<p align="center">
-<img src="doc/images/manage-markers-edit-en.jpg" width="300">
-</p>
-
 ## Settings
 
 Settings are accessible from the main menu > Settings.
 
 ### Start on the last map
 
-By default, TrekMe starts on the list of maps. But it's possible to start on the last viewed map. In the "General" section > "Start TrekMe on"
-
-<p align="center">
-<img src="doc/images/start_on.jpg" width="300">
-</p>
+By default, TrekMe starts on the list of maps. But it's possible to start on the last viewed map. 
+In the "General" section > "Start TrekMe on"
 
 
 ### Download folder
@@ -519,17 +399,13 @@ Starting from Android 10, all maps (no matter if they're on the internal memory 
 deleted when TrekMe is uninstalled. Consequently, it's highly recommended to use the backup feature
 of TrekMe. You'll be able to restore your maps if you e.g change for a new device.
 
-To create an archive, go to the list of maps and press the "EDIT" button at the bottom left:
+To create an archive, go to the list of maps and show map options with either a long press on a map
+or ussing the top right menu > show map options.
 
-<p align="center">
-<img src="doc/images/reunion-en.png" width="300">
-</p>
-
-You land on a bunch of options related to the selected map. The last option is a "Save" button - press
-it. A dialog explains that you're about to choose the folder in which the archive will be created.
-You can choose whatever folder you want (and create a new one), but don't select a subdirectory of
-TrekMe. If you continue, the archive will be created in background - you can see the progression in
-the notification area of the device.
+In the map options, you'll find a "Save" button. Then, a dialog explains that you're about to choose
+the folder in which the archive will be created. You can choose whichever folder you want (or create
+a new one), but don't select a subdirectory of TrekMe. If you continue, the archive will be created
+in background - you can see the progression in the notification area of the device.
 
 An archive contains everything related to the map (calibration, routes, points of interest, etc.).
 

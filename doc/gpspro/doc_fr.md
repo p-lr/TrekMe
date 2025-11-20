@@ -26,9 +26,12 @@ Si vous ne voyez aucune mise à jour de la position, veuillez d'abord vous assur
 est correctement configuré. Si ce le problème persiste, il y a peut-être un problème de communication
  avec TrekMe. Continuez alors sur la section ci-après.
 
+**Il est très important** de sélectionner un véritable GPS bluetooth. Dans le cas contraire, TrekMe
+ne recevra aucune information de position, et ne tentera pas d'utiliser le GPS interne.
+
 ## Investigation
 
-TrekMe intègre une foncitonnalité de diagnositic, qui consiste à enregistrer l'activité de votre GPS
+TrekMe intègre un outil diagnositic, qui consiste à enregistrer l'activité de votre GPS
 pendant une dizaine de secondes. Vous serez invité à définir l'emplacement du fichier résultant (un
 simple fichier texte). Veuillez m'envoyez ce fichier par mail à plr.devs@gmail.com, pour que je
 l'analyse. Le but est de rendre TrekMe compatible avec votre GPS.
